@@ -2,9 +2,9 @@
   "name": "tinyaz-s",
   "source": "selfplay-64",
   "sourceId": 2,
-  "selfplayGames": 64,
+  "selfplayGames": 128,
   "selfplayVisits": 64,
-  "selfplayPositions": 8159,
+  "selfplayPositions": 16508,
   "lichessMix": 8000,
   "epochs": 2,
   "params": 640018,
@@ -62,7 +62,7 @@
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0.0
+        "score": 0
       },
       {
         "uciElo": 1500,
@@ -70,7 +70,7 @@
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0.0
+        "score": 0
       },
       {
         "uciElo": 1800,
@@ -78,7 +78,7 @@
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0.0
+        "score": 0
       },
       {
         "uciElo": 2000,
@@ -86,7 +86,7 @@
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0.0
+        "score": 0
       }
     ],
     "estimatedElo": null,
@@ -96,5 +96,35 @@
     "games": 32,
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating."
   },
-  "flopsPerEval": 38813760
+  "flopsPerEval": 38813760,
+  "selfplayLoops": 2,
+  "vsPrev": {
+    "games": 12,
+    "wins": 0,
+    "draws": 12,
+    "losses": 0,
+    "score": 0.5,
+    "visits": 1
+  },
+  "history2": [
+    {
+      "epoch": 1,
+      "policy": 2.3746370507221597,
+      "value": 0.5714641977758969,
+      "loss": 2.946101246628107
+    },
+    {
+      "epoch": 2,
+      "policy": 2.2767526523739683,
+      "value": 0.4205403547076618,
+      "loss": 2.697293014152377
+    }
+  ],
+  "vsSf1320Loop2": {
+    "visits": 64,
+    "wins": 0,
+    "draws": 0,
+    "losses": 8,
+    "games": 8
+  }
 }
