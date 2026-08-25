@@ -2,10 +2,10 @@
   "name": "tinyaz-s",
   "source": "selfplay-64",
   "sourceId": 2,
-  "selfplayGames": 128,
+  "selfplayGames": 384,
   "selfplayVisits": 64,
-  "selfplayPositions": 16508,
-  "lichessMix": 8000,
+  "selfplayPositions": 50593,
+  "lichessMix": 2000,
   "epochs": 2,
   "params": 640018,
   "history": [
@@ -39,7 +39,7 @@
     "losses": 0,
     "score": 1,
     "passed": true,
-    "adjudication": "mate, else material\u22654 after 240 ply"
+    "adjudication": "mate, else material≥4 after 240 ply"
   },
   "gauntletElo": {
     "visits": 64,
@@ -54,7 +54,7 @@
       "qpawn"
     ],
     "coloursSwapped": true,
-    "adjudication": "mate, else material\u22654 after 160 ply",
+    "adjudication": "mate, else material≥4 after 160 ply",
     "levels": [
       {
         "uciElo": 1320,
@@ -97,7 +97,7 @@
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating."
   },
   "flopsPerEval": 38813760,
-  "selfplayLoops": 2,
+  "selfplayLoops": 3,
   "vsPrev": {
     "games": 12,
     "wins": 0,
@@ -126,5 +126,30 @@
     "draws": 0,
     "losses": 8,
     "games": 8
-  }
+  },
+  "historyClimb": [
+    {
+      "epoch": 1,
+      "policy": 2.365327270046226,
+      "value": 0.5287702243084084,
+      "loss": 2.8940974939098236
+    },
+    {
+      "epoch": 2,
+      "policy": 2.2863132132650184,
+      "value": 0.36613945342076104,
+      "loss": 2.6524526645888145
+    }
+  ],
+  "vsSf1320": {
+    "visits": 64,
+    "uciElo": 1320,
+    "games": 8,
+    "wins": 0,
+    "draws": 0,
+    "losses": 8,
+    "score": 0
+  },
+  "climbGames": 256,
+  "keepDiscard": "stockfish-18-uci-elo-1320-64-visit"
 }

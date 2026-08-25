@@ -1,6 +1,7 @@
 import { Chess, type Piece, type Square } from "chess.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PLAY_VISITS } from "@/lib/chess/constants";
+import checkpoint from "@/lib/chess/checkpoint-meta.json";
 import { paramCount } from "@/lib/chess/weights";
 import type { ThinkResult } from "@/lib/chess/mcts";
 import { createThinker } from "@/lib/chess/think-client";
@@ -31,33 +32,13 @@ export function Workbench() {
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
   const [params, setParams] = useState(paramCount());
   const [seed, setSeed] = useState(2026);
-  const [source, setSource] = useState("random");
-  const [vsRandom, setVsRandom] = useState<{
-    games: number;
-    wins: number;
-    draws: number;
-    losses: number;
-    visits: number;
-    passed: boolean;
-  } | null>(null);
-  const [vsPhase1, setVsPhase1] = useState<{
-    games: number;
-    wins: number;
-    draws: number;
-    losses: number;
-    score: number;
-  } | null>(null);
-  const [selfplayGames, setSelfplayGames] = useState<number | null>(null);
-  const [gauntletElo, setGauntletElo] = useState<{
-    visits: number;
-    eloLabel: string;
-    estimatedElo: number | null;
-    eloLo: number | null;
-    eloHi: number | null;
-    stockfish: string;
-    games: number;
-    levels?: { uciElo: number; wins: number; draws: number; losses: number; score: number }[];
-  } | null>(null);
+  const [source, setSource] = useState(checkpoint.source ?? "random");
+  const [vsRandom, setVsRandom] = useState(checkpoint.vsRandom ?? null);
+  const [vsPhase1, setVsPhase1] = useState(checkpoint.vsPhase1 ?? null);
+  const [selfplayGames, setSelfplayGames] = useState<number | null>(
+    typeof checkpoint.selfplayGames === "number" ? checkpoint.selfplayGames : null,
+  );
+  const [gauntletElo, setGauntletElo] = useState(checkpoint.gauntletElo ?? null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("Starting the engine…");
   const [err, setErr] = useState<string | null>(null);
@@ -135,12 +116,18 @@ export function Workbench() {
     }
   }, [human, visits, sync, outcomeText]);
 
-  const phase = gauntletElo ? 3 : source === "selfplay-64" ? 2 : source === "random" ? 0 : 1;
+  const phase =
+    checkpoint.source === "selfplay-64" || checkpoint.gauntletElo
+      ? 2
+      : checkpoint.source === "random"
+        ? 0
+        : 1;
+  const rated = Boolean(checkpoint.gauntletElo || gauntletElo);
   const trained = source !== "random";
   const yourMove = gauntletElo
     ? `Your move. 64-visit Elo ${gauntletElo.eloLabel} vs Stockfish (not a Lichess rating).`
     : phase === 2
-      ? "Your move. 64-visit self-play net. No Elo yet."
+      ? "Your move. 64-visit self-play net."
       : phase === 1
         ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
         : "Your move. Random net — play it to see the tree.";
@@ -161,9 +148,12 @@ export function Workbench() {
         setSeed(r.seed);
         setSource(r.source);
         setReady(true);
+        if (checkpoint.source && checkpoint.source !== "random" && r.source === "random") {
+          setErr("Trained weights failed to load. Roadmap is still Phase 2 — this session fell back to random.");
+        }
         const line =
           r.source === "selfplay-64"
-            ? "Your move. 64-visit self-play net. No Elo yet."
+            ? "Your move. Self-play net. 64-visit Elo is the published number."
             : r.source !== "random"
               ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
               : "Your move. Random net — play it to see the tree.";
@@ -282,7 +272,7 @@ export function Workbench() {
 
       <div className="flex flex-col gap-5">
         <div className="order-2 lg:order-1">
-          <Roadmap current={phase} />
+          <Roadmap current={phase} rated={rated} />
         </div>
         <div className="order-1 lg:order-2 grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
         <div className="flex flex-col gap-4">
