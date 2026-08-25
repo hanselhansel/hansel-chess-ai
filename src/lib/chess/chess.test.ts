@@ -1,3 +1,4 @@
+import { readFileSync, existsSync } from "node:fs";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { Chess } from "chess.js";
@@ -8,9 +9,9 @@ import {
   indexToAlgebraic,
 } from "./constants.ts";
 import { encodeBoard } from "./encode.ts";
-import { search } from "./mcts.ts";
+import { search, searchAsync } from "./mcts.ts";
 import { encodeMovePlane, moveToPlane, softmax } from "./policy.ts";
-import { paramCount, randomWeights } from "./weights.ts";
+import { paramCount, packWeights, randomWeights, unpackWeights } from "./weights.ts";
 
 describe("rank-flip STM canonical", () => {
   it("xor 56 flips rank and keeps the file (a-file stays a-file)", () => {
@@ -89,5 +90,43 @@ describe("tinyaz-s", () => {
     chess.move("e4");
     const result = search(chess.fen(), 4, weights);
     assert.ok(chess.move({ from: result.from, to: result.to, promotion: result.promotion }));
+  });
+
+  it("searchAsync matches 1-visit search", async () => {
+    const weights = randomWeights(2026);
+    const fen = new Chess().fen();
+    const a = search(fen, 1, weights);
+    const b = await searchAsync(fen, 1, weights);
+    assert.equal(b.uci, a.uci);
+    assert.ok(b.ms >= 0);
+  });
+
+  it("packs and unpacks the same weights", () => {
+    const w = randomWeights(2026);
+    const again = unpackWeights(packWeights(w, 0));
+    assert.equal(again.paramCount, w.paramCount);
+    assert.equal(again.source, "random");
+    assert.equal(again.stemW.length, w.stemW.length);
+    assert.equal(again.stemW[0], w.stemW[0]);
+    assert.equal(again.blocks.length, 8);
+    assert.equal(again.valueFc2B[0], w.valueFc2B[0]);
+    const fen = new Chess().fen();
+    assert.equal(search(fen, 1, again).uci, search(fen, 1, w).uci);
+  });
+});
+
+describe("phase 1 checkpoint", () => {
+  const path = new URL("../../../public/weights/tinyaz-s.bin", import.meta.url);
+  const file = path.pathname;
+  const has = existsSync(file);
+
+  it("loads and plays a legal 1-visit move", { skip: !has }, () => {
+    const w = unpackWeights(readFileSync(file));
+    assert.equal(w.source, "lichess-2013-01");
+    assert.equal(w.paramCount, paramCount());
+    const fen = new Chess().fen();
+    const result = search(fen, 1, w);
+    const legal = new Chess(fen).moves({ verbose: true }).map((m) => m.from + m.to + (m.promotion ?? ""));
+    assert.ok(legal.includes(result.uci), `illegal ${result.uci}`);
   });
 });

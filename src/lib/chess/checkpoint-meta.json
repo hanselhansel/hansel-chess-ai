@@ -1,0 +1,43 @@
+{
+  "name": "tinyaz-s",
+  "source": "lichess-2013-01",
+  "sourceId": 1,
+  "games": 935,
+  "positions": 60012,
+  "epochs": 3,
+  "params": 640018,
+  "history": [
+    {
+      "epoch": 1,
+      "policy": 3.9647035239981996,
+      "value": 0.9187247067403641,
+      "loss": 4.883428234428072,
+      "val_top1": 0.17041015625
+    },
+    {
+      "epoch": 2,
+      "policy": 2.9945659507682256,
+      "value": 0.8167727273454534,
+      "loss": 3.8113386770958835,
+      "val_top1": 0.23583984375
+    },
+    {
+      "epoch": 3,
+      "policy": 2.790799156706005,
+      "value": 0.6919914373656856,
+      "loss": 3.4827905932765377,
+      "val_top1": 0.23681640625
+    }
+  ],
+  "seconds": 242,
+  "vsRandom": {
+    "visits": 1,
+    "games": 20,
+    "wins": 20,
+    "draws": 0,
+    "losses": 0,
+    "score": 1,
+    "passed": true,
+    "adjudication": "mate, else material\u22654 after 240 ply"
+  }
+}

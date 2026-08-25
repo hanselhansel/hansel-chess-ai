@@ -1,5 +1,5 @@
 import { search } from "../lib/chess/mcts.ts";
-import { randomWeights, type WeightSet } from "../lib/chess/weights.ts";
+import { loadPlayWeights, randomWeights, type WeightSet } from "../lib/chess/weights.ts";
 
 let weights: WeightSet | null = null;
 
@@ -8,12 +8,23 @@ self.onmessage = (e: MessageEvent) => {
     | { type: "init"; seed: number }
     | { type: "think"; fen: string; visits: number; id: number };
   if (msg.type === "init") {
-    weights = randomWeights(msg.seed);
-    self.postMessage({
-      type: "ready",
-      paramCount: weights.paramCount,
-      seed: weights.seed,
-    });
+    void (async () => {
+      try {
+        weights = await loadPlayWeights();
+        if (weights.source === "random") weights = randomWeights(msg.seed);
+        self.postMessage({
+          type: "ready",
+          paramCount: weights.paramCount,
+          seed: weights.seed,
+          source: weights.source,
+        });
+      } catch (err) {
+        self.postMessage({
+          type: "error",
+          message: err instanceof Error ? err.message : String(err),
+        });
+      }
+    })();
     return;
   }
   if (msg.type === "think") {
