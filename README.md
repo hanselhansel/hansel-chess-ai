@@ -4,7 +4,11 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 1**. tinyaz-s learned from Lichess rated games (2013-01). **1-visit vs random-move: 20–0–0** (mate, or material ≥ 4 after 240 ply). There is **no published Elo**. 64-visit self-play is next.
+This is **Phase 2**. tinyaz-s learned from Lichess 2013-01, then **64 games of 64-visit self-play**.
+
+- **1-visit vs random-move: 20–0–0** (mate, or material ≥ 4 after 240 ply)
+- **1-visit vs the Phase 1 net: 12–0–0** (n=12 — small sample)
+- There is **no published Elo**. That waits on a Stockfish gauntlet.
 
 ## Play
 
@@ -35,7 +39,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md). Phase 2 is 64-visit self-play, then we publish an Elo. Do not skip to Stockfish labelling — that is how the last repo stalled.
+See [docs/LATER.md](docs/LATER.md). Next is a Stockfish gauntlet Elo, then a Lichess BOT. Do not skip to Stockfish labelling — that is how the last repo stalled.
 
 ## Develop
 

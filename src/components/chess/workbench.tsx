@@ -40,6 +40,14 @@ export function Workbench() {
     visits: number;
     passed: boolean;
   } | null>(null);
+  const [vsPhase1, setVsPhase1] = useState<{
+    games: number;
+    wins: number;
+    draws: number;
+    losses: number;
+    score: number;
+  } | null>(null);
+  const [selfplayGames, setSelfplayGames] = useState<number | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("Starting the engine…");
   const [err, setErr] = useState<string | null>(null);
@@ -117,13 +125,20 @@ export function Workbench() {
     }
   }, [human, visits, sync, outcomeText]);
 
+  const phase = source === "selfplay-64" ? 2 : source === "random" ? 0 : 1;
   const trained = source !== "random";
-  const yourMove = trained
-    ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
-    : "Your move. Random net — play it to see the tree.";
-  const blackMove = trained
-    ? "You have Black. Supervised net moves first."
-    : "You have Black. Model moves first.";
+  const yourMove =
+    phase === 2
+      ? "Your move. 64-visit self-play net. No Elo yet."
+      : phase === 1
+        ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
+        : "Your move. Random net — play it to see the tree.";
+  const blackMove =
+    phase === 2
+      ? "You have Black. Self-play net moves first."
+      : phase === 1
+        ? "You have Black. Supervised net moves first."
+        : "You have Black. Model moves first.";
 
   useEffect(() => {
     const thinker = createThinker();
@@ -135,9 +150,11 @@ export function Workbench() {
         setSource(r.source);
         setReady(true);
         const line =
-          r.source !== "random"
-            ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
-            : "Your move. Random net — play it to see the tree.";
+          r.source === "selfplay-64"
+            ? "Your move. 64-visit self-play net. No Elo yet."
+            : r.source !== "random"
+              ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
+              : "Your move. Random net — play it to see the tree.";
         setStatus((s) => (s === "Starting the engine…" ? line : s));
       })
       .catch((e) => {
@@ -152,6 +169,8 @@ export function Workbench() {
       .then((res) => (res.ok ? res.json() : null))
       .then((meta) => {
         if (meta?.vsRandom) setVsRandom(meta.vsRandom);
+        if (meta?.vsPhase1) setVsPhase1(meta.vsPhase1);
+        if (typeof meta?.selfplayGames === "number") setSelfplayGames(meta.selfplayGames);
       })
       .catch(() => {});
   }, []);
@@ -225,8 +244,8 @@ export function Workbench() {
             Watch it think
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted md:text-base">
-            From-scratch AlphaZero-style net. Phase 1 learned from Lichess 2013-01
-            games. It beats a random-move bot; there is no published Elo yet. Click a
+            From-scratch AlphaZero-style net under 3M params. Lichess games, then
+            64-visit self-play. Beats a random-move bot. No published Elo. Click a
             piece, then a highlighted square. Watch 1-visit vs 64-visit on the right.
           </p>
         </div>
@@ -250,7 +269,7 @@ export function Workbench() {
 
       <div className="flex flex-col gap-5">
         <div className="order-2 lg:order-1">
-          <Roadmap current={trained ? 1 : 0} />
+          <Roadmap current={phase} />
         </div>
         <div className="order-1 lg:order-2 grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
         <div className="flex flex-col gap-4">
@@ -298,6 +317,8 @@ export function Workbench() {
             seed={seed}
             source={source}
             vsRandom={vsRandom}
+            vsPhase1={vsPhase1}
+            selfplayGames={selfplayGames}
             visits={visits}
             lastMs={result?.ms ?? null}
             status={status}

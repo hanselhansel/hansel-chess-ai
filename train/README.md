@@ -17,7 +17,7 @@ Play / published search: **64 visits**. 1-visit is the naked net. Never mix thos
 
 ## Status
 
-Phase 1: Lichess 2013-01 supervised. 1-visit vs random-move **20–0–0** (mate, else material ≥ 4 after 240 ply). No published Elo.
+Phase 2: 64-visit self-play (64 games) on top of Lichess 2013-01. 1-visit vs random-move **20–0–0**. 1-visit vs Phase 1 **12–0–0** (n=12). No published Elo.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py

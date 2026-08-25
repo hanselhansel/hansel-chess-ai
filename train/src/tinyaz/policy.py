@@ -58,6 +58,23 @@ def encode_move_plane(from_alg: str, to_alg: str, promotion: str | None, flip: b
     return frm, move_to_plane(frm, to, promotion)
 
 
+def move_index(move, flip: bool) -> tuple[int, int]:
+    """python-chess Move → (stm-from, plane)."""
+    import chess
+
+    frm = move.from_square
+    to = move.to_square
+    if flip:
+        frm = flip_index(frm)
+        to = flip_index(to)
+    promo = None
+    if move.promotion:
+        promo = {chess.KNIGHT: "n", chess.BISHOP: "b", chess.ROOK: "r", chess.QUEEN: "q"}.get(
+            move.promotion
+        )
+    return frm, move_to_plane(frm, to, promo)
+
+
 def policy_target_index(from_alg: str, to_alg: str, promotion: str | None, flip: bool) -> int:
     frm, plane = encode_move_plane(from_alg, to_alg, promotion, flip)
     if plane < 0 or plane >= POLICY_PLANES:

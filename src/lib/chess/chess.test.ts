@@ -122,7 +122,7 @@ describe("phase 1 checkpoint", () => {
 
   it("loads and plays a legal 1-visit move", { skip: !has }, () => {
     const w = unpackWeights(readFileSync(file));
-    assert.equal(w.source, "lichess-2013-01");
+    assert.ok(w.source === "lichess-2013-01" || w.source === "selfplay-64", w.source);
     assert.equal(w.paramCount, paramCount());
     const fen = new Chess().fen();
     const result = search(fen, 1, w);
