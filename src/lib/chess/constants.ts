@@ -15,9 +15,11 @@ export const ONE_VISIT = 1;
 
 export const SOURCE_RANDOM = 0;
 export const SOURCE_LICHESS_2013_01 = 1;
+export const SOURCE_SELFPLAY_64 = 2;
 export const SOURCE_NAMES: Record<number, string> = {
   [SOURCE_RANDOM]: "random",
   [SOURCE_LICHESS_2013_01]: "lichess-2013-01",
+  [SOURCE_SELFPLAY_64]: "selfplay-64",
 };
 export const WEIGHTS_URL = "/weights/tinyaz-s.bin";
 export const MODEL_NAME = "tinyaz-s";
