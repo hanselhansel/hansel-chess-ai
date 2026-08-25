@@ -4,7 +4,7 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 2, rated**. tinyaz-s learned from Lichess 2013-01, then 64 games of 64-visit self-play.
+This is **Phase 2, rated**. tinyaz-s learned from Lichess 2013-01, then **128 games** of 64-visit self-play (two loops).
 
 - **1-visit vs random-move: 20–0–0** (not an Elo)
 - **1-visit vs the Phase 1 net: 12–0–0** (n=12)

@@ -6,7 +6,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
-**Phase 2:** 64-visit self-play (64 games) + **64-visit Elo <1320** vs Stockfish 18 UCI_Elo (0–32 across 1320/1500/1800/2000). Honest floor: SF cannot go below 1320.
+**Phase 2:** 64-visit self-play (**128 games**, two loops) + **64-visit Elo <1320** vs Stockfish 18 UCI_Elo (0–32, then 0–8 vs 1320 after loop 2). SF cannot go below 1320.
 **Next:** more self-play until that 64-visit number moves. Lichess BOT only after it is not below the floor.
 
 1-visit vs random and 64-visit vs Stockfish are different claims. We print both. We never mix them.
