@@ -24,6 +24,8 @@ export const SOURCE_NAMES: Record<number, string> = {
 export const WEIGHTS_URL = "/weights/tinyaz-s.bin";
 export const MODEL_NAME = "tinyaz-s";
 export const PARAM_CAP = 3_000_000;
+/** Multiply-accumulates for one tinyaz-s forward. FLOPs/move ≈ this × visits. */
+export const FLOPS_PER_EVAL = 38_813_760;
 
 export const QUEEN_DIRS: readonly [number, number][] = [
   [0, 1],

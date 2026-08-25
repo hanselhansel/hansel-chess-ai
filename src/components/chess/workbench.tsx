@@ -48,6 +48,16 @@ export function Workbench() {
     score: number;
   } | null>(null);
   const [selfplayGames, setSelfplayGames] = useState<number | null>(null);
+  const [gauntletElo, setGauntletElo] = useState<{
+    visits: number;
+    eloLabel: string;
+    estimatedElo: number | null;
+    eloLo: number | null;
+    eloHi: number | null;
+    stockfish: string;
+    games: number;
+    levels?: { uciElo: number; wins: number; draws: number; losses: number; score: number }[];
+  } | null>(null);
   const [ready, setReady] = useState(false);
   const [status, setStatus] = useState("Starting the engine…");
   const [err, setErr] = useState<string | null>(null);
@@ -125,16 +135,18 @@ export function Workbench() {
     }
   }, [human, visits, sync, outcomeText]);
 
-  const phase = source === "selfplay-64" ? 2 : source === "random" ? 0 : 1;
+  const phase = gauntletElo ? 3 : source === "selfplay-64" ? 2 : source === "random" ? 0 : 1;
   const trained = source !== "random";
-  const yourMove =
-    phase === 2
+  const yourMove = gauntletElo
+    ? `Your move. 64-visit Elo ${gauntletElo.eloLabel} vs Stockfish (not a Lichess rating).`
+    : phase === 2
       ? "Your move. 64-visit self-play net. No Elo yet."
       : phase === 1
         ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
         : "Your move. Random net — play it to see the tree.";
-  const blackMove =
-    phase === 2
+  const blackMove = gauntletElo
+    ? `You have Black. 64-visit Elo ${gauntletElo.eloLabel}. Model moves first.`
+    : phase === 2
       ? "You have Black. Self-play net moves first."
       : phase === 1
         ? "You have Black. Supervised net moves first."
@@ -171,6 +183,7 @@ export function Workbench() {
         if (meta?.vsRandom) setVsRandom(meta.vsRandom);
         if (meta?.vsPhase1) setVsPhase1(meta.vsPhase1);
         if (typeof meta?.selfplayGames === "number") setSelfplayGames(meta.selfplayGames);
+        if (meta?.gauntletElo) setGauntletElo(meta.gauntletElo);
       })
       .catch(() => {});
   }, []);
@@ -245,8 +258,8 @@ export function Workbench() {
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted md:text-base">
             From-scratch AlphaZero-style net under 3M params. Lichess games, then
-            64-visit self-play. Beats a random-move bot. No published Elo. Click a
-            piece, then a highlighted square. Watch 1-visit vs 64-visit on the right.
+            64-visit self-play. The published Elo is 64-visit vs Stockfish UCI_Elo —
+            never mixed with 1-visit. Click a piece, then a highlighted square.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -319,6 +332,7 @@ export function Workbench() {
             vsRandom={vsRandom}
             vsPhase1={vsPhase1}
             selfplayGames={selfplayGames}
+            gauntletElo={gauntletElo}
             visits={visits}
             lastMs={result?.ms ?? null}
             status={status}

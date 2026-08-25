@@ -1,7 +1,7 @@
 const PHASES = [
   { n: "0", title: "Play", body: "Random net. Legal chess, visible tree." },
   { n: "1", title: "Learn", body: "Lichess games teach the policy. Must beat a random-move bot." },
-  { n: "2", title: "Climb", body: "Self-play at 64 visits. Then we publish an Elo." },
+  { n: "2", title: "Climb", body: "Self-play at 64 visits. Published Elo is 64-visit vs Stockfish — currently <1320." },
 ] as const;
 
 export function Roadmap({ current = 0 }: { current?: number }) {

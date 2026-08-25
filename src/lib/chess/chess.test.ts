@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { Chess } from "chess.js";
 import {
+  FLOPS_PER_EVAL,
   PARAM_CAP,
   algebraicToIndex,
   flipIndex,
@@ -72,6 +73,10 @@ describe("tinyaz-s", () => {
     const n = paramCount();
     assert.ok(n < PARAM_CAP, `${n} >= cap`);
     assert.ok(n > 500_000, `${n} too small for 8x64`);
+  });
+
+  it("counts ~39M MACs per eval so FLOPs/move is visits times that", () => {
+    assert.equal(FLOPS_PER_EVAL, 38_813_760);
   });
 
   it("1-visit search returns a legal move that is the policy argmax", () => {

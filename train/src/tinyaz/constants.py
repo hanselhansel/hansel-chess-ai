@@ -76,3 +76,14 @@ def param_count() -> int:
     fc1 = VALUE_CH * 64 * VALUE_HIDDEN + VALUE_HIDDEN
     fc2 = VALUE_HIDDEN + 1
     return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2
+
+
+def flops_per_eval() -> int:
+    stem = CHANNELS * N_PLANES * 9 * 64
+    block = 2 * CHANNELS * CHANNELS * 9 * 64
+    policy = POLICY_PLANES * CHANNELS * 64
+    vconv = VALUE_CH * CHANNELS * 64
+    fc1 = VALUE_CH * 64 * VALUE_HIDDEN
+    fc2 = VALUE_HIDDEN
+    return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2
+
