@@ -39,6 +39,62 @@
     "losses": 0,
     "score": 1,
     "passed": true,
-    "adjudication": "mate, else material≥4 after 240 ply"
-  }
+    "adjudication": "mate, else material\u22654 after 240 ply"
+  },
+  "gauntletElo": {
+    "visits": 64,
+    "stockfish": "18",
+    "uciEloMin": 1320,
+    "uciEloMax": 3190,
+    "movetimeMs": 100,
+    "openings": [
+      "start",
+      "open",
+      "sicilian",
+      "qpawn"
+    ],
+    "coloursSwapped": true,
+    "adjudication": "mate, else material\u22654 after 160 ply",
+    "levels": [
+      {
+        "uciElo": 1320,
+        "games": 8,
+        "wins": 0,
+        "draws": 0,
+        "losses": 8,
+        "score": 0.0
+      },
+      {
+        "uciElo": 1500,
+        "games": 8,
+        "wins": 0,
+        "draws": 0,
+        "losses": 8,
+        "score": 0.0
+      },
+      {
+        "uciElo": 1800,
+        "games": 8,
+        "wins": 0,
+        "draws": 0,
+        "losses": 8,
+        "score": 0.0
+      },
+      {
+        "uciElo": 2000,
+        "games": 8,
+        "wins": 0,
+        "draws": 0,
+        "losses": 8,
+        "score": 0.0
+      }
+    ],
+    "estimatedElo": null,
+    "eloLabel": "<1320",
+    "eloLo": null,
+    "eloHi": 1320,
+    "games": 32,
+    "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating."
+  },
+  "flopsPerEval": 38813760
 }

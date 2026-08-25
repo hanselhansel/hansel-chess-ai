@@ -1,4 +1,4 @@
-import { MODEL_NAME, ONE_VISIT, PARAM_CAP, PLAY_VISITS } from "@/lib/chess/constants";
+import { FLOPS_PER_EVAL, MODEL_NAME, ONE_VISIT, PARAM_CAP, PLAY_VISITS } from "@/lib/chess/constants";
 
 type Vs = {
   games: number;
@@ -10,6 +10,17 @@ type Vs = {
   score?: number;
 } | null;
 
+type Gauntlet = {
+  visits: number;
+  eloLabel: string;
+  estimatedElo: number | null;
+  eloLo: number | null;
+  eloHi: number | null;
+  stockfish: string;
+  games: number;
+  levels?: { uciElo: number; wins: number; draws: number; losses: number; score: number }[];
+} | null;
+
 type Props = {
   paramCount: number;
   seed: number;
@@ -17,10 +28,18 @@ type Props = {
   vsRandom: Vs;
   vsPhase1?: Vs;
   selfplayGames?: number | null;
+  gauntletElo?: Gauntlet;
   visits: number;
   lastMs: number | null;
   status: string;
 };
+
+function fmtElo(g: NonNullable<Gauntlet>): string {
+  if (g.estimatedElo != null && g.eloLo != null && g.eloHi != null && g.eloLo !== g.eloHi) {
+    return `${g.eloLabel} (${g.eloLo}–${g.eloHi})`;
+  }
+  return g.eloLabel;
+}
 
 export function CardPanel({
   paramCount,
@@ -29,13 +48,15 @@ export function CardPanel({
   vsRandom,
   vsPhase1 = null,
   selfplayGames = null,
+  gauntletElo = null,
   visits,
   lastMs,
   status,
 }: Props) {
   const millions = (paramCount / 1e6).toFixed(2);
   const trained = source !== "random";
-  const phase2 = source === "selfplay-64";
+  const flopsM = (FLOPS_PER_EVAL / 1e6).toFixed(0);
+  const flopsMove = ((FLOPS_PER_EVAL * visits) / 1e6).toFixed(0);
   return (
     <section className="flex flex-col gap-4 rounded-xl bg-elevated p-5 ring-1 ring-border">
       <header>
@@ -44,14 +65,28 @@ export function CardPanel({
       </header>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
         <div>
+          <dt className="text-muted">Lichess Elo</dt>
+          <dd className="font-mono tabular-nums text-fg">— · BOT later</dd>
+        </div>
+        <div>
+          <dt className="text-muted">64-visit gauntlet</dt>
+          <dd className="font-mono tabular-nums text-fg">
+            {gauntletElo
+              ? `${fmtElo(gauntletElo)} vs SF ${gauntletElo.stockfish}`
+              : "rating…"}
+          </dd>
+        </div>
+        <div>
           <dt className="text-muted">Parameters</dt>
           <dd className="font-mono tabular-nums text-fg">
             {paramCount.toLocaleString()} · {millions}M
           </dd>
         </div>
         <div>
-          <dt className="text-muted">Cap</dt>
-          <dd className="font-mono tabular-nums text-fg">{`< ${(PARAM_CAP / 1e6).toFixed(0)}M`}</dd>
+          <dt className="text-muted">FLOPs / move</dt>
+          <dd className="font-mono tabular-nums text-fg">
+            {flopsM}M × {visits} = {flopsMove}M
+          </dd>
         </div>
         <div>
           <dt className="text-muted">This move</dt>
@@ -61,11 +96,21 @@ export function CardPanel({
           </dd>
         </div>
         <div>
+          <dt className="text-muted">Cap</dt>
+          <dd className="font-mono tabular-nums text-fg">{`< ${(PARAM_CAP / 1e6).toFixed(0)}M`}</dd>
+        </div>
+        <div>
           <dt className="text-muted">Weights</dt>
           <dd className="font-mono tabular-nums text-fg">
             {trained ? source : `random · seed ${seed}`}
           </dd>
         </div>
+        {selfplayGames != null && selfplayGames > 0 && (
+          <div>
+            <dt className="text-muted">Self-play</dt>
+            <dd className="font-mono tabular-nums text-fg">{selfplayGames} games × 64 visits</dd>
+          </div>
+        )}
         {vsRandom && (
           <div className="col-span-2">
             <dt className="text-muted">1-visit vs random-move</dt>
@@ -84,23 +129,27 @@ export function CardPanel({
             </dd>
           </div>
         )}
-        {selfplayGames != null && selfplayGames > 0 && (
+        {gauntletElo?.levels && gauntletElo.levels.length > 0 && (
           <div className="col-span-2">
-            <dt className="text-muted">Self-play</dt>
-            <dd className="font-mono tabular-nums text-fg">{selfplayGames} games at 64 visits</dd>
+            <dt className="text-muted">vs SF UCI_Elo (64-visit)</dt>
+            <dd className="font-mono tabular-nums text-fg">
+              {gauntletElo.levels
+                .map((lv) => `${lv.uciElo} ${lv.wins}–${lv.draws}–${lv.losses}`)
+                .join(" · ")}
+            </dd>
           </div>
         )}
       </dl>
       <p className="rounded-md bg-subtle px-3 py-2 text-sm leading-relaxed text-muted">{status}</p>
       <p className="text-xs leading-relaxed text-muted">
-        1-visit and 64-visit Elo are different claims. We will never print them as one number.
-        {phase2
-          ? " No published Elo — this is a self-play checkpoint, not a rating."
+        1-visit and 64-visit Elo are different claims. The published number is 64-visit vs Stockfish
+        UCI_Elo only. Lichess humans and Lichess bots are different pools — we will never mix them.
+        {gauntletElo
+          ? ""
           : trained
-            ? " No published Elo yet — this is the supervised checkpoint, not a rating."
-            : " Gauntlet Elo lands after supervised training. Phase 0 is the random net — play it anyway."}
+            ? " Gauntlet running or pending — no number on the card until it finishes."
+            : " Phase 0 is the random net — play it anyway."}
       </p>
     </section>
   );
 }
-

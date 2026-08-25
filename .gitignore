@@ -23,6 +23,7 @@ AGENTS.md
 .vercel/
 train/data/
 train/checkpoints/
+train/bin/
 .venv/
 venv/
 *.pgn

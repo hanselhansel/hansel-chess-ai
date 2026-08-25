@@ -17,11 +17,13 @@ Play / published search: **64 visits**. 1-visit is the naked net. Never mix thos
 
 ## Status
 
-Phase 2: 64-visit self-play (64 games) on top of Lichess 2013-01. 1-visit vs random-move **20–0–0**. 1-visit vs Phase 1 **12–0–0** (n=12). No published Elo.
+Phase 2 rated: 64-visit Elo **<1320** vs Stockfish 18 (0–32). 1-visit vs random **20–0–0**. Different claims.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py
-PYTHONPATH=train/src python3 train/scripts/phase1.py
+PYTHONPATH=train/src python3 train/scripts/phase2.py
+bash train/scripts/fetch_stockfish.sh
+PYTHONPATH=train/src python3 train/scripts/elo_gauntlet.py
 node --experimental-strip-types src/lib/chess/gauntlet.ts
 ```
 
