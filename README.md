@@ -1,29 +1,46 @@
-# Hansel Chess AI
+# Hansel Chess AI (tinyaz)
 
-From-scratch AlphaZero-style chess net you can play, watch think, and rate. Under 3M parameters.
+From-scratch AlphaZero-style chess you can **play in the browser** and watch think.
 
-**Play it in the Grok app.** This repo is the training ground and the spec. Weights start random. You do not play games to teach it.
+> Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-## Claim
+This is **Phase 0**. The net has random weights. It will play legal chess and lose to you. That is the point — the loop is real: board, worker search, policy heatmap, 1-visit vs 64-visit.
 
-Strongest *from-scratch* tiny AlphaZero you can inspect — not “beats Stockfish.”
+## Play
 
-| Size | Shape | Params |
+Open the app. You are White.
+
+1. Click a piece, then a highlighted square.
+2. The model thinks in a Web Worker (the board stays live).
+3. Toggle **1 visit** (naked net) vs **64 visits** (the number we will publish).
+4. Read the tree: SAN, visits `n`, prior `P`, value `Q`.
+5. The efficiency card never mixes 1-visit and 64-visit Elo.
+
+Play Black if you want the model to move first.
+
+## What a visit is
+
+One look-ahead trip from the current position: pick a line, evaluate one new leaf with the net, write it back up the tree.
+
+| Mode | Visits | Meaning |
 |---|---|---|
-| tinyaz-s (v1) | 8×64 ResNet | ~0.7M |
-| tinyaz-m | 8×128 | ~2.4M |
+| 1-visit | 1 | Naked net. Policy argmax. |
+| Play / rate | 64 | What you play. What we will publish. |
 
-Play / published search: **64 visits**. 1-visit is the naked net. Never mix those Elo numbers.
+## Architecture (tinyaz-s)
 
-## Status
+19-plane side-to-move-canonical board → stem 3×3 → 8 residual blocks × 64 channels (~0.64M params) → 73-plane AlphaZero policy + tanh value. PUCT `c_puct = 1.5`. Rank-flip is `i ^ 56` (files stay put).
 
-Phase 0: random net + MCTS + browser workbench. Supervised training is next.
+`chess.js` owns the rules. We do not fork chesslite or Lc0.
 
-## Spec
+## What is later
 
-- Design: `docs/superpowers/specs/2026-08-25-hansel-chess-ai-design.md`
-- Roadmap we are *not* doing yet: `docs/LATER.md`
+See [docs/LATER.md](docs/LATER.md). Phase 1 is supervised Lichess training. Phase 2 is self-play. Do not skip to Stockfish labelling — that is how the last repo stalled.
 
-## Not this
+## Develop
 
-Not a fork of `hansel-chesslite`. That repo perfected a measuring instrument and never produced a playable model.
+```
+npm test          # includes src/lib/chess/chess.test.ts
+npm run typecheck
+npm run dev
+```

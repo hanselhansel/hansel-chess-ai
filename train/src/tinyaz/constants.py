@@ -29,3 +29,7 @@ KNIGHT_DELTAS = (
     (-2, 1),
     (-1, 2),
 )
+
+def flip_index(i: int) -> int:
+    """Rank-flip only. Files stay put so kingside stays kingside."""
+    return i ^ 56

@@ -3,7 +3,7 @@
 Date: 2026-08-25
 Status: **approved** (brainstorming sections 1–4)
 Repo: `hanselhansel/hansel-chess-ai` (private)
-Playable workbench: the Grok app
+Playable workbench: this Grok app
 
 Predecessor: `hanselhansel/hansel-chesslite` — a searchless research pipeline that never produced a playable model. We do not fork it.
 
@@ -19,11 +19,11 @@ Mini-AlphaZero: conv ResNet, policy + value, MCTS at play time.
 
 ```
 19 planes × 8 × 8  (side-to-move canonical)
-        |
+        │
    stem conv 3×3 → 64 ch
-        |
+        │
    8 residual blocks (64 ch)     tinyaz-s  ~0.7M   ← v1 default
-        |
+        │
         ├─ policy: 1×1 → 73 planes (AlphaZero move encoding)
         └─ value:  1×1 → MLP → tanh
 ```
@@ -56,7 +56,7 @@ Phase 2  self-play + MCTS   → climb
 
 Stockfish is a **ruler**, not a teacher, in v1. Labelling at depth 12 is how chesslite stalled.
 
-Training hardware for the Grok cloud box: 2 CPU cores, 4 GB RAM, no GPU. Train tinyaz-s on CPU. Autoresearch (Karpathy) is NVIDIA-only; steal the *loop* after we have Elo, do not clone the repo now.
+This Grok box: 2 CPU cores, 4 GB RAM, no GPU, no apt, no Stockfish binary. Train tinyaz-s on CPU. Autoresearch (Karpathy) is NVIDIA-only; steal the *loop* after we have Elo, do not clone the repo now.
 
 ## 5. Proof
 
