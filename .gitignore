@@ -18,5 +18,6 @@ __pycache__/
 .grok/og-pending
 .env
 .env.*
-.vite/
+.node_modules.lock
+AGENTS.md
 .vercel/
