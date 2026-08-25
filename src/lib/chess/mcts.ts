@@ -42,6 +42,20 @@ function uciOf(m: Move): string {
   return m.from + m.to + (m.promotion ?? "");
 }
 
+function makeRoot(): Node {
+  return {
+    parent: null,
+    move: null,
+    prior: 1,
+    visits: 0,
+    valueSum: 0,
+    children: [],
+    expanded: false,
+    terminal: false,
+    terminalValue: 0,
+  };
+}
+
 function select(node: Node): Node {
   let best = node.children[0];
   let bestScore = -Infinity;
@@ -58,83 +72,70 @@ function select(node: Node): Node {
   return best;
 }
 
-export function search(fen: string, visits: number, weights: WeightSet): ThinkResult {
-  const t0 = performance.now();
-  const root: Node = {
-    parent: null,
-    move: null,
-    prior: 1,
+function evaluate(chess: Chess, node: Node, weights: WeightSet): number {
+  if (chess.isCheckmate()) {
+    node.terminal = true;
+    node.terminalValue = -1;
+    node.expanded = true;
+    return -1;
+  }
+  if (chess.isDraw() || chess.isGameOver()) {
+    node.terminal = true;
+    node.terminalValue = 0;
+    node.expanded = true;
+    return 0;
+  }
+  const legal = chess.moves({ verbose: true });
+  const planes = encodeBoard(chess);
+  const { policy, value } = forward(planes, weights);
+  const flip = chess.turn() === "b";
+  const logits = legalLogits(policy, legal, flip);
+  const priors = softmax(logits);
+  node.children = legal.map((m, i) => ({
+    parent: node,
+    move: m,
+    prior: priors[i],
     visits: 0,
     valueSum: 0,
     children: [],
     expanded: false,
     terminal: false,
     terminalValue: 0,
-  };
+  }));
+  node.expanded = true;
+  return value;
+}
 
-  const evaluate = (chess: Chess, node: Node): number => {
-    if (chess.isCheckmate()) {
-      node.terminal = true;
-      node.terminalValue = -1;
-      node.expanded = true;
-      return -1;
-    }
-    if (chess.isDraw() || chess.isGameOver()) {
-      node.terminal = true;
-      node.terminalValue = 0;
-      node.expanded = true;
-      return 0;
-    }
-    const legal = chess.moves({ verbose: true });
-    const planes = encodeBoard(chess);
-    const { policy, value } = forward(planes, weights);
-    const flip = chess.turn() === "b";
-    const logits = legalLogits(policy, legal, flip);
-    const priors = softmax(logits);
-    node.children = legal.map((m, i) => ({
-      parent: node,
-      move: m,
-      prior: priors[i],
-      visits: 0,
-      valueSum: 0,
-      children: [],
-      expanded: false,
-      terminal: false,
-      terminalValue: 0,
-    }));
-    node.expanded = true;
-    return value;
-  };
-
-  for (let v = 0; v < visits; v++) {
-    const chess = new Chess(fen);
-    let node = root;
-    if (!node.expanded) {
-      const val = evaluate(chess, node);
-      node.visits += 1;
-      node.valueSum += val;
-      continue;
-    }
-    while (node.expanded && !node.terminal && node.children.length) {
-      node = select(node);
-      if (node.move) chess.move(node.move);
-    }
-    let value: number;
-    if (node.terminal) {
-      value = node.terminalValue;
-    } else {
-      value = evaluate(chess, node);
-    }
-    let walk: Node | null = node;
-    let sign = 1;
-    while (walk) {
-      walk.visits += 1;
-      walk.valueSum += value * sign;
-      sign = -sign;
-      walk = walk.parent;
-    }
+function oneVisit(root: Node, fen: string, weights: WeightSet): void {
+  const chess = new Chess(fen);
+  let node = root;
+  if (!node.expanded) {
+    const val = evaluate(chess, node, weights);
+    node.visits += 1;
+    node.valueSum += val;
+    return;
   }
+  while (node.expanded && !node.terminal && node.children.length) {
+    node = select(node);
+    if (node.move) chess.move(node.move);
+  }
+  let value: number;
+  if (node.terminal) {
+    value = node.terminalValue;
+  } else {
+    value = evaluate(chess, node, weights);
+  }
+  let walk: Node | null = node;
+  let sign = 1;
+  while (walk) {
+    walk.visits += 1;
+    walk.valueSum += value * sign;
+    sign = -sign;
+    walk = walk.parent;
+  }
+}
 
+function finish(root: Node, visits: number, t0: number): ThinkResult {
   const ranked = [...root.children].sort((a, b) => {
     if (b.visits !== a.visits) return b.visits - a.visits;
     return b.prior - a.prior;
@@ -173,4 +174,27 @@ export function search(fen: string, visits: number, weights: WeightSet): ThinkRe
     children,
     heatmap,
   };
+}
+
+export function search(fen: string, visits: number, weights: WeightSet): ThinkResult {
+  const t0 = performance.now();
+  const root = makeRoot();
+  for (let v = 0; v < visits; v++) oneVisit(root, fen, weights);
+  return finish(root, visits, t0);
+}
+
+export async function searchAsync(
+  fen: string,
+  visits: number,
+  weights: WeightSet,
+): Promise<ThinkResult> {
+  const t0 = performance.now();
+  const root = makeRoot();
+  for (let v = 0; v < visits; v++) {
+    oneVisit(root, fen, weights);
+    if (visits > 1 && (v & 3) === 3) {
+      await new Promise<void>((r) => setTimeout(r, 0));
+    }
+  }
+  return finish(root, visits, t0);
 }

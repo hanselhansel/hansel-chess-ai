@@ -21,3 +21,11 @@ __pycache__/
 .node_modules.lock
 AGENTS.md
 .vercel/
+train/data/
+train/checkpoints/
+.venv/
+venv/
+*.pgn
+*.pgn.zst
+*.jsonl
+

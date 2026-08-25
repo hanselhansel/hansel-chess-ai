@@ -4,7 +4,7 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 0**. The net has random weights. It will play legal chess and lose to you. That is the point — the loop is real: board, worker search, policy heatmap, 1-visit vs 64-visit.
+This is **Phase 1**. tinyaz-s learned from Lichess rated games (2013-01). **1-visit vs random-move: 20–0–0** (mate, or material ≥ 4 after 240 ply). There is **no published Elo**. 64-visit self-play is next.
 
 ## Play
 
@@ -35,7 +35,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md). Phase 1 is supervised Lichess training. Phase 2 is self-play. Do not skip to Stockfish labelling — that is how the last repo stalled.
+See [docs/LATER.md](docs/LATER.md). Phase 2 is 64-visit self-play, then we publish an Elo. Do not skip to Stockfish labelling — that is how the last repo stalled.
 
 ## Develop
 

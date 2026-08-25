@@ -12,6 +12,7 @@ type Props = {
   lastTo?: string;
   heatmap?: Record<string, number>;
   thinking?: boolean;
+  banner?: string;
   onSquare: (alg: string) => void;
   disabled?: boolean;
 };
@@ -29,6 +30,7 @@ export function ChessBoard({
   lastTo,
   heatmap,
   thinking,
+  banner,
   onSquare,
   disabled,
 }: Props) {
@@ -100,6 +102,11 @@ export function ChessBoard({
           }),
         )}
       </div>
+      {banner && (
+        <p className="pointer-events-none absolute inset-x-2 bottom-2 rounded-md bg-bg/85 px-3 py-2 text-center text-sm text-fg ring-1 ring-border">
+          {banner}
+        </p>
+      )}
     </div>
   );
 }
