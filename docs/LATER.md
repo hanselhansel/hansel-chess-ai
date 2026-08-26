@@ -6,7 +6,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
-**Phase 2:** 64-visit self-play (**896 games**, 5 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 5: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
+**Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
 **Next:** more self-play until that 64-visit number moves. Lichess BOT only after it is not below the floor.
 
 1-visit vs random and 64-visit vs Stockfish are different claims. We print both. We never mix them.
@@ -40,7 +40,7 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 | # | Item | Why it waits |
 |---|---|---|
 | 1 | **Supervised training (Phase 1)** | **Done.** Lichess 2013-01, 60k positions, 3 epochs. 1-visit vs random 20–0–0. |
-| 2 | **Self-play (Phase 2)** | **Done (small).** 896 games at 64 visits across 5 loops. Keep/discard by SF 1320. Still 0–8. More games later. |
+| 2 | **Self-play (Phase 2)** | **Done (small).** 1152 games at 64 visits across 6 loops. Keep/discard by SF 1320. Still 0–8. More games later. |
 | 3 | **tinyaz-m (8×128, ~2.4M)** | Ladder size. Not trained until S is playable and rated. Cap is 3M. |
 | 4 | **Gauntlet Elo** | **Done.** 64-visit vs Stockfish 18 `UCI_Elo` 1320/1500/1800/2000, 4 openings × colours swapped, 32 games. Score 0–32. Published: **<1320**. |
 | 5 | **Efficiency card filled in** | **Done.** Lichess Elo = BOT later. Gauntlet = 64-visit <1320. Params 640,018. FLOPs/move = 39M × visits. Browser ms/move on the last think. |
