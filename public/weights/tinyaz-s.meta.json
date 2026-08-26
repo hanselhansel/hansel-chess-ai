@@ -2,9 +2,9 @@
   "name": "tinyaz-s",
   "source": "selfplay-64",
   "sourceId": 2,
-  "selfplayGames": 640,
+  "selfplayGames": 896,
   "selfplayVisits": 64,
-  "selfplayPositions": 86054,
+  "selfplayPositions": 120713,
   "lichessMix": 2000,
   "epochs": 2,
   "params": 640018,
@@ -97,7 +97,7 @@
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating."
   },
   "flopsPerEval": 38813760,
-  "selfplayLoops": 4,
+  "selfplayLoops": 5,
   "vsPrev": {
     "games": 12,
     "wins": 0,
@@ -130,15 +130,15 @@
   "historyClimb": [
     {
       "epoch": 1,
-      "policy": 2.3256380318353576,
-      "value": 0.47620321027934553,
-      "loss": 2.8018412426114083
+      "policy": 2.2996546785330447,
+      "value": 0.44267465161610053,
+      "loss": 2.742329333626607
     },
     {
       "epoch": 2,
-      "policy": 2.271665480360389,
-      "value": 0.33564187904509407,
-      "loss": 2.6073073580861093
+      "policy": 2.2521142607127977,
+      "value": 0.31769098028336057,
+      "loss": 2.569805242192028
     }
   ],
   "vsSf1320": {
