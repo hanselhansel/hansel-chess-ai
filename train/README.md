@@ -17,7 +17,7 @@ Play / published search: **64 visits**. 1-visit is the naked net. Never mix thos
 
 ## Status
 
-Phase 2 rated: 896 self-play games. 64-visit Elo **<1320** vs Stockfish 18 (0–8 at 1320 after loop 5). 1-visit vs random **20–0–0**. Different claims.
+Phase 2 rated: 1152 self-play games. 64-visit Elo **<1320** vs Stockfish 18 (0–8 at 1320 after loop 6). 1-visit vs random **20–0–0**. Different claims.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py
