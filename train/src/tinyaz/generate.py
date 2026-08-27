@@ -92,7 +92,7 @@ def _worker(payload: tuple[str, int, int, int, str]) -> tuple[list[dict], tuple[
             l += 1
         else:
             d += 1
-        if (i + 1) % 8 == 0 or i + 1 == games:
+        if (i + 1) % 2 == 0 or i + 1 == games:
             print(f"  worker {seed} {i + 1}/{games} pos {len(rows)} WDL {w}-{d}-{l}", flush=True)
     return rows, (w, d, l)
 
