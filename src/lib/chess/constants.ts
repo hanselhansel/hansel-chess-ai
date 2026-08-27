@@ -12,6 +12,7 @@ export const SQUARES = 64;
 export const C_PUCT = 1.5;
 export const PLAY_VISITS = 64;
 export const ONE_VISIT = 1;
+/** Self-play target visits live in Python. JS play stays 64. */
 
 export const SOURCE_RANDOM = 0;
 export const SOURCE_LICHESS_2013_01 = 1;
