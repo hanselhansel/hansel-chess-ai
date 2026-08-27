@@ -7,7 +7,9 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** more self-play until that 64-visit number moves. Lichess BOT only after it is not below the floor.
+**Next:** scale snapshot-gated self-play past 64 games. Spec: `docs/superpowers/specs/2026-08-27-climb-loop-design.md`. Lichess BOT only after 64-visit Elo is not below the floor.
+
+**Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID. Public weights unchanged. The gate works. 64 games is not enough to move 1-visit play. Scale next.
 
 1-visit vs random and 64-visit vs Stockfish are different claims. We print both. We never mix them.
 
@@ -29,9 +31,14 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 
 ## Immediate next after the gauntlet
 
-1. More 64-visit self-play. The current 64 games is a first loop, not a climb.
-2. Re-rate **64-visit only** against the same Stockfish 18 UCI_Elo ladder. Replace the number if it moves.
-3. Lichess BOT only after 64-visit Elo is not `<1320` (irreversible per account).
+1. Freeze current public weights as a snapshot.
+2. Generate self-play at **256 visits** (training targets). Published play stays **64 visits**.
+3. Train the candidate on MPS (CPU if MPS is missing).
+4. Keep only if 1-visit vs snapshot scores **> 0.5**. Else VOID; public weights untouched.
+5. Random-move gauntlet must still pass.
+6. Promote even if 64-visit vs SF1320 is still 0–8. Update the card Elo only when SF scores a point.
+7. First experiment: 64 games. Then scale.
+8. Lichess BOT only after 64-visit Elo is not `<1320` (irreversible per account).
 
 ---
 
@@ -52,12 +59,11 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 
 ---
 
-## Box constraints (this Grok cloud machine)
+## Box constraints
 
-- 2 CPU cores, 4 GB RAM, no GPU.
-- `apt` / `yum` do not work. No Stockfish from packages.
-- Python training for Phase 1 must fit here or wait for a GPU box.
-- The playable app is this Grok preview (TanStack Start). The GitHub repo `hanselhansel/hansel-chess-ai` is the spec + Python training ground.
+Loops 1–6 ran on a Grok cloud box: 2 CPU cores, 4 GB RAM, no GPU, no apt.
+
+This slice runs on a local Apple M4 (24 GB, 10 cores, PyTorch MPS, Homebrew Stockfish 18). Train on MPS. Self-play on CPU workers. Do not run `train/scripts/fetch_stockfish.sh` on this Mac (it fetches ubuntu-x86-64). Symlink `train/bin/stockfish` to the Homebrew binary.
 
 ---
 
