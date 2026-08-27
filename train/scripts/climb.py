@@ -15,7 +15,7 @@ from tinyaz.constants import PLAY_VISITS, SOURCE_SELFPLAY_64, TRAIN_VISITS, para
 from tinyaz.generate import generate  # noqa: E402
 from tinyaz.promote import freeze_snapshot, maybe_promote  # noqa: E402
 from tinyaz.rate import vs_random, vs_snapshot, vs_stockfish_64  # noqa: E402
-from tinyaz.train_loop import load_jsonl, train_candidate  # noqa: E402
+from tinyaz.train_loop import load_jsonl, mix_for_train, train_candidate  # noqa: E402
 
 WEIGHTS = ROOT / "public/weights/tinyaz-s.bin"
 CAND = ROOT / "train/checkpoints/tinyaz-s-cand.bin"
@@ -55,11 +55,12 @@ def main() -> None:
     )
 
     freeze_snapshot(WEIGHTS, SNAPSHOT)
-    new_rows = generate(WEIGHTS, games=games, visits=visits, workers=workers, out_jsonl=SP_JSONL)
     replay = load_jsonl(SP_JSONL, REPLAY_CAP)
     lichess = load_jsonl(LICHESS_JSONL, LICHESS_MIX)
-    print(f"train on {len(new_rows)} new + replay {len(replay)} + lichess {len(lichess)}", flush=True)
-    history = train_candidate(WEIGHTS, new_rows + replay + lichess, CAND)
+    new_rows = generate(WEIGHTS, games=games, visits=visits, workers=workers, out_jsonl=SP_JSONL)
+    rows = mix_for_train(new_rows, replay, lichess)
+    print(f"train on {len(new_rows)} new + replay {len(replay)} + lichess {len(lichess)} = {len(rows)}", flush=True)
+    history = train_candidate(WEIGHTS, rows, CAND)
 
     snap = vs_snapshot(CAND, SNAPSHOT, games=8, visits=1)
     print("candidate vs snapshot", snap, flush=True)

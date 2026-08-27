@@ -63,6 +63,20 @@ def test_void_does_not_change_public_weights() -> None:
     assert not meta_path.exists()
 
 
+def test_mix_does_not_double_count_new() -> None:
+    from tinyaz.train_loop import mix_for_train
+
+    new = [{"fen": "a"}, {"fen": "b"}]
+    replay_before = [{"fen": "old"}]
+    lichess = [{"fen": "lic"}]
+    mixed = mix_for_train(new, replay_before, lichess)
+    fens = [r["fen"] for r in mixed]
+    assert fens.count("a") == 1
+    assert fens.count("b") == 1
+    assert fens.count("old") == 1
+    assert len(mixed) == 4
+
+
 def test_generate_pi_indices_are_legal() -> None:
     from tinyaz.generate import generate
 
@@ -87,6 +101,7 @@ def main() -> None:
         test_play_visits_is_64,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
+        test_mix_does_not_double_count_new,
         test_identical_nets_snapshot_score_is_half,
         test_generate_pi_indices_are_legal,
     ]

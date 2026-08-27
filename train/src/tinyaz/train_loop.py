@@ -30,6 +30,11 @@ def pick_device() -> torch.device:
     return dev
 
 
+def mix_for_train(new_rows: list[dict], replay_before: list[dict], lichess: list[dict]) -> list[dict]:
+    """New self-play plus replay taken *before* generate appended. Do not load jsonl after."""
+    return new_rows + replay_before + lichess
+
+
 def load_jsonl(path: Path, cap: int) -> list[dict]:
     if not path.exists() or cap <= 0:
         return []
