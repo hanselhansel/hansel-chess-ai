@@ -4,7 +4,7 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 2, rated**. tinyaz-s learned from Lichess 2013-01, then **1152 games** of 64-visit self-play (six loops).
+This is **Phase 2, rated**. tinyaz-s learned from Lichess 2013-01, then **1152 games** of 64-visit self-play (six loops). The climb loop now generates targets at **256 visits** and still **publishes at 64**. Keep/discard is 1-visit vs a frozen snapshot, because Stockfish 18 cannot rank nets below 1320.
 
 - **1-visit vs random-move: 20–0–0** (not an Elo)
 - **64-visit gauntlet Elo: <1320** vs Stockfish 18 `UCI_Elo`. After 1152 games, still **0–8** at 1320. The published number did not move.
@@ -29,8 +29,9 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 | Mode | Visits | Meaning |
 |---|---|---|
-| 1-visit | 1 | Naked net. Policy argmax. |
+| 1-visit | 1 | Naked net. Policy argmax. Snapshot keep/discard. |
 | Play / rate | 64 | What you play. What we will publish. |
+| Train targets | 256 | Self-play only. Not a published Elo. |
 
 ## Architecture (tinyaz-s)
 
@@ -40,7 +41,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md). Next is more 64-visit self-play until the gauntlet number moves. Lichess BOT waits until that is not `<1320`.
+See [docs/LATER.md](docs/LATER.md) and [the climb-loop spec](docs/superpowers/specs/2026-08-27-climb-loop-design.md). Next is snapshot-gated self-play on this Mac until the 64-visit gauntlet number moves. Lichess BOT waits until that is not `<1320`.
 
 ## Develop
 
