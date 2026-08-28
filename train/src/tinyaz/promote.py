@@ -26,6 +26,17 @@ def freeze_snapshot(public_weights: Path, snapshot_path: Path) -> None:
     _atomic_write_bytes(snapshot_path, public_weights.read_bytes())
 
 
+def beats_published(candidate_score: float, published_score: float) -> bool:
+    return float(candidate_score) > float(published_score)
+
+
+def elo_label_from_sf(sf: dict) -> str:
+    games = int(sf.get("games") or 0)
+    wins = int(sf.get("wins") or 0)
+    elo = int(sf.get("uciElo") or 1320)
+    return f"{wins}/{games} vs {elo}"
+
+
 def maybe_promote(
     keep: bool,
     candidate: Path,
