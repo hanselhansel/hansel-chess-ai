@@ -17,7 +17,7 @@ Play / published search: **64 visits**. Self-play targets: **256 visits**. 1-vis
 
 ## Status
 
-Phase 2 rated: 1152 self-play games. 64-visit Elo **<1320** vs Stockfish 18 (0–8 at 1320 after loop 6). 1-visit vs random **20–0–0**. Different claims.
+Phase 2 rated: full Lichess 2013-01 month (426k positions) from Phase 1 weights. 64-visit vs Stockfish 18 UCI_Elo 1320 is **1–7**. Off the floor. 1-visit vs random **10–10–0**. Different claims.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py

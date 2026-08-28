@@ -79,8 +79,8 @@ def supervised() -> Path:
     print("human vs random", rnd, flush=True)
     sf = _sf(HUMAN)
     print("human vs SF1320", sf, flush=True)
-    _maybe_public(HUMAN, meta, rnd, sf)
-    return HUMAN
+    promoted = _maybe_public(HUMAN, meta, rnd, sf)
+    return HUMAN, sf, promoted
 
 
 def selfplay_loop(base: Path, loop: int) -> Path:
@@ -107,9 +107,8 @@ def selfplay_loop(base: Path, loop: int) -> Path:
 
 
 def main() -> None:
-    human = supervised()
-    sf = _sf(human)
-    if sf is not None and sf.get("score", 0) > 0:
+    human, sf, promoted = supervised()
+    if promoted or (sf is not None and sf.get("score", 0) > 0):
         return
     nloops = min(MAX_SP_LOOPS, max(0, int(os.environ.get("HUMAN_SP_LOOPS", "1"))))
     base = human
