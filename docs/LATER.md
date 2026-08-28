@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** change the train recipe. Scaling 256-visit self-play to 256 games made 1-visit vs snapshot **worse**. Spec: `docs/superpowers/specs/2026-08-27-climb-loop-design.md`. Lichess BOT only after 64-visit Elo is not below the floor.
+**Next:** human-month climb. Spec: `docs/superpowers/specs/2026-08-28-human-month-1320-design.md`. Start from Phase 1 Lichess weights, ~1.5M positions from full 2013-01, then 64-visit self-play. Public Elo moves only on a point vs SF1320. Lichess BOT only after 64-visit Elo is not below the floor.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
@@ -39,7 +39,7 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 4. Keep only if 1-visit vs snapshot scores **> 0.5**. Else VOID; public weights untouched.
 5. Random-move gauntlet must still pass.
 6. Promote even if 64-visit vs SF1320 is still 0–8. Update the card Elo only when SF scores a point.
-7. First experiment: 64 games (VOID 0.5). Scale 256 games (VOID 0.4375). Recipe change is next, not more games.
+7. First experiment: 64 games (VOID 0.5). Scale 256 games (VOID 0.4375). 256-visit self-play is off. Human-month spec is next.
 8. Lichess BOT only after 64-visit Elo is not `<1320` (irreversible per account).
 
 ---
