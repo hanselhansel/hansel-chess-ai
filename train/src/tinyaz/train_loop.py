@@ -76,14 +76,20 @@ def collate(batch):
     return torch.stack(xs, 0), list(idxs), list(ws), torch.stack(vs, 0)
 
 
-def _train_on(model: TinyAZ, rows: list[dict], device: torch.device) -> list[dict]:
+def _train_on(
+    model: TinyAZ,
+    rows: list[dict],
+    device: torch.device,
+    epochs: int = EPOCHS,
+    batch: int = BATCH,
+) -> list[dict]:
     ds = MixDataset(rows)
-    loader = DataLoader(ds, batch_size=BATCH, shuffle=True, num_workers=0, collate_fn=collate, drop_last=True)
+    loader = DataLoader(ds, batch_size=batch, shuffle=True, num_workers=0, collate_fn=collate, drop_last=True)
     opt = torch.optim.Adam(model.parameters(), lr=LR)
     history: list[dict] = []
     model.train()
     t0 = time.time()
-    for epoch in range(1, EPOCHS + 1):
+    for epoch in range(1, epochs + 1):
         tot = tot_p = tot_v = 0.0
         n = 0
         for x, idxs, ws, v in loader:
@@ -115,13 +121,20 @@ def _train_on(model: TinyAZ, rows: list[dict], device: torch.device) -> list[dic
     return history
 
 
-def train_candidate(base_weights: Path, rows: list[dict], out_path: Path) -> list[dict]:
+def train_candidate(
+    base_weights: Path,
+    rows: list[dict],
+    out_path: Path,
+    source_id: int = SOURCE_SELFPLAY_64,
+    epochs: int = EPOCHS,
+    batch: int = BATCH,
+) -> list[dict]:
     if not rows:
         raise ValueError("no rows to train on")
     device = pick_device()
     model, _ = load_model(base_weights)
     model.to(device)
-    history = _train_on(model, rows, device)
+    history = _train_on(model, rows, device, epochs=epochs, batch=batch)
     model.to("cpu")
-    pack_model(model, SOURCE_SELFPLAY_64, out_path)
+    pack_model(model, source_id, out_path)
     return history
