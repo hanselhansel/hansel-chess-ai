@@ -154,47 +154,84 @@ def write_human_month(
     skip_plies: int = 8,
     per_game: int = 4,
 ) -> dict:
+    return write_human_months(
+        [pgn_path],
+        out_train,
+        out_val,
+        max_train=max_train,
+        max_val=max_val,
+        skip_plies=skip_plies,
+        per_game=per_game,
+    )
+
+
+def write_human_months(
+    pgn_paths: list[Path],
+    out_train: Path,
+    out_val: Path,
+    max_train: int = 1_500_000,
+    max_val: int = 50_000,
+    skip_plies: int = 8,
+    per_game: int = 4,
+) -> dict:
     out_train.parent.mkdir(parents=True, exist_ok=True)
     n_train_g = n_val_g = 0
     n_train_p = n_val_p = 0
     skipped = 0
+    seen = 0
     with out_train.open("w") as ft, out_val.open("w") as fv:
-        for game, result, n in iter_games(pgn_path, max_games=10**9, min_plies=skip_plies + per_game):
-            try:
-                gid = game_id(dict(game.headers))
-                split = split_for_game(gid)
-            except ValueError:
-                skipped += 1
-                continue
-            rows = sample_rows(game_rows(game, result), skip_plies=skip_plies, per_game=per_game, seed=n)
-            if split == "val":
-                if n_val_p >= max_val:
+        for pgn_path in pgn_paths:
+            if n_train_p >= max_train and n_val_p >= max_val:
+                break
+            print(f"parsing {pgn_path} ({pgn_path.stat().st_size} bytes)", flush=True)
+            for game, result, _n in iter_games(pgn_path, max_games=10**9, min_plies=skip_plies + per_game):
+                seen += 1
+                try:
+                    gid = game_id(dict(game.headers))
+                    split = split_for_game(gid)
+                except ValueError:
+                    skipped += 1
                     continue
-                dest, is_val = fv, True
-            else:
-                if n_train_p >= max_train:
+                rows = sample_rows(
+                    game_rows(game, result),
+                    skip_plies=skip_plies,
+                    per_game=per_game,
+                    seed=seen,
+                )
+                if split == "val":
                     if n_val_p >= max_val:
-                        break
-                    continue
-                dest, is_val = ft, False
-            written = 0
-            for row in rows:
-                dest.write(json.dumps(row) + "\n")
-                written += 1
-            if is_val:
-                n_val_g += 1
-                n_val_p += written
-            else:
-                n_train_g += 1
-                n_train_p += written
-            if n_train_g % 2000 == 0 and n_train_g:
-                print(f"  games train {n_train_g} pos {n_train_p} val {n_val_p} skip {skipped}", flush=True)
+                        if n_train_p >= max_train:
+                            break
+                        continue
+                    dest, is_val = fv, True
+                else:
+                    if n_train_p >= max_train:
+                        if n_val_p >= max_val:
+                            break
+                        continue
+                    dest, is_val = ft, False
+                written = 0
+                for row in rows:
+                    dest.write(json.dumps(row) + "\n")
+                    written += 1
+                if is_val:
+                    n_val_g += 1
+                    n_val_p += written
+                else:
+                    n_train_g += 1
+                    n_train_p += written
+                if n_train_g % 2000 == 0 and n_train_g:
+                    print(
+                        f"  games train {n_train_g} pos {n_train_p} val {n_val_p} skip {skipped}",
+                        flush=True,
+                    )
     stats = {
         "train_games": n_train_g,
         "val_games": n_val_g,
         "train_positions": n_train_p,
         "val_positions": n_val_p,
         "skipped_ids": skipped,
+        "archives": [str(p) for p in pgn_paths],
     }
     print(stats, flush=True)
     return stats

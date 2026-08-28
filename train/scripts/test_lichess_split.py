@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -49,6 +50,38 @@ def test_sample_skips_opening_and_caps() -> None:
     assert all(r["i"] >= 8 for r in out)
 
 
+def _tiny_pgn(gid: str, result: str = "1-0") -> str:
+    moves = "1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O"
+    return (
+        f'[Event "t"]\n[Site "https://lichess.org/{gid}"]\n'
+        f'[White "a"]\n[Black "b"]\n[Result "{result}"]\n\n{moves} {result}\n\n'
+    )
+
+
+def test_write_human_months_concatenates_two_files() -> None:
+    from tinyaz.data import write_human_months
+
+    d = Path(tempfile.mkdtemp())
+    a = d / "a.pgn"
+    b = d / "b.pgn"
+    a.write_text(_tiny_pgn("AAAAAAAA") + _tiny_pgn("BBBBBBBB"))
+    b.write_text(_tiny_pgn("CCCCCCCC") + _tiny_pgn("DDDDDDDD"))
+    stats = write_human_months([a, b], d / "train.jsonl", d / "val.jsonl", max_train=100, max_val=100)
+    total = stats["train_positions"] + stats["val_positions"]
+    assert total >= 8
+    assert (d / "train.jsonl").exists()
+
+
+def test_write_human_months_respects_train_cap() -> None:
+    from tinyaz.data import write_human_months
+
+    d = Path(tempfile.mkdtemp())
+    p = d / "m.pgn"
+    p.write_text("".join(_tiny_pgn(f"G{i:07d}") for i in range(20)))
+    stats = write_human_months([p], d / "train.jsonl", d / "val.jsonl", max_train=12, max_val=4)
+    assert stats["train_positions"] <= 12
+
+
 def test_sampled_target_is_legal() -> None:
     board = chess.Board()
     move = next(iter(board.legal_moves))
@@ -74,6 +107,8 @@ def main() -> None:
         test_missing_names_rejected,
         test_sample_skips_opening_and_caps,
         test_sampled_target_is_legal,
+        test_write_human_months_concatenates_two_files,
+        test_write_human_months_respects_train_cap,
     ]
     failed = 0
     for fn in tests:
