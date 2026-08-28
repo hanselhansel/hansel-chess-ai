@@ -82,6 +82,33 @@ def test_write_human_months_respects_train_cap() -> None:
     assert stats["train_positions"] <= 12
 
 
+def test_find_pgns_lists_months_sorted() -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "build_lichess", ROOT / "train/scripts/build_lichess.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    d = Path(tempfile.mkdtemp())
+    (d / "train/data").mkdir(parents=True)
+    (d / "train/data/lichess_db_standard_rated_2013-02.pgn.zst").write_bytes(b"x" * 2000)
+    (d / "train/data/lichess_db_standard_rated_2013-01.pgn.zst").write_bytes(b"x" * 2000)
+    found = mod.find_pgns(d)
+    names = [p.name for p in found]
+    assert names[0].endswith("2013-01.pgn.zst")
+    assert names[1].endswith("2013-02.pgn.zst")
+
+
+def test_human_month_trains_from_public_not_phase1() -> None:
+    text = (ROOT / "train/scripts/human_month.py").read_text()
+    assert "PHASE1" not in text
+    assert "tinyaz-s.bin" in text
+    assert "beats_published" in text
+    assert "elo_label_from_sf" in text
+    assert '"1320+"' not in text
+
+
 def test_sampled_target_is_legal() -> None:
     board = chess.Board()
     move = next(iter(board.legal_moves))
@@ -109,6 +136,8 @@ def main() -> None:
         test_sampled_target_is_legal,
         test_write_human_months_concatenates_two_files,
         test_write_human_months_respects_train_cap,
+        test_find_pgns_lists_months_sorted,
+        test_human_month_trains_from_public_not_phase1,
     ]
     failed = 0
     for fn in tests:

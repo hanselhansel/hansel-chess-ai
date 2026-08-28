@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Supervised jump from Phase 1, then optional 64-visit self-play. Public only on SF point."""
+"""Fine-tune public tinyaz-s on extra Lichess months. Public only if SF score improves."""
 
 from __future__ import annotations
 
@@ -13,11 +13,10 @@ sys.path.insert(0, str(ROOT / "train" / "src"))
 
 from tinyaz.constants import PLAY_VISITS, SOURCE_LICHESS_2013_01, SOURCE_SELFPLAY_64  # noqa: E402
 from tinyaz.generate import generate  # noqa: E402
-from tinyaz.promote import freeze_snapshot, maybe_promote  # noqa: E402
+from tinyaz.promote import beats_published, elo_label_from_sf, freeze_snapshot, maybe_promote  # noqa: E402
 from tinyaz.rate import vs_random, vs_snapshot, vs_stockfish_64  # noqa: E402
 from tinyaz.train_loop import load_jsonl, mix_for_train, train_candidate  # noqa: E402
 
-PHASE1 = ROOT / "public/weights/tinyaz-s-lichess.bin"
 PUBLIC = ROOT / "public/weights/tinyaz-s.bin"
 HUMAN = ROOT / "train/checkpoints/tinyaz-s-human.bin"
 CAND = ROOT / "train/checkpoints/tinyaz-s-cand.bin"
@@ -27,7 +26,7 @@ SP_JSONL = ROOT / "train/data/selfplay.jsonl"
 SF_PATH = ROOT / "train/bin/stockfish"
 META_PUBLIC = ROOT / "public/weights/tinyaz-s.meta.json"
 META_SRC = ROOT / "src/lib/chess/checkpoint-meta.json"
-
+MONTHS = "lichess-2013-01..04"
 MAX_SP_LOOPS = 3
 
 
@@ -37,53 +36,82 @@ def _meta() -> dict:
     return {}
 
 
+def published_score(meta: dict | None = None) -> float:
+    return float(((meta or _meta()).get("vsSf1320") or {}).get("score") or 0)
+
+
 def _sf(path: Path) -> dict | None:
     return vs_stockfish_64(path, elo=1320, sf_path=SF_PATH if SF_PATH.exists() else None, visits=PLAY_VISITS)
 
 
-def _maybe_public(cand: Path, meta: dict, rnd: dict, sf: dict | None) -> bool:
+def _patch_gauntlet(meta: dict, sf: dict) -> dict:
+    g = dict(meta.get("gauntletElo") or {})
+    g["visits"] = PLAY_VISITS
+    g["eloLabel"] = elo_label_from_sf(sf)
+    g["estimatedElo"] = None
+    g["eloHi"] = int(sf.get("uciElo") or 1320)
+    levels = list(g.get("levels") or [{}])
+    head = dict(levels[0])
+    for k in ("uciElo", "games", "wins", "draws", "losses", "score"):
+        if k in sf:
+            head[k] = sf[k]
+    g["levels"] = [head, *levels[1:]]
+    return g
+
+
+def _maybe_public(cand: Path, meta: dict, rnd: dict, sf: dict | None, floor: float) -> bool:
     if not rnd.get("passed"):
         print("VOID: random-move failed. Public unchanged.", flush=True)
         return False
-    if sf is None or sf.get("score", 0) <= 0:
-        print("SF1320 no points. Side checkpoint kept. Public unchanged.", flush=True)
+    score = None if sf is None else sf.get("score", 0)
+    if sf is None or not beats_published(score, floor):
+        print(f"SF1320 score {score} does not beat {floor}. Public unchanged.", flush=True)
         return False
-    maybe_promote(True, cand, PUBLIC, {**meta, "vsRandom": rnd, "vsSf1320": sf, "gauntletElo": {
-        **(meta.get("gauntletElo") or {}),
-        "visits": PLAY_VISITS,
-        "eloLabel": "1320+",
-        "estimatedElo": 1320,
-    }}, [META_PUBLIC, META_SRC])
+    out = {
+        **meta,
+        "vsRandom": rnd,
+        "vsSf1320": sf,
+        "gauntletElo": _patch_gauntlet(meta, sf),
+        "keepDiscard": "stockfish-18-uci-elo-1320-64-visit",
+    }
+    maybe_promote(True, cand, PUBLIC, out, [META_PUBLIC, META_SRC])
     print("NUMBER MOVED vs SF1320. Promoted", PUBLIC, flush=True)
     return True
 
 
-def supervised() -> Path:
-    if not PHASE1.exists():
-        raise SystemExit(f"missing Phase 1 weights {PHASE1}")
+def supervised() -> tuple[Path, dict | None, bool]:
+    if not PUBLIC.exists():
+        raise SystemExit(f"missing public weights {PUBLIC}")
     if not TRAIN_JSONL.exists():
         raise SystemExit(f"missing {TRAIN_JSONL} — run train/scripts/build_lichess.py")
     rows = load_jsonl(TRAIN_JSONL, cap=1_500_000)
-    print(f"supervised {len(rows)} from {TRAIN_JSONL} base {PHASE1}", flush=True)
+    print(f"supervised {len(rows)} from {TRAIN_JSONL} base {PUBLIC}", flush=True)
     history = train_candidate(
-        PHASE1,
+        PUBLIC,
         rows,
         HUMAN,
         source_id=SOURCE_LICHESS_2013_01,
         epochs=int(os.environ.get("HUMAN_EPOCHS", "3")),
         batch=int(os.environ.get("HUMAN_BATCH", "256")),
     )
-    meta = {**_meta(), "source": "lichess-2013-01", "sourceId": SOURCE_LICHESS_2013_01, "humanPositions": len(rows), "historyHuman": history}
+    meta = {
+        **_meta(),
+        "source": MONTHS,
+        "sourceId": SOURCE_LICHESS_2013_01,
+        "humanPositions": len(rows),
+        "humanMonths": MONTHS,
+        "historyHuman2": history,
+    }
     HUMAN.with_suffix(".meta.json").write_text(json.dumps(meta, indent=2) + "\n")
     rnd = vs_random(HUMAN)
     print("human vs random", rnd, flush=True)
     sf = _sf(HUMAN)
     print("human vs SF1320", sf, flush=True)
-    promoted = _maybe_public(HUMAN, meta, rnd, sf)
+    promoted = _maybe_public(HUMAN, meta, rnd, sf, published_score())
     return HUMAN, sf, promoted
 
 
-def selfplay_loop(base: Path, loop: int) -> Path:
+def selfplay_loop(base: Path, loop: int, floor: float) -> Path:
     games = int(os.environ.get("CLIMB_GAMES", "256"))
     workers = int(os.environ.get("CLIMB_WORKERS", str(max(1, (os.cpu_count() or 2) - 2))))
     freeze_snapshot(base, SNAPSHOT)
@@ -102,23 +130,24 @@ def selfplay_loop(base: Path, loop: int) -> Path:
     print("sp vs random", rnd, flush=True)
     sf = _sf(out)
     print("sp vs SF1320", sf, flush=True)
-    _maybe_public(out, {**_meta(), "vsSnapshot": snap, "selfplayLoops": loop}, rnd, sf)
+    _maybe_public(out, {**_meta(), "vsSnapshot": snap, "selfplayLoops": loop}, rnd, sf, floor)
     return out
 
 
 def main() -> None:
+    floor = published_score()
+    print(f"published SF1320 score {floor}", flush=True)
     human, sf, promoted = supervised()
-    if promoted or (sf is not None and sf.get("score", 0) > 0):
+    if promoted:
         return
     nloops = min(MAX_SP_LOOPS, max(0, int(os.environ.get("HUMAN_SP_LOOPS", "1"))))
     base = human
     for loop in range(1, nloops + 1):
         print(f"self-play loop {loop}/{nloops} at {PLAY_VISITS} visits", flush=True)
-        base = selfplay_loop(base, loop)
-        sf = _sf(base)
-        if sf is not None and sf.get("score", 0) > 0:
+        base = selfplay_loop(base, loop, floor)
+        if published_score() > floor:
             return
-    print(f"STOP: supervised + {nloops} 64-visit loop(s) still 0 vs SF1320.", flush=True)
+    print(f"STOP: extra months + {nloops} 64-visit loop(s) did not beat {floor}.", flush=True)
 
 
 if __name__ == "__main__":
