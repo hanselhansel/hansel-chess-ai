@@ -63,6 +63,22 @@ def test_void_does_not_change_public_weights() -> None:
     assert not meta_path.exists()
 
 
+def test_beats_published_requires_strict_improvement() -> None:
+    from tinyaz.promote import beats_published
+
+    assert beats_published(0.25, 0.125) is True
+    assert beats_published(0.125, 0.125) is False
+    assert beats_published(0.0, 0.125) is False
+
+
+def test_elo_label_is_wdl_not_plus() -> None:
+    from tinyaz.promote import elo_label_from_sf
+
+    label = elo_label_from_sf({"wins": 1, "draws": 0, "losses": 7, "games": 8, "uciElo": 1320})
+    assert label == "1/8 vs 1320"
+    assert "1320+" not in label
+
+
 def test_mix_does_not_double_count_new() -> None:
     from tinyaz.train_loop import mix_for_train
 
@@ -101,6 +117,8 @@ def main() -> None:
         test_play_visits_is_64,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
+        test_beats_published_requires_strict_improvement,
+        test_elo_label_is_wdl_not_plus,
         test_mix_does_not_double_count_new,
         test_identical_nets_snapshot_score_is_half,
         test_generate_pi_indices_are_legal,

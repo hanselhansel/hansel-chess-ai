@@ -4,10 +4,10 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 2, rated**. tinyaz-s is the Phase 1 Lichess net fine-tuned on the **full 2013-01 month** (426k positions). Public weights promoted after a 64-visit point vs Stockfish 18 `UCI_Elo` 1320.
+This is **Phase 2, rated**. tinyaz-s is the public 1–7 net fine-tuned on **1.5M positions from Lichess 2013-01..04**. Public weights promoted after the 64-visit score vs Stockfish 18 `UCI_Elo` 1320 moved from 1–7 to 2–6.
 
-- **1-visit vs random-move: 10–10–0** (passed; not an Elo)
-- **64-visit gauntlet: 1–7 vs Stockfish 18 `UCI_Elo` 1320.** Off the 0–8 floor. Not a 1320 rating. Not a Lichess rating.
+- **1-visit vs random-move: 15–5–0** (passed; not an Elo)
+- **64-visit gauntlet: 2–6 vs Stockfish 18 `UCI_Elo` 1320.** Not a 1320 rating. Not a Lichess rating.
 
 1-visit and 64-visit stay separate. There is no Lichess rating yet (BOT later).
 
@@ -41,7 +41,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md) and [the climb-loop spec](docs/superpowers/specs/2026-08-27-climb-loop-design.md). Next is snapshot-gated self-play on this Mac until the 64-visit gauntlet number moves. Lichess BOT waits until that is not `<1320`.
+See [docs/LATER.md](docs/LATER.md) and [the more-months spec](docs/superpowers/specs/2026-08-28-more-lichess-months-design.md). Next is more human data or tinyaz-m. Lichess BOT waits until the gauntlet is not a couple of noisy points.
 
 ## Develop
 
