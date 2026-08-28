@@ -1,7 +1,7 @@
 {
   "name": "tinyaz-s",
-  "source": "selfplay-64",
-  "sourceId": 2,
+  "source": "lichess-2013-01",
+  "sourceId": 1,
   "selfplayGames": 1152,
   "selfplayVisits": 64,
   "selfplayPositions": 155717,
@@ -34,12 +34,12 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 20,
-    "draws": 0,
+    "wins": 10,
+    "draws": 10,
     "losses": 0,
-    "score": 1,
+    "score": 0.75,
     "passed": true,
-    "adjudication": "mate, else material≥4 after 240 ply"
+    "adjudication": "mate, else material\u22654 after 240 ply"
   },
   "gauntletElo": {
     "visits": 64,
@@ -54,15 +54,15 @@
       "qpawn"
     ],
     "coloursSwapped": true,
-    "adjudication": "mate, else material≥4 after 160 ply",
+    "adjudication": "mate, else material\u22654 after 160 ply",
     "levels": [
       {
         "uciElo": 1320,
         "games": 8,
-        "wins": 0,
+        "wins": 1,
         "draws": 0,
-        "losses": 8,
-        "score": 0
+        "losses": 7,
+        "score": 0.125
       },
       {
         "uciElo": 1500,
@@ -90,7 +90,7 @@
       }
     ],
     "estimatedElo": null,
-    "eloLabel": "<1320",
+    "eloLabel": "1/8 vs 1320",
     "eloLo": null,
     "eloHi": 1320,
     "games": 32,
@@ -145,11 +145,32 @@
     "visits": 64,
     "uciElo": 1320,
     "games": 8,
-    "wins": 0,
+    "wins": 1,
     "draws": 0,
-    "losses": 8,
-    "score": 0
+    "losses": 7,
+    "score": 0.125
   },
   "climbGames": 256,
-  "keepDiscard": "stockfish-18-uci-elo-1320-64-visit"
+  "keepDiscard": "stockfish-18-uci-elo-1320-64-visit",
+  "humanPositions": 426340,
+  "historyHuman": [
+    {
+      "epoch": 1,
+      "policy": 2.7121594232839863,
+      "value": 0.8909027600073599,
+      "loss": 3.603062188231551
+    },
+    {
+      "epoch": 2,
+      "policy": 2.5639486753904785,
+      "value": 0.8434674000596857,
+      "loss": 3.407416075485963
+    },
+    {
+      "epoch": 3,
+      "policy": 2.476165132980805,
+      "value": 0.8272875188707232,
+      "loss": 3.3034526532834714
+    }
+  ]
 }

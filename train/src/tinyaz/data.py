@@ -2,17 +2,58 @@
 
 from __future__ import annotations
 
+import hashlib
 import io
 import json
 from pathlib import Path
 
 import chess
 import chess.pgn
+import numpy as np
 import zstandard as zstd
 
 from .policy import policy_target_index
 
 RESULT_Z = {"1-0": 1.0, "0-1": -1.0, "1/2-1/2": 0.0}
+
+
+def game_id(headers: dict) -> str:
+    site = (headers.get("Site") or "").strip()
+    if "lichess.org/" in site:
+        gid = site.rstrip("/").rsplit("/", 1)[-1].strip()
+        if gid and gid != "?":
+            return gid
+    white = (headers.get("White") or "").strip()
+    black = (headers.get("Black") or "").strip()
+    date = (headers.get("UTCDate") or headers.get("Date") or "").strip()
+    time = (headers.get("UTCTime") or "").strip()
+    if white in ("", "?") or black in ("", "?"):
+        raise ValueError("missing game id")
+    gid = f"{white}|{black}|{date}|{time}"
+    if "?" in (white, black):
+        raise ValueError("missing game id")
+    return gid
+
+
+def split_for_game(gid: str) -> str:
+    if not gid or gid == "?" or gid.startswith("?"):
+        raise ValueError("rejected game id")
+    h = hashlib.sha256(gid.encode("utf-8")).digest()
+    return "val" if h[0] < 26 else "train"
+
+
+def sample_rows(
+    rows: list[dict],
+    skip_plies: int = 8,
+    per_game: int = 4,
+    seed: int = 0,
+) -> list[dict]:
+    body = rows[skip_plies:]
+    if len(body) <= per_game:
+        return body
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(len(body), size=per_game, replace=False)
+    return [body[int(i)] for i in sorted(pick)]
 
 
 def _open_pgn(path: Path):
@@ -102,3 +143,58 @@ def write_jsonl(
         "train_positions": n_train_p,
         "val_positions": n_val_p,
     }
+
+
+def write_human_month(
+    pgn_path: Path,
+    out_train: Path,
+    out_val: Path,
+    max_train: int = 1_500_000,
+    max_val: int = 50_000,
+    skip_plies: int = 8,
+    per_game: int = 4,
+) -> dict:
+    out_train.parent.mkdir(parents=True, exist_ok=True)
+    n_train_g = n_val_g = 0
+    n_train_p = n_val_p = 0
+    skipped = 0
+    with out_train.open("w") as ft, out_val.open("w") as fv:
+        for game, result, n in iter_games(pgn_path, max_games=10**9, min_plies=skip_plies + per_game):
+            try:
+                gid = game_id(dict(game.headers))
+                split = split_for_game(gid)
+            except ValueError:
+                skipped += 1
+                continue
+            rows = sample_rows(game_rows(game, result), skip_plies=skip_plies, per_game=per_game, seed=n)
+            if split == "val":
+                if n_val_p >= max_val:
+                    continue
+                dest, is_val = fv, True
+            else:
+                if n_train_p >= max_train:
+                    if n_val_p >= max_val:
+                        break
+                    continue
+                dest, is_val = ft, False
+            written = 0
+            for row in rows:
+                dest.write(json.dumps(row) + "\n")
+                written += 1
+            if is_val:
+                n_val_g += 1
+                n_val_p += written
+            else:
+                n_train_g += 1
+                n_train_p += written
+            if n_train_g % 2000 == 0 and n_train_g:
+                print(f"  games train {n_train_g} pos {n_train_p} val {n_val_p} skip {skipped}", flush=True)
+    stats = {
+        "train_games": n_train_g,
+        "val_games": n_val_g,
+        "train_positions": n_train_p,
+        "val_positions": n_val_p,
+        "skipped_ids": skipped,
+    }
+    print(stats, flush=True)
+    return stats
