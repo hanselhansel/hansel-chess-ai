@@ -145,6 +145,13 @@ def write_jsonl(
     }
 
 
+def train_quotas(n_paths: int, max_train: int) -> list[int]:
+    if n_paths <= 0:
+        return []
+    base, rem = divmod(int(max_train), n_paths)
+    return [base + (1 if i < rem else 0) for i in range(n_paths)]
+
+
 def write_human_month(
     pgn_path: Path,
     out_train: Path,
@@ -179,12 +186,16 @@ def write_human_months(
     n_train_p = n_val_p = 0
     skipped = 0
     seen = 0
+    q_train = train_quotas(len(pgn_paths), max_train)
+    q_val = train_quotas(len(pgn_paths), max_val)
+    per_archive: list[dict] = []
     with out_train.open("w") as ft, out_val.open("w") as fv:
-        for pgn_path in pgn_paths:
-            if n_train_p >= max_train and n_val_p >= max_val:
-                break
-            print(f"parsing {pgn_path} ({pgn_path.stat().st_size} bytes)", flush=True)
+        for i, pgn_path in enumerate(pgn_paths):
+            arch_train = arch_val = 0
+            print(f"parsing {pgn_path} ({pgn_path.stat().st_size} bytes) quota {q_train[i]}", flush=True)
             for game, result, _n in iter_games(pgn_path, max_games=10**9, min_plies=skip_plies + per_game):
+                if arch_train >= q_train[i] and arch_val >= q_val[i]:
+                    break
                 seen += 1
                 try:
                     gid = game_id(dict(game.headers))
@@ -199,15 +210,11 @@ def write_human_months(
                     seed=seen,
                 )
                 if split == "val":
-                    if n_val_p >= max_val:
-                        if n_train_p >= max_train:
-                            break
+                    if arch_val >= q_val[i] or n_val_p >= max_val:
                         continue
                     dest, is_val = fv, True
                 else:
-                    if n_train_p >= max_train:
-                        if n_val_p >= max_val:
-                            break
+                    if arch_train >= q_train[i] or n_train_p >= max_train:
                         continue
                     dest, is_val = ft, False
                 written = 0
@@ -217,14 +224,23 @@ def write_human_months(
                 if is_val:
                     n_val_g += 1
                     n_val_p += written
+                    arch_val += written
                 else:
                     n_train_g += 1
                     n_train_p += written
+                    arch_train += written
                 if n_train_g % 2000 == 0 and n_train_g:
                     print(
                         f"  games train {n_train_g} pos {n_train_p} val {n_val_p} skip {skipped}",
                         flush=True,
                     )
+            per_archive.append(
+                {
+                    "path": str(pgn_path),
+                    "train_positions": arch_train,
+                    "val_positions": arch_val,
+                }
+            )
     stats = {
         "train_games": n_train_g,
         "val_games": n_val_g,
@@ -232,6 +248,7 @@ def write_human_months(
         "val_positions": n_val_p,
         "skipped_ids": skipped,
         "archives": [str(p) for p in pgn_paths],
+        "per_archive": per_archive,
     }
     print(stats, flush=True)
     return stats

@@ -72,6 +72,29 @@ def test_write_human_months_concatenates_two_files() -> None:
     assert (d / "train.jsonl").exists()
 
 
+def test_train_quotas_split_evenly() -> None:
+    from tinyaz.data import train_quotas
+
+    assert train_quotas(5, 1_500_000) == [300_000] * 5
+    assert train_quotas(3, 10) == [4, 3, 3]
+    assert sum(train_quotas(4, 1_500_000)) == 1_500_000
+    assert train_quotas(0, 100) == []
+
+
+def test_write_human_months_uses_per_archive_quota() -> None:
+    from tinyaz.data import write_human_months
+
+    d = Path(tempfile.mkdtemp())
+    a = d / "lichess_db_standard_rated_2013-01.pgn"
+    b = d / "lichess_db_standard_rated_2013-05.pgn"
+    a.write_text("".join(_tiny_pgn(f"A{i:07d}") for i in range(12)))
+    b.write_text("".join(_tiny_pgn(f"B{i:07d}") for i in range(12)))
+    stats = write_human_months([a, b], d / "train.jsonl", d / "val.jsonl", max_train=16, max_val=100)
+    assert stats["train_positions"] <= 16
+    assert stats["per_archive"][0]["train_positions"] > 0
+    assert stats["per_archive"][1]["train_positions"] > 0
+
+
 def test_write_human_months_respects_train_cap() -> None:
     from tinyaz.data import write_human_months
 
@@ -80,6 +103,19 @@ def test_write_human_months_respects_train_cap() -> None:
     p.write_text("".join(_tiny_pgn(f"G{i:07d}") for i in range(20)))
     stats = write_human_months([p], d / "train.jsonl", d / "val.jsonl", max_train=12, max_val=4)
     assert stats["train_positions"] <= 12
+
+
+def test_next_month_rolls_year() -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "build_lichess", ROOT / "train/scripts/build_lichess.py"
+    )
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.next_month("2013-12") == "2014-01"
+    assert mod.next_month("2013-04") == "2013-05"
+    assert mod.month_of(Path("lichess_db_standard_rated_2013-05.pgn.zst")) == "2013-05"
 
 
 def test_find_pgns_lists_months_sorted() -> None:
@@ -98,6 +134,15 @@ def test_find_pgns_lists_months_sorted() -> None:
     names = [p.name for p in found]
     assert names[0].endswith("2013-01.pgn.zst")
     assert names[1].endswith("2013-02.pgn.zst")
+
+
+def test_climb_until_uses_gate_and_quotas() -> None:
+    text = (ROOT / "train/scripts/climb_until.py").read_text()
+    assert "above_1320" in text
+    assert "CLIMB_MAX_LOOPS" in text
+    assert "tinyaz-m" in text
+    data = (ROOT / "train/src/tinyaz/data.py").read_text()
+    assert "train_quotas" in data
 
 
 def test_human_month_trains_from_public_not_phase1() -> None:
@@ -135,8 +180,12 @@ def main() -> None:
         test_sample_skips_opening_and_caps,
         test_sampled_target_is_legal,
         test_write_human_months_concatenates_two_files,
+        test_train_quotas_split_evenly,
+        test_write_human_months_uses_per_archive_quota,
         test_write_human_months_respects_train_cap,
+        test_next_month_rolls_year,
         test_find_pgns_lists_months_sorted,
+        test_climb_until_uses_gate_and_quotas,
         test_human_month_trains_from_public_not_phase1,
     ]
     failed = 0

@@ -30,6 +30,16 @@ def beats_published(candidate_score: float, published_score: float) -> bool:
     return float(candidate_score) > float(published_score)
 
 
+def above_1320(sf1320: dict | None, sf1500: dict | None, gauntlet: dict | None) -> bool:
+    if sf1500 is not None and float(sf1500.get("score") or 0) > 0:
+        return True
+    mle = None if not gauntlet else gauntlet.get("estimatedElo")
+    if sf1320 is not None and float(sf1320.get("score") or 0) >= 0.625:
+        if mle is not None and float(mle) > 1320:
+            return True
+    return False
+
+
 def elo_label_from_sf(sf: dict) -> str:
     games = int(sf.get("games") or 0)
     wins = int(sf.get("wins") or 0)

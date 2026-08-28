@@ -16,6 +16,34 @@ OUT_TRAIN = ROOT / "train/data/human/train.jsonl"
 OUT_VAL = ROOT / "train/data/human/val.jsonl"
 
 
+def month_of(path: Path) -> str:
+    name = path.name.replace(".pgn.zst", "").replace(".pgn", "")
+    return name.rsplit("_", 1)[-1]
+
+
+def next_month(ym: str) -> str:
+    y_s, m_s = ym.split("-")
+    y, m = int(y_s), int(m_s)
+    m += 1
+    if m == 13:
+        y += 1
+        m = 1
+    return f"{y:04d}-{m:02d}"
+
+
+def download_url(ym: str) -> str:
+    return f"https://database.lichess.org/standard/lichess_db_standard_rated_{ym}.pgn.zst"
+
+
+def months_label(paths: list[Path]) -> str:
+    months = [month_of(p) for p in paths]
+    if not months:
+        return "lichess"
+    if months[0] == months[-1]:
+        return f"lichess-{months[0]}"
+    return f"lichess-{months[0]}..{months[-1]}"
+
+
 def find_pgns(root: Path = ROOT) -> list[Path]:
     data = root / "train/data"
     found = sorted(

@@ -26,7 +26,7 @@ SP_JSONL = ROOT / "train/data/selfplay.jsonl"
 SF_PATH = ROOT / "train/bin/stockfish"
 META_PUBLIC = ROOT / "public/weights/tinyaz-s.meta.json"
 META_SRC = ROOT / "src/lib/chess/checkpoint-meta.json"
-MONTHS = "lichess-2013-01..04"
+MONTHS = os.environ.get("HUMAN_MONTHS", "lichess-2013-01..04")
 MAX_SP_LOOPS = 3
 
 
@@ -94,12 +94,13 @@ def supervised() -> tuple[Path, dict | None, bool]:
         epochs=int(os.environ.get("HUMAN_EPOCHS", "3")),
         batch=int(os.environ.get("HUMAN_BATCH", "256")),
     )
+    label = os.environ.get("HUMAN_MONTHS", MONTHS)
     meta = {
         **_meta(),
-        "source": MONTHS,
+        "source": label,
         "sourceId": SOURCE_LICHESS_2013_01,
         "humanPositions": len(rows),
-        "humanMonths": MONTHS,
+        "humanMonths": label,
         "historyHuman2": history,
     }
     HUMAN.with_suffix(".meta.json").write_text(json.dumps(meta, indent=2) + "\n")
