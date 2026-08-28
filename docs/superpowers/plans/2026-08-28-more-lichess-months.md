@@ -10,7 +10,7 @@
 
 Spec: `docs/superpowers/specs/2026-08-28-more-lichess-months-design.md`
 
-CURRENT_WORKING_FILE: `train/src/tinyaz/data.py`
+CURRENT_WORKING_FILE: `public/weights/tinyaz-s.bin`
 
 ---
 

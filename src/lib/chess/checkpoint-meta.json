@@ -1,6 +1,6 @@
 {
   "name": "tinyaz-s",
-  "source": "lichess-2013-01",
+  "source": "lichess-2013-01..04",
   "sourceId": 1,
   "selfplayGames": 1152,
   "selfplayVisits": 64,
@@ -34,10 +34,10 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 10,
-    "draws": 10,
+    "wins": 15,
+    "draws": 5,
     "losses": 0,
-    "score": 0.75,
+    "score": 0.875,
     "passed": true,
     "adjudication": "mate, else material\u22654 after 240 ply"
   },
@@ -59,10 +59,10 @@
       {
         "uciElo": 1320,
         "games": 8,
-        "wins": 1,
+        "wins": 2,
         "draws": 0,
-        "losses": 7,
-        "score": 0.125
+        "losses": 6,
+        "score": 0.25
       },
       {
         "uciElo": 1500,
@@ -90,7 +90,7 @@
       }
     ],
     "estimatedElo": null,
-    "eloLabel": "1/8 vs 1320",
+    "eloLabel": "2/8 vs 1320",
     "eloLo": null,
     "eloHi": 1320,
     "games": 32,
@@ -145,14 +145,14 @@
     "visits": 64,
     "uciElo": 1320,
     "games": 8,
-    "wins": 1,
+    "wins": 2,
     "draws": 0,
-    "losses": 7,
-    "score": 0.125
+    "losses": 6,
+    "score": 0.25
   },
   "climbGames": 256,
   "keepDiscard": "stockfish-18-uci-elo-1320-64-visit",
-  "humanPositions": 426340,
+  "humanPositions": 1500000,
   "historyHuman": [
     {
       "epoch": 1,
@@ -171,6 +171,27 @@
       "policy": 2.476165132980805,
       "value": 0.8272875188707232,
       "loss": 3.3034526532834714
+    }
+  ],
+  "humanMonths": "lichess-2013-01..04",
+  "historyHuman2": [
+    {
+      "epoch": 1,
+      "policy": 2.4176342466175,
+      "value": 0.821090362964789,
+      "loss": 3.238724610691165
+    },
+    {
+      "epoch": 2,
+      "policy": 2.300105688168665,
+      "value": 0.8088542020937387,
+      "loss": 3.1089598904658673
+    },
+    {
+      "epoch": 3,
+      "policy": 2.220381765443731,
+      "value": 0.8014600978082389,
+      "loss": 3.021841862926428
     }
   ]
 }
