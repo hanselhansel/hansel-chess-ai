@@ -4,7 +4,7 @@
 
 **Goal:** One 64-visit self-play loop of tinyaz-m. Keep public only if snapshot > 0.5, random passes, and SF1500 score is not worse than 0.25.
 
-CURRENT_WORKING_FILE: `train/scripts/climb_m.py`
+CURRENT_WORKING_FILE: `docs/LATER.md`
 
 ### Task 1: Tests then `climb_m.py`
 

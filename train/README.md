@@ -22,7 +22,7 @@ Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **4–4 vs SF1320*
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py
 PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
-CLIMB_GAMES=64 PYTHONPATH=train/src python3 train/scripts/climb.py
+CLIMB_GAMES=64 PYTHONPATH=train/src python3 train/scripts/climb_m.py
 ln -sf "$(which stockfish)" train/bin/stockfish
 PYTHONPATH=train/src python3 train/scripts/elo_gauntlet.py
 node --experimental-strip-types src/lib/chess/gauntlet.ts
