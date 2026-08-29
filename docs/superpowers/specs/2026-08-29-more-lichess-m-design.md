@@ -1,7 +1,7 @@
 # More Lichess months on public tinyaz-m
 
 Date: 2026-08-29
-Status: **approved** (continue after 256-visit SP VOID 0–8)
+Status: **KEEP / GATE** (2013-06, 7–1 vs 1320, 6–2 vs 1500, MLE 1630). Public m promoted.
 Repo: `hanselhansel/hansel-chess-ai`
 Predecessor: `docs/superpowers/specs/2026-08-29-tinyaz-m-256-targets-design.md`
 
