@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** 50% vs SF1800 (now **3–1–4, 0.4375**). Then 2000. 2013-07 human on m KEEP: **6–2 vs 1320**, **7–1 vs 1500**, 24-game MLE **1715** (1550–1890). SHA `0386a100…`. Not 2500. Lichess BOT waits.
+**Next:** 50% vs SF1800 (published **3–1–4, 0.4375**). 2013-08 human on m VOID: 2.4M, 3 epochs, 1500 **7–1 (0.875)** equal, 1800 **1–2–5 (0.25)** worse. Public SHA `0386a100…` unchanged. MLE **1715**. Not 2500. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
