@@ -44,11 +44,15 @@ def last_trained_month(meta: dict) -> str:
     return "2013-05"
 
 
-def published_1500(meta: dict) -> float:
-    vs = meta.get("vsSf1500") or {}
+def published_score(meta: dict, key: str) -> float:
+    vs = meta.get(key) or {}
     if vs:
         return float(vs.get("score") or 0)
     return 0.0
+
+
+def published_1500(meta: dict) -> float:
+    return published_score(meta, "vsSf1500")
 
 
 def _sf(path: Path, elo: int) -> dict | None:
@@ -60,11 +64,11 @@ def _expand(row: dict) -> list[tuple[int, float]]:
     return [(elo, 1.0)] * int(row["wins"]) + [(elo, 0.5)] * int(row.get("draws") or 0) + [(elo, 0.0)] * int(row["losses"])
 
 
-def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None) -> dict:
-    out = {**meta, "vsRandom": rnd, "vsSf1320": sf1320, "vsSf1500": sf1500, "playVisits": PLAY_VISITS}
+def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None, sf1800: dict | None = None) -> dict:
+    out = {**meta, "vsRandom": rnd, "vsSf1320": sf1320, "vsSf1500": sf1500, "vsSf1800": sf1800, "playVisits": PLAY_VISITS}
     g = dict(out.get("gauntletElo") or {})
     g["visits"] = PLAY_VISITS
-    levels = [lv for lv in (sf1320, sf1500) if lv]
+    levels = [lv for lv in (sf1320, sf1500, sf1800) if lv]
     if levels:
         g["levels"] = levels
         obs = []
@@ -102,20 +106,25 @@ def one_loop(loop: int) -> str:
         return "VOID"
     sf1320 = _sf(CAND, 1320)
     sf1500 = _sf(CAND, 1500)
+    sf1800 = _sf(CAND, 1800)
     print("m vs SF1320", sf1320, flush=True)
     print("m vs SF1500", sf1500, flush=True)
-    score1320 = 0.0 if sf1320 is None else float(sf1320.get("score") or 0)
+    print("m vs SF1800", sf1800, flush=True)
     score1500 = 0.0 if sf1500 is None else float(sf1500.get("score") or 0)
+    score1800 = 0.0 if sf1800 is None else float(sf1800.get("score") or 0)
     floor = published_1500(meta)
-    keep = beats_published(score1500, floor) or score1320 > 0.5
-    card = _write_card({**meta, "humanMonths": label, "historyMonths": history, "selfplayLoops": loop}, rnd, sf1320, sf1500)
+    floor1800 = published_score(meta, "vsSf1800")
+    keep = score1500 >= floor and (
+        beats_published(score1500, floor) or beats_published(score1800, floor1800)
+    )
+    card = _write_card({**meta, "humanMonths": label, "historyMonths": history, "selfplayLoops": loop}, rnd, sf1320, sf1500, sf1800)
     if not keep:
-        print(f"VOID public: 1500 {score1500} need>{floor} or 1320 {score1320} >0.5. Side checkpoint kept.", flush=True)
+        print(f"VOID public: 1500 {score1500} need>={floor} and (1500>{floor} or 1800>{floor1800}). Side checkpoint kept.", flush=True)
         maybe_promote(True, CAND, ROOT / f"train/checkpoints/tinyaz-m-mo{loop}.bin", card, [CAND.with_suffix(".meta.json")])
         return "VOID"
     maybe_promote(True, CAND, PUBLIC, card, [META_PUBLIC, META_SRC])
-    print("KEEP. Promoted", PUBLIC, "1500", score1500, "1320", score1320, flush=True)
-    if score1500 >= 0.5:
+    print("KEEP. Promoted", PUBLIC, "1500", score1500, "1800", score1800, flush=True)
+    if score1800 >= 0.5:
         return "GATE"
     return "IMPROVED"
 

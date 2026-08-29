@@ -53,6 +53,13 @@ def test_months_m_continues_tinyaz_m() -> None:
     assert "beats_published" in text
 
 
+def test_months_m_keep_requires_1500_floor_and_rates_1800() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "or score1320 > 0.5" not in text
+    assert "score1500 >= floor" in text
+    assert "elo=1800" in text or "_sf(CAND, 1800)" in text
+
+
 def test_train_visits_is_256() -> None:
     from tinyaz.constants import SNAPSHOT_VISITS, TRAIN_VISITS
 
@@ -153,6 +160,7 @@ def main() -> None:
         test_play_visits_is_64,
         test_climb_m_generates_at_256_snapshots_at_64,
         test_months_m_continues_tinyaz_m,
+        test_months_m_keep_requires_1500_floor_and_rates_1800,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,
