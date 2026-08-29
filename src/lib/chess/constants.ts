@@ -1,7 +1,9 @@
 /** TinyAZ-S: 8 residual blocks × 64 channels. ~0.64M params. */
 
 export const N_PLANES = 19;
-export const CHANNELS = 64;
+export const CHANNELS_S = 64;
+export const CHANNELS_M = 128;
+export const CHANNELS = CHANNELS_S;
 export const N_BLOCKS = 8;
 export const POLICY_PLANES = 73;
 export const VALUE_CH = 8;
@@ -22,11 +24,13 @@ export const SOURCE_NAMES: Record<number, string> = {
   [SOURCE_LICHESS_2013_01]: "lichess-2013-01",
   [SOURCE_SELFPLAY_64]: "selfplay-64",
 };
-export const WEIGHTS_URL = "/weights/tinyaz-s.bin";
-export const MODEL_NAME = "tinyaz-s";
+export const WEIGHTS_URL = "/weights/tinyaz-m.bin";
+export const MODEL_NAME = "tinyaz-m";
 export const PARAM_CAP = 3_000_000;
-/** Multiply-accumulates for one tinyaz-s forward. FLOPs/move ≈ this × visits. */
-export const FLOPS_PER_EVAL = 38_813_760;
+/** Multiply-accumulates for one forward. FLOPs/move ≈ this × visits. */
+export const FLOPS_PER_EVAL_S = 38_813_760;
+export const FLOPS_PER_EVAL_M = 153_092_160;
+export const FLOPS_PER_EVAL = FLOPS_PER_EVAL_M;
 
 export const QUEEN_DIRS: readonly [number, number][] = [
   [0, 1],

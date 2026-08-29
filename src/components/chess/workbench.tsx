@@ -167,7 +167,7 @@ export function Workbench() {
   }, []);
 
   useEffect(() => {
-    void fetch("/weights/tinyaz-s.meta.json")
+    void fetch("/weights/tinyaz-m.meta.json")
       .then((res) => (res.ok ? res.json() : null))
       .then((meta) => {
         if (meta?.vsRandom) setVsRandom(meta.vsRandom);

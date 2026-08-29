@@ -1,5 +1,7 @@
 N_PLANES = 19
-CHANNELS = 64
+CHANNELS_S = 64
+CHANNELS_M = 128
+CHANNELS = CHANNELS_S
 N_BLOCKS = 8
 POLICY_PLANES = 73
 VALUE_CH = 8
@@ -70,22 +72,30 @@ def index_to_algebraic(i: int) -> str:
     return f"{chr(97 + file_of(i))}{rank_of(i) + 1}"
 
 
-def param_count() -> int:
-    stem = N_PLANES * CHANNELS * 9 + CHANNELS
-    block = 2 * (CHANNELS * CHANNELS * 9 + CHANNELS)
-    policy = CHANNELS * POLICY_PLANES + POLICY_PLANES
-    vconv = CHANNELS * VALUE_CH + VALUE_CH
+def param_count(channels: int = CHANNELS) -> int:
+    stem = N_PLANES * channels * 9 + channels
+    block = 2 * (channels * channels * 9 + channels)
+    policy = channels * POLICY_PLANES + POLICY_PLANES
+    vconv = channels * VALUE_CH + VALUE_CH
     fc1 = VALUE_CH * 64 * VALUE_HIDDEN + VALUE_HIDDEN
     fc2 = VALUE_HIDDEN + 1
     return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2
 
 
-def flops_per_eval() -> int:
-    stem = CHANNELS * N_PLANES * 9 * 64
-    block = 2 * CHANNELS * CHANNELS * 9 * 64
-    policy = POLICY_PLANES * CHANNELS * 64
-    vconv = VALUE_CH * CHANNELS * 64
+def flops_per_eval(channels: int = CHANNELS) -> int:
+    stem = channels * N_PLANES * 9 * 64
+    block = 2 * channels * channels * 9 * 64
+    policy = POLICY_PLANES * channels * 64
+    vconv = VALUE_CH * channels * 64
     fc1 = VALUE_CH * 64 * VALUE_HIDDEN
     fc2 = VALUE_HIDDEN
     return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2
+
+
+def channels_for_count(count: int) -> int:
+    if count == param_count(CHANNELS_S):
+        return CHANNELS_S
+    if count == param_count(CHANNELS_M):
+        return CHANNELS_M
+    raise ValueError(f"unknown param count {count}")
 

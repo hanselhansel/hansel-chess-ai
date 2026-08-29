@@ -1,5 +1,7 @@
 import {
   CHANNELS,
+  CHANNELS_M,
+  CHANNELS_S,
   N_BLOCKS,
   N_PLANES,
   POLICY_PLANES,
@@ -54,11 +56,11 @@ function zeros(n: number): Float32Array {
   return new Float32Array(n);
 }
 
-export function paramCount(): number {
-  const stem = N_PLANES * CHANNELS * 9 + CHANNELS;
-  const block = 2 * (CHANNELS * CHANNELS * 9 + CHANNELS);
-  const policy = CHANNELS * POLICY_PLANES + POLICY_PLANES;
-  const vconv = CHANNELS * VALUE_CH + VALUE_CH;
+export function paramCount(channels: number = CHANNELS): number {
+  const stem = N_PLANES * channels * 9 + channels;
+  const block = 2 * (channels * channels * 9 + channels);
+  const policy = channels * POLICY_PLANES + POLICY_PLANES;
+  const vconv = channels * VALUE_CH + VALUE_CH;
   const fc1 = VALUE_CH * 64 * VALUE_HIDDEN + VALUE_HIDDEN;
   const fc2 = VALUE_HIDDEN + 1;
   return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2;
@@ -108,24 +110,32 @@ export function randomWeights(seed = 1): WeightSet {
   };
 }
 
-const TENSOR_SIZES = [
-  CHANNELS * N_PLANES * 9,
-  CHANNELS,
-  ...Array.from({ length: N_BLOCKS }, () => [
-    CHANNELS * CHANNELS * 9,
-    CHANNELS,
-    CHANNELS * CHANNELS * 9,
-    CHANNELS,
-  ]).flat(),
-  POLICY_PLANES * CHANNELS,
-  POLICY_PLANES,
-  VALUE_CH * CHANNELS,
-  VALUE_CH,
-  VALUE_HIDDEN * VALUE_CH * 64,
-  VALUE_HIDDEN,
-  VALUE_HIDDEN,
-  1,
-];
+function tensorSizes(channels: number): number[] {
+  return [
+    channels * N_PLANES * 9,
+    channels,
+    ...Array.from({ length: N_BLOCKS }, () => [
+      channels * channels * 9,
+      channels,
+      channels * channels * 9,
+      channels,
+    ]).flat(),
+    POLICY_PLANES * channels,
+    POLICY_PLANES,
+    VALUE_CH * channels,
+    VALUE_CH,
+    VALUE_HIDDEN * VALUE_CH * 64,
+    VALUE_HIDDEN,
+    VALUE_HIDDEN,
+    1,
+  ];
+}
+
+function channelsForCount(n: number): number {
+  if (n === paramCount(CHANNELS_S)) return CHANNELS_S;
+  if (n === paramCount(CHANNELS_M)) return CHANNELS_M;
+  throw new Error(`weight count ${n} != s or m`);
+}
 
 function asArrayBuffer(data: ArrayBuffer | Uint8Array): ArrayBuffer {
   if (data instanceof ArrayBuffer) return data;
@@ -143,14 +153,14 @@ export function unpackWeights(data: ArrayBuffer | Uint8Array): WeightSet {
   if (version !== 1) throw new Error(`bad weight version ${version}`);
   const n = view.getUint32(8, true);
   const sourceId = view.getUint32(12, true);
-  if (n !== paramCount()) throw new Error(`weight count ${n} != ${paramCount()}`);
+  const channels = channelsForCount(n);
   let o = 16;
   const take = (len: number) => {
     const a = new Float32Array(buf, o, len);
     o += len * 4;
     return a.slice();
   };
-  const parts = TENSOR_SIZES.map(take);
+  const parts = tensorSizes(channels).map(take);
   const blocks = [];
   let i = 2;
   for (let b = 0; b < N_BLOCKS; b++) {
