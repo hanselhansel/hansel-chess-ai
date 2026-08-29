@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** more human data or tinyaz-m. Spec: `docs/superpowers/specs/2026-08-28-more-lichess-months-design.md`. 2013-01..04 (1.5M positions) from the 1–7 public net scored **2–6** at 64 visits vs SF1320 (was 1–7). 1-visit vs random **15–5–0**. Public weights promoted. Still not a 1320 rating. Lichess BOT waits until the gauntlet is not two noisy points.
+**Next:** tighten the 64-visit interval, or tinyaz-m. Spec: `docs/superpowers/specs/2026-08-29-climb-until-1320-design.md`. 2013-01..05 (1.5M, equal month quotas) scored **7–1 vs SF1320** and **1–7 vs SF1500**. 32-game MLE **1370** (1205–1525). 1-visit vs random **10–10–0**. Gate hit. Interval is still wide. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 

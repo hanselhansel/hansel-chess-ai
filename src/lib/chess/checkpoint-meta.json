@@ -1,6 +1,6 @@
 {
   "name": "tinyaz-s",
-  "source": "lichess-2013-01..04",
+  "source": "lichess-2013-01..2013-05",
   "sourceId": 1,
   "selfplayGames": 1152,
   "selfplayVisits": 64,
@@ -34,10 +34,10 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 15,
-    "draws": 5,
+    "wins": 10,
+    "draws": 10,
     "losses": 0,
-    "score": 0.875,
+    "score": 0.75,
     "passed": true,
     "adjudication": "mate, else material\u22654 after 240 ply"
   },
@@ -57,42 +57,46 @@
     "adjudication": "mate, else material\u22654 after 160 ply",
     "levels": [
       {
+        "visits": 64,
         "uciElo": 1320,
         "games": 8,
-        "wins": 2,
+        "wins": 7,
         "draws": 0,
-        "losses": 6,
-        "score": 0.25
+        "losses": 1,
+        "score": 0.875
       },
       {
+        "visits": 64,
         "uciElo": 1500,
         "games": 8,
-        "wins": 0,
+        "wins": 1,
         "draws": 0,
-        "losses": 8,
-        "score": 0
+        "losses": 7,
+        "score": 0.125
       },
       {
+        "visits": 64,
         "uciElo": 1800,
         "games": 8,
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0
+        "score": 0.0
       },
       {
+        "visits": 64,
         "uciElo": 2000,
         "games": 8,
         "wins": 0,
         "draws": 0,
         "losses": 8,
-        "score": 0
+        "score": 0.0
       }
     ],
-    "estimatedElo": null,
-    "eloLabel": "2/8 vs 1320",
-    "eloLo": null,
-    "eloHi": 1320,
+    "estimatedElo": 1370,
+    "eloLabel": "1370",
+    "eloLo": 1205,
+    "eloHi": 1525,
     "games": 32,
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating."
   },
@@ -145,10 +149,10 @@
     "visits": 64,
     "uciElo": 1320,
     "games": 8,
-    "wins": 2,
+    "wins": 7,
     "draws": 0,
-    "losses": 6,
-    "score": 0.25
+    "losses": 1,
+    "score": 0.875
   },
   "climbGames": 256,
   "keepDiscard": "stockfish-18-uci-elo-1320-64-visit",
@@ -173,25 +177,34 @@
       "loss": 3.3034526532834714
     }
   ],
-  "humanMonths": "lichess-2013-01..04",
+  "humanMonths": "lichess-2013-01..2013-05",
   "historyHuman2": [
     {
       "epoch": 1,
-      "policy": 2.4176342466175,
-      "value": 0.821090362964789,
-      "loss": 3.238724610691165
+      "policy": 2.1945602174789185,
+      "value": 0.8030326693593937,
+      "loss": 2.997592887123161
     },
     {
       "epoch": 2,
-      "policy": 2.300105688168665,
-      "value": 0.8088542020937387,
-      "loss": 3.1089598904658673
+      "policy": 2.128172774489045,
+      "value": 0.7969663628825435,
+      "loss": 2.925139136761198
     },
     {
       "epoch": 3,
-      "policy": 2.220381765443731,
-      "value": 0.8014600978082389,
-      "loss": 3.021841862926428
+      "policy": 2.0781569888230007,
+      "value": 0.792222998719672,
+      "loss": 2.8703799878071754
     }
-  ]
+  ],
+  "vsSf1500": {
+    "visits": 64,
+    "uciElo": 1500,
+    "games": 8,
+    "wins": 1,
+    "draws": 0,
+    "losses": 7,
+    "score": 0.125
+  }
 }
