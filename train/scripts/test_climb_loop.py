@@ -42,6 +42,17 @@ def test_climb_m_generates_at_256_snapshots_at_64() -> None:
     assert "gauntletElo" in text
 
 
+def test_months_m_continues_tinyaz_m() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "tinyaz-m.bin" in text
+    assert "tinyaz-s.bin" not in text
+    assert "train_candidate" in text
+    assert "PLAY_VISITS" in text
+    assert "300_000" in text
+    assert "vs_stockfish_64" in text
+    assert "beats_published" in text
+
+
 def test_train_visits_is_256() -> None:
     from tinyaz.constants import SNAPSHOT_VISITS, TRAIN_VISITS
 
@@ -141,6 +152,7 @@ def main() -> None:
     tests = [
         test_play_visits_is_64,
         test_climb_m_generates_at_256_snapshots_at_64,
+        test_months_m_continues_tinyaz_m,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,
