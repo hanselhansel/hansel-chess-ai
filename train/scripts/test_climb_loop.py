@@ -71,6 +71,16 @@ def test_beats_published_requires_strict_improvement() -> None:
     assert beats_published(0.0, 0.125) is False
 
 
+def test_above_1320_needs_1500_point_or_mle() -> None:
+    from tinyaz.promote import above_1320
+
+    assert above_1320({"score": 0.25}, None, None) is False
+    assert above_1320({"score": 0.5}, None, None) is False
+    assert above_1320({"score": 0.25}, {"score": 0.125}, None) is True
+    assert above_1320({"score": 0.625}, None, {"estimatedElo": 1400}) is True
+    assert above_1320({"score": 0.625}, None, {"estimatedElo": 1200}) is False
+
+
 def test_elo_label_is_wdl_not_plus() -> None:
     from tinyaz.promote import elo_label_from_sf
 
@@ -118,6 +128,7 @@ def main() -> None:
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,
+        test_above_1320_needs_1500_point_or_mle,
         test_elo_label_is_wdl_not_plus,
         test_mix_does_not_double_count_new,
         test_identical_nets_snapshot_score_is_half,
