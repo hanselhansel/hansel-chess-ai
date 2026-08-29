@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11, PyTorch MPS, Stockfish 18 ruler, existing 1.5M jsonl.
 
-CURRENT_WORKING_FILE: `train/src/tinyaz/model.py`
+CURRENT_WORKING_FILE: `public/weights/tinyaz-m.bin`
 
 ---
 
