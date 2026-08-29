@@ -27,14 +27,19 @@ def test_play_visits_is_64() -> None:
     assert "TRAIN_VISITS" not in text
 
 
-def test_climb_m_is_64_visit_on_tinyaz_m() -> None:
+def test_climb_m_generates_at_256_snapshots_at_64() -> None:
     text = (ROOT / "train/scripts/climb_m.py").read_text()
     assert "tinyaz-m.bin" in text
-    assert "PLAY_VISITS" in text
-    assert "visits=PLAY_VISITS" in text or "visits=PLAY_VISITS," in text
-    assert "TRAIN_VISITS" not in text
+    assert "TRAIN_VISITS" in text
+    assert "CLIMB_VISITS" in text
+    assert "CLIMB_EPOCHS" in text
+    assert "visits=gen_visits" in text
+    assert "visits=PLAY_VISITS" in text
+    assert "selfplay-m-256.jsonl" in text
     assert "vs_snapshot" in text
     assert "0.5" in text
+    assert '"selfplayVisits": gen_visits' in text or '"selfplayVisits":gen_visits' in text
+    assert "gauntletElo" in text
 
 
 def test_train_visits_is_256() -> None:
@@ -135,7 +140,7 @@ def test_generate_pi_indices_are_legal() -> None:
 def main() -> None:
     tests = [
         test_play_visits_is_64,
-        test_climb_m_is_64_visit_on_tinyaz_m,
+        test_climb_m_generates_at_256_snapshots_at_64,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,
