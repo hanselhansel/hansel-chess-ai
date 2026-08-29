@@ -42,6 +42,13 @@ def test_climb_m_generates_at_256_snapshots_at_64() -> None:
     assert "gauntletElo" in text
 
 
+def test_climb_m_skip_generate_uses_existing_jsonl_and_mix_env() -> None:
+    text = (ROOT / "train/scripts/climb_m.py").read_text()
+    assert "CLIMB_SKIP_GENERATE" in text
+    assert "CLIMB_LICHESS_MIX" in text
+    assert "skip generate" in text
+
+
 def test_months_m_continues_tinyaz_m() -> None:
     text = (ROOT / "train/scripts/months_m.py").read_text()
     assert "tinyaz-m.bin" in text
@@ -58,6 +65,22 @@ def test_months_m_keep_requires_1500_floor_and_rates_1800() -> None:
     assert "or score1320 > 0.5" not in text
     assert "score1500 >= floor" in text
     assert "elo=1800" in text or "_sf(CAND, 1800)" in text
+
+
+def test_months_m_from_env_overrides_last_trained_month() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "MONTHS_FROM" in text
+    src = ROOT / "train/scripts"
+    sys.path.insert(0, str(src))
+    import months_m
+
+    os_env = __import__("os")
+    os_env.environ["MONTHS_FROM"] = "2013-09"
+    try:
+        assert months_m.last_trained_month({}) == "2013-09"
+        assert months_m.last_trained_month({"humanMonths": "lichess-2013-01..2013-07"}) == "2013-09"
+    finally:
+        os_env.environ.pop("MONTHS_FROM", None)
 
 
 def test_train_visits_is_256() -> None:
@@ -159,8 +182,10 @@ def main() -> None:
     tests = [
         test_play_visits_is_64,
         test_climb_m_generates_at_256_snapshots_at_64,
+        test_climb_m_skip_generate_uses_existing_jsonl_and_mix_env,
         test_months_m_continues_tinyaz_m,
         test_months_m_keep_requires_1500_floor_and_rates_1800,
+        test_months_m_from_env_overrides_last_trained_month,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,

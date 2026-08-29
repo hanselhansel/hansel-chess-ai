@@ -37,6 +37,9 @@ def _meta() -> dict:
 
 
 def last_trained_month(meta: dict) -> str:
+    override = os.environ.get("MONTHS_FROM", "").strip()
+    if override:
+        return override
     hm = str(meta.get("humanMonths") or meta.get("source") or "2013-05")
     tail = hm.split("..")[-1].replace("lichess-", "")
     if len(tail) == 7 and tail[4] == "-":
