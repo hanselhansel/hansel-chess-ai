@@ -1,7 +1,9 @@
 /** TinyAZ-S: 8 residual blocks × 64 channels. ~0.64M params. */
 
 export const N_PLANES = 19;
-export const CHANNELS = 64;
+export const CHANNELS_S = 64;
+export const CHANNELS_M = 128;
+export const CHANNELS = CHANNELS_S;
 export const N_BLOCKS = 8;
 export const POLICY_PLANES = 73;
 export const VALUE_CH = 8;

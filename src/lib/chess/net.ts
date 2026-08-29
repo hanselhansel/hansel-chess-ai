@@ -1,5 +1,4 @@
 import {
-  CHANNELS,
   N_BLOCKS,
   N_PLANES,
   POLICY_PLANES,
@@ -69,26 +68,27 @@ function relu(x: Float32Array) {
 export type NetOut = { policy: Float32Array; value: number };
 
 export function forward(planes: Float32Array, w: WeightSet): NetOut {
-  const a = new Float32Array(CHANNELS * 64);
-  const b = new Float32Array(CHANNELS * 64);
-  const c = new Float32Array(CHANNELS * 64);
-  conv3x3(planes, N_PLANES, CHANNELS, w.stemW, w.stemB, a);
+  const ch = w.stemB.length;
+  const a = new Float32Array(ch * 64);
+  const b = new Float32Array(ch * 64);
+  const c = new Float32Array(ch * 64);
+  conv3x3(planes, N_PLANES, ch, w.stemW, w.stemB, a);
   relu(a);
 
   for (let i = 0; i < N_BLOCKS; i++) {
     const bl = w.blocks[i];
-    conv3x3(a, CHANNELS, CHANNELS, bl.w1, bl.b1, b);
+    conv3x3(a, ch, ch, bl.w1, bl.b1, b);
     relu(b);
-    conv3x3(b, CHANNELS, CHANNELS, bl.w2, bl.b2, c);
+    conv3x3(b, ch, ch, bl.w2, bl.b2, c);
     for (let j = 0; j < a.length; j++) a[j] = a[j] + c[j];
     relu(a);
   }
 
   const policy = new Float32Array(POLICY_PLANES * 64);
-  conv1x1(a, CHANNELS, POLICY_PLANES, w.policyW, w.policyB, policy);
+  conv1x1(a, ch, POLICY_PLANES, w.policyW, w.policyB, policy);
 
   const vh = new Float32Array(VALUE_CH * 64);
-  conv1x1(a, CHANNELS, VALUE_CH, w.valueConvW, w.valueConvB, vh);
+  conv1x1(a, ch, VALUE_CH, w.valueConvW, w.valueConvB, vh);
   relu(vh);
 
   const h = new Float32Array(VALUE_HIDDEN);

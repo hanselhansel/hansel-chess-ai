@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { Chess } from "chess.js";
 import {
+  CHANNELS_M,
   FLOPS_PER_EVAL,
   PARAM_CAP,
   algebraicToIndex,
@@ -73,6 +74,12 @@ describe("tinyaz-s", () => {
     const n = paramCount();
     assert.ok(n < PARAM_CAP, `${n} >= cap`);
     assert.ok(n > 500_000, `${n} too small for 8x64`);
+  });
+
+  it("tinyaz-m 8x128 stays under 3M and above 2M", () => {
+    const n = paramCount(CHANNELS_M);
+    assert.ok(n < PARAM_CAP, `${n} >= cap`);
+    assert.ok(n > 2_000_000, `${n} too small for 8x128`);
   });
 
   it("counts ~39M MACs per eval so FLOPs/move is visits times that", () => {

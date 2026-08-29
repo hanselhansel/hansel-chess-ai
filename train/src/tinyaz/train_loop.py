@@ -11,7 +11,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from .constants import SOURCE_SELFPLAY_64
+from .constants import CHANNELS_M, SOURCE_SELFPLAY_64
 from .encode import planes_nchw
 from .model import TinyAZ
 from .pack import load_model, pack_model
@@ -118,6 +118,25 @@ def _train_on(
         history.append(row)
         print(row, f"{time.time() - t0:.0f}s", flush=True)
     model.eval()
+    return history
+
+
+def train_fresh(
+    rows: list[dict],
+    out_path: Path,
+    channels: int = CHANNELS_M,
+    source_id: int = SOURCE_SELFPLAY_64,
+    epochs: int = EPOCHS,
+    batch: int = BATCH,
+) -> list[dict]:
+    if not rows:
+        raise ValueError("no rows to train on")
+    device = pick_device()
+    model = TinyAZ(channels)
+    model.to(device)
+    history = _train_on(model, rows, device, epochs=epochs, batch=batch)
+    model.to("cpu")
+    pack_model(model, source_id, out_path)
     return history
 
 
