@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** more Lichess months (2013-06+), then retry SP. 256-visit / 4-epoch of m VOID: 64 games, 6596 pos, WDL 28–7–29, snapshot **0–8 (0.0)**. Same games, 1 epoch + 20k human: snapshot **4–4 (0.5)**, still not keep. Public m unchanged (`8c5a266c…`): **4–4 vs SF1320**, **2–6 vs SF1500**, MLE **1315**. `climb_m` generate/publish split (256/64) stays. Not 2500. Lichess BOT waits.
+**Next:** 50% vs SF1800 (now **1–1–6, 0.1875**). Then 2000. 2013-06 human on m KEEP: **7–1 vs 1320**, **6–2 vs 1500**, 24-game MLE **1630** (1475–1800). SHA `479bfe57…`. 256-visit / 4-epoch SP of the old 1315 net VOID 0–8. Not 2500. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
