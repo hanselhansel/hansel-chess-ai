@@ -1,7 +1,7 @@
 # 256-visit targets, 64-visit snapshot of tinyaz-m
 
 Date: 2026-08-29
-Status: **approved** (user: continue after 64-visit / 2-epoch VOID)
+Status: **VOID** (64 games × 256 visits, 4 epochs, snapshot 0–8). Public m unchanged.
 Repo: `hanselhansel/hansel-chess-ai`
 Predecessor: `docs/superpowers/specs/2026-08-29-tinyaz-m-selfplay-design.md`
 

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python, existing `tinyaz.generate` / `train_loop` / `rate`.
 
-CURRENT_WORKING_FILE: train/scripts/climb_m.py
+CURRENT_WORKING_FILE: docs/LATER.md
 
 ---
 
