@@ -4,10 +4,10 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) continued on Lichess 2013-01..06 (1.8M). tinyaz-s stays on disk as the 1370 net.
+This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) continued on Lichess 2013-01..07 (2.1M). tinyaz-s stays on disk as the 1370 net.
 
 - **1-visit vs random-move: 18–2–0** (passed; not an Elo)
-- **64-visit vs Stockfish 18: 7–1 vs `UCI_Elo` 1320, 6–2 vs 1500, 1–1–6 vs 1800.** 24-game MLE **1630** (1475–1800). Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
+- **64-visit vs Stockfish 18: 6–2 vs `UCI_Elo` 1320, 7–1 vs 1500, 3–1–4 vs 1800.** 24-game MLE **1715** (1550–1890). Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
 
 1-visit and 64-visit stay separate. There is no Lichess rating yet (BOT later).
 
