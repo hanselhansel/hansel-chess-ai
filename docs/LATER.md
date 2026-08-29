@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** not more of the same 64-visit / 2-epoch mix. Spec: `docs/superpowers/specs/2026-08-29-tinyaz-m-selfplay-design.md`. 64-game loops VOID (0.4375, 0.25, 0.375). Scale 256 games, 27308 pos, fresh replay, also VOID (**1–1–6, 0.1875**). Public m unchanged: **4–4 vs SF1320**, **2–6 vs SF1500**, MLE **1315**. Not 2500. Lichess BOT waits.
+**Next:** more Lichess months (2013-06+), then retry SP. 256-visit / 4-epoch of m VOID: 64 games, 6596 pos, WDL 28–7–29, snapshot **0–8 (0.0)**. Same games, 1 epoch + 20k human: snapshot **4–4 (0.5)**, still not keep. Public m unchanged (`8c5a266c…`): **4–4 vs SF1320**, **2–6 vs SF1500**, MLE **1315**. `climb_m` generate/publish split (256/64) stays. Not 2500. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 

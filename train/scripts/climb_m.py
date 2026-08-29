@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""64-visit self-play of tinyaz-m. Snapshot keep > 0.5. Public only if 1500 not worse."""
+"""256-visit generate of tinyaz-m. Snapshot/publish at 64. Public only if 1500 not worse."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "train" / "src"))
 sys.path.insert(0, str(ROOT / "train" / "scripts"))
 
 from elo_gauntlet import mle_elo  # noqa: E402
-from tinyaz.constants import PLAY_VISITS, SOURCE_SELFPLAY_64  # noqa: E402
+from tinyaz.constants import PLAY_VISITS, SOURCE_SELFPLAY_64, TRAIN_VISITS  # noqa: E402
 from tinyaz.generate import generate  # noqa: E402
 from tinyaz.promote import freeze_snapshot, maybe_promote  # noqa: E402
 from tinyaz.rate import vs_random, vs_snapshot, vs_stockfish_64  # noqa: E402
@@ -22,7 +22,7 @@ from tinyaz.train_loop import load_jsonl, mix_for_train, train_candidate  # noqa
 PUBLIC = ROOT / "public/weights/tinyaz-m.bin"
 CAND = ROOT / "train/checkpoints/tinyaz-m-cand.bin"
 SNAPSHOT = ROOT / "train/checkpoints/snapshot-m.bin"
-SP_JSONL = ROOT / "train/data/selfplay-m.jsonl"
+SP_JSONL = ROOT / "train/data/selfplay-m-256.jsonl"
 HUMAN_JSONL = ROOT / "train/data/human/train.jsonl"
 SF_PATH = ROOT / "train/bin/stockfish"
 META_PUBLIC = ROOT / "public/weights/tinyaz-m.meta.json"
@@ -54,8 +54,8 @@ def _expand(row: dict) -> list[tuple[int, float]]:
     return [(elo, 1.0)] * int(row["wins"]) + [(elo, 0.5)] * int(row.get("draws") or 0) + [(elo, 0.0)] * int(row["losses"])
 
 
-def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None) -> dict:
-    out = {**meta, "vsRandom": rnd, "vsSf1320": sf1320, "vsSf1500": sf1500, "selfplayVisits": PLAY_VISITS}
+def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None, gen_visits: int) -> dict:
+    out = {**meta, "vsRandom": rnd, "vsSf1320": sf1320, "vsSf1500": sf1500, "selfplayVisits": gen_visits, "playVisits": PLAY_VISITS}
     g = dict(out.get("gauntletElo") or {})
     g["visits"] = PLAY_VISITS
     levels = []
@@ -78,15 +78,15 @@ def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None)
     return out
 
 
-def one_loop(loop: int, games: int, workers: int, floor: float) -> str:
+def one_loop(loop: int, games: int, workers: int, floor: float, gen_visits: int, epochs: int) -> str:
     freeze_snapshot(PUBLIC, SNAPSHOT)
     replay = load_jsonl(SP_JSONL, REPLAY_CAP)
     lichess = load_jsonl(HUMAN_JSONL, LICHESS_MIX)
-    print(f"generate {games} games × {PLAY_VISITS} visits workers {workers}", flush=True)
-    new_rows = generate(PUBLIC, games=games, visits=PLAY_VISITS, workers=workers, out_jsonl=SP_JSONL)
+    print(f"generate {games} games × {gen_visits} visits workers {workers}", flush=True)
+    new_rows = generate(PUBLIC, games=games, visits=gen_visits, workers=workers, out_jsonl=SP_JSONL)
     rows = mix_for_train(new_rows, replay, lichess)
     print(f"train on {len(new_rows)} new + replay {len(replay)} + human {len(lichess)}", flush=True)
-    history = train_candidate(PUBLIC, rows, CAND, source_id=SOURCE_SELFPLAY_64, epochs=2, batch=64)
+    history = train_candidate(PUBLIC, rows, CAND, source_id=SOURCE_SELFPLAY_64, epochs=epochs, batch=64)
     snap = vs_snapshot(CAND, SNAPSHOT, games=8, visits=PLAY_VISITS)
     print("m vs snapshot 64-visit", snap, flush=True)
     if snap["score"] <= 0.5:
@@ -106,7 +106,7 @@ def one_loop(loop: int, games: int, workers: int, floor: float) -> str:
         print(f"VOID public: SF1500 {score1500} < floor {floor}. Side checkpoint kept.", flush=True)
         maybe_promote(True, CAND, ROOT / f"train/checkpoints/tinyaz-m-sp{loop}.bin", {"vsSnapshot": snap, "historyClimb": history, "vsSf1500": sf1500}, [CAND.with_suffix(".meta.json")])
         return "VOID"
-    meta = _write_card({**_meta(), "vsSnapshot": snap, "historyClimb": history, "selfplayLoops": loop}, rnd, sf1320, sf1500)
+    meta = _write_card({**_meta(), "vsSnapshot": snap, "historyClimb": history, "selfplayLoops": loop, "epochs": epochs}, rnd, sf1320, sf1500, gen_visits)
     maybe_promote(True, CAND, PUBLIC, meta, [META_PUBLIC, META_SRC])
     print("KEEP. Promoted", PUBLIC, "1500", score1500, flush=True)
     if score1500 >= 0.5:
@@ -120,11 +120,13 @@ def main() -> None:
     games = int(os.environ.get("CLIMB_GAMES", "64"))
     workers = int(os.environ.get("CLIMB_WORKERS", str(max(1, (os.cpu_count() or 2) - 2))))
     nloops = min(MAX_LOOPS, max(1, int(os.environ.get("CLIMB_MAX_LOOPS", "3"))))
+    gen_visits = int(os.environ.get("CLIMB_VISITS", str(TRAIN_VISITS)))
+    epochs = int(os.environ.get("CLIMB_EPOCHS", "4"))
     floor = published_1500(_meta())
-    print(f"climb_m games {games} play {PLAY_VISITS} floor1500 {floor} loops {nloops}", flush=True)
+    print(f"climb_m games {games} generate {gen_visits} play {PLAY_VISITS} epochs {epochs} floor1500 {floor} loops {nloops}", flush=True)
     voids = 0
     for loop in range(1, nloops + 1):
-        status = one_loop(loop, games, workers, floor)
+        status = one_loop(loop, games, workers, floor, gen_visits, epochs)
         print(f"loop {loop} {status}", flush=True)
         if status == "GATE":
             print("STOP: 50% vs SF1500.", flush=True)
