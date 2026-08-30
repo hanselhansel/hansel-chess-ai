@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** 2013-10 human month (skip redoing VOID 08/09). Mix search on 7160 256-visit games VOID: 1-epoch+20k snapshot **3–2–3 (0.5)**; 1-epoch+8k **2–1–5 (0.3125)**; 2-epoch+2k snapshot **5–1–2 (0.6875)** but SF1500 **3–5 (0.375)** < floor 0.875. Side checkpoint `tinyaz-m-sp1.bin`. 2013-09 human VOID: 2.7M, 3 epochs, 1500 **6–2 (0.75)**. 2013-08 also VOID. Public SHA `0386a100…` unchanged. MLE **1715**. Not 2500. Lichess BOT waits.
+**Next:** 2013-11 human month (`MONTHS_FROM=2013-10`, 300k × 11). 2013-10 human VOID: 3.0M, 3 epochs, random **19–1–0**, SF1320 **7–1 (0.875)**, SF1500 **5–3 (0.625)** < floor 0.875, SF1800 **1–7 (0.125)**. Side checkpoint `tinyaz-m-mo1.bin` (`3c8d4c00…`). Mix search on 7160 256-visit games VOID: 1-epoch+20k snapshot **3–2–3 (0.5)**; 1-epoch+8k **2–1–5 (0.3125)**; 2-epoch+2k snapshot **5–1–2 (0.6875)** but SF1500 **3–5 (0.375)** < floor 0.875. Side checkpoint `tinyaz-m-sp1.bin`. 2013-09 human VOID: 2.7M, 1500 **6–2 (0.75)**. 2013-08 also VOID. Public SHA `0386a100…` unchanged. MLE **1715**. Not 2500. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
