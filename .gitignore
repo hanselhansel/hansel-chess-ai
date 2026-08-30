@@ -20,7 +20,6 @@ __pycache__/
 .env
 .env.*
 .node_modules.lock
-AGENTS.md
 .vercel/
 train/data/
 train/checkpoints/
