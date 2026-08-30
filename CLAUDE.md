@@ -1,3 +1,3 @@
 # hansel-chess-ai
 
-Repo instructions live in [AGENTS.md](AGENTS.md). Read it first.
+Read [README.md](README.md). It is the single source of truth for this repo.

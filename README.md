@@ -48,5 +48,12 @@ See [docs/LATER.md](docs/LATER.md) and [the tinyaz-m ladder spec](docs/superpowe
 ```
 npm test          # includes src/lib/chess/chess.test.ts
 npm run typecheck
+npm run lint
 npm run dev
 ```
+
+No CI runs in this repo. Run the three checks yourself before pushing. Python
+training is a separate package under `train/` and needs `PYTHONPATH=train/src`.
+
+Publishing a checkpoint touches three files together: `public/weights/<name>.bin`,
+its `.meta.json`, and `src/lib/chess/checkpoint-meta.json`.
