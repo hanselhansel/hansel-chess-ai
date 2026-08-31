@@ -83,6 +83,15 @@ def test_months_m_from_env_overrides_last_trained_month() -> None:
         os_env.environ.pop("MONTHS_FROM", None)
 
 
+def test_months_m_skip_rebuild_and_rate_only_env() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "MONTHS_SKIP_REBUILD" in text
+    assert "MONTHS_SKIP_RATE" in text
+    assert "MONTHS_RATE_ONLY" in text
+    assert "skip rebuild" in text
+    assert "TRAINED" in text
+
+
 def test_train_visits_is_256() -> None:
     from tinyaz.constants import SNAPSHOT_VISITS, TRAIN_VISITS
 
@@ -186,6 +195,7 @@ def main() -> None:
         test_months_m_continues_tinyaz_m,
         test_months_m_keep_requires_1500_floor_and_rates_1800,
         test_months_m_from_env_overrides_last_trained_month,
+        test_months_m_skip_rebuild_and_rate_only_env,
         test_train_visits_is_256,
         test_void_does_not_change_public_weights,
         test_beats_published_requires_strict_improvement,

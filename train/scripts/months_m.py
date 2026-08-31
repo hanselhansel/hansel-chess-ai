@@ -58,6 +58,10 @@ def published_1500(meta: dict) -> float:
     return published_score(meta, "vsSf1500")
 
 
+def _flag(name: str) -> bool:
+    return os.environ.get(name, "").strip().lower() in {"1", "true", "yes"}
+
+
 def _sf(path: Path, elo: int) -> dict | None:
     return vs_stockfish_64(path, elo=elo, sf_path=SF_PATH if SF_PATH.exists() else None, visits=PLAY_VISITS)
 
@@ -90,18 +94,34 @@ def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None,
 def one_loop(loop: int) -> str:
     meta = _meta()
     nxt = next_month(last_trained_month(meta))
-    ensure_month(nxt)
+    rate_only = _flag("MONTHS_RATE_ONLY")
+    skip_rebuild = rate_only or _flag("MONTHS_SKIP_REBUILD")
+    skip_rate = _flag("MONTHS_SKIP_RATE")
+    if not skip_rebuild:
+        ensure_month(nxt)
     pgns = find_pgns()
     label = months_label(pgns)
     max_train = PER_MONTH * len(pgns)
-    print(f"rebuild {label} archives {len(pgns)} cap {max_train}", flush=True)
-    stats = write_human_months(pgns, OUT_TRAIN, OUT_VAL, max_train=max_train)
-    print("wrote", OUT_TRAIN, stats, flush=True)
-    rows = load_jsonl(OUT_TRAIN, cap=max_train)
     epochs = int(os.environ.get("HUMAN_EPOCHS", "3"))
     batch = int(os.environ.get("HUMAN_BATCH", "256"))
-    print(f"train_candidate m {len(rows)} epochs {epochs} batch {batch}", flush=True)
-    history = train_candidate(PUBLIC, rows, CAND, source_id=SOURCE_LICHESS_2013_01, epochs=epochs, batch=batch)
+    history: list = []
+    if rate_only:
+        print(f"rate only {CAND}", flush=True)
+        if not CAND.exists():
+            raise SystemExit(f"missing {CAND}")
+    else:
+        if skip_rebuild:
+            print(f"skip rebuild: train existing {OUT_TRAIN} cap {max_train}", flush=True)
+        else:
+            print(f"rebuild {label} archives {len(pgns)} cap {max_train}", flush=True)
+            stats = write_human_months(pgns, OUT_TRAIN, OUT_VAL, max_train=max_train)
+            print("wrote", OUT_TRAIN, stats, flush=True)
+        rows = load_jsonl(OUT_TRAIN, cap=max_train)
+        print(f"train_candidate m {len(rows)} epochs {epochs} batch {batch}", flush=True)
+        history = train_candidate(PUBLIC, rows, CAND, source_id=SOURCE_LICHESS_2013_01, epochs=epochs, batch=batch)
+        if skip_rate:
+            print("TRAINED. Packed", CAND, "skip rate.", flush=True)
+            return "TRAINED"
     rnd = vs_random(CAND)
     print("m vs random", rnd, flush=True)
     if not rnd.get("passed"):
