@@ -17,7 +17,7 @@ Play / published search: **64 visits**. Self-play targets: **256 visits**. 1-vis
 
 ## Status
 
-Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **6–2 vs SF1320**, **7–1 vs SF1500**, **3–1–4 vs SF1800**, 24-game MLE **1715**. 1-visit vs random **18–2–0**. s (1370) kept on disk.
+Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **8–0 vs SF1320**, **7–1 vs SF1500**, **4–1–3 vs SF1800**, 24-game MLE **1895**. GATE vs SF1800. 1-visit vs random **20–0–0**. s (1370) kept on disk.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py

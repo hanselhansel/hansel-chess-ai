@@ -34,10 +34,10 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 19,
-    "draws": 1,
+    "wins": 20,
+    "draws": 0,
     "losses": 0,
-    "score": 0.975,
+    "score": 1.0,
     "passed": true,
     "adjudication": "mate, else material\u22654 after 240 ply"
   },
@@ -60,10 +60,10 @@
         "visits": 64,
         "uciElo": 1320,
         "games": 8,
-        "wins": 6,
+        "wins": 8,
         "draws": 0,
-        "losses": 2,
-        "score": 0.75
+        "losses": 0,
+        "score": 1.0
       },
       {
         "visits": 64,
@@ -78,16 +78,16 @@
         "visits": 64,
         "uciElo": 1800,
         "games": 8,
-        "wins": 3,
+        "wins": 4,
         "draws": 1,
-        "losses": 4,
-        "score": 0.4375
+        "losses": 3,
+        "score": 0.5625
       }
     ],
-    "estimatedElo": 1735,
-    "eloLabel": "1735",
-    "eloLo": 1570,
-    "eloHi": 1920,
+    "estimatedElo": 1895,
+    "eloLabel": "1895",
+    "eloLo": 1705,
+    "eloHi": 2115,
     "games": 24,
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 24 games (1320+1500+1800)."
   },
@@ -140,10 +140,10 @@
     "visits": 64,
     "uciElo": 1320,
     "games": 8,
-    "wins": 6,
+    "wins": 8,
     "draws": 0,
-    "losses": 2,
-    "score": 0.75
+    "losses": 0,
+    "score": 1.0
   },
   "climbGames": 256,
   "keepDiscard": "stockfish-18-uci-elo-1500-1800-64-visit",
@@ -168,7 +168,7 @@
       "loss": 3.3034526532834714
     }
   ],
-  "humanMonths": "lichess-2013-01..2014-03",
+  "humanMonths": "lichess-2013-01..2014-04",
   "historyHuman2": [
     {
       "epoch": 1,
@@ -225,9 +225,9 @@
     "visits": 64,
     "uciElo": 1800,
     "games": 8,
-    "wins": 3,
+    "wins": 4,
     "draws": 1,
-    "losses": 4,
-    "score": 0.4375
+    "losses": 3,
+    "score": 0.5625
   }
 }
