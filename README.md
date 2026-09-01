@@ -4,10 +4,10 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 
 > Strongest from-scratch AlphaZero-style chess net you can play in the browser, watch think, and rate, under 3M parameters.
 
-This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) continued on Lichess 2013-01..07 (2.1M). tinyaz-s stays on disk as the 1370 net.
+This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) continued on Lichess 2013-01..2014-03 (4.5M). tinyaz-s stays on disk as the 1370 net.
 
-- **1-visit vs random-move: 18–2–0** (passed; not an Elo)
-- **64-visit vs Stockfish 18: 6–2 vs `UCI_Elo` 1320, 7–1 vs 1500, 3–1–4 vs 1800.** 24-game MLE **1715** (1550–1890). Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
+- **1-visit vs random-move: 19–1–0** (passed; not an Elo)
+- **64-visit vs Stockfish 18: 6–2 vs `UCI_Elo` 1320, 7–1–0 vs 1500, 3–1–4 vs 1800.** 24-game MLE **1735** (1570–1920). Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
 
 1-visit and 64-visit stay separate. There is no Lichess rating yet (BOT later).
 
@@ -41,7 +41,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md) and [the tinyaz-m ladder spec](docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md). Playable net is m. Next is 2014-03 human month toward 50% vs SF1800. Not 2500 yet.
+See [docs/LATER.md](docs/LATER.md) and [the tinyaz-m ladder spec](docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md). Playable net is m. Next is 2014-04 human month toward 50% vs SF1800. Not 2500 yet.
 
 ## Develop
 
