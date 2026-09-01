@@ -67,6 +67,15 @@ def test_months_m_keep_requires_1500_floor_and_rates_1800() -> None:
     assert "elo=1800" in text or "_sf(CAND, 1800)" in text
 
 
+def test_months_m_rates_2000_and_gates_on_2000() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "_sf(CAND, 2000)" in text
+    assert "score2000 >= 0.5" in text
+    assert "vsSf2000" in text
+    assert "STOP: 50% vs SF2000." in text
+    assert "STOP: 50% vs SF1500." not in text
+
+
 def test_months_m_from_env_overrides_last_trained_month() -> None:
     text = (ROOT / "train/scripts/months_m.py").read_text()
     assert "MONTHS_FROM" in text
@@ -194,6 +203,7 @@ def main() -> None:
         test_climb_m_skip_generate_uses_existing_jsonl_and_mix_env,
         test_months_m_continues_tinyaz_m,
         test_months_m_keep_requires_1500_floor_and_rates_1800,
+        test_months_m_rates_2000_and_gates_on_2000,
         test_months_m_from_env_overrides_last_trained_month,
         test_months_m_skip_rebuild_and_rate_only_env,
         test_train_visits_is_256,
