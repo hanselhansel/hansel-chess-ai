@@ -34,10 +34,10 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 20,
-    "draws": 0,
+    "wins": 19,
+    "draws": 1,
     "losses": 0,
-    "score": 1.0,
+    "score": 0.975,
     "passed": true,
     "adjudication": "mate, else material\u22654 after 240 ply"
   },
@@ -69,27 +69,36 @@
         "visits": 64,
         "uciElo": 1500,
         "games": 8,
-        "wins": 7,
-        "draws": 1,
+        "wins": 8,
+        "draws": 0,
         "losses": 0,
-        "score": 0.9375
+        "score": 1.0
       },
       {
         "visits": 64,
         "uciElo": 1800,
         "games": 8,
-        "wins": 4,
+        "wins": 2,
         "draws": 1,
-        "losses": 3,
-        "score": 0.5625
+        "losses": 5,
+        "score": 0.3125
+      },
+      {
+        "visits": 64,
+        "uciElo": 2000,
+        "games": 8,
+        "wins": 2,
+        "draws": 1,
+        "losses": 5,
+        "score": 0.3125
       }
     ],
-    "estimatedElo": 1895,
-    "eloLabel": "1895",
-    "eloLo": 1705,
-    "eloHi": 2115,
-    "games": 24,
-    "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 24 games (1320+1500+1800)."
+    "estimatedElo": 1825,
+    "eloLabel": "1825",
+    "eloLo": 1675,
+    "eloHi": 1980,
+    "games": 32,
+    "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 32 games (1320+1500+1800+2000)."
   },
   "flopsPerEval": 153092160,
   "selfplayLoops": 1,
@@ -168,7 +177,7 @@
       "loss": 3.3034526532834714
     }
   ],
-  "humanMonths": "lichess-2013-01..2014-04",
+  "humanMonths": "lichess-2013-01..2014-05",
   "historyHuman2": [
     {
       "epoch": 1,
@@ -193,10 +202,10 @@
     "visits": 64,
     "uciElo": 1500,
     "games": 8,
-    "wins": 7,
-    "draws": 1,
+    "wins": 8,
+    "draws": 0,
     "losses": 0,
-    "score": 0.9375
+    "score": 1.0
   },
   "channels": 128,
   "historyM": [
@@ -225,9 +234,18 @@
     "visits": 64,
     "uciElo": 1800,
     "games": 8,
-    "wins": 4,
+    "wins": 2,
     "draws": 1,
-    "losses": 3,
-    "score": 0.5625
+    "losses": 5,
+    "score": 0.3125
+  },
+  "vsSf2000": {
+    "visits": 64,
+    "uciElo": 2000,
+    "games": 8,
+    "wins": 2,
+    "draws": 1,
+    "losses": 5,
+    "score": 0.3125
   }
 }
