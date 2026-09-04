@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** 2014-08 human month (`MONTHS_FROM=2014-07`, 300k × 20). 2014-07 human **VOID**: 5.7M, 3 epochs, random **19–1–0**, SF1320 **8–0 (1.0)**, SF1500 **5–2–1 (0.75)** below floor 1.0, SF1800 **5–3 (0.625)** beats 0.3125, SF2000 **4–4 (0.5)** is 8-game noise not GATE (floor failed). Checkpoint `tinyaz-m-mo2014-07.bin` (`11467a52…`). 2014-06 VOID 1500 **7–0–1**. 2014-05 KEEP public SHA `640ef8f7…` unchanged. 32-game MLE **1825**. Next rung 50% vs SF2000. Not 2500. Lichess BOT waits.
+**Next:** 2014-09 human month (`MONTHS_FROM=2014-08`, 300k × 21). 2014-08 human **VOID**: 6.0M, 3 epochs, random **20–0–0**, SF1320 **8–0 (1.0)**, SF1500 **7–1–0 (0.9375)** below floor 1.0, SF1800 **4–4 (0.5)** beats 0.3125, SF2000 **2–6 (0.25)** not GATE. Checkpoint `tinyaz-m-mo2014-08.bin` (`2a52baf4…`). 2014-07 VOID 1500 **5–2–1**, 8-game 2000 **4–4**. 2014-06 VOID 1500 **7–0–1**. 2014-05 KEEP public SHA `640ef8f7…` unchanged. 32-game MLE **1825**. Next rung 50% vs SF2000. Not 2500. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
