@@ -41,7 +41,7 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 
 ## What is later
 
-See [docs/LATER.md](docs/LATER.md) and [the tinyaz-m ladder spec](docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md). Playable net is m. Next is 2014-12 human month toward 50% vs SF2000. Not 2500 yet.
+See [docs/LATER.md](docs/LATER.md) and [the tinyaz-m ladder spec](docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md). Playable net is m. Next is 2015-01 human month toward 50% vs SF2000. Not 2500 yet.
 
 ## Develop
 

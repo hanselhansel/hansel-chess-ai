@@ -17,7 +17,7 @@ Play / published search: **64 visits**. Self-play targets: **256 visits**. 1-vis
 
 ## Status
 
-Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **8–0 vs SF1320**, **8–0 vs SF1500**, **2–1–5 vs SF1800**, **2–1–5 vs SF2000**, 32-game MLE **1825**. Public SHA `640ef8f7`. 2014-11 VOID (1500 5–3 below floor 1.0; 8-game 2000 4–1–3 is not GATE). 2014-10/09/08/07/06 VOID. Not GATE vs SF2000. 1-visit vs random **19–1–0**. s (1370) kept on disk.
+Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **8–0 vs SF1320**, **8–0 vs SF1500**, **2–1–5 vs SF1800**, **2–1–5 vs SF2000**, 32-game MLE **1825**. Public SHA `640ef8f7`. 2014-12 VOID (1500 5–2–1 below floor 1.0). 2014-11/10/09/08/07/06 VOID. Not GATE vs SF2000. 1-visit vs random **19–1–0**. s (1370) kept on disk.
 
 ```
 PYTHONPATH=train/src python3 train/scripts/test_encode.py
