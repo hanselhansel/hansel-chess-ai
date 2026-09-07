@@ -1,5 +1,5 @@
 # Copy to config.yml inside a lichess-bot clone. Never commit the copy (it holds the token).
-# Account: hansel-chess-ai — fresh Lichess user, zero games, then upgrade to BOT.
+# Account: hanselhansel — BOT. Zero games before upgrade. UCI id is hansel-chess-ai.
 
 token: "PUT_LICHESS_BOT_TOKEN_HERE"
 url: "https://lichess.org/"

@@ -9,7 +9,7 @@ This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) 
 - **1-visit vs random-move: 19–1–0** (passed; not an Elo)
 - **64-visit vs Stockfish 18: 8–0 vs `UCI_Elo` 1320, 8–0 vs 1500, 5–1–2 vs 1800, 4–2–2 vs 2000, 2–1–5 vs 2200, 0–8 vs 2500.** 48-game MLE **2035** (1895–2175). KEEP+GATE vs SF2000 on 8 games. 2500 is 0–8. Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
 
-1-visit and 64-visit stay separate. Lichess BOT account is **hansel-chess-ai** (fresh account, 64 visits). There is no Lichess rating until that bot has rated games.
+1-visit and 64-visit stay separate. Lichess BOT is **[hanselhansel](https://lichess.org/@/hanselhansel)** (64 visits). There is no Lichess rating until that bot has rated games.
 
 ## UCI
 

@@ -31,7 +31,11 @@ venv/
 *.pgn.zst
 *.jsonl
 train/lichess-bot/config.yml
+train/lichess-bot/.token
+train/lichess-bot/runtime/
 train/lichess-bot/game_records/
+train/lichess-bot/bot.pid
+train/lichess-bot/bot.log
 
 
 .claude/worktrees/
