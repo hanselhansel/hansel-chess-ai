@@ -76,6 +76,16 @@ def test_months_m_rates_2000_and_gates_on_2000() -> None:
     assert "STOP: 50% vs SF1500." not in text
 
 
+def test_months_m_rates_2200_and_2500() -> None:
+    text = (ROOT / "train/scripts/months_m.py").read_text()
+    assert "_sf(CAND, 2200)" in text
+    assert "_sf(CAND, 2500)" in text
+    assert "vsSf2200" in text
+    assert "vsSf2500" in text
+    assert "MONTHS_RATE_HIGHER" in text
+    assert "rate_higher" in text
+
+
 def test_months_m_from_env_overrides_last_trained_month() -> None:
     text = (ROOT / "train/scripts/months_m.py").read_text()
     assert "MONTHS_FROM" in text
@@ -204,6 +214,7 @@ def main() -> None:
         test_months_m_continues_tinyaz_m,
         test_months_m_keep_requires_1500_floor_and_rates_1800,
         test_months_m_rates_2000_and_gates_on_2000,
+        test_months_m_rates_2200_and_2500,
         test_months_m_from_env_overrides_last_trained_month,
         test_months_m_skip_rebuild_and_rate_only_env,
         test_train_visits_is_256,

@@ -78,6 +78,8 @@ def _write_card(
     sf1500: dict | None,
     sf1800: dict | None = None,
     sf2000: dict | None = None,
+    sf2200: dict | None = None,
+    sf2500: dict | None = None,
 ) -> dict:
     out = {
         **meta,
@@ -86,11 +88,13 @@ def _write_card(
         "vsSf1500": sf1500,
         "vsSf1800": sf1800,
         "vsSf2000": sf2000,
+        "vsSf2200": sf2200,
+        "vsSf2500": sf2500,
         "playVisits": PLAY_VISITS,
     }
     g = dict(out.get("gauntletElo") or {})
     g["visits"] = PLAY_VISITS
-    levels = [lv for lv in (sf1320, sf1500, sf1800, sf2000) if lv]
+    levels = [lv for lv in (sf1320, sf1500, sf1800, sf2000, sf2200, sf2500) if lv]
     if levels:
         g["levels"] = levels
         obs = []
@@ -102,8 +106,38 @@ def _write_card(
         g["eloLo"] = est.get("lo")
         g["eloHi"] = est.get("hi")
         g["games"] = len(obs)
+        elos = ",".join(str(int(lv["uciElo"])) for lv in levels)
+        g["note"] = (
+            "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. "
+            f"Not a Lichess rating. {len(obs)} games ({elos})."
+        )
     out["gauntletElo"] = g
     return out
+
+
+def rate_higher() -> None:
+    """Rate SF2200/2500 on the public GATE net. Does not re-run keep."""
+    meta = _meta()
+    path = PUBLIC if PUBLIC.exists() else CAND
+    if not path.exists():
+        raise SystemExit(f"missing {path}")
+    print(f"rate higher {path}", flush=True)
+    sf2200 = _sf(path, 2200)
+    sf2500 = _sf(path, 2500)
+    print("m vs SF2200", sf2200, flush=True)
+    print("m vs SF2500", sf2500, flush=True)
+    card = _write_card(
+        meta,
+        meta.get("vsRandom") or {},
+        meta.get("vsSf1320"),
+        meta.get("vsSf1500"),
+        meta.get("vsSf1800"),
+        meta.get("vsSf2000"),
+        sf2200,
+        sf2500,
+    )
+    maybe_promote(True, path, PUBLIC, card, [META_PUBLIC, META_SRC])
+    print("HIGHER. Wrote 2200/2500 into public meta. Bin unchanged if already public.", flush=True)
 
 
 def one_loop(loop: int) -> str:
@@ -146,20 +180,30 @@ def one_loop(loop: int) -> str:
     sf1500 = _sf(CAND, 1500)
     sf1800 = _sf(CAND, 1800)
     sf2000 = _sf(CAND, 2000)
+    sf2200 = _sf(CAND, 2200)
+    sf2500 = _sf(CAND, 2500)
     print("m vs SF1320", sf1320, flush=True)
     print("m vs SF1500", sf1500, flush=True)
     print("m vs SF1800", sf1800, flush=True)
     print("m vs SF2000", sf2000, flush=True)
+    print("m vs SF2200", sf2200, flush=True)
+    print("m vs SF2500", sf2500, flush=True)
     score1500 = 0.0 if sf1500 is None else float(sf1500.get("score") or 0)
     score1800 = 0.0 if sf1800 is None else float(sf1800.get("score") or 0)
     score2000 = 0.0 if sf2000 is None else float(sf2000.get("score") or 0)
+    score2200 = 0.0 if sf2200 is None else float(sf2200.get("score") or 0)
+    score2500 = 0.0 if sf2500 is None else float(sf2500.get("score") or 0)
     floor = published_1500(meta)
     floor1800 = published_score(meta, "vsSf1800")
     floor2000 = published_score(meta, "vsSf2000")
+    floor2200 = published_score(meta, "vsSf2200")
+    floor2500 = published_score(meta, "vsSf2500")
     keep = score1500 >= floor and (
         beats_published(score1500, floor)
         or beats_published(score1800, floor1800)
         or beats_published(score2000, floor2000)
+        or beats_published(score2200, floor2200)
+        or beats_published(score2500, floor2500)
     )
     card = _write_card(
         {**meta, "humanMonths": label, "historyMonths": history, "selfplayLoops": loop},
@@ -168,17 +212,34 @@ def one_loop(loop: int) -> str:
         sf1500,
         sf1800,
         sf2000,
+        sf2200,
+        sf2500,
     )
     if not keep:
         print(
             f"VOID public: 1500 {score1500} need>={floor} and "
-            f"(1500>{floor} or 1800>{floor1800} or 2000>{floor2000}). Side checkpoint kept.",
+            f"(1500>{floor} or 1800>{floor1800} or 2000>{floor2000} "
+            f"or 2200>{floor2200} or 2500>{floor2500}). Side checkpoint kept.",
             flush=True,
         )
         maybe_promote(True, CAND, ROOT / f"train/checkpoints/tinyaz-m-mo{loop}.bin", card, [CAND.with_suffix(".meta.json")])
         return "VOID"
     maybe_promote(True, CAND, PUBLIC, card, [META_PUBLIC, META_SRC])
-    print("KEEP. Promoted", PUBLIC, "1500", score1500, "1800", score1800, "2000", score2000, flush=True)
+    print(
+        "KEEP. Promoted",
+        PUBLIC,
+        "1500",
+        score1500,
+        "1800",
+        score1800,
+        "2000",
+        score2000,
+        "2200",
+        score2200,
+        "2500",
+        score2500,
+        flush=True,
+    )
     if score2000 >= 0.5:
         return "GATE"
     return "IMPROVED"
@@ -187,6 +248,9 @@ def one_loop(loop: int) -> str:
 def main() -> None:
     if not PUBLIC.exists():
         raise SystemExit(f"missing {PUBLIC}")
+    if _flag("MONTHS_RATE_HIGHER"):
+        rate_higher()
+        return
     nloops = min(MAX_LOOPS, max(1, int(os.environ.get("CLIMB_MAX_LOOPS", "3"))))
     print(f"months_m play {PLAY_VISITS} floor1500 {published_1500(_meta())} loops {nloops}", flush=True)
     voids = 0
