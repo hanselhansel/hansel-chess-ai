@@ -34,10 +34,10 @@
   "vsRandom": {
     "visits": 1,
     "games": 20,
-    "wins": 18,
-    "draws": 2,
+    "wins": 19,
+    "draws": 1,
     "losses": 0,
-    "score": 0.95,
+    "score": 0.975,
     "passed": true,
     "adjudication": "mate, else material\u22654 after 240 ply"
   },
@@ -60,36 +60,63 @@
         "visits": 64,
         "uciElo": 1320,
         "games": 8,
-        "wins": 6,
+        "wins": 8,
         "draws": 0,
-        "losses": 2,
-        "score": 0.75
+        "losses": 0,
+        "score": 1.0
       },
       {
         "visits": 64,
         "uciElo": 1500,
         "games": 8,
-        "wins": 7,
+        "wins": 8,
         "draws": 0,
-        "losses": 1,
-        "score": 0.875
+        "losses": 0,
+        "score": 1.0
       },
       {
         "visits": 64,
         "uciElo": 1800,
         "games": 8,
-        "wins": 3,
+        "wins": 5,
         "draws": 1,
-        "losses": 4,
-        "score": 0.4375
+        "losses": 2,
+        "score": 0.6875
+      },
+      {
+        "visits": 64,
+        "uciElo": 2000,
+        "games": 8,
+        "wins": 4,
+        "draws": 2,
+        "losses": 2,
+        "score": 0.625
+      },
+      {
+        "visits": 64,
+        "uciElo": 2200,
+        "games": 8,
+        "wins": 2,
+        "draws": 1,
+        "losses": 5,
+        "score": 0.3125
+      },
+      {
+        "visits": 64,
+        "uciElo": 2500,
+        "games": 8,
+        "wins": 0,
+        "draws": 0,
+        "losses": 8,
+        "score": 0.0
       }
     ],
-    "estimatedElo": 1715,
-    "eloLabel": "1715",
-    "eloLo": 1550,
-    "eloHi": 1890,
-    "games": 24,
-    "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 24 games (1320+1500+1800)."
+    "estimatedElo": 2035,
+    "eloLabel": "2035",
+    "eloLo": 1895,
+    "eloHi": 2175,
+    "games": 48,
+    "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 48 games (1320,1500,1800,2000,2200,2500)."
   },
   "flopsPerEval": 153092160,
   "selfplayLoops": 1,
@@ -140,10 +167,10 @@
     "visits": 64,
     "uciElo": 1320,
     "games": 8,
-    "wins": 6,
+    "wins": 8,
     "draws": 0,
-    "losses": 2,
-    "score": 0.75
+    "losses": 0,
+    "score": 1.0
   },
   "climbGames": 256,
   "keepDiscard": "stockfish-18-uci-elo-1500-1800-64-visit",
@@ -168,7 +195,7 @@
       "loss": 3.3034526532834714
     }
   ],
-  "humanMonths": "lichess-2013-01..2013-07",
+  "humanMonths": "lichess-2013-01..2015-02",
   "historyHuman2": [
     {
       "epoch": 1,
@@ -193,10 +220,10 @@
     "visits": 64,
     "uciElo": 1500,
     "games": 8,
-    "wins": 7,
+    "wins": 8,
     "draws": 0,
-    "losses": 1,
-    "score": 0.875
+    "losses": 0,
+    "score": 1.0
   },
   "channels": 128,
   "historyM": [
@@ -219,34 +246,42 @@
       "loss": 2.8657314819694686
     }
   ],
-  "historyMonths": [
-    {
-      "epoch": 1,
-      "policy": 1.7894208952811788,
-      "value": 0.7709718845057136,
-      "loss": 2.5603927791111354
-    },
-    {
-      "epoch": 2,
-      "policy": 1.745635184255821,
-      "value": 0.7636231384116906,
-      "loss": 2.509258323655715
-    },
-    {
-      "epoch": 3,
-      "policy": 1.708697046897011,
-      "value": 0.7571070837811785,
-      "loss": 2.465804131513803
-    }
-  ],
+  "historyMonths": [],
   "playVisits": 64,
   "vsSf1800": {
     "visits": 64,
     "uciElo": 1800,
     "games": 8,
-    "wins": 3,
+    "wins": 5,
     "draws": 1,
-    "losses": 4,
-    "score": 0.4375
+    "losses": 2,
+    "score": 0.6875
+  },
+  "vsSf2000": {
+    "visits": 64,
+    "uciElo": 2000,
+    "games": 8,
+    "wins": 4,
+    "draws": 2,
+    "losses": 2,
+    "score": 0.625
+  },
+  "vsSf2200": {
+    "visits": 64,
+    "uciElo": 2200,
+    "games": 8,
+    "wins": 2,
+    "draws": 1,
+    "losses": 5,
+    "score": 0.3125
+  },
+  "vsSf2500": {
+    "visits": 64,
+    "uciElo": 2500,
+    "games": 8,
+    "wins": 0,
+    "draws": 0,
+    "losses": 8,
+    "score": 0.0
   }
 }

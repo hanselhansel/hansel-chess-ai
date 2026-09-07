@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** 64-visit SP of the 1715 net (1500 is 7–1). 2013-09 human VOID: 2.7M, 3 epochs, 1500 **6–2 (0.75)** below floor 0.875, 1800 **3–5 (0.375)**. 2013-08 also VOID. Public SHA `0386a100…` unchanged. MLE **1715**. Not 2500. Lichess BOT waits.
+**Next:** self-play of the 2015-02 GATE net (later). Not 2500. 2015-02 human **KEEP+GATE**: 7.8M, 3 epochs, random **19–1–0**, SF1320 **8–0 (1.0)**, SF1500 **8–0 (1.0)**, SF1800 **5–1–2 (0.6875)**, SF2000 **4–2–2 (0.625)** 8-game GATE, SF2200 **2–1–5 (0.3125)**, SF2500 **0–8 (0.0)**. Public SHA `b716fe7b…`. 48-game MLE **2035** (1895–2175). Eight-game GATE is not 2500. 2015-01 through 2014-06 VOID. Checkpoint `tinyaz-m-mo2015-02.bin`. Lichess BOT waits.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 

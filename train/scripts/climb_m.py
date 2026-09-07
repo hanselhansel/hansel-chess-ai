@@ -80,12 +80,19 @@ def _write_card(meta: dict, rnd: dict, sf1320: dict | None, sf1500: dict | None,
 
 def one_loop(loop: int, games: int, workers: int, floor: float, gen_visits: int, epochs: int) -> str:
     freeze_snapshot(PUBLIC, SNAPSHOT)
-    replay = load_jsonl(SP_JSONL, REPLAY_CAP)
-    lichess = load_jsonl(HUMAN_JSONL, LICHESS_MIX)
-    print(f"generate {games} games × {gen_visits} visits workers {workers}", flush=True)
-    new_rows = generate(PUBLIC, games=games, visits=gen_visits, workers=workers, out_jsonl=SP_JSONL)
+    mix_n = int(os.environ.get("CLIMB_LICHESS_MIX", str(LICHESS_MIX)))
+    skip = os.environ.get("CLIMB_SKIP_GENERATE", "").strip().lower() in {"1", "true", "yes"}
+    lichess = load_jsonl(HUMAN_JSONL, mix_n)
+    if skip:
+        new_rows = load_jsonl(SP_JSONL, REPLAY_CAP)
+        replay: list[dict] = []
+        print(f"skip generate: train {len(new_rows)} existing jsonl + human {len(lichess)}", flush=True)
+    else:
+        replay = load_jsonl(SP_JSONL, REPLAY_CAP)
+        print(f"generate {games} games × {gen_visits} visits workers {workers}", flush=True)
+        new_rows = generate(PUBLIC, games=games, visits=gen_visits, workers=workers, out_jsonl=SP_JSONL)
+        print(f"train on {len(new_rows)} new + replay {len(replay)} + human {len(lichess)}", flush=True)
     rows = mix_for_train(new_rows, replay, lichess)
-    print(f"train on {len(new_rows)} new + replay {len(replay)} + human {len(lichess)}", flush=True)
     history = train_candidate(PUBLIC, rows, CAND, source_id=SOURCE_SELFPLAY_64, epochs=epochs, batch=64)
     snap = vs_snapshot(CAND, SNAPSHOT, games=8, visits=PLAY_VISITS)
     print("m vs snapshot 64-visit", snap, flush=True)
