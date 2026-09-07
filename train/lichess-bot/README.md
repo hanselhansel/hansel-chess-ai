@@ -17,6 +17,16 @@ Published search is **64 visits**. On this M4, a 64-visit startpos move is ~100 
 
 Pin the config: `shasum -a 256 config.yml`. Export PGNs from `game_records/`. Report bullet / blitz / rapid / classical separately.
 
+## Scale loop (3+2)
+
+`challenge_rotator.py` challenges idle time at 3+2 rated vs 1400–2200 bots. It skips odds accounts, 100/day caps, and recent declines. Token stays in `.token`. Stop when blitz games hit 80, or 50 with RD under 80.
+
+```
+python3 -u train/lichess-bot/challenge_rotator.py
+```
+
+WDL lines go to `wdl.jsonl`. PGNs go to `game_records/`. Do not raise concurrency.
+
 ## Engine
 
 ```
