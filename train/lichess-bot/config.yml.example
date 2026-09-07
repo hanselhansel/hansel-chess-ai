@@ -1,0 +1,57 @@
+# Copy to config.yml inside a lichess-bot clone. Never commit the copy (it holds the token).
+# Account: hansel-chess-ai — fresh Lichess user, zero games, then upgrade to BOT.
+
+token: "PUT_LICHESS_BOT_TOKEN_HERE"
+url: "https://lichess.org/"
+
+engine:
+  dir: "REPO_ROOT"
+  name: "train/scripts/hansel-chess-ai"
+  protocol: "uci"
+  ponder: false
+  debug: false
+  silence_stderr: false
+  uci_options:
+    Visits: 64
+  draw_or_resign:
+    resign_enabled: false
+    offer_draw_enabled: false
+
+abort_time: 30
+move_overhead: 2000
+fake_think_time: false
+
+challenge:
+  concurrency: 1
+  accept_bot: true
+  only_bot: false
+  max_increment: 20
+  min_increment: 0
+  max_base: 1800
+  min_base: 0
+  variants:
+    - standard
+  time_controls:
+    - bullet
+    - blitz
+    - rapid
+    - classical
+  modes:
+    - casual
+    - rated
+
+correspondence:
+  move_time: 60
+  ponder: false
+
+greeting:
+  hello: "Hi. I am {me}, a from-scratch 2.43M AlphaZero-style net at 64 visits. Not Stockfish."
+  goodbye: "Good game."
+  hello_spectators: "hansel-chess-ai. tinyaz-m, 64 visits. Gauntlet MLE 2035 vs Stockfish LimitStrength is not this Lichess rating."
+  goodbye_spectators: "Thanks for watching."
+
+pgn_directory: "game_records"
+pgn_file_grouping: "all"
+
+matchmaking:
+  allow_matchmaking: false

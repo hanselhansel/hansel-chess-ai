@@ -55,7 +55,7 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 | 5 | **Efficiency card filled in** | **Done.** Lichess Elo = BOT later. Gauntlet = 64-visit <1320. Params 640,018. FLOPs/move = 39M × visits. Browser ms/move on the last think. |
 | 6 | **ONNX / in-browser weights file** | **Partial.** `public/weights/tinyaz-s.bin` is the JS/Python packed checkpoint. ONNX later. |
 | 7 | **Autoresearch-style overnight loop** | Steal Karpathy’s *process* (one mutable train file, fixed wall-clock, keep/discard by a metric). Metric is **gauntlet Elo**, not val_bpb. Needs an NVIDIA GPU. This box does not have one. Do not clone the repo now. |
-| 8 | **Lichess BOT account** | Irreversible per account. Only after gauntlet is not random. Fresh account, pin `config.yml` hash, export PGNs, report pools separately. Never convert a human account. |
+| 8 | **Lichess BOT account** | Account name **hansel-chess-ai**. UCI wrapper is `train/scripts/hansel-chess-ai`. Still needs a fresh Lichess user (zero games), token, upgrade, and a 24/7 host. Pin `config.yml` hash, export PGNs, report pools separately. Never convert a human account. |
 | 9 | **256-visit published Elo** | Only if we re-rate at 256. The play slider must not leak into the published 64-visit number. |
 | 10 | **Stockfish as teacher** | Optional later distillation. Not on the critical path. Labelling at depth 12 is how chesslite stalled. |
 
