@@ -78,25 +78,25 @@
         "visits": 64,
         "uciElo": 1800,
         "games": 8,
-        "wins": 2,
+        "wins": 5,
         "draws": 1,
-        "losses": 5,
-        "score": 0.3125
+        "losses": 2,
+        "score": 0.6875
       },
       {
         "visits": 64,
         "uciElo": 2000,
         "games": 8,
-        "wins": 2,
-        "draws": 1,
-        "losses": 5,
-        "score": 0.3125
+        "wins": 4,
+        "draws": 2,
+        "losses": 2,
+        "score": 0.625
       }
     ],
-    "estimatedElo": 1825,
-    "eloLabel": "1825",
-    "eloLo": 1675,
-    "eloHi": 1980,
+    "estimatedElo": 2045,
+    "eloLabel": "2045",
+    "eloLo": 1880,
+    "eloHi": 2235,
     "games": 32,
     "note": "64-visit Elo vs Stockfish 18 UCI_LimitStrength. Not a 1-visit number. Not a Lichess rating. 32 games (1320+1500+1800+2000)."
   },
@@ -177,7 +177,7 @@
       "loss": 3.3034526532834714
     }
   ],
-  "humanMonths": "lichess-2013-01..2014-05",
+  "humanMonths": "lichess-2013-01..2015-02",
   "historyHuman2": [
     {
       "epoch": 1,
@@ -234,18 +234,18 @@
     "visits": 64,
     "uciElo": 1800,
     "games": 8,
-    "wins": 2,
+    "wins": 5,
     "draws": 1,
-    "losses": 5,
-    "score": 0.3125
+    "losses": 2,
+    "score": 0.6875
   },
   "vsSf2000": {
     "visits": 64,
     "uciElo": 2000,
     "games": 8,
-    "wins": 2,
-    "draws": 1,
-    "losses": 5,
-    "score": 0.3125
+    "wins": 4,
+    "draws": 2,
+    "losses": 2,
+    "score": 0.625
   }
 }
