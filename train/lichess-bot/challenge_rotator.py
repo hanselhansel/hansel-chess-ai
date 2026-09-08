@@ -246,37 +246,41 @@ def main() -> None:
     st = load_state()
     print("rotator start", flush=True)
     while True:
-        acct = account(tok)
-        games, rd, _prov, playing = blitz_stats(acct)
-        sync_games(tok, st)
-        save_state(st)
-        print(f"status blitz_games={games} rd={rd:.0f} playing={playing}", flush=True)
-        if done(games, rd):
-            print("STOP gates hit", flush=True)
-            return
-        if playing:
-            time.sleep(PLAYING_SLEEP)
-            continue
-        bots = online_bots()
-        name = pick(st, bots)
-        if not name:
-            print("no eligible opponent", flush=True)
-            time.sleep(IDLE_SLEEP)
-            continue
-        kind, detail = challenge(tok, name)
-        if kind == "ok":
-            print(f"CHALLENGE {name} {detail}", flush=True)
-            set_cooldown(st, name, CHALLENGE_COOLDOWN)
-        else:
-            print(f"DECLINE {name} {detail}", flush=True)
-            until = parse_until(detail)
-            if until:
-                st.setdefault("day_cap", {})[name] = datetime.now(timezone.utc).date().isoformat()
-                st.setdefault("cooldown", {})[name] = until
+        try:
+            acct = account(tok)
+            games, rd, _prov, playing = blitz_stats(acct)
+            sync_games(tok, st)
+            save_state(st)
+            print(f"status blitz_games={games} rd={rd:.0f} playing={playing}", flush=True)
+            if done(games, rd):
+                print("STOP gates hit", flush=True)
+                return
+            if playing:
+                time.sleep(PLAYING_SLEEP)
+                continue
+            bots = online_bots()
+            name = pick(st, bots)
+            if not name:
+                print("no eligible opponent", flush=True)
+                time.sleep(IDLE_SLEEP)
+                continue
+            kind, detail = challenge(tok, name)
+            if kind == "ok":
+                print(f"CHALLENGE {name} {detail}", flush=True)
+                set_cooldown(st, name, CHALLENGE_COOLDOWN)
             else:
-                set_cooldown(st, name, DECLINE_COOLDOWN)
-        save_state(st)
-        time.sleep(IDLE_SLEEP)
+                print(f"DECLINE {name} {detail}", flush=True)
+                until = parse_until(detail)
+                if until:
+                    st.setdefault("day_cap", {})[name] = datetime.now(timezone.utc).date().isoformat()
+                    st.setdefault("cooldown", {})[name] = until
+                else:
+                    set_cooldown(st, name, DECLINE_COOLDOWN)
+            save_state(st)
+            time.sleep(IDLE_SLEEP)
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            print(f"NET {type(e).__name__}", flush=True)
+            time.sleep(IDLE_SLEEP)
 
 
 if __name__ == "__main__":
