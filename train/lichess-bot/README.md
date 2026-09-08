@@ -1,6 +1,8 @@
 # Lichess BOT: hansel-chess-ai
 
-Public rating lives on Lichess. The gauntlet MLE 2035 is a Stockfish `UCI_LimitStrength` number. Do not paste it on the bot page as a Lichess Elo.
+Published Lichess blitz: **1531** over **108** games (RD 45), 64 visits, vs other BOT accounts. https://lichess.org/@/hanselhansel
+
+The gauntlet MLE 2035 is a Stockfish `UCI_LimitStrength` number. Do not paste it as a Lichess Elo. Not a human pool. Not 2500.
 
 The Lichess account is **hanselhansel**. Upgrade is irreversible. The account must have **zero games** before the upgrade. Never convert a human account that has already played. UCI engine id is still `hansel-chess-ai`.
 

@@ -7,7 +7,7 @@ These are **not** skipped forever. They are out of the current ship on purpose.
 **Phase 0:** playable random net. Shipped.
 **Phase 1:** Lichess 2013-01 supervised. 1-visit vs random 20–0–0. Shipped.
 **Phase 2:** 64-visit self-play (**1152 games**, 6 loops) + **64-visit Elo <1320** vs Stockfish 18. Loop 6: 256 games, keep/discard by SF1320 (still 0–8). SF cannot go below 1320.
-**Next:** self-play of the 2015-02 GATE net (later). Not 2500. 2015-02 human **KEEP+GATE**: 7.8M, 3 epochs, random **19–1–0**, SF1320 **8–0 (1.0)**, SF1500 **8–0 (1.0)**, SF1800 **5–1–2 (0.6875)**, SF2000 **4–2–2 (0.625)** 8-game GATE, SF2200 **2–1–5 (0.3125)**, SF2500 **0–8 (0.0)**. Public SHA `b716fe7b…`. 48-game MLE **2035** (1895–2175). Eight-game GATE is not 2500. 2015-01 through 2014-06 VOID. Checkpoint `tinyaz-m-mo2015-02.bin`. Lichess BOT waits.
+**Next:** self-play of the 2015-02 GATE net (later). Not 2500. 2015-02 human **KEEP+GATE**: 7.8M, 3 epochs, random **19–1–0**, SF1320 **8–0 (1.0)**, SF1500 **8–0 (1.0)**, SF1800 **5–1–2 (0.6875)**, SF2000 **4–2–2 (0.625)** 8-game GATE, SF2200 **2–1–5 (0.3125)**, SF2500 **0–8 (0.0)**. Public SHA `b716fe7b…`. 48-game MLE **2035** (1895–2175). Eight-game GATE is not 2500. 2015-01 through 2014-06 VOID. Checkpoint `tinyaz-m-mo2015-02.bin`. Lichess BOT **hanselhansel** published blitz **1531** (108 games, RD 45), 64 visits vs other BOT accounts. Not a human pool. Not the 2035 gauntlet.
 
 **Signal loop (2026-08-27, this Mac, M4 MPS):** 64 games × 256 visits, 8 CPU workers, 8963 positions, train device mps (2 epochs, 43s). 1-visit vs snapshot **0–8–0** (score 0.5). VOID.
 
@@ -52,10 +52,10 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 | 2 | **Self-play (Phase 2)** | **Done (small).** 1152 games at 64 visits across 6 loops. Keep/discard by SF 1320. Still 0–8. More games later. |
 | 3 | **tinyaz-m (8×128, ~2.4M)** | Ladder size. Not trained until S is playable and rated. Cap is 3M. |
 | 4 | **Gauntlet Elo** | **Done.** 64-visit vs Stockfish 18 `UCI_Elo` 1320/1500/1800/2000, 4 openings × colours swapped, 32 games. Score 0–32. Published: **<1320**. |
-| 5 | **Efficiency card filled in** | **Done.** Lichess Elo = BOT later. Gauntlet = 64-visit <1320. Params 640,018. FLOPs/move = 39M × visits. Browser ms/move on the last think. |
+| 5 | **Efficiency card filled in** | **Done.** Lichess blitz = **1531** (108 games, RD 45, BOT pool). Gauntlet = 64-visit MLE 2035 vs SF LimitStrength. Params 2.43M. Do not mix those Elo numbers. |
 | 6 | **ONNX / in-browser weights file** | **Partial.** `public/weights/tinyaz-s.bin` is the JS/Python packed checkpoint. ONNX later. |
 | 7 | **Autoresearch-style overnight loop** | Steal Karpathy’s *process* (one mutable train file, fixed wall-clock, keep/discard by a metric). Metric is **gauntlet Elo**, not val_bpb. Needs an NVIDIA GPU. This box does not have one. Do not clone the repo now. |
-| 8 | **Lichess BOT account** | Live as **hanselhansel**. UCI wrapper is `train/scripts/hansel-chess-ai`. Pin `config.yml` hash locally, export PGNs, report pools separately. Never convert a human account that has already played. |
+| 8 | **Lichess BOT account** | **Published.** [hanselhansel](https://lichess.org/@/hanselhansel), 64 visits, blitz **1531** (108 games, RD 45) vs other BOT accounts. UCI wrapper `train/scripts/hansel-chess-ai`. Report pools separately. Never convert a human account that has already played. |
 | 9 | **256-visit published Elo** | Only if we re-rate at 256. The play slider must not leak into the published 64-visit number. |
 | 10 | **Stockfish as teacher** | Optional later distillation. Not on the critical path. Labelling at depth 12 is how chesslite stalled. |
 

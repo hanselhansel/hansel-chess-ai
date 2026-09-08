@@ -45,9 +45,9 @@ correspondence:
   ponder: false
 
 greeting:
-  hello: "Hi. I am {me}, a from-scratch 2.43M AlphaZero-style net at 64 visits. Not Stockfish."
+  hello: "Hi. I am {me}. tinyaz-m, 2.43M, 64 visits. Lichess blitz 1531 vs bots. Not Stockfish."
   goodbye: "Good game."
-  hello_spectators: "hansel-chess-ai. tinyaz-m, 64 visits. Gauntlet MLE 2035 vs Stockfish LimitStrength is not this Lichess rating."
+  hello_spectators: "tinyaz-m at 64 visits. Lichess blitz 1531 (108 games, RD 45) vs BOT accounts. Stockfish gauntlet MLE 2035 is a different number."
   goodbye_spectators: "Thanks for watching."
 
 pgn_directory: "game_records"
