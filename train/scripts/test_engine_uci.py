@@ -178,6 +178,36 @@ def test_run_stdio_and_missing_weights() -> None:
     assert "visits" in wrap.stdout.lower() or "weights" in wrap.stdout.lower()
 
 
+def test_ucinewgame_resets_board() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=1)
+    e.handle("position startpos moves e2e4")
+    assert e.board.peek().uci() == "e2e4"
+    assert e.handle("ucinewgame") == []
+    assert e.board.fen() == chess.Board().fen()
+
+
+def test_setoption_missing_value_with_extra_tokens() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=8)
+    assert e.handle("setoption name Visits extra tokens") == []
+    assert e.visits == 8
+    assert e.handle("setoption foo Visits value 64") == []
+    assert e.visits == 8
+
+
+def test_setoption_visits_rejects_non_int() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=8)
+    e.handle("setoption name Visits value nope")
+    assert e.visits == 8
+
+
+def test_go_on_checkmate_emits_bestmove() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=1)
+    e.handle("isready")
+    e.handle("position fen rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3")
+    out = e.handle("go nodes 1")
+    assert any(x.startswith("bestmove ") for x in out)
+
+
 def main() -> None:
     test_parse_go_nodes_and_clock()
     print("ok test_parse_go_nodes_and_clock")
@@ -201,6 +231,14 @@ def main() -> None:
     print("ok test_visits_for_go_black_and_defaults")
     test_run_stdio_and_missing_weights()
     print("ok test_run_stdio_and_missing_weights")
+    test_ucinewgame_resets_board()
+    print("ok test_ucinewgame_resets_board")
+    test_setoption_missing_value_with_extra_tokens()
+    print("ok test_setoption_missing_value_with_extra_tokens")
+    test_setoption_visits_rejects_non_int()
+    print("ok test_setoption_visits_rejects_non_int")
+    test_go_on_checkmate_emits_bestmove()
+    print("ok test_go_on_checkmate_emits_bestmove")
     print("engine-uci tests ok")
 
 

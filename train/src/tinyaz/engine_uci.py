@@ -88,6 +88,8 @@ class TinyazUci:
         root = search_root(self.board, visits, ev, add_noise=False)
         ms = int((time.perf_counter() - t0) * 1000)
         q = 0.0 if root.visits == 0 else root.value_sum / root.visits
+        if not root.children:
+            return chess.Move.null(), q, ms
         return best_move(root), q, ms
 
     def apply_position(self, parts: list[str]) -> None:
@@ -98,7 +100,10 @@ class TinyazUci:
             if "moves" in parts:
                 start = parts.index("moves") + 1
                 for u in parts[start:]:
-                    self.board.push_uci(u)
+                    try:
+                        self.board.push_uci(u)
+                    except (ValueError, chess.IllegalMoveError, chess.InvalidMoveError):
+                        return
             return
         if parts[1] == "fen":
             if "moves" in parts:
@@ -108,9 +113,15 @@ class TinyazUci:
             else:
                 fen = " ".join(parts[2:])
                 moves = []
-            self.board.set_fen(fen)
+            try:
+                self.board.set_fen(fen)
+            except ValueError:
+                return
             for u in moves:
-                self.board.push_uci(u)
+                try:
+                    self.board.push_uci(u)
+                except (ValueError, chess.IllegalMoveError, chess.InvalidMoveError):
+                    return
 
     def handle(self, line: str) -> list[str]:
         text = line.strip()
@@ -142,7 +153,10 @@ class TinyazUci:
             name = " ".join(parts[2:vidx]).lower()
             value = " ".join(parts[vidx + 1 :])
             if name == "visits":
-                self.visits = clamp_visits(int(value))
+                try:
+                    self.visits = clamp_visits(int(value))
+                except ValueError:
+                    pass
             elif name == "weights":
                 self.weights = Path(value)
                 self._ev = None
@@ -150,12 +164,16 @@ class TinyazUci:
         if cmd == "go":
             go = parse_go(parts)
             visits = self.visits_for_go(go)
-            move, q, ms = self.search(visits)
+            try:
+                move, q, ms = self.search(visits)
+            except (IndexError, RuntimeError, FileNotFoundError):
+                return ["bestmove 0000"]
             nps = 0 if ms <= 0 else int(visits * 1000 / ms)
             cp = int(round(q * 1000))
+            uci = move.uci() if move else "0000"
             return [
-                f"info depth 1 nodes {visits} nps {nps} time {ms} score cp {cp} pv {move.uci()}",
-                f"bestmove {move.uci()}",
+                f"info depth 1 nodes {visits} nps {nps} time {ms} score cp {cp} pv {uci}",
+                f"bestmove {uci}",
             ]
         if cmd == "quit":
             return ["#quit"]
@@ -167,7 +185,12 @@ def run_stdio(engine: TinyazUci | None = None) -> None:
 
     eng = engine or TinyazUci()
     for raw in sys.stdin:
-        for out in eng.handle(raw):
+        try:
+            lines = eng.handle(raw)
+        except Exception:
+            print("bestmove 0000", flush=True)
+            continue
+        for out in lines:
             if out == "#quit":
                 return
             print(out, flush=True)

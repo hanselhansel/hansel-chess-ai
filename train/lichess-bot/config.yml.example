@@ -24,7 +24,7 @@ fake_think_time: false
 challenge:
   concurrency: 1
   accept_bot: true
-  only_bot: false
+  only_bot: true
   max_increment: 20
   min_increment: 0
   max_base: 1800

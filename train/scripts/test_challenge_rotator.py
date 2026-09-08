@@ -57,6 +57,12 @@ def _install_tmp() -> Path:
 def test_token_accepts_lip_and_rejects_other() -> None:
     tmp = _install_tmp()
     assert cr.token() == "lip_testtoken"
+    cr.TOKEN_PATH = tmp / "missing"
+    try:
+        cr.token()
+        raise AssertionError("expected SystemExit")
+    except SystemExit:
+        pass
     cr.TOKEN_PATH = tmp / "bad"
     cr.TOKEN_PATH.write_text("not-a-token\n")
     try:
@@ -101,6 +107,8 @@ def test_api_get_post_and_http_error() -> None:
         assert json.loads(body)["ok"] is True
         assert captured["method"] == "GET"
         assert captured["timeout"] == 20
+        assert captured["auth"] is not None and "lip_x" in captured["auth"]
+        assert captured["auth"].lower().startswith("bearer ")
         code, body = cr.api("https://lichess.org/api/challenge/bot", "lip_x", data=b"rated=true")
         assert code == 201
         assert captured["method"] == "POST"
@@ -117,6 +125,8 @@ def test_account_and_blitz_stats() -> None:
             return 404, ""
         return 200, json.dumps(
             {
+                "id": "hanselhansel",
+                "username": "hanselhansel",
                 "perfs": {"blitz": {"games": 12, "rd": 45.5, "prov": True}},
                 "count": {"playing": 1},
             }
@@ -126,10 +136,11 @@ def test_account_and_blitz_stats() -> None:
     cr.api = fake_api  # type: ignore[assignment]
     try:
         acct = cr.account("lip_x")
+        assert acct is not None
         assert cr.blitz_stats(acct) == (12, 45.5, True, 1)
         assert cr.blitz_stats({}) == (0, 500.0, False, 0)
         cr.api = lambda *a, **k: (503, "no")  # type: ignore[assignment]
-        assert cr.account("lip_x") == {}
+        assert cr.account("lip_x") is None
     finally:
         cr.api = old
 
@@ -152,10 +163,10 @@ def test_online_bots_parse_and_fallback() -> None:
     finally:
         cr.api = old_api
 
-    cr.api = lambda *a, **k: (500, "")  # type: ignore[assignment]
     old_open = urllib.request.urlopen
-    urllib.request.urlopen = lambda *a, **k: FakeResp(200, ndjson)  # type: ignore[assignment]
     try:
+        cr.api = lambda *a, **k: (500, "")  # type: ignore[assignment]
+        urllib.request.urlopen = lambda *a, **k: FakeResp(200, ndjson)  # type: ignore[assignment]
         assert ("alphabot", 1910) in cr.online_bots()
     finally:
         urllib.request.urlopen = old_open
@@ -230,6 +241,8 @@ def test_pick_sorts_near_1900() -> None:
         assert cr.pick(st, bots) == "near1900"
         assert cr.pick(st, []) is None
         assert cr.pick({}, [("toohigh", 2201), ("toolow", 1399)]) is None
+        assert cr.pick({}, [("floorbot", 1400)]) == "floorbot"
+        assert cr.pick({}, [("ceilbot", 2200)]) == "ceilbot"
     finally:
         cr.now = time.time  # type: ignore[assignment]
 
@@ -253,6 +266,7 @@ def test_challenge_ok_and_fail() -> None:
         assert kind == "fail"
         assert "Nope" in detail
         assert "\n" not in detail
+        assert cr.challenge("lip_x", "../x") == ("fail", "bad name")
     finally:
         cr.api = old
 
@@ -282,6 +296,14 @@ def test_sync_games_wdl_and_skip() -> None:
                     "players": {
                         "white": {"user": {"name": "hanselhansel"}, "rating": 1500},
                         "black": {"user": {"name": "old"}, "rating": 1600},
+                    },
+                },
+                {
+                    "id": "aborted1",
+                    "status": "aborted",
+                    "players": {
+                        "white": {"user": {"name": "hanselhansel"}, "rating": 1500},
+                        "black": {"user": {"name": "x"}, "rating": 1600},
                     },
                 },
                 {
@@ -355,6 +377,7 @@ def test_sync_games_wdl_and_skip() -> None:
         lines = [json.loads(x) for x in cr.WDL_PATH.read_text().splitlines()]
         by_id = {r["id"]: r for r in lines}
         assert "started1" not in by_id
+        assert "aborted1" not in by_id
         assert "seen1" not in by_id
         assert by_id["winW"]["result"] == "W"
         assert by_id["winW"]["opponent"] == "OppA"
@@ -366,7 +389,15 @@ def test_sync_games_wdl_and_skip() -> None:
         assert by_id["winB"]["result"] == "W"
         assert (tmp / "game_records" / "winW.pgn").is_file()
         assert not (tmp / "game_records" / "lossB.pgn").exists()
-        assert set(st["seen_games"]) == {"seen1", "winW", "lossB", "drawD", "lossW", "winB"}
+        assert set(st["seen_games"]) == {
+            "seen1",
+            "aborted1",
+            "winW",
+            "lossB",
+            "drawD",
+            "lossW",
+            "winB",
+        }
         cr.api = lambda *a, **k: (500, "no")  # type: ignore[assignment]
         before = cr.WDL_PATH.read_text()
         cr.sync_games("lip_x", st)
@@ -376,6 +407,29 @@ def test_sync_games_wdl_and_skip() -> None:
         assert cr.WDL_PATH.read_text() == before
     finally:
         cr.api = old
+
+
+def test_vsbot_lockout_and_failed_account() -> None:
+    assert cr.vsbot_lockout_s("please wait before challenging another bot") == 60
+    body = json.dumps({"ratelimit": {"key": "bot.vsBot.day", "seconds": 90}})
+    assert cr.vsbot_lockout_s(body) == 90
+    assert cr.vsbot_lockout_s("No thanks") is None
+    seq = iter([None, {"perfs": {"blitz": {"games": 80, "rd": 40}}, "count": {"playing": 0}}])
+    challenges: list[str] = []
+    old = {"account": cr.account, "challenge": cr.challenge, "sync": cr.sync_games, "sleep": time.sleep}
+    cr.account = lambda _t: next(seq)  # type: ignore[assignment]
+    cr.challenge = lambda *a, **k: challenges.append("x") or ("ok", "1")  # type: ignore[assignment]
+    cr.sync_games = lambda *a, **k: None  # type: ignore[assignment]
+    time.sleep = lambda s: None  # type: ignore[assignment]
+    _install_tmp()
+    try:
+        cr.main()
+        assert challenges == []
+    finally:
+        cr.account = old["account"]
+        cr.challenge = old["challenge"]
+        cr.sync_games = old["sync"]
+        time.sleep = old["sleep"]
 
 
 def test_main_playing_challenge_and_stop() -> None:
@@ -522,6 +576,7 @@ def main() -> None:
         test_pick_sorts_near_1900,
         test_challenge_ok_and_fail,
         test_sync_games_wdl_and_skip,
+        test_vsbot_lockout_and_failed_account,
         test_main_playing_challenge_and_stop,
         test_main_decline_until_and_net_error,
     ]
