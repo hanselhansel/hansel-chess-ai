@@ -16,9 +16,10 @@ This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) 
 
 ```
 train/scripts/hansel-chess-ai
+train/scripts/hansel-chess-ai --weights public/weights/tinyaz-m.bin --visits 64 --device cpu
 ```
 
-Speaks UCI. Default 64 visits, weights `public/weights/tinyaz-m.bin`. Cute Chess and lichess-bot use this wrapper. Setup: [train/lichess-bot/README.md](train/lichess-bot/README.md).
+Speaks UCI. Default 64 visits, weights `public/weights/tinyaz-m.bin`. Flags: `--weights`, `--visits` (1–4096), `--device cpu|mps`. Same knobs as UCI options `Weights` and `Visits`. Cute Chess and lichess-bot use this wrapper. Setup: [train/lichess-bot/README.md](train/lichess-bot/README.md). Training: [train/README.md](train/README.md).
 
 ## Play
 
@@ -26,7 +27,7 @@ Open the app. You are White.
 
 1. Click a piece, then a highlighted square.
 2. The model thinks in a Web Worker (the board stays live).
-3. Toggle **1 visit** (naked net) vs **64 visits** (the number we will publish).
+3. Toggle **1 visit** (naked net) vs **64 visits** (the published number).
 4. Read the tree: SAN, visits `n`, prior `P`, value `Q`.
 5. The efficiency card never mixes 1-visit and 64-visit Elo.
 
@@ -39,10 +40,12 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 | Mode | Visits | Meaning |
 |---|---|---|
 | 1-visit | 1 | Naked net. Policy argmax. Snapshot keep/discard. |
-| Play / rate | 64 | What you play. What we will publish. |
+| Play / rate | 64 | What you play. What we publish. |
 | Train targets | 256 | Self-play only. Not a published Elo. |
 
 ## Architecture (tinyaz-s)
+
+Playable net is **tinyaz-m** (8×128, 2.43M). s is the same stem at 64 channels (~0.64M), still on disk.
 
 19-plane side-to-move-canonical board → stem 3×3 → 8 residual blocks × 64 channels (~0.64M params) → 73-plane AlphaZero policy + tanh value. PUCT `c_puct = 1.5`. Rank-flip is `i ^ 56` (files stay put).
 
@@ -59,3 +62,5 @@ npm test          # includes src/lib/chess/chess.test.ts
 npm run typecheck
 npm run dev
 ```
+
+Training and UCI tests: [train/README.md](train/README.md). Releases: [CHANGELOG.md](CHANGELOG.md).

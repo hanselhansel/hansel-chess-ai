@@ -40,7 +40,7 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 5. Random-move gauntlet must still pass.
 6. Promote even if 64-visit vs SF1320 is still 0–8. Update the card Elo only when SF scores a point.
 7. First experiment: 64 games (VOID 0.5). Scale 256 games (VOID 0.4375). 256-visit self-play is off. Human-month spec is next.
-8. Lichess BOT only after 64-visit Elo is not `<1320` (irreversible per account).
+8. Lichess BOT **published** ([hanselhansel](https://lichess.org/@/hanselhansel), blitz 1531). Irreversible per account.
 
 ---
 
@@ -50,10 +50,10 @@ A **visit** is one look-ahead trip from the current position: pick a line, evalu
 |---|---|---|
 | 1 | **Supervised training (Phase 1)** | **Done.** Lichess 2013-01, 60k positions, 3 epochs. 1-visit vs random 20–0–0. |
 | 2 | **Self-play (Phase 2)** | **Done (small).** 1152 games at 64 visits across 6 loops. Keep/discard by SF 1320. Still 0–8. More games later. |
-| 3 | **tinyaz-m (8×128, ~2.4M)** | Ladder size. Not trained until S is playable and rated. Cap is 3M. |
-| 4 | **Gauntlet Elo** | **Done.** 64-visit vs Stockfish 18 `UCI_Elo` 1320/1500/1800/2000, 4 openings × colours swapped, 32 games. Score 0–32. Published: **<1320**. |
+| 3 | **tinyaz-m (8×128, ~2.4M)** | **Done.** Playable. 2.43M. Cap is 3M. |
+| 4 | **Gauntlet Elo** | **Done.** 64-visit vs Stockfish 18 `UCI_Elo` 1320/1500/1800/2000/2200/2500, 4 openings × colours swapped, 48 games. MLE **2035** (1895–2175). Not 2500. |
 | 5 | **Efficiency card filled in** | **Done.** Lichess blitz = **1531** (108 games, RD 45, BOT pool). Gauntlet = 64-visit MLE 2035 vs SF LimitStrength. Params 2.43M. Do not mix those Elo numbers. |
-| 6 | **ONNX / in-browser weights file** | **Partial.** `public/weights/tinyaz-s.bin` is the JS/Python packed checkpoint. ONNX later. |
+| 6 | **ONNX / in-browser weights file** | **Partial.** Playable packed checkpoint is `public/weights/tinyaz-m.bin`. s stays on disk. ONNX later. |
 | 7 | **Autoresearch-style overnight loop** | Steal Karpathy’s *process* (one mutable train file, fixed wall-clock, keep/discard by a metric). Metric is **gauntlet Elo**, not val_bpb. Needs an NVIDIA GPU. This box does not have one. Do not clone the repo now. |
 | 8 | **Lichess BOT account** | **Published.** [hanselhansel](https://lichess.org/@/hanselhansel), 64 visits, blitz **1531** (108 games, RD 45) vs other BOT accounts. UCI wrapper `train/scripts/hansel-chess-ai`. Report pools separately. Never convert a human account that has already played. |
 | 9 | **256-visit published Elo** | Only if we re-rate at 256. The play slider must not leak into the published 64-visit number. |

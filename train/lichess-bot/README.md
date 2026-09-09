@@ -12,7 +12,7 @@ Published search is **64 visits**. On this M4, a 64-visit startpos move is ~100 
 
 1. Use the Lichess user `hanselhansel` (BOT). Play nothing before upgrade.
 2. Token: https://lichess.org/account/oauth/token/create with scope `bot:play`. Save it.
-3. Clone https://github.com/lichess-bot-devs/lichess-bot next to this repo (or anywhere).
+3. Clone https://github.com/lichess-bot-devs/lichess-bot into `train/lichess-bot/runtime/` (gitignored) or anywhere.
 4. Copy `config.yml.example` to that clone as `config.yml`.
 5. Put the token in `token`. Set `engine.dir` to this repo's absolute path.
 6. From the lichess-bot clone: `python3 lichess-bot.py --upgrade` then `python3 lichess-bot.py`.
@@ -35,6 +35,6 @@ WDL lines go to `wdl.jsonl`. PGNs go to `game_records/`. Do not raise concurrenc
 train/scripts/hansel-chess-ai
 ```
 
-That wrapper sets `PYTHONPATH=train/src` and runs `tinyaz_uci.py`. Weights default to `public/weights/tinyaz-m.bin`. CPU only for the bot.
+That wrapper sets `PYTHONPATH=train/src` and runs `tinyaz_uci.py`. Weights default to `public/weights/tinyaz-m.bin`. CPU only for the bot. Flags: `--weights`, `--visits`, `--device`.
 
 Cute Chess / CCRL testers can point at the same wrapper.

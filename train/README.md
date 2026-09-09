@@ -23,6 +23,7 @@ Phase 2 rated: **tinyaz-m** playable. 8×128, 2.43M. 64-visit **8–0 vs SF1320*
 PYTHONPATH=train/src python3 train/scripts/test_encode.py
 PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
 PYTHONPATH=train/src python3 train/scripts/test_engine_uci.py
+PYTHONPATH=train/src python3 train/scripts/test_challenge_rotator.py
 train/scripts/hansel-chess-ai
 CLIMB_GAMES=64 PYTHONPATH=train/src python3 train/scripts/climb_m.py
 ln -sf "$(which stockfish)" train/bin/stockfish
@@ -30,7 +31,7 @@ PYTHONPATH=train/src python3 train/scripts/elo_gauntlet.py
 node --experimental-strip-types src/lib/chess/gauntlet.ts
 ```
 
-UCI engine name is **hansel-chess-ai**. Lichess BOT setup is `train/lichess-bot/README.md`.
+UCI engine name is **hansel-chess-ai**. Flags: `--weights`, `--visits` (1–4096), `--device cpu|mps`. Lichess BOT setup: [train/lichess-bot/README.md](lichess-bot/README.md).
 
 `fetch_stockfish.sh` is ubuntu-x86-64. On this Mac, symlink Homebrew Stockfish 18 instead.
 
