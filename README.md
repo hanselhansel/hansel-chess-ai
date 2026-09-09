@@ -7,9 +7,19 @@ From-scratch AlphaZero-style chess you can **play in the browser** and watch thi
 This is **Phase 2, rated**. Playable net is **tinyaz-m** (8×128, 2.43M params) continued on Lichess 2013-01..2015-02 (7.8M). tinyaz-s stays on disk as the 1370 net.
 
 - **1-visit vs random-move: 19–1–0** (passed; not an Elo)
-- **64-visit vs Stockfish 18: 8–0 vs `UCI_Elo` 1320, 8–0 vs 1500, 5–1–2 vs 1800, 4–2–2 vs 2000, 2–1–5 vs 2200, 0–8 vs 2500.** 48-game MLE **2035** (1895–2175). KEEP+GATE vs SF2000 on 8 games. 2500 is 0–8. Not 2500. Not a Lichess rating. Eight-game rungs are noisy.
+- **64-visit vs Stockfish 18: 8–0 vs `UCI_Elo` 1320, 8–0 vs 1500, 5–1–2 vs 1800, 4–2–2 vs 2000, 2–1–5 vs 2200, 0–8 vs 2500.** 48-game MLE **2035** (1895–2175). KEEP+GATE vs SF2000 on 8 games. 2500 is 0–8. Not 2500. Eight-game rungs are noisy.
+- **Lichess blitz, 64 visits, vs other BOT accounts: 1531** over **108** games (RD 45). BOT **[hanselhansel](https://lichess.org/@/hanselhansel)**. Not a human pool. Not the Stockfish 2035 number.
 
-1-visit and 64-visit stay separate. There is no Lichess rating yet (BOT later).
+1-visit, 64-visit Stockfish, and Lichess blitz stay separate.
+
+## UCI
+
+```
+train/scripts/hansel-chess-ai
+train/scripts/hansel-chess-ai --weights public/weights/tinyaz-m.bin --visits 64 --device cpu
+```
+
+Speaks UCI. Default 64 visits, weights `public/weights/tinyaz-m.bin`. Flags: `--weights`, `--visits` (1–4096), `--device cpu|mps`. Same knobs as UCI options `Weights` and `Visits`. Cute Chess and lichess-bot use this wrapper. Setup: [train/lichess-bot/README.md](train/lichess-bot/README.md). Training: [train/README.md](train/README.md).
 
 ## Play
 
@@ -17,7 +27,7 @@ Open the app. You are White.
 
 1. Click a piece, then a highlighted square.
 2. The model thinks in a Web Worker (the board stays live).
-3. Toggle **1 visit** (naked net) vs **64 visits** (the number we will publish).
+3. Toggle **1 visit** (naked net) vs **64 visits** (the published number).
 4. Read the tree: SAN, visits `n`, prior `P`, value `Q`.
 5. The efficiency card never mixes 1-visit and 64-visit Elo.
 
@@ -30,10 +40,12 @@ One look-ahead trip from the current position: pick a line, evaluate one new lea
 | Mode | Visits | Meaning |
 |---|---|---|
 | 1-visit | 1 | Naked net. Policy argmax. Snapshot keep/discard. |
-| Play / rate | 64 | What you play. What we will publish. |
+| Play / rate | 64 | What you play. What we publish. |
 | Train targets | 256 | Self-play only. Not a published Elo. |
 
 ## Architecture (tinyaz-s)
+
+Playable net is **tinyaz-m** (8×128, 2.43M). s is the same stem at 64 channels (~0.64M), still on disk.
 
 19-plane side-to-move-canonical board → stem 3×3 → 8 residual blocks × 64 channels (~0.64M params) → 73-plane AlphaZero policy + tanh value. PUCT `c_puct = 1.5`. Rank-flip is `i ^ 56` (files stay put).
 
@@ -50,3 +62,5 @@ npm test          # includes src/lib/chess/chess.test.ts
 npm run typecheck
 npm run dev
 ```
+
+Training and UCI tests: [train/README.md](train/README.md). Releases: [CHANGELOG.md](CHANGELOG.md).

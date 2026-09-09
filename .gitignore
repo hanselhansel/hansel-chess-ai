@@ -30,6 +30,16 @@ venv/
 *.pgn
 *.pgn.zst
 *.jsonl
+train/lichess-bot/config.yml
+train/lichess-bot/.token
+train/lichess-bot/runtime/
+train/lichess-bot/game_records/
+train/lichess-bot/bot.pid
+train/lichess-bot/bot.log
+train/lichess-bot/rotator_state.json
+train/lichess-bot/rotator.log
+train/lichess-bot/rotator.pid
+train/lichess-bot/wdl.jsonl
 
 
 .claude/worktrees/

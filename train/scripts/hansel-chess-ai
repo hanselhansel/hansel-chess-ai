@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# UCI wrapper for lichess-bot / Cute Chess / CCRL testers.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+export PYTHONPATH="$ROOT/train/src${PYTHONPATH:+:$PYTHONPATH}"
+exec python3 -u "$ROOT/train/scripts/tinyaz_uci.py" "$@"
