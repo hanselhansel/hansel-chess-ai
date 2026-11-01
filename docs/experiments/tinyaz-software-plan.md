@@ -1,7 +1,7 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State:** C0 documentation and fresh baseline captured. Functional implementation has not started.
+- **State:** C0 documentation baseline committed at `8e23a787771fd74a723a52aa8941aaa38de9adf8`; fresh baseline captured. Functional implementation has not started.
 - **Requirements:** [Canonical design](../superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md).
 - **Review:** [Five-stage report](../superpowers/reviews/2026-11-02-tinyaz-verified-m/consolidated_review_report.md) and [resolved text actions](../superpowers/reviews/2026-11-02-tinyaz-verified-m/resolution/goldfish_review_report.md).
 - **Functional control source:** `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`.
@@ -91,14 +91,14 @@ The 21 EGM document actions are resolved as text. That status closes none of the
 
 ## Phase and implementation progress
 
-| Change | Status                                             | Evidence                                                                            |
-| ------ | -------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| C0     | Baseline captured; documentation baseline prepared | Dated command exits, immutable control hashes and resolved design above.            |
-| C1     | Pending Devin implementation                       | Portable fixtures, authoring ownership and required test discovery.                 |
-| C2     | Pending                                            | Comments/inventories, controlled Python checks, environment and restoration repair. |
-| C3     | Pending                                            | Coupled engine/protocol/UI migration and all owning contracts.                      |
-| C4     | Pending                                            | Frozen browser/parity harness, completed receipts and native process monitoring.    |
-| C5     | Not started                                        | Exact green candidate, committed check/parity, preflight and one bounded cohort.    |
+| Change | Status                                                                    | Evidence                                                                            |
+| ------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| C0     | Complete at documentation commit 8e23a787771fd74a723a52aa8941aaa38de9adf8 | Dated command exits, immutable control hashes and resolved design above.            |
+| C1     | Pending Devin implementation                                              | Portable fixtures, authoring ownership and required test discovery.                 |
+| C2     | Pending                                                                   | Comments/inventories, controlled Python checks, environment and restoration repair. |
+| C3     | Pending                                                                   | Coupled engine/protocol/UI migration and all owning contracts.                      |
+| C4     | Pending                                                                   | Frozen browser/parity harness, completed receipts and native process monitoring.    |
+| C5     | Not started                                                               | Exact green candidate, committed check/parity, preflight and one bounded cohort.    |
 
 No browser phase, numeric comparison or strength cohort has run. Resource peaks, cleanup proof, W/D/L, pair counts and statistical result are absent until actual evidence exists. An agent session or a passing subset is not a phase completion receipt.
 
