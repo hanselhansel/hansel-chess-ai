@@ -1,0 +1,794 @@
+# Tinyaz: verified M delivery and bounded software evaluation
+
+- **Author:** Hansel Hansel, with Codex
+- **Status:** Proposed. All sections approved. Overview & Goals, Technical Plan, Alternatives Considered, model-loading A, evaluation runtime 1, and raw en-passant choice 3 approved by Hansel on 2026-11-01. Detailed Implementation, including Non-Functional Requirements, approved on 2026-11-02. Saved to the owner-selected destination on 2026-11-02. Independent EGM review and production implementation remain pending.
+- **Date:** 2026-11-01
+- **Updated:** 2026-11-02
+- **Predecessor:** [Accepted concepts brief](../../../concepts_brief.md), SHA256 `c69431e2c09bf93a186a94345e452da06097381bb9777364bdef3d5188be9feb`.
+- **Resolution:** [Resolved annotated review](../../../goldfish_review_report.md). Hansel accepted all six text proposals on 2026-11-01.
+- **Existing design authority:** [Approved M ladder](2026-08-29-tinyaz-m-ladder-design.md).
+- **Source baseline:** `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. The working branch is `chore/egm-bootstrap-tinyaz`, with existing documentation changes.
+- **Selected model-loading architecture:** [Option A](../../../architecture_options.md). The browser client downloads, verifies, and retains M bytes for worker execution and main-thread recovery.
+- **Selected evaluation runtime:** [Option 1: real browser contexts](../../../evaluation_options.md). The primary cohort exercises actual thinker and worker code with M bytes held constant.
+- **Selected input convention:** [Choice 3: browser raw en-passant retention](../../../encoding_options.md). Align browser input with live Python; preserve separate legal-move rules and record the inspected FEN-training limitation.
+
+## Overview
+
+The browser's model label and stored ratings do not establish which checkpoint is choosing its moves. The source review found that browser loading selects the small S checkpoint while constants and card metadata identify the medium M checkpoint. The Python engine used through UCI already defaults to M. UCI is the command protocol used by chess GUIs and the bot.
+
+This design restores intended delivery of the existing trained M checkpoint and makes failures, model identity, and completed results dependable. It then establishes whether verified software changes improve play under a bounded, reproducible comparison. It does not assume the software fixes will raise Elo.
+
+Browser players should know which model is playing and retain control when loading or thinking fails. Researchers should be able to distinguish a different checkpoint, a software change, more search, and a different measuring method. The first milestone ends with repaired delivery, completed documentation repairs, accounted-for verification, and a predeclared comparison result or an inconclusive stop.
+
+The existing M model has 2,426,706 parameters. S has 640,018. This work keeps the from-scratch model goal and the under-3M parameter limit. It uses existing weights before considering a later learning experiment.
+
+## The Problem
+
+The [drift report](../../../2026-11-01_DRIFT_REPORT.md) identifies ten distinct findings. F1 is the approved M-delivery requirement left unmet. F2 and F3 are inaccurate source comments. F4 through F9 are missing public-interface names in owning README contracts. F10 is missing documentation of existing UCI invalid-position behavior. The documentation findings do not establish nine additional strength defects.
+
+The review also found failure paths that undermine model and result attribution. Failed browser loading can become random weights. A worker-to-main fallback can reload weights after readiness without refreshing the reported identity. Reset can leave an earlier search able to return into a new game. These are source-supported risks, not observed live incidents or quantified Elo losses.
+
+Verification and measurement have separate limits. The recorded npm baseline includes 16 existing failures and stops before its TypeScript stage; separately passing chess tests do not make the full command green. PyTorch-dependent checks were not run in the checked environments. The existing snapshot comparison uses one software implementation for both models and at most eight games. It cannot by itself prove that a new engine implementation is stronger.
+
+A larger search budget may change moves while using the same weights. A new rating protocol may change a reported number without changing moves. Loading existing M into the browser does not change the Python engine's M default. Combining these effects would obscure why a result changed and could lead to unnecessary training.
+
+All ten implementation findings remain OPEN. This design draft does not repair code, rerun model tests, play matches, or validate a live deployment.
+
+## Goals
+
+1. **Restore intended model delivery.** Browser trained play must use verified existing M weights. Readiness, fallback, completed results, and card claims must identify the active checkpoint. A missing, corrupt, or mismatched intended model produces a visible failure. Random demonstration is explicitly selected and carries no trained-model rating claim. Preserve existing S utilities and legacy S/M reading.
+2. **Keep results attached to their game and model.** Reset, engine replacement, and delayed replies must not apply old work to the current game. A failed turn remains stopped until explicit recovery. Carry forward the accepted checkpoint pinning, retry, and deadline requirements from the brief. Their interfaces and fixtures belong in the Technical Plan.
+3. **Close all ten findings with the right evidence.** Repair F1 in behavior and its contracts. Correct F2/F3 comments without changing migrations or database initialization. Complete the owning inventories for F4-F9. Document F10's current valid-prefix retention and silent command handling. Keep each finding open until its own completion evidence exists.
+4. **Establish dependable verification.** Account for every existing failure and missing check in the accepted verification ledger. Preserve actual application integration and authentication contracts. Verify model encoding, inference, legal moves, search value/history behavior, and restoration after failure using focused fixtures. Declare numerical tolerances before parity results. Distinguish a passing subset from a green full suite.
+5. **Isolate any playing-strength effect.** Preserve existing M bytes as the control. Keep browser S-to-M delivery separate from an actual same-M software change. Preserve fresh-root 64-visit results. Verify an identical-engine control before candidate comparisons. Require browser/Python parity evidence before Python games support a browser claim. Freeze software and model identities, openings, outcomes, and statistical rules before games. Report faults, raw results, uncertainty, and stopping reason. Do not claim a Python software gain when its execution did not change.
+6. **Keep the first experiment finite.** Carry forward the accepted one-machine, one-game-at-a-time limits: a 10-minute preflight; at most 20 complete opening/color pairs, 40 games, or 60 minutes for the comparison; 30-second readiness and 90-second command watchdogs; 4 GiB aggregate evaluation-process resident memory; and 256 MiB of new outputs. Preserve incomplete records and faults. A fault or an early resource/time stop makes the strength result inconclusive. These limits are ceilings, not performance or statistical-power claims. The Technical Plan must define complete accounting before any run.
+7. **Preserve honest historical claims.** Keep historical Stockfish-instrument results, Lichess BOT-pool ratings, and one-visit controls separate. Treat missing checkpoint or measurement provenance as unknown. Preserve the old eight-game instrument and historical records. A supported no-gain result can finish this milestone; a higher Elo number is not required for delivery correctness.
+8. **Keep implementation and documentation together.** Every later meaningful code change includes affected README contracts, usage/API/configuration documentation, and design progress updates. Keep edited source and test files below 400 lines. Inspect each final diff and compare docs with behavior, interfaces, invariants, side effects, paths, and commands before a green commit or completion claim. Record why no doc change is needed when applicable. Preserve approved requirements and unrelated dirty work.
+
+## Non-Goals
+
+- Retraining or changing checkpoint bytes, model width, training data, targets, or the learning objective in this milestone.
+- Starting training automatically after a disappointing or inconclusive comparison. A later training proposal needs an observed learning weakness or demonstrated target defect and its own criteria and budget.
+- Adding a clock-management mode, increasing the published 64-visit budget, caching position evaluations, or retaining search trees between moves. Those require separate evidence and decisions.
+- Changing F10 to atomic position parsing, changing migration discovery, or adding database behavior to fix comments and index omissions.
+- Rebuilding the Grok authoring template, changing unrelated auth/PWA runtime behavior, or weakening checks to obtain green output. Portable test repair remains in scope.
+- Expanding TypeScript serialization, introducing a model registry or publication service, or redesigning legacy promotion in order to select existing M.
+- Publishing weights or metadata, deploying the app, changing a live bot/account, or running paid or remote compute.
+- Replacing missing measurements with old checkpoint ratings, changing the rating instrument without a separate label, or promising a numerical Elo gain.
+
+## Open Questions
+
+The verification ownership, environment/commands/tolerances, experiment protocol, exact file map, estimates and rollback decisions are resolved by Detailed Implementation approval on 2026-11-02. The accepted six resolution decisions and the owner's A/1/3 selections remain authoritative.
+
+- **Execution evidence:** Actual environment imports, required test results, browser latency/resource use, numeric parity, final candidate identity and comparison outcomes remain unmeasured. These are required future outputs, not assumed passes or new policy decisions for the implementer.
+- **Known deferred compatibility:** Python/browser draw-claim behavior and the inspected default-FEN training versus live raw-target input convention remain distinct. Do not claim full-engine or training consistency from numeric parity, or automatically retrain to address either gap.
+- **Review:** The owner-selected final destination is this file. Fresh-context EGM review remains pending. Section approvals and saving this document do not establish implementation completion or an Elo gain.
+
+## Critical User Journeys
+
+### CUJ 1. Play with the intended trained model
+
+- **Given:** The current M bytes are available and match the selected checkpoint description.
+- **When:** A player opens the workbench and requests a model move.
+- **Then:** The client verifies and retains those bytes. The worker searches with them. The card and completed result identify that model. A browser move records its own visits and timing.
+
+### CUJ 2. Recover without changing the model
+
+- **Given:** M is verified and a worker becomes unavailable before the operation deadline.
+- **When:** The client makes its one permitted transition to main-thread execution.
+- **Then:** It retires the worker and decodes the retained bytes. No second weight download occurs. The response identifies the actual backend. If time or recovery fails, the turn stops visibly.
+
+### CUJ 3. Reset or retry after a failure
+
+- **Given:** A search or initialization is pending, or a turn has failed.
+- **When:** The player resets, retries the engine, or retries the move.
+- **Then:** Old work cannot mutate the current game or its UI state. A retry is explicit and has a new request identity. Reset can clear a move failure but does not hide an unresolved load failure.
+
+### CUJ 4. Select a random demonstration deliberately
+
+- **Given:** The player chooses the separate random-demo action.
+- **When:** A new demo engine session starts.
+- **Then:** It uses deterministic S random weights and is labeled untrained. It shows no trained-checkpoint rating claim. Switching modes replaces the engine session and invalidates earlier work.
+
+### CUJ 5. Compare software with unchanged weights
+
+- **Given:** The browser fixture, identities, control checks, and frozen protocol have passed preflight.
+- **When:** The local runner plays the one accepted comparison cohort.
+- **Then:** Both versions use the same M bytes, fixed 64 visits, and the same recorded game rules. Results include raw games, faults, timing, and the stopping reason. The runner neither trains nor publishes. A fault or early resource stop leaves the strength result inconclusive.
+
+## Technical Plan (Architecture)
+
+Technical Plan approved by Hansel on 2026-11-01. It specifies future implementation behavior. Existing source and the ten original findings are unchanged.
+
+### 1. Selected boundaries and data flow
+
+The browser client owns checkpoint loading and the retained binary, as selected in option A. The primary comparison runs actual engine code in real browser contexts, as selected in evaluation option 1. The workbench remains the authority for the game. Workers receive complete requests rather than maintaining a second game between moves. Each search still starts a fresh tree.
+
+```mermaid
+flowchart TD
+    Spec["Selected M description"] --> Load["Client fetches and verifies bytes"]
+    Load --> Cache["Client retains session bytes and identity"]
+    Cache --> Copy["Separate buffer for worker initialization"]
+    Copy --> Worker["Worker verifies, decodes, and searches"]
+    Game["Workbench game and generation"] --> Request["Position history and request context"]
+    Request --> Worker
+    Worker --> Response["Result with model, request, backend, and timing"]
+    Cache --> Main["Main-thread recovery from retained bytes"]
+    Request --> Main
+    Main --> Response
+    Response --> Guard["Accept only the current game and request"]
+    Guard --> View["Apply move and display its result snapshot"]
+    Legacy["Historical evaluation records"] --> History["Display with explicit provenance"]
+    History --> View
+```
+
+No new model service, registry, database, or dependency is required. The selected runtime uses the project's installed Playwright, Vite, React, and chess.js packages. Exact tool and browser identities are captured before a run. The local inspection found Node 24.4.1, Playwright 1.62.1, Vite 8.2.2, chess.js 1.4.0, and an existing Playwright Chromium executable. This was a path/version inspection, not a launched-browser or performance check. Execution must re-record the actual versions and executable hash.
+
+### 2. Checkpoint description and verification
+
+Extend the selected-model constants beside `WEIGHTS_URL` and `MODEL_NAME`. The trained description contains the model name, URL, packed version, parameter count, byte length, and expected SHA256. Use the current M control: 2,426,706 parameters, 9,706,840 bytes, SHA256 `b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee`. Do not change the general S channel default.
+
+Create a small checkpoint module for shared types and raw-buffer validation. Check the header, supported S/M architecture, declared/exact length, finite tensor payload, and digest. Trained readiness requires the expected M description to match. Missing cryptographic verification support is a visible environment failure. Do not bypass verification or return random weights.
+
+Change `loadPlayWeights` to return verified bytes and identity, not decoded tensors. Its default becomes the intended M description. This is an intentional internal API change. Update the client, worker, and owning contracts together. The worker stops calling this loader. Preserve `randomWeights`, generic S/M unpacking, the S writer, and the existing packed format. The separate gauntlet remains outside this workflow and is not used as the comparison runner.
+
+The client fetches once per initialized trained session. It retains the verified binary privately. Worker initialization receives a separate buffer. The retained original must never be transferred away or exposed as a mutable view to the UI. The worker independently checks the received bytes against the pinned identity, then decodes them. It performs no weight fetch. Main-thread recovery decodes the retained original after retiring the worker.
+
+Do not attach the current hash to old rating records without evidence. A later public weight replacement must update its matching selection description under a separately approved publication design. If current frontend selection and served bytes disagree, this milestone fails visibly rather than silently following the new file.
+
+For the explicit random demonstration, the client generates the existing deterministic S weights with seed 2026 and uses the S packer in memory. It computes their digest and retains the resulting binary through the same ownership boundary. The mode is `random-demo`, not trained M. No file is published. There is no new M-writing use case.
+
+### 3. Internal interfaces
+
+The following describes data contracts, not production implementation code.
+
+```text
+CheckpointSpec
+  name, url, packedVersion, parameterCount, byteLength, expectedSha256
+
+ModelIdentity
+  mode: trained | random-demo
+  modelName, sha256, packedVersion, parameterCount, channels, sourceId
+  seed: 2026 for the explicit demo; absent for trained M
+
+GamePosition
+  initialFen, movesUci[], expectedFen
+
+RequestContext
+  engineSessionId, gameGeneration, requestId, position, requestedVisits
+
+SessionReady
+  engineSessionId, modelIdentity
+
+EngineState
+  stage: loading | starting | ready | thinking | recovering | failed | stopped
+  engineSessionId, modelIdentity?, backend?, backendEpoch, activeContext?, error?
+
+ThinkResponse
+  context, modelIdentity, backend, backendEpoch
+  kind: move | terminal
+  result or terminal outcome
+  completedVisits, searchMs, moveElapsedMs, attempts[]
+```
+
+A trained identity requires the selected M digest. A demo identity requires its generated S digest and explicit mode. The UI cannot infer mode from a rating record. Request IDs increase within the workbench session. The engine session and backend epoch distinguish replacement engines and workers. Validate messages at the runtime boundary; TypeScript assertions alone are insufficient.
+
+Keep `createThinker` as the application factory. It returns the initial `ready` promise, a current-state getter/subscription, `think(request)`, `cancel(requestId)`, and `terminate()`. The initial ready promise identifies the immutable session model. Ongoing backend and failure changes use state notifications and per-response fields. Request-scoped notifications carry the same context. A retired request cannot publish a failure or completion into a newer request. This avoids treating the first readiness report as the current backend forever.
+
+The trained factory is the default. A separate explicit `random-demo` factory option creates a new session. No URL parameter or failed fetch can silently change the mode. The exact field declarations, exports, and call-site migrations must appear in the Detailed Implementation file map.
+
+### 4. Preserve history inside a fresh search
+
+The workbench captures an immutable position snapshot before awaiting the engine. It includes the initial FEN, complete UCI move sequence, and expected current FEN. A shared position helper replays those moves through chess.js and verifies the final FEN. Reject malformed moves or a mismatched final position before search. This private reconstruction never partially mutates the workbench game.
+
+The current `oneVisit` reconstructs a board from FEN and loses earlier repetition counts. A rules-only probe reproduced the difference with a repeated knight sequence. This establishes a search-context defect to cover with a focused regression before changing it. The probe did not measure model strength.
+
+Extend `search` and `searchAsync` to accept either a complete position or a legacy FEN string. Normal workbench requests use the complete position. Legacy FEN callers keep their current limited-history analysis behavior. Build one private history-bearing board for a request. Each visit pushes its selected line and restores the board in a `finally` path. Verify root FEN and history restoration after completion, cancellation, and injected error. Do not retain a tree or board between requests.
+
+Keep selection, priors, value-sign backup, tie-breaking, and the 1/64 visit meanings unchanged. A new root expansion still consumes the first visit. Check cancellation and remaining time at visit boundaries. Main-thread search continues to yield so cancellation can be observed. An incomplete search is an abort, not a successful 64-visit result. A terminal root produces a typed terminal outcome through the engine protocol, not an illegal move or an operational-fault label.
+
+The current browser and Python terminal predicates have a demonstrated draw-claim difference. Do not silently change Python training or UCI draw handling here. Numeric encoding/inference fixtures and full-game rule compatibility are separate checks. Preserve the known difference in the verification ledger. Python games cannot be offered as browser-strength evidence until the required compatibility exists. The primary browser comparison does not depend on that claim.
+
+**Owner-approved input addendum, 2026-11-01:** Hansel selected [en-passant choice 3](../../../encoding_options.md) after a source-level probe reproduced a second compatibility gap. Retain the raw target from the initial FEN or last double pawn move beside the private history-bearing board. Pass it into browser encoding even when no legal capture exists, and restore it on every undo/error/cancel path. Leave chess.js legality/repetition rules, Python encoding and default-FEN dataset generation unchanged. A FEN-only caller cannot recover raw information omitted before the request. This input change can alter logits, priors and moves with existing M; selection/softmax/backup arithmetic stays unchanged. It joins the combined software treatment and does not establish a strength gain or fix the inspected training/live-input difference. Detailed Implementation specifies the exact state, APIs, files and parity cases. The addendum records an approved target, not repaired source.
+
+### 5. Worker protocol and recovery
+
+Introduce an explicitly versioned internal thinker protocol, independent of packed-weight version 1. Initialization carries the protocol version, engine session, backend epoch, model identity, and the separate binary buffer. The worker verifies and decodes it before acknowledging readiness. A think received before successful initialization is rejected. Remove both worker-side implicit random paths.
+
+A think carries its request context and the remaining operation budget. A response echoes context and reports actual backend/identity, completed work, and timing. A malformed or obsolete message is not accepted as a move. The client compares every response with its active session, epoch, and request. The workbench performs the additional game-generation and position check before applying a legal move.
+
+| Event                                                         | Handling                                                                                      |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| HTTP, format, length, digest, or trained-model mismatch       | Reject loading; retain a visible load failure. No random substitution.                        |
+| Worker unavailable at construction/startup or transport crash | Retire that worker. Transition once to main execution from retained bytes if budget remains.  |
+| Worker model verification or request identity mismatch        | Fail visibly. Do not treat inconsistent data as an ordinary retry.                            |
+| Terminal position                                             | Return a typed terminal outcome. Do not run a retry or manufacture a move.                    |
+| Search exception or illegal result                            | Stop the turn with a diagnostic category. Retry requires explicit action.                     |
+| Cancellation or expired deadline                              | Reject/discard the attempt. Never start fallback after the deadline.                          |
+| Engine disposal                                               | Abort initialization, retire the worker, settle pending promises, and reject future requests. |
+
+Within a session, a successful worker-to-main recovery remains on main execution. An explicit engine retry creates a new engine session. A reset cancels or invalidates current work without changing the pinned checkpoint. A busy worker can be terminated; a later request recreates worker execution from retained bytes. That replacement increments the backend epoch and is recorded. Main-thread work stops cooperatively; a new request waits for its cleanup rather than running two main searches concurrently.
+
+### 6. Deadlines and timing
+
+Use the client's monotonic clock as the acceptance authority. Initialization and each requested move have an explicit start and a 90-second deadline. If a move is queued while initialization is pending, its budget includes that wait and cannot extend the initialization deadline. A move requested after successful initialization gets its own 90-second operation budget. Fallback never resets that clock.
+
+Keep the existing eight-second worker-start acknowledgement timer as a subordinate bound after verified bytes are available. Its expiry can trigger the one permitted recovery only while the total budget remains. It is not another weight-loading attempt. The evaluation runner's accepted 30-second readiness watchdog is stricter and remains independent.
+
+Pass remaining time to the worker, which establishes its own local monotonic check. The client still rejects a response received after its authoritative deadline. Abort fetches, terminate a stalled worker, and cancel asynchronous main search when possible. Browser scheduling and a synchronous evaluation can delay a callback. The deadline prevents acceptance or a new retry after expiry; it is not a hard real-time CPU preemption promise. Measure overrun and responsiveness instead of hiding them.
+
+Record initial fetch/verification and backend setup separately from core search time. Record every attempt and disposition. `moveElapsedMs` covers readiness wait, queueing, setup, failed attempts, recovery, and result delivery after the request began. Core `searchMs` remains a distinct measurement. Diagnostics can record partial work; only a complete move response may claim its completed visit budget.
+
+### 7. Workbench and card behavior
+
+Keep game ownership in `Workbench`. Extract engine session/subscription and request-lifetime handling into a small hook so edited files stay below 400 lines. A reset increments the game generation and replaces the current game. Success, error, and finalization callbacks all check current ownership. An old callback cannot clear a newer request's thinking state or overwrite its error/result.
+
+Provide explicit retry-engine and retry-move actions where applicable. The move retry preserves the position and starts a new request. Reset starts a new game. A load failure stays visible while recovery is pending and until recovery succeeds. Automatic-turn effects do not repeatedly restart a failed turn. The deliberate random-demo action changes mode only after a click and starts a new game/session.
+
+The selected visit count describes the next request. Card timing, tree, value, identity, and visit count come from the last completed response snapshot. Changing the selector cannot relabel an old result. Convert value to the display perspective from that request's side to move. Keep user-facing diagnostics short; retain request IDs and detailed failures in diagnostic/run records.
+
+The model name and parameter count come from verified identity. Random-demo mode is labeled untrained and hides trained rating claims. Legacy metadata remains unchanged and is shown as recorded history with unverified checkpoint provenance where appropriate. Missing records are unavailable, not running. The one-visit random control is not called an Elo. Label arithmetic estimates by their actual convention and architecture; they are not measured whole-move compute.
+
+### 8. Primary browser comparison
+
+Use a dedicated evaluation-only Playwright runner and a small local Vite fixture. The fixture imports actual chess engine modules. It is not a new app route, public API, training entrypoint, or general evaluation platform. Use a separate component fixture to mount the actual workbench for UI behavior checks. Do not weaken the existing generic smoke command's path/auth/deployment checks to make it serve this purpose.
+
+```mermaid
+flowchart LR
+    Protocol["Frozen protocol and revision identities"] --> Runner["Local comparison runner and watchdog"]
+    Runner --> Base["Baseline browser context and real worker"]
+    Runner --> Candidate["Candidate browser context and real worker"]
+    Weights["Same immutable M bytes"] --> Base
+    Weights --> Candidate
+    Runner --> Rules["Game controller using pinned chess.js rules"]
+    Base --> Rules
+    Candidate --> Rules
+    Rules --> Records["Manifest, per-move events, raw PGNs, and result"]
+```
+
+The provisional Python comparison filename in the brief is refined by the owner's real-browser selection. The driver uses the already installed JavaScript Playwright API. It does not add a Python browser dependency or claim a new Python engine result. The approved Detailed Implementation section lists the exact browser driver, fixture, baseline preparation, records, watchdog, and test file map.
+
+Start fixture servers with explicit evaluation configuration and `configFile: false`. Bind loopback addresses. Do not load the production Vite configuration, migration hooks, or auth/PWA bootstrap. Serve only the pinned engine source roots, shared fixture, installed dependencies, and controlled model assets. The component fixture uses the installed React tooling and actual component code. No fixture entrypoint is included in the production app.
+
+Use one recorded Chromium executable and the same launch configuration for both versions. Open two isolated player contexts for a game. Play one game at a time and close prior contexts before starting another game. The Node-side game controller uses the same pinned chess.js version as the fixture; it does not run MCTS or substitute Python draw rules. Supply full move history to the candidate. The baseline adapter supplies its legacy FEN-only request. That history difference is part of the software treatment, not hidden by rewriting baseline code.
+
+Pin the baseline source to `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Freeze the candidate at an exact verified implementation commit before the final cohort. Prepare both source snapshots in separate run-owned directories and serve those immutable snapshots. Disable HMR and update-driven reloads. Do not check out over the active work or modify original production files. Share only the recorded dependency installation and record its identity.
+
+The primary comparison is **same-M browser software**, not S-to-M delivery. The old source requests S, so the baseline fixture must explicitly serve the exact M body at that legacy request path. Record that normalization, delivered hash, response status, and ready parameter/source fields. The candidate must request the intended M URL and natively report the matching digest. Never forge a native baseline digest that its old API does not report. Attribute baseline identity to controlled delivery plus loaded-architecture evidence.
+
+Any failed model request, random fallback, unexpected worker closure/backend change, illegal move, or protocol discrepancy makes the comparison inconclusive. This includes an old fallback that cannot preserve verifiable identity. Recovery scenarios are exercised separately and recorded, not converted into selective strength wins. Candidate UI checks independently verify the unmodified M URL and fail on an S request, so the baseline normalization cannot mask a candidate loader bug.
+
+Before candidate games, run an identical-engine control with disjoint short fixtures. It must verify model delivery, deterministic request results, legal game handling, color swaps, and raw-record accounting. The 10-minute preflight also records cold readiness, 64-visit move latency, memory, and runtime identities. If that control or preflight cannot complete within its limits, stop before the primary cohort.
+
+Use one locked set of 20 opening/color pairs for the final cohort. Development and control fixtures are separate. Lock candidate identity, openings, outcome rules, and the statistical method before observing candidate results. Do not tune successive candidates on that final set or silently extend the sample. The exact positions and decision method are specified in Detailed Implementation 6, approved on 2026-11-02.
+
+The controller uses the pinned browser-library checkmate/draw predicates. It validates every engine move. There is no synthetic material winner or added ply adjudication in this browser protocol. A nonterminal game interrupted by the run cap stays incomplete. This is a new, labeled browser comparison instrument, separate from the historical Stockfish instrument. Preserve the historical 160-ply/material protocol and its records unchanged.
+
+Enforce one machine, one game at a time, the 60-minute/40-game cohort cap, 30-second readiness and 90-second command watchdogs, 4 GiB aggregate evaluation-process resident memory, and 256 MiB of new run-owned outputs. Account for the controller, fixture servers, Chromium, and descendants. An external watchdog must be able to stop stalled browser-side work. Temporary fixture/profile/cache artifacts belong to the run and are accounted for; pre-existing dependencies and control weights remain unchanged. Record cleanup and verify that owned processes and listening ports are gone.
+
+Persist the run manifest before games. It contains revision and source hashes, tool/browser/dependency identities, checkpoint proof and normalization, rule convention, visits, openings, resource limits, and statistical plan. Record each request, response, actual backend, attempts, timing, faults, game ID, color, moves, and outcome. Write raw PGNs and incremental events. Record a final completion or stop reason even after a crash. Never write results into public weights or legacy rating metadata.
+
+A complete error-free cohort can support the predeclared browser-software comparison. Report W/D/L, paired uncertainty, and limitations. An incomplete or faulty cohort cannot make a strength claim. No result is automatically a new Stockfish-scale Elo, Lichess rating, or proof of a trained-weight gain. Retraining remains a separate decision.
+
+### 9. Component and contract map
+
+| Boundary                                      | Planned change                                                                                                              | Owning documentation                                      |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Model constants and `weights.ts`              | Selected M description; strict verified-buffer loading; preserve S utilities and packed format                              | Chess README and root model-selection description         |
+| New checkpoint/position/protocol modules      | Shared identity checks, history reconstruction, request/result contracts, and message guards                                | Chess and worker READMEs                                  |
+| `think-client.ts` and `think.worker.ts`       | Client-owned bytes, strict initialization, deadlines, actual state/results, one recovery, cancellation/disposal             | Chess and worker READMEs                                  |
+| `mcts.ts`                                     | History-bearing per-request board, restoration, cancellation checks, and typed terminal handling; same fresh-tree selection | Chess README and search API documentation                 |
+| Workbench, engine hook, card, and think panel | Current-request ownership, explicit recovery/demo actions, truthful model/history/result display                            | Chess component README and play usage                     |
+| F2/F3 source comments                         | Correct migration/initialization descriptions without behavior changes                                                      | Migration and library contracts if comparison requires it |
+| F4-F9 inventories and F10 behavior            | Exact owning-interface additions and existing UCI error/state documentation                                                 | Owning READMEs from the repair register                   |
+| Browser evaluation driver and fixtures        | Real-browser comparison, controlled baseline, game/record/resource management                                               | Training/scripts READMEs and experiment protocol          |
+| Verification environment and focused tests    | Per-failure ledger, declared numerical checks, history/error/control cases, no weakened integration checks                  | Root/training verification docs and experiment protocol   |
+
+The implementation phase must enumerate every concrete file, including docs and tests, before approval. Keep source/test files below 400 lines through scoped modules. Include code and corresponding documentation in each green change. Compare the final diff with actual behavior, interfaces, invariants, side effects, file paths, and commands before committing or reporting completion. The ten findings close only on implementation evidence. Drafting does not close them.
+
+## Alternatives Considered
+
+The selected approach uses existing M, retains verified bytes in the client, and evaluates actual engine code in real browser contexts. These decisions come from the [accepted brief](../../../concepts_brief.md), [loading choice](../../../architecture_options.md), and [evaluation choice](../../../evaluation_options.md). The alternatives below preserve the reasons for those choices and the conditions for later work.
+
+### A1. Change all architecture defaults to M
+
+- **Mechanism and benefit:** Make M the implicit width for tensor creation and parameter counting across helpers.
+- **Costs and failure conditions:** Existing random generation, the TypeScript writer, tests, and S tools depend on the S default. A global width change can break those boundaries without fixing checkpoint selection consistently.
+- **Reason not selected:** The approved repair selects M at the play-loading boundary. It preserves S utilities and legacy packed readers. Changing every architecture default is unnecessary for that repair.
+- **Disposition:** Rejected for this milestone. A future default change needs its own compatibility case.
+
+### A2. Retrain immediately
+
+- **Mechanism and benefit:** New data, targets, or optimization could improve learned predictions if learning is the bottleneck.
+- **Costs and failure conditions:** Training spends compute and changes the checkpoint before delivery and measurement are dependable. Better weights can still be hidden by a wrong loader or mislabeled by stale metadata. A result would also mix software and learned-weight effects.
+- **Reason not selected:** Use existing M for the first repair and comparison. Training needs a repeatable learning weakness or demonstrated target defect, corrected inputs where needed, a separate budget, and independent pass/stop criteria.
+- **Disposition:** Deferred. A disappointing software comparison does not automatically open training.
+
+### A3. Increase visits immediately
+
+- **Mechanism and benefit:** Existing controls can allocate more search to the same weights and test whether additional thinking helps.
+- **Costs and failure conditions:** More visits consume time and can increase timeout or responsiveness problems. They change the compute budget. A higher-budget result cannot be relabeled as a new fixed-64 result.
+- **Reason not selected:** Preserve fresh-root 64 visits for the primary comparison. Verify identity, correctness, and latency first. A later visit-versus-strength experiment must have its own declared budget and label.
+- **Disposition:** Deferred. The current design does not rule out useful extra search.
+
+### A4. Build clock management, caching, or tree reuse first
+
+- **Mechanism and benefit:** A time manager could allocate available time; evaluation caching could avoid repeated work; tree reuse could retain useful search statistics.
+- **Costs and failure conditions:** These add interruption rules, state ownership, invalidation, memory limits, and work-accounting decisions. Reused statistics change what a later request gains from 64 new visits. Benefit is unmeasured.
+- **Reason not selected:** Repair context and delivery, then profile. Admit a follow-up only when evidence supports that specific change. The approved per-request history board still starts a fresh search tree and retains no search state between requests.
+- **Disposition:** Deferred separately. These are not prerequisites for delivering existing M.
+
+### A5. Change the rating ruler or use easier opposition as the improvement
+
+- **Mechanism and benefit:** Another protocol or opponent population can answer a different playing-strength question. Easier opposition may produce more wins.
+- **Costs and failure conditions:** A changed number alone cannot identify a software or weight improvement. Openings, game-end rules, opponent settings, and populations can all change the instrument.
+- **Reason not selected:** Preserve the historical Stockfish instrument and records. Label the selected browser comparison separately and hold its method fixed across both software arms. It measures the browser-software comparison rather than replacing the historical Elo or Lichess rating.
+- **Disposition:** Rejected as a standalone strength claim. New instruments remain valid when their purpose and limitations are explicit.
+
+### A6. Treat F4-F9 index omissions as runtime defects
+
+- **Mechanism and benefit:** Auditing the omitted exports can reveal an independent implementation issue if one exists.
+- **Costs and failure conditions:** Missing names in a README do not by themselves justify changing behavior. Runtime refactors can create regressions in unrelated libraries and make the repair harder to verify.
+- **Reason not selected:** Revalidate the exact export sets and complete their owning contracts. Admit a runtime repair only on separate evidence, with its own regression and documentation changes.
+- **Disposition:** Rejected. F4-F9 remain documentation repairs.
+
+### A7. Make F10 position parsing atomic now
+
+- **Mechanism and benefit:** Validate a whole move list before replacing the stored position. Invalid commands would leave no applied prefix.
+- **Costs and failure conditions:** This changes an existing error/state contract. It requires compatibility and history tests. No valid-game requirement violation or strength effect was established by the documentation finding.
+- **Reason not selected:** Document the current valid-prefix retention and silent command handling. Keep the engine behavior unchanged for F10.
+- **Disposition:** Rejected for this milestone. A later atomic-parsing change needs an approved behavior decision.
+
+### A8. Restore the whole Grok template to make tests green
+
+- **Mechanism and benefit:** Recreating missing authoring assets and repository defaults could satisfy some template-specific checks.
+- **Costs and failure conditions:** This expands beyond chess into authoring support and workspace assumptions. It could conceal the actual ownership of a failing check or alter auth/PWA behavior to satisfy a fixture.
+- **Reason not selected:** Classify failures in the verification ledger. Isolate portable fixtures, preserve real application integration checks, and decide ownership before moving or removing an authoring-template check. A passing subset is still reported as a subset.
+- **Disposition:** Rejected. Narrow verification repair remains in scope.
+
+### A9. Build a publication service now
+
+- **Mechanism and benefit:** Coherent release activation and rollback could prevent mixed weights/metadata and old measurements attached to new bytes.
+- **Costs and failure conditions:** A publication redesign adds lifecycle and compatibility work across training callers before this milestone needs new weights. An incomplete redesign could create another activation path.
+- **Reason not selected:** The first comparison uses unchanged control assets and an evaluation-only runner. Verified identity fails visibly on a mismatch. Before later publication, explicitly decide missing-result behavior, complete-release identity, activation, single-writer coordination, runtime checks, and rollback.
+- **Disposition:** Deferred until publication enters an approved scope. Current publisher risks remain documented.
+
+### A10. Adopt stronger external engine weights
+
+- **Mechanism and benefit:** External weights could provide another practical engine or comparison baseline.
+- **Costs and failure conditions:** They change the from-scratch model goal. They do not demonstrate an improvement to the project's own learned weights or repair its delivery/evaluation defects.
+- **Reason not selected:** The existing goal and parameter constraint remain authoritative. This milestone uses the project's existing M checkpoint.
+- **Disposition:** Outside the current goal. A goal change needs explicit owner approval.
+
+### A11. Let the worker load and download again on fallback (loading B)
+
+- **Mechanism and benefit:** Normal loading stays in the worker. The client retains identity without keeping the original 9.7 MB binary.
+- **Costs and failure conditions:** Recovery needs another fetch, verification, and decode within the remaining deadline. It fails if the network/cache is unavailable or the served asset differs from the pinned checkpoint. Less retained client data does not establish a lower total peak.
+- **Reason not selected:** Hansel selected A. One client owns the download and retains verified bytes for recovery without another network request. Its memory cost remains an explicit measurement.
+- **Disposition:** Not selected. Reconsider only through an approved loading-architecture change.
+
+### A12. Let the worker load and return bytes to the client (loading C)
+
+- **Mechanism and benefit:** Loading begins in the worker and the client receives a recovery copy before readiness is accepted.
+- **Costs and failure conditions:** Both sides participate in a binary handoff and acknowledgement. A worker failure, missing buffer, cancellation, or out-of-order message before that handoff completes must not create a ready session. The client still retains the binary.
+- **Reason not selected:** Hansel selected A, which places download and retention in one owner and avoids the return handshake. No startup or memory advantage of C was measured.
+- **Disposition:** Not selected. A future measured need can support a new decision.
+
+### A13. Use TypeScript search in Node as the primary comparison (runtime 2)
+
+- **Mechanism and benefit:** A small adapter can run the same search modules without UI or browser-startup orchestration.
+- **Costs and failure conditions:** It does not measure loading, worker recovery, or browser timing. Browser-to-Node parity is required before results support a browser algorithm claim. Adapter, dependency, history, and adjudication differences can invalidate the comparison.
+- **Reason not selected:** Hansel selected real browser contexts for the first comparison. That exercises the actual thinker and worker. Separate component checks still cover UI claims and interactions.
+- **Disposition:** Not selected as primary. Node remains useful for focused unit and controller tests; no Node engine-adapter project is added here.
+
+### A14. Use the existing Python UCI engine as the primary comparison (runtime 3)
+
+- **Mechanism and benefit:** Reuse the established UCI path to study Python engine behavior or compare checkpoint weights under an explicit Python protocol.
+- **Costs and failure conditions:** Python already defaults to M. An unchanged Python engine cannot measure browser software repairs. The recorded draw-claim difference prevents assuming full-engine equivalence. Missing PyTorch, hidden faults, identity drift, or an altered instrument can also invalidate results.
+- **Reason not selected:** Hansel selected the actual browser runtime. Keep Python checks and historical UCI records in their proper scope. Python results may support a browser claim only when the required compatibility evidence exists.
+- **Disposition:** Not selected as primary. The Python runtime and old rating instrument remain unchanged by this choice.
+
+## Non-Functional Requirements
+
+These requirements apply to the proposed implementation below. None is an observed performance result.
+
+- **Identity:** Verify the exact M control before trained readiness, independently verify the worker copy, and keep one immutable model identity per engine session. Retain packed v1 S/M reading and S utility defaults. Do not manufacture historical checkpoint provenance.
+- **Failure and ownership:** Every pending operation settles on success, explicit cancellation, disposal, or failure. Replaced sessions and requests cannot update a current game. Worker recovery uses retained bytes once; failed turns require explicit action. Main searches run sequentially and yield between bounded groups of visits.
+- **Deadlines:** Initialization and a move each have the approved 90-second total-operation rule. The eight-second worker acknowledgement is subordinate. A late result is rejected even if browser scheduling delays physical interruption. The runner independently enforces 30-second readiness and 90-second command watchdogs.
+- **Responsiveness:** Prefer the worker. In browser checks, record main-thread timer gaps during a real M fallback and verify that Reset can be delivered and invalidates the pending move. Report maximum observed gap and cancellation delay. Do not invent a latency target or call a cooperative deadline hard CPU preemption.
+- **Resources:** Use one existing local machine and one game at a time. The throughput preflight is at most 10 minutes. The final cohort is at most 20 complete pairs, 40 games, or 60 minutes. Aggregate evaluation-process RSS is at most 4 GiB; all new evaluation-workspace outputs together are at most 256 MiB. Unknown accounting, a fault, or an early cap stop prevents a strength conclusion.
+- **Reproducibility:** Freeze both source revisions, the shared dependency installation, Chromium binary/configuration, M hash, rules, opening order, fixtures, and analysis before candidate games. Never hot-reload or silently resume a partial final cohort. A new candidate or changed method needs a new decision and an unused final set.
+- **Scope and data:** Bind evaluation servers to loopback and block external browser requests. Keep profiles, snapshots, caches, logs, and results inside one explicit temporary evaluation workspace. Do not include credentials in records. No training, publishing, database migration, deployment, or live account action is part of this implementation.
+- **Maintainability:** Keep every edited source and test file below 400 lines. Commit a green change with its affected contracts and design progress. Compare code and docs before each commit and final handoff. A passing subset or recorded skip never becomes a green full-suite claim.
+
+## Detailed Implementation Plan
+
+Detailed Implementation, including Non-Functional Requirements, approved by Hansel on 2026-11-02. Overview & Goals, Technical Plan, Alternatives Considered, loading A, browser runtime 1, and raw en-passant choice 3 remain approved. All F1-F10 findings remain OPEN. The file map and rules below describe future work, not completed changes.
+
+### 1. Approval scope, baseline, and verification ownership
+
+Use the existing `chore/egm-bootstrap-tinyaz` branch. Before implementation, capture its full status, tracked diff, untracked documentation inventory, M/S hashes, and baseline test outputs outside the repository. Preserve unrelated work. Review and commit the accepted EGM documentation separately before functional changes; stage explicit paths, never the entire dirty tree by default. Do not commit to `main`.
+
+The primary functional control remains source `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec` and existing M SHA256 `b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee`. The future candidate is one exact green implementation commit, resolved before games. Documentation-only baseline capture does not change the source control. Hash the selected M/S assets and legacy metadata again after verification and after the comparison.
+
+Hansel selected [raw en-passant choice 3](../../../encoding_options.md) on 2026-11-01. Align the browser input plane with live Python by retaining the raw target from initial FEN or the last double pawn move. Leave Python encoding and default-FEN data generation unchanged. This can change browser logits, priors and moves with existing M. The comparison therefore tests the combined browser software repair, including this input change; it does not isolate the gain from each individual fix. The inspected FEN-based training path can still differ from live Python's raw-target convention. Do not claim that this choice repairs training/inference consistency or guarantees strength. Retraining remains outside this milestone.
+
+**Ownership decision approved on 2026-11-02:** Move the four checks that read Grok authoring documents into an explicit `test:template-authoring` command. Three currently live in `brand-check.test.mjs`; the fourth is the recipe check in `write-atomic.test.mjs`. Keep all four assertions. Require an explicit `GROK_TEMPLATE_ROOT` containing the real authoring documents. Missing input fails that command; it is never reported as a pass or silently skipped. This app does not ship those authoring documents, so that command is an upstream authoring contract, separate from the required application test gate. Keep all brand-marker, atomic-write, authentication, PWA runtime, Nitro wiring, and deployed-asset checks required for the app. This decision does not edit the global AGENTS instructions or recreate the Grok template.
+
+The existing 16 failures have the following exact ownership and repair plan. Reproduce them first with saved environment names and versions, without dumping secret values. The result column is pending implementation for every row.
+
+| ID  | Recorded failing test                                                    | Owner and chosen repair                                                                                   | Future evidence                                                                                             |
+| --- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| V01 | `SKILL.md and AGENTS.md name the marker path and bound this script uses` | Authoring contract. Move unchanged assertion to the explicit authoring gate.                              | Selected template path plus the actual pass/fail, or clearly unavailable external input.                    |
+| V02 | `the sections that own the brand-task prohibition never affirm a wait`   | Authoring contract. Move its section parser and assertions with V01.                                      | No weakening or omission of the prohibited wording checks.                                                  |
+| V03 | `SKILL.md tells the pass to self-check with the flag this CLI accepts`   | Authoring contract. Retain the CLI-flag assertion in that gate.                                           | A missing skill fails the explicit command.                                                                 |
+| V04 | `the build side resolves the template's shipped app-env`                 | App behavior. Supply a temporary `.grok/app-env.json` to the existing `buildAuthEnabled(root, env)` seam. | File false, explicit true override, missing/malformed no-op, and indeterminate-dev behavior remain covered. |
+| V05 | `platform chrome overwrites share-card metas and always sets og:title`   | PWA behavior. Pass an empty temporary filesystem and explicit metadata/environment context.               | Existing title/card assertions pass independently of this workspace's title and card files.                 |
+| V06 | `published grok.me slug is still a title fallback`                       | PWA behavior. Give the test an explicitly empty site.                                                     | The slug fallback is still asserted.                                                                        |
+| V07 | `emits og:image for a public host and prefers a custom card`             | PWA behavior. Create the intended card in that test's temporary root.                                     | Custom-card precedence remains asserted.                                                                    |
+| V08 | `placeholder og:image appends site.color when it is 6-digit hex`         | PWA behavior. Use a root without a custom card and an explicit color.                                     | Placeholder color validation remains asserted.                                                              |
+| V09 | `document title entities are not double-escaped on og:title`             | PWA behavior. Remove incidental site-title precedence through an explicit fixture.                        | Escaping assertion unchanged.                                                                               |
+| V10 | `injects into documents with no head element`                            | PWA behavior. Isolate filesystem/site context.                                                            | Existing fallback injection and title assertions remain.                                                    |
+| V11 | `streaming injector matches </HEAD> case-insensitively`                  | PWA behavior. Isolate streaming context in the same way.                                                  | Case-insensitive streaming assertion remains.                                                               |
+| V12 | `uses the app name in the injected title tag`                            | PWA behavior. Supply no competing site title.                                                             | App-name fallback remains asserted.                                                                         |
+| V13 | `the template ships auth off`                                            | App-env reader behavior. Rename to describe a controlled fixture with auth false.                         | Fixture file is read; missing real app-env still means no override, not an auth-default change.             |
+| V14 | `the wrapped command runs with the app env applied`                      | App-env CLI behavior. Copy the exact wrapper to a temporary `scripts/` beside the fixture app-env.        | Child receives false, without relying on this checkout's absent file.                                       |
+| V15 | `the CLI still runs when invoked through a symlinked path`               | App-env CLI behavior. Symlink that fixture's scripts directory and invoke the copied wrapper.             | Real-path root resolution and child exit/signal propagation remain covered.                                 |
+| V16 | `every hand-over the og skill prints is one this script accepts`         | Authoring contract. Move the recipe parsing assertions to the explicit authoring gate.                    | All documented card/banner/site handovers are still checked against the shipped parser.                     |
+
+Do not change runtime auth defaults, missing-file handling, environment precedence, host validation, or PWA rendering to repair these fixtures. Clear and restore only relevant environment flags in test workers. Clean temporary directories on completion. Keep the Nitro `serverDir`, middleware/assets, and virtual-identity real-file assertions in the required PWA suite.
+
+### 2. Unified file map
+
+`Modify` means a scoped future edit. `Create` means a new future file. Paths beginning `./` are relative to this repository. Planned files are shown as paths rather than links until they exist. No file deletion is planned. Splitting tests moves assertions, not coverage. If a further split or behavioral repair is required, update this map and its owning contract before making it; architecture changes still require owner approval.
+
+| Action | File                                                                       | Change and rationale                                                                                                                                                                                                                                                                                                                                              |
+| ------ | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modify | `./package.json`                                                           | Add named script/core/browser gates and evaluation commands below. Keep dependencies and build/deployment commands unchanged. The default application test command must discover new core tests.                                                                                                                                                                  |
+| Modify | `./scripts/brand-check.test.mjs`                                           | Move only V01-V03 and their document-only helpers to the authoring gate. Preserve every application brand/marker test.                                                                                                                                                                                                                                            |
+| Modify | `./scripts/write-atomic.test.mjs`                                          | Move only V16 and its document traversal to the authoring gate. Preserve filesystem safety, CLI, and handover behavior tests.                                                                                                                                                                                                                                     |
+| Modify | `./scripts/check-auth-invariant.test.mjs`                                  | Repair V04 through the existing explicit-root API. Preserve divergence and unavailable-dev checks.                                                                                                                                                                                                                                                                |
+| Modify | `./scripts/with-app-env.test.mjs`                                          | Repair V13-V15 with exact-source temporary wrapper fixtures. Preserve override, missing/malformed file, exit-code, signal, and symlink semantics.                                                                                                                                                                                                                 |
+| Modify | `./scripts/grok-pwa-plugin.test.mjs`                                       | First move the complete block from `injects before </head>` through `snapshotOgIdentity stamps card=custom from a public card file` into the head test file. Isolate remaining contexts, including streaming cases. Keep real deployment tripwires here. The existing file is 506 lines; both resulting files must be below 400.                                  |
+| Create | `./scripts/grok-pwa-head.test.mjs`                                         | Own the moved head/meta/card tests and isolated temporary contexts. Together with the preceding file, repair V05-V12 without editing PWA runtime.                                                                                                                                                                                                                 |
+| Create | `./scripts/template-authoring/contract.mjs`                                | Retain V01-V03/V16 in an explicit Node test entrypoint whose basename does not match the application's `*.test.mjs` discovery. Require `GROK_TEMPLATE_ROOT`, fail on missing docs, and use this checkout's actual parser/marker constants.                                                                                                                        |
+| Create | `./scripts/template-authoring/README.md`                                   | State authoring ownership, required input paths, all four checks, failure behavior, and the separate invocation.                                                                                                                                                                                                                                                  |
+| Modify | `./migrations/auth/0001_auth.sql`                                          | F2: correct the header about automatic nested migration discovery. Change comments only; preserve every SQL statement and filename.                                                                                                                                                                                                                               |
+| Modify | `./src/lib/db.ts`                                                          | F3: correct `getSql` JSDoc about pg versus PGlite initialization. No query, connection, migration, or ordering change.                                                                                                                                                                                                                                            |
+| Modify | `./src/lib/chess/constants.ts`                                             | Add the selected M descriptor and stable operation/protocol limits. Move the existing `paramCount` formula here unchanged so checkpoint validation and weights do not form an import cycle. Keep `CHANNELS` and implicit utility width at S.                                                                                                                      |
+| Create | `./src/lib/chess/checkpoint.ts`                                            | Own descriptor/identity/verified-binary types, strict raw format/count/length/finite/digest validation, and identity comparison. Import architecture constants, not the decoder.                                                                                                                                                                                  |
+| Modify | `./src/lib/chess/weights.ts`                                               | Default trained loading to selected M; return verified binary and identity; accept abort signal. Remove automatic random fallback. Re-export `paramCount` for existing callers. Preserve generic S/M unpacking and S pack/random helpers.                                                                                                                         |
+| Modify | `./src/lib/chess/encode.ts`                                                | Implement approved raw-target plane 16. Accept explicit raw-target state from search; preserve a one-argument entrypoint that derives it from actual history or the loaded raw FEN. Preserve the other 18 planes and policy layout. Never alter the rules board to force an illegal capture.                                                                      |
+| Create | `./src/lib/chess/position.ts`                                              | Define immutable `GamePosition`, snapshot/replay full UCI history into a private board, retain initial/raw en-passant state, and verify expected legal-convention FEN without partially changing UI state. Own raw-target derivation and push/undo helpers.                                                                                                       |
+| Create | `./src/lib/chess/mcts-core.ts`                                             | Extract selection/expansion/backup and one-visit board plus raw-target restoration behind an internal evaluator boundary. This supports deterministic fake-evaluator failure tests without adding a test flag to the public engine. Preserve selection arithmetic and tie order.                                                                                  |
+| Modify | `./src/lib/chess/mcts.ts`                                                  | Build one private root-history/raw-target state per request, pass raw target to the actual encoder, expose typed move/terminal outcomes, run sync/async visit loops with cancellation/deadline checks, and retain separate core timing. Legacy FEN input keeps its documented limited history.                                                                    |
+| Modify | `./src/lib/chess/gauntlet.ts`                                              | Migrate its one search-result consumer to the typed outcome API and fail on an unexpected terminal result inside its nonterminal loop. Preserve opponent, visits, 240-ply/material rule, gates, and publication behavior. Do not execute its publishing CLI as a check.                                                                                           |
+| Create | `./src/lib/chess/think-protocol.ts`                                        | Own protocol v1 message unions, runtime guards, context equality, error categories, and result/state types. Packed-weight version remains independently v1.                                                                                                                                                                                                       |
+| Create | `./src/lib/chess/think-runtime.ts`                                         | Centralize the actual fetch/Worker/monotonic-clock/timer capabilities used by the client. Unit tests replace those capabilities through Node mocks, without new player options, URLs, or production test modes.                                                                                                                                                   |
+| Create | `./src/lib/chess/think-worker-client.ts`                                   | Own the worker transport, acknowledgement timer, pending-request map, strict reply checks, listener cleanup, and retirement. Model loading remains outside this module.                                                                                                                                                                                           |
+| Create | `./src/lib/chess/think-main.ts`                                            | Own decoded main-thread execution, cooperative cancellation, queue cleanup, and sequential requests from the same retained checkpoint.                                                                                                                                                                                                                            |
+| Modify | `./src/lib/chess/think-client.ts`                                          | Keep `createThinker` as the factory. Own bytes/session/deadline/state, one permitted availability recovery, explicit mode, and final response acceptance. Delegate transport and main execution so the file stays below 400 lines.                                                                                                                                |
+| Modify | `./src/workers/think.worker.ts`                                            | Require a verified initialization message before any think; independently validate the transferred copy; run actual search with remaining time; echo identity/context. Remove fetch and implicit random paths. A busy-worker cancellation retires that worker.                                                                                                    |
+| Create | `./src/lib/chess/checkpoint.test.ts`                                       | Test actual M identity/header/count and S compatibility; reject missing, truncated, extra, corrupt, non-finite, unsupported, and digest-mismatched bodies. Exercise failed/aborted fetch and missing crypto.                                                                                                                                                      |
+| Create | `./src/lib/chess/position.test.ts`                                         | Test immutable snapshots, castling/en-passant/promotion replay, initial/raw targets, double pawn moves without adjacent capturers, pinned captures, target expiry, bad-prefix rejection, final-FEN mismatch, and repetition history versus FEN-only input. Check exact encoder planes.                                                                            |
+| Create | `./src/lib/chess/mcts-context.test.ts`                                     | Use the internal evaluator boundary for forced mate/value sign, terminal draw, root visit accounting, board/history/raw-target restoration after a mid-descent throw or cancellation, and fresh-tree behavior. Compare sync/async paths and real deterministic S wrappers.                                                                                        |
+| Create | `./src/lib/chess/think-client.test.ts`                                     | Test initialization/think/termination races, total deadlines and eight-second acknowledgement, one fallback with no re-fetch, independent buffer ownership, main cleanup serialization, stale contexts, malformed replies, errors, and explicit demo. Split internal test groups into the next file to keep both below 400.                                       |
+| Create | `./src/lib/chess/think-protocol.test.ts`                                   | Own message/error guard cases, init ordering, unsupported versions, invalid visit counts, duplicate replies, current versus retired epochs, and attempt-record validation.                                                                                                                                                                                        |
+| Modify | `./src/lib/chess/chess.test.ts`                                            | Preserve existing geometry/policy/S tests, migrate typed result assertions, and make actual M reading/count/architecture checks required rather than conditional on asset presence.                                                                                                                                                                               |
+| Create | `./src/components/chess/use-thinker.ts`                                    | Extract React engine lifetime/subscription and request ownership. Clean up on unmount, guard all callbacks by session/request/generation, and expose explicit recovery actions. The game stays in Workbench.                                                                                                                                                      |
+| Modify | `./src/components/chess/workbench.tsx`                                     | Capture full history before awaiting; replace game on reset; validate current ownership and legal result before applying. Stop automatic repeat after a failed turn. Add explicit engine/move retry and random-demo actions. Keep visit selection separate from the last completed snapshot.                                                                      |
+| Modify | `./src/components/chess/card-panel.tsx`                                    | Read active name/count/source/mode from verified identity. Label stored ratings and counts as historical/unbound, show unavailable data truthfully, hide trained claims in demo, and use completed-result visits/timing. Label arithmetic as an architecture-specific estimate.                                                                                   |
+| Modify | `./src/components/chess/think-panel.tsx`                                   | Accept the completed response and its value perspective; show core search versus whole-move timing and completed visits. Preserve the next-request selector.                                                                                                                                                                                                      |
+| Create | `./train/requirements-verify.txt`                                          | Pin the four verification libraries listed below for the local Python environment. This is a verification input, not a training launch.                                                                                                                                                                                                                           |
+| Modify | `./train/pyproject.toml`                                                   | Add already-used `zstandard>=0.25` to the optional training/data dependencies. This closes the documented undeclared import without changing base NumPy-only package use. Keep existing Torch/chess compatibility ranges.                                                                                                                                         |
+| Modify | `./train/scripts/test_encode.py`                                           | Add shared policy/encoder cases with actual move history, raw initial FEN and pinned/non-capturable targets, plus mandatory existing-M load/count/identity coverage. Replace its fixed `/tmp/tinyaz-m-roundtrip.bin` scratch path with an automatically cleaned temporary path. Do not change Python encoding or write public weights.                            |
+| Modify | `./train/scripts/test_engine_uci.py`                                       | Add valid-prefix-then-invalid `position` and no-response assertions for F10's documented behavior. Keep handshake/default M/visits/terminal protocol checks. No UCI behavior change.                                                                                                                                                                              |
+| Create | `./train/scripts/test_mcts.py`                                             | Add fake-evaluator value/visit/forced-mate/terminal and supplied-board restoration tests, including the reproduced failure below. Use no optimizer or self-play generation.                                                                                                                                                                                       |
+| Modify | `./train/src/tinyaz/mcts.py`                                               | Put each descent/evaluation/backup's pushed moves behind `finally`-protected restoration. Preserve normal selection, root counts, terminal predicates, noise, and move choice. This scoped fault-path repair is justified by the fake-evaluator probe; it is not a new Python-strength treatment.                                                                 |
+| Create | `./train/scripts/check_browser_parity.py`                                  | Public launcher replaces itself with the Node parity supervisor. Its internal reference-child mode runs CPU, one-thread Python evaluation under that supervisor. Compare actual M identity/planes/policy/value with declared tolerances, bound diagnostics and fail on mismatch.                                                                                  |
+| Create | `./train/fixtures/browser-protocol.json`                                   | Machine-readable protocol v1: fixed baseline/M identity, visits, limits, rule and statistical method IDs, and exact fixture hashes. Candidate commit is resolved into the run manifest, avoiding a self-referential Git hash in a committed file.                                                                                                                 |
+| Create | `./train/fixtures/browser-openings.json`                                   | Store exactly the 20 final prefixes below, with stable IDs and standard initial FEN. No candidate-result-dependent edits.                                                                                                                                                                                                                                         |
+| Create | `./train/fixtures/browser-parity.json`                                     | Store the thirteen numeric cases below, their exact initial positions/moves, expected raw targets and policy-coordinate convention. Do not put final opening results into development fixtures.                                                                                                                                                                   |
+| Create | `./train/fixtures/README.md`                                               | Explain schemas, numeric/development/control versus final roles, exact hashes, and the rule against tuning on the final set.                                                                                                                                                                                                                                      |
+| Create | `./train/scripts/browser_eval/cli.mjs`                                     | Parse only `check`, `parity`, `preflight`, and `compare`; resolve explicit paths/revisions and start a monitored child. Permit a development-only `WORKTREE` candidate for check/parity, never preflight/compare. Do not offer cap increases, training, or publication flags.                                                                                     |
+| Create | `./train/scripts/browser_eval/run.mjs`                                     | Orchestrate one phase in the monitored child, enforce prerequisite manifests, freeze identities, and close servers/browser contexts in `finally`.                                                                                                                                                                                                                 |
+| Create | `./train/scripts/browser_eval/snapshots.mjs`                               | Prepare read-only commit snapshots with `git archive` of `src`, package manifest, and lockfile; compare active harness files against candidate Git objects. Development check/parity may copy that explicit scope from the working tree and identify it only by its content digest. Share recorded dependencies without modifying them. Hash all executed inputs. |
+| Create | `./train/scripts/browser_eval/server.mjs`                                  | Start standalone Vite with `configFile: false`, no HMR, loopback binding, controlled filesystem roots/cache, React transform, and explicit M/metadata routes. Record the baseline's legacy-URL normalization. Do not load app migration/auth/PWA hooks.                                                                                                           |
+| Create | `./train/scripts/browser_eval/fixture.html`                                | Local evaluation-only entry document. It is served by the fixture server and never registered as an app route.                                                                                                                                                                                                                                                    |
+| Create | `./train/scripts/browser_eval/fixture.mjs`                                 | Import actual selected snapshot modules, adapt old/new thinker APIs, expose bounded evaluation operations and numeric exports, and preserve native versus externally established identity evidence. No alternative search implementation.                                                                                                                         |
+| Create | `./train/scripts/browser_eval/workbench-fixture.mjs`                       | Mount the actual candidate Workbench with React, its styles, and controlled assets. Use real user actions and network/worker fault injection from Playwright; add no production route or component test props.                                                                                                                                                    |
+| Create | `./train/scripts/browser_eval/browser.mjs`                                 | Own Chromium launch/configuration, isolated contexts, request/worker lifecycle proof, per-command watchdogs, and teardown. Reject external network/model failures/backend changes during a cohort.                                                                                                                                                                |
+| Create | `./train/scripts/browser_eval/checks.mjs`                                  | Run real worker/main/UI failure checks, numeric export, A/A control, and preflight measurements. Keep their records separate from strength games.                                                                                                                                                                                                                 |
+| Create | `./train/scripts/browser_eval/match.mjs`                                   | Use pinned chess.js as the controller, replay opening/history, validate every move/outcome, complete color swaps, and retain an interrupted nonterminal game without adjudicating a winner.                                                                                                                                                                       |
+| Create | `./train/scripts/browser_eval/records.mjs`                                 | Write bounded run manifest, sequential events, raw PGNs, and final JSON atomically within the explicit workspace. Enforce append ordering/output budget and preserve crash/incomplete evidence.                                                                                                                                                                   |
+| Create | `./train/scripts/browser_eval/watchdog.mjs`                                | Outside the driver, monitor owned processes, RSS, output bytes, time and heartbeats; terminate on a bound/fault; persist stop reason; verify no owned processes or ports remain.                                                                                                                                                                                  |
+| Create | `./train/scripts/browser_eval/stats.mjs`                                   | Implement the paired sign/binomial rule and conditional exact interval below, using small-count arithmetic with no new statistics dependency. Do not compute or publish a global Elo.                                                                                                                                                                             |
+| Create | `./train/scripts/browser_eval/stats.test.mjs`                              | Test empty/all-tied pairs, extreme counts, exact reference probabilities/intervals, color bookkeeping, and exclusion of inference on incomplete/faulty cohorts.                                                                                                                                                                                                   |
+| Create | `./train/scripts/browser_eval/match.test.mjs`                              | Test legal history, color-swapped pair accounting, mate/draw outcomes, illegal replies, time stops, and incomplete-pair retention with deterministic stub transports. Actual engine execution is covered separately in browser checks.                                                                                                                            |
+| Create | `./train/scripts/browser_eval/watchdog.test.mjs`                           | Use small child processes and temporary files to test time/RSS/output/fault stops, unavailable accounting, crash finalization, and owned-process cleanup. No long real-time sleeps.                                                                                                                                                                               |
+| Create | `./train/scripts/browser_eval/snapshots.test.mjs`                          | Test pinned source identity, dirty functional input rejection, baseline M routing proof, read-only dependency sharing, output containment, and no original-checkout mutation.                                                                                                                                                                                     |
+| Create | `./train/scripts/browser_eval/README.md`                                   | Contract for all entrypoints/helpers, schemas, lifecycle, caps, side effects, local invocation, and required failure cases.                                                                                                                                                                                                                                       |
+| Modify | `./README.md`                                                              | Document verified trained M and explicit demo/recovery usage only after implemented; retain dated historical claims; add required verification commands and links to protocol/evidence.                                                                                                                                                                           |
+| Modify | `./src/README.md`                                                          | Reconcile the browser model boundary, full-position request ownership, and worker/component links with implemented behavior.                                                                                                                                                                                                                                      |
+| Modify | `./src/lib/README.md`                                                      | F5: add the three omitted preview exports; reconcile F3 comment and the changed chess API boundary.                                                                                                                                                                                                                                                               |
+| Modify | `./src/lib/app-data/README.md`                                             | F6: document the two connector-host constants with source ownership and host roles. No connector behavior edit.                                                                                                                                                                                                                                                   |
+| Modify | `./src/lib/auth/README.md`                                                 | F7: add nine public types/configuration names and meaningful boundaries. Never print secret values.                                                                                                                                                                                                                                                               |
+| Modify | `./src/lib/chess/README.md`                                                | F8 plus every new/changed chess export, internal/public boundary, raw-loader return type, raw-target encoder/history contract, typed search result, visit meanings, deadlines, cancellation, demo, and side effects. Replace obsolete drift statements only with verified evidence.                                                                               |
+| Modify | `./src/workers/README.md`                                                  | Replace old init/think protocol, fetch/random behavior, and missing-validation notes with the implemented strict binary initialization and runtime guards.                                                                                                                                                                                                        |
+| Modify | `./src/components/chess/README.md`                                         | Document hook and props, game/request ownership, reset/retry/demo, completed-result display, and truthful historical-card rules.                                                                                                                                                                                                                                  |
+| Modify | `./scripts/README.md`                                                      | F4's exact inventory, portable test fixtures, preserved runtime/deployment assertions, and separate authoring command/ownership. Do not edit the 527-line PWA shared runtime for an index repair.                                                                                                                                                                 |
+| Modify | `./train/README.md`                                                        | Preserve historical ruler/defaults; document local verification environment, the narrow Python restoration fix, browser comparison, and no automatic training/publication.                                                                                                                                                                                        |
+| Modify | `./train/scripts/README.md`                                                | Register numeric parity, new MCTS test and browser entrypoint with exact commands, prerequisites, limits, output meaning, and side effects.                                                                                                                                                                                                                       |
+| Modify | `./train/src/tinyaz/README.md`                                             | F9 geometry names and F10 valid-prefix/no-response behavior; document guaranteed fault-path restoration after verification. State the existing raw-target encoder and the distinct default-FEN training-row convention. Keep draw-claim difference explicit.                                                                                                      |
+| Create | `./docs/experiments/README.md`                                             | Index the one bounded browser protocol and distinguish it from the retained historical rating instruments.                                                                                                                                                                                                                                                        |
+| Create | `./docs/experiments/tinyaz-software-plan.md`                               | Own the frozen protocol, V01-V16/missing-check ledger, F1-F10 closure evidence, device/tool hashes, phase/commit checklist, numeric parity, results interpretation, rollback, and final code-to-doc comparison.                                                                                                                                                   |
+| Modify | `./docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md` | Record implementation progress/evidence without changing approved requirements. This file is the canonical design and current checklist. The root design_draft.md contains only a pointer; do not maintain a second current checklist.                                                                                                                            |
+
+**Verify-only inputs:** `package-lock.json`, `tsconfig.json`, `.gitignore`, `migrations/README.md`, `migrations/auth/README.md`, parent directory READMEs, `scripts/grok-pwa-shared.mjs`, auth/PWA runtime, Python UCI/rating/training/publishing entrypoints, checkpoint binaries, public/bundled metadata, accepted concepts brief/review artifacts, dated drift report, and approved historical specs. No changes are planned to them. Scripts-only package edits do not justify a lockfile refresh. Existing `.venv/` ignore rules cover `train/.venv`. Existing parent links and accurate migration contracts need no edit unless final comparison finds an actual mismatch. Record that reason in the change evidence.
+
+### 3. Exact runtime contracts and source migration
+
+Use `readonly` position/history/context records. IDs are nonempty session strings and monotonically increasing nonnegative integer generation/request/epoch values. Copy the move array and context before the first await. Validate finite numeric fields and visits as integers in `1..4096`, using the existing UCI ceiling as the explicit protocol bound; reject rather than silently clamp protocol input. The UI keeps its 1/64 choices, and the primary runner always requests exactly 64. A response cannot use the next UI selector value to describe an earlier request.
+
+Define the selected descriptor in constants with M's name, `/weights/tinyaz-m.bin`, packed version 1, count 2,426,706, length 9,706,840 and the full pinned SHA256. Raw verification checks the 16-byte `TAZS` header, supported count/width, exact tensor payload length, finite Float32 values, and SHA256. Header source ID is recorded; mode is an explicit session choice, never inferred from a source label or metadata. `loadPlayWeights(spec = SELECTED_CHECKPOINT, signal?)` returns a `VerifiedCheckpoint` containing private retained bytes and `ModelIdentity`. The decoder still accepts a raw S/M binary; verification is mandatory at trained-session entry and in the worker.
+
+Use these interface refinements of the approved architecture:
+
+```text
+VerifiedCheckpoint: bytes ArrayBuffer; identity ModelIdentity
+PositionState: private board Chess; rawEpTarget Square|null; raw-target undo stack
+encodeBoard(board, rawEpTarget?): Float32Array
+SearchControl: signal AbortSignal; deadlineMs finite monotonic number; now() number
+search / searchAsync(positionOrFen, visits, weights, control?)
+SearchOutcome:
+  move: existing ThinkResult payload plus kind=move and exact completedVisits
+  terminal: kind=terminal; reason; winner w|b|null; completedVisits=0; searchMs
+Thinker:
+  ready Promise<SessionReady>; getState(); subscribe(listener)->unsubscribe
+  think(RequestContext)->Promise<ThinkResponse>; cancel(requestId); terminate()
+ThinkerOptions: mode trained|random-demo; default trained
+Protocol v1 messages:
+  init(sessionId, epoch, modelIdentity, separate ArrayBuffer)
+  ready(sessionId, epoch, modelIdentity)
+  think(context, epoch, remainingMs)
+  result(context, epoch, modelIdentity, SearchOutcome)
+  error(sessionId, epoch, context?, code, diagnostic)
+Attempt record:
+  backend worker|main; epoch; setupMs; searchMs?; completedVisits?
+  disposition complete|unavailable|cancelled|deadline|fault; code?
+```
+
+`SearchOutcome` is a discriminated union for both FEN and full-position entrypoints. Update all actual source consumers found by search, including the small gauntlet migration named above. A terminal root bypasses search and returns zero visits; a successful nonterminal move must finish its requested visits. Keep existing move payload fields usable inside the `move` branch. Only the normal application path gains complete earlier repetition history; a legacy FEN input does not claim that history.
+
+Keep `GamePosition(initialFen, movesUci, expectedFen)` as the serialized contract. Its initial FEN retains any explicitly supplied raw en-passant field; `expectedFen` uses chess.js's existing legal-capture convention for position comparison. Derive raw target once during replay, then maintain it beside the private board. Initialize from the initial FEN's fourth field. After each legal double pawn move on one file, set the midpoint square whether or not an enemy pawn can capture. Every other move clears it. Each undo restores the saved prior target together with the board. Do not infer a target from the current pawn arrangement or reload the board from FEN between visits, which would lose history.
+
+Pass this explicit target into `encodeBoard` for every search evaluation. `null` means deliberately empty, while omitted means derive from the board's last actual history move, or `fen({ forceEnpassantSquare: true })` when it has no moves. The latter can preserve a target explicitly loaded from FEN, but cannot reconstruct a target previously removed from a normalized FEN. Record that limitation for legacy FEN callers. The production search path supplies explicit state and does not scan complete history at every neural evaluation. Plane 16 still applies the existing side-to-move rank flip; all other planes stay unchanged.
+
+This raw target is model input only. Preserve chess.js's legal moves, en-passant availability, check/pin checks, repetition key and draw rules. Do not patch private chess.js fields or turn a raw target into a legal capture. Test that the pinned-target fixture has its input bit set but no legal en-passant capture, that a quiet intervening move clears the bit, and that push/undo/error/cancel restore the prior bit. Full-history and identical explicit raw-FEN inputs must match Python; an already-normalized FEN cannot claim discarded information. The baseline fixture keeps the old encoder unchanged. The candidate's native input export must use the actual new path, not parity-only preprocessing.
+
+`SearchControl` is optional only for legacy direct callers. Both thinker backends always supply the active signal/deadline. A direct caller that omits it keeps finite visit-limited analysis without a new external operation timer. Protocol validation still rejects invalid budgets.
+
+Use stable error codes: `LOAD_HTTP`, `LOAD_FORMAT`, `LOAD_LENGTH`, `LOAD_NONFINITE`, `LOAD_DIGEST`, `CRYPTO_UNAVAILABLE`, `MODEL_MISMATCH`, `POSITION_INVALID`, `PROTOCOL_INVALID`, `PROTOCOL_VERSION`, `NOT_READY`, `BUSY`, `WORKER_UNAVAILABLE`, `SEARCH_FAILED`, `ILLEGAL_RESULT`, `CANCELLED`, `DEADLINE`, and `STOPPED`. Preserve the original cause in diagnostics. An obsolete session/epoch/request reply is recorded and discarded. A reply for the active request with different identity/context is a fatal protocol/model fault. Unknown result/error shapes do not become availability recovery.
+
+Initialization starts the 90-second initialization deadline before fetching. The eight-second worker timer starts only when verified bytes are ready to send. A queued move uses the earlier of its own 90-second deadline and the initialization deadline while waiting; worker/main transitions cannot reset either clock. A post-readiness move gets its own total deadline. Check at each visit boundary and before accepting a result. Cancellation of a busy worker terminates it; the next permitted worker is initialized from a new copy of retained bytes with an increased epoch. Retain the one worker-to-main availability transition across the session. Cancelling or resetting is not a second availability retry.
+
+Capture one initial readiness record; publish current backend/failure state separately. A subscriber error must not break engine settlement. Dispose removes timers/listeners and settles initialization/pending requests. A request made while another remains active is `BUSY` unless the old request was explicitly cancelled and is awaiting main cleanup; that successor waits for cleanup within its own budget. The client never runs two main searches concurrently. Do not leave an unhandled rejected readiness promise after React unmount.
+
+For search restoration, preserve the exact initial FEN, full history and raw-target state. Each visit unwinds only the moves it pushed in a `finally` path, including evaluator/encoding errors. A failed visit cannot produce a successful result. Root expansion still counts as visit one; softmax/prior construction, `C_PUCT`, backup signs, tie-breaking and final-selection arithmetic stay unchanged. Raw-target input can change numerical logits/priors and moves, as approved. Use fake-evaluator fixtures to test mechanics through the extracted internal core. Use actual deterministic S and verified M separately to test real inference and delivery.
+
+The Python restoration probe on 2026-11-01 extracted the existing `Node`, expansion, selection, and `search_root` bodies and injected a failure on evaluator call two. From the board after `e2e4`, it returned with `g8h6` still on the supplied stack. No Torch/model was loaded. Formal tests must reproduce this through the real imported module after environment setup, then verify FEN, move stack, turn, rights and counters are restored after the narrow `finally` fix. A normal-path comparison with the same deterministic evaluator must preserve root statistics and best move. Python terminal/draw rules and UCI semantics are unchanged.
+
+### 4. Required verification and numerical parity
+
+Run required gates independently when diagnosing failure so the first failed stage does not hide later results. Then run the combined app command. Keep exact command, revision, environment identity, start/end, exit code, and output paths for each ledger entry. A required check that cannot run remains unresolved; do not relabel it optional to finish.
+
+The local verification target is the inspected machine: Apple M4, `Mac16,12`, 10 logical CPUs, 24 GiB RAM, macOS 26.6.2 (25G83). This is one device, not mobile or cross-browser coverage. Re-record it at execution. Use the same recorded headless Chromium for both arms, viewport 1280×800, device scale 1, one browser, two isolated contexts per game, normal CPU scheduling, no artificial throttling and no disabling security features to obtain a pass. The engine is single-worker CPU JavaScript. Torch parity uses CPU and one intra-op/inter-op thread. Record launch arguments and actual threading/configuration.
+
+Create a project-local Python environment with `/opt/homebrew/opt/python@3.11/bin/python3.11` (inspected version 3.11.14). Pin verification inputs to `numpy==2.3.5`, `chess==1.11.2`, `zstandard==0.25.0`, and `torch==2.10.0`; pin setup pip to 25.2. NumPy/chess/zstandard were inspected locally; Torch is not installed in that interpreter. The selected Torch release has a CPython 3.11 macOS ARM64 wheel on [PyPI](https://pypi.org/project/torch/2.10.0/). This is a compatibility proposal, not an import or parity pass. Record the resolved wheel build, file hashes, complete `pip freeze`, `pip check`, import smoke, Torch runtime and CPU configuration. If installation/import fails, retain the failure and revise the environment explicitly rather than changing versions silently. No torchvision/audio package is required.
+
+Do not invoke `climb_m.py`, training/generation/promotion, `elo_gauntlet.py`, the publishing TypeScript gauntlet CLI, or a live bot as verification. Existing climb/rotator tests use their controlled mocks and temporary paths. Their test names do not authorize an operational run.
+
+| Verification area             | Required evidence and pass condition                                                                                                                                                                                                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App test recovery             | Every V01-V16 has its owner and actual result. All required script tests, new core tests, `npm test`, and `npm run typecheck` pass. The four external authoring checks have their separate disposition; do not claim they passed without real input.                                                  |
+| Python missing checks         | Run existing encode, split, climb-loop, UCI and mocked rotator checks plus the new MCTS test. Record no-Torch checks and formerly missing Torch checks separately. No missing dependency counts as a pass.                                                                                            |
+| Checkpoint delivery           | Actual M bytes pass native client and worker verification. Missing/HTTP error, wrong S, corrupt/truncated/extra/non-finite body, digest mismatch, unavailable crypto and aborted fetch produce the intended visible error. No fallback random session.                                                |
+| Worker/main lifecycle         | Successful real M worker path and deliberate worker-unavailable recovery have the same identity. Count one fetch. Prove stale init/reply/error/finally cannot update a later request/game. Deadline, dispose, retry, main serialization and no-second-recovery behavior pass unit and browser checks. |
+| Search/rules                  | Legal and forced-mate moves, side-to-move backup sign, terminal typed outcomes, one/64 visit meaning, history repetition, and restoration under injected error/cancel pass. Preserve a normal-path selection control.                                                                                 |
+| UI                            | Real Workbench loads M URL with native identity, errors persist without auto-retry loops, Retry/Reset/demo actions work, stale moves are never applied, next-visit selection does not change old result labels, historical records are labeled unbound, and no absent evaluation is called running.   |
+| Browser/Python numeric parity | Same raw M hash, exact input planes and legal-move policy indices on every shared case; every policy logit/value satisfies the declared tolerance. Full-game draw-claim compatibility stays a separate unresolved limitation, not a numeric test pass.                                                |
+| Harness safety                | Controlled A/A, source/weight proof, legal controller, statistics references, watchdog faults, output containment and complete cleanup pass before final games. Fault scenarios never enter strength scores as losses/wins.                                                                           |
+
+The thirteen numeric cases are fixed below. Replay the listed moves from the exact initial FEN in both implementations. Preserve that Python board and the candidate's raw-target state; do not rebuild either from the final normalized FEN before encoding. `after-e4` and `after-e4-d5` exercise actual history. `initial-raw-e3` and `pinned-ep` exercise explicit raw FEN fields even though the legal-convention final FEN omits them. Other rows have no earlier moves. Flatten planes in `plane * 64 + square` order. Check the expected raw target, exact planes, legal UCI set and each mapped policy index, including castling, both en-passant directions, queen and underpromotions.
+
+| Case             | Initial FEN                                                   | Moves to replay | Expected raw target |
+| ---------------- | ------------------------------------------------------------- | --------------- | ------------------- |
+| `start`          | Standard start                                                | None            | `-`                 |
+| `after-e4`       | Standard start                                                | `e2e4`          | `e3`                |
+| `castle-white`   | `r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1`                        | None            | `-`                 |
+| `castle-black`   | `r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1`                        | None            | `-`                 |
+| `ep-white`       | `4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 2`                           | None            | `d6`                |
+| `ep-black`       | `4k3/8/8/8/3Pp3/8/8/4K3 b - d3 0 2`                           | None            | `d3`                |
+| `promote-white`  | `7k/P7/8/8/8/8/8/7K w - - 0 1`                                | None            | `-`                 |
+| `promote-black`  | `7k/8/8/8/8/8/p7/7K b - - 0 1`                                | None            | `-`                 |
+| `mate`           | `7k/6Q1/6K1/8/8/8/8/8 b - - 0 1`                              | None            | `-`                 |
+| `stalemate`      | `7k/5Q2/6K1/8/8/8/8/8 b - - 0 1`                              | None            | `-`                 |
+| `after-e4-d5`    | Standard start                                                | `e2e4 d7d5`     | `d6`                |
+| `initial-raw-e3` | `rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1` | None            | `e3`                |
+| `pinned-ep`      | `k3r3/8/8/3pP3/8/8/8/4K3 w - d6 0 2`                          | None            | `d6`                |
+
+For each case, independently load the verified M in browser and Python. Export the browser's actual encoder output, raw policy logits (4,672) and tanh value. Run Python in inference mode on CPU Float32. Require identical Float32 input planes and integer policy mapping. For every finite policy/value element, require `abs(browser - python) <= 1e-4 + 1e-4 * abs(python)`. Record maximum absolute/relative errors and failing indices. Do not compare just the chosen move or averages. Do not widen tolerance after observing a failure; diagnose format/order/kernel differences and seek an explicit protocol change if needed. Numeric parity does not erase different draw-claim rules.
+
+For history, use `g1f3 g8f6 f3g1 f6g8 g1f3 g8f6 f3g1`; the next `f6g8` reaches the third occurrence. Assert full-history search sees the draw while FEN-only reconstruction does not. For forced-mate/value tests use enumerated legal mating moves plus a deterministic fake evaluator, rather than requiring the trained net to pass an arbitrary tactical puzzle. Separate learned ability from search mechanics.
+
+### 5. Browser runner, bounded records, and preflight
+
+The CLI accepts an explicit protocol path, absolute evaluation workspace, candidate ref and optional explicit Chromium/Python executable paths. Resolve the candidate ref once; record the full commit and refuse dirty functional/harness/fixture inputs for preflight and the final cohort. Existing documentation dirt may remain if enumerated and excluded from executed snapshots. Verify every executed harness file matches the candidate's Git object. Read the baseline only at its fixed commit. Share and hash the installed Node dependency tree/lock identity; both source snapshots use the same actual versions. No `npm install`, package upgrades or browser download occurs inside a timed cohort.
+
+To test a change before its green commit, `check` and `parity` also accept the literal candidate `WORKTREE`. Copy only the explicit source/package/fixture/harness scope into an immutable development snapshot; record its file digests and no invented commit. This mode cannot run preflight/final games or satisfy their frozen-commit prerequisites. After committing a green implementation, run the committed-input check/parity again before preflight. That repeat binds the exact candidate and prerequisites, not a new strength sample. A changed snapshot during capture is rejected rather than read as a mixture.
+
+Archive only `src`, `package.json`, and `package-lock.json` into each run-owned source snapshot. Verify extracted paths stay inside their directory, make source files read-only, and use a read-only shared dependency link. Do not follow that link in output-byte accounting. The server sets a run-owned cache directory, explicit React transform and `@` alias, `publicDir: false`, HMR disabled, strict allowed roots, and loopback-only ephemeral ports. Allow the shared fixture and necessary resolved dependency files; do not serve the full home/workspace. Serve verified M bytes from a retained run-owned copy and check their hash on setup. The fixture's engine and Workbench imports come from the selected snapshot, not an independently reimplemented engine.
+
+Baseline normalization is exactly one model route: its legacy `/weights/tinyaz-s.bin` request receives the pinned M body. The candidate must request `/weights/tinyaz-m.bin`; an S request is a failure. Log route, status, body length/hash, native ready count/source, observed worker and its closure, and baseline identity provenance `controlled-delivery-plus-ready`. The old API has no native digest; leave that field absent. In the candidate, require native session/result digest and actual worker backend. Every candidate request must echo its frozen context, 64 completed visits and identity. The baseline reports its actual result visits and is observed to keep its initialized worker. A model request failure, fallback, unexpected worker closure, backend change, or inconsistent message during a cohort ends the run as inconclusive. Explicit teardown after a completed game/request is an expected lifecycle event and is marked before closing; it must not be mistaken for a worker fault.
+
+The supervisor owns the driver and all descendant fixture/browser processes. Sample aggregate RSS and elapsed time every 250 ms; scan run-owned files at least every second with `lstat`, never following symlinks. Count each owned regular file conservatively as the larger of its logical length and allocated blocks times 512 bytes; count symlink/directory allocation too. Count supervisor, driver, servers, Chromium and descendants once per PID, including both arms. Record PID start identities to avoid killing reused PIDs. RSS sums shared pages conservatively; report that convention. Count snapshots, copied weights, profiles, cache, trace/log/JSON/PGN and parity files toward the single workspace's 256 MiB. Pre-existing installed dependencies and the Python environment are setup inputs, not new evaluation outputs; record setup separately.
+
+Reserve 2 MiB of the output ceiling for final fault/cleanup records. Stop ordinary writing before 254 MiB; reject an append that would consume the reserve. Profile/cache growth can overshoot a sampling interval, so the first observed exceedance invalidates the run and is reported, not called compliant. Resource sampling is a watchdog, not a kernel hard quota. Unavailable accounting is itself a stop. Apply each phase's timing limit independently while keeping the single workspace's footprint and recorded peak, including retained earlier-phase artifacts. Remove only ephemeral profiles/cache after verified teardown, recording their sizes and removal; keep raw evidence. Do not start another game or pair after any bound. On a stop, terminate owned processes, record incomplete work, close files, verify ports/PIDs are gone, and retain evidence. Escalate from orderly close to TERM then KILL within five seconds; inability to prove cleanup is an unresolved failure.
+
+Records use schema version 1. The workspace has immutable `workspace.json` for common identities, shared read-only `inputs/` snapshots, and separate `check/`, `parity/`, `preflight/`, and `compare/` directories. Each phase owns its own frozen `manifest.json`, sequential `events.jsonl`, raw `games/*.pgn` where applicable, and `final.json`. Never overwrite a predecessor phase or rerun into its completed directory. Persist the manifest before any model request; add actual readiness/delivery proofs as events rather than rewriting frozen inputs. It includes run ID, phase, source and fixture hashes, dependency/tool/browser hashes, hardware, model identity, baseline override, input convention, rules, openings, visits, all limits, analysis ID, and parent prerequisite hashes. Events record requests/results/attempts, backend/epoch, position/history/raw target, timestamps, delivery, faults and resource samples. PGNs include opening prefix and software/color tags; an incomplete game has result `*` and a reason. Final JSON records exact complete/incomplete pair counts, W/D/L, timings, resource peaks, faults, stop category, analysis eligibility and cleanup. No output is copied into public metadata.
+
+The outer process creates a provisional running/stop record before starting its child and finalizes atomically on ordinary exit or caught failure. After an uncatchable host/process crash, a later invocation must detect an unfinalized workspace, mark it abandoned/inconclusive and preserve it; it must not resume or treat it as a complete run. Do not promise to execute a finalizer after power loss.
+
+Run functional browser checks first, separate from strength games. They mount the actual Workbench, intercept only test-owned network/worker behavior from Playwright, and verify M loading, one recovery with no second fetch, error/retry/demo/reset, stale responses and truthful display. Use controllable timers for unit deadline cases; do not make unit tests wait 90 real seconds. A real-M main fallback records event-loop delay and verifies Reset acceptance. Do not add hidden player-facing query flags to induce these states.
+
+Then the 10-minute throughput preflight must complete all of the following or stop before final games:
+
+1. Record actual software/browser/device identities and measured cold readiness for each arm. No arm exceeds the 30-second readiness watchdog.
+2. Run five fresh-root 64-visit requests per arm from the ordinary start position, with independent request IDs and no earlier history. Assert legal moves, completed visits, delivery/worker proof and deterministic output within an arm. Record every latency; report sample count, median, nearest-rank p95 and maximum as descriptive measurements of five samples.
+3. Run two color-swapped baseline-versus-baseline games from the disjoint control FEN `7k/8/8/8/8/8/8/KR6 w - - 99 50`. It is initially nonterminal. Rules-only validation found 15 legal moves, each reaching a draw at the next halfmove without checkmate. Each 64-visit engine chooses legally; both games must draw, with correct color/pair and PGN accounting. These short control games are not strength evidence.
+4. Exercise one isolated, explicitly tagged watchdog self-test subrun outside the scoring cohort. Its own final record must be inconclusive with no fake winner and clean teardown. The parent preflight records that expected failure as a passed self-test only when those assertions hold; an unplanned fault in the parent still fails preflight. Its files/processes remain in cumulative resource accounting. Never reuse that self-test's failed engine contexts for games.
+5. Estimate final elapsed time from observed setup/command latency and explicitly state that game length is unknown. If it is unlikely to finish, do not increase limits or substitute material adjudication. Proceed only with the declared possibility of an inconclusive cap stop, or stop before games with that reason.
+
+### 6. Locked final openings, outcomes, and decision rule
+
+Use exactly these 20 opening prefixes, numbered in the listed order. Each begins at the standard initial position, has six legal plies, and leaves White to move. Rules-only validation on the installed chess.js found 20 distinct nonterminal end FENs. No model was loaded for that validation. Development, numeric, and A/A control fixtures are disjoint from these final positions. Names are labels; UCI moves and hashes define the fixture.
+
+| Pair | Label                  | UCI prefix from standard start  |
+| ---: | ---------------------- | ------------------------------- |
+|   01 | Ruy Lopez              | `e2e4 e7e5 g1f3 b8c6 f1b5 a7a6` |
+|   02 | Italian                | `e2e4 e7e5 g1f3 b8c6 f1c4 f8c5` |
+|   03 | Scotch                 | `e2e4 e7e5 g1f3 b8c6 d2d4 e5d4` |
+|   04 | Petrov                 | `e2e4 e7e5 g1f3 g8f6 f3e5 d7d6` |
+|   05 | Vienna                 | `e2e4 e7e5 b1c3 g8f6 f2f4 d7d5` |
+|   06 | Philidor               | `e2e4 e7e5 g1f3 d7d6 d2d4 g8f6` |
+|   07 | Sicilian d6            | `e2e4 c7c5 g1f3 d7d6 d2d4 c5d4` |
+|   08 | Sicilian Nc6           | `e2e4 c7c5 g1f3 b8c6 d2d4 c5d4` |
+|   09 | French                 | `e2e4 e7e6 d2d4 d7d5 b1c3 f8b4` |
+|   10 | Caro-Kann              | `e2e4 c7c6 d2d4 d7d5 b1c3 d5e4` |
+|   11 | Pirc                   | `e2e4 d7d6 d2d4 g8f6 b1c3 g7g6` |
+|   12 | Scandinavian           | `e2e4 d7d5 e4d5 d8d5 b1c3 d5a5` |
+|   13 | Alekhine               | `e2e4 g8f6 e4e5 f6d5 d2d4 d7d6` |
+|   14 | Queens Gambit Declined | `d2d4 d7d5 c2c4 e7e6 b1c3 g8f6` |
+|   15 | Slav                   | `d2d4 d7d5 c2c4 c7c6 g1f3 g8f6` |
+|   16 | Kings Indian           | `d2d4 g8f6 c2c4 g7g6 b1c3 f8g7` |
+|   17 | Grunfeld               | `d2d4 g8f6 c2c4 g7g6 b1c3 d7d5` |
+|   18 | Nimzo-Indian           | `d2d4 g8f6 c2c4 e7e6 b1c3 f8b4` |
+|   19 | English                | `c2c4 e7e5 b1c3 g8f6 g1f3 b8c6` |
+|   20 | Reti                   | `g1f3 d7d5 c2c4 d5d4 e2e3 b8c6` |
+
+Play each prefix twice with software colors swapped. For odd-numbered pairs, candidate is White in game 1; for even pairs, baseline is White in game 1. Finish both games before advancing. Use fresh contexts per game and fresh search trees per move. Use no root noise, stochastic move selection, ponder, extra visits, transposition cache, tree reuse, or cross-game state. Do not replay a convenient subset after observing results. Lock candidate, protocol and fixture hashes before preflight; preflight makes no final-opening strength measurements.
+
+The Node chess.js controller owns position and outcome. Replay every opening move, then validate every returned UCI move against its current board and record the resulting FEN. Candidate receives the complete history and reconstructs raw-target input under approved choice 3; baseline receives its unchanged legacy FEN input and old encoder. These differences belong to the software treatment and must appear in the manifest. Use checkmate, stalemate, insufficient material, threefold repetition and the library's draw/halfmove predicates consistently. Checkmate takes precedence. No resignation, material adjudication, injected ply cap or timeout-as-loss is added. A timeout, operational fault or nonterminal resource stop produces an incomplete game and inconclusive comparison. Preserve the historical 160-ply/material instrument without editing or merging its records.
+
+Analyze **20 color-swapped pairs**, not 40 independent games. For pair `i`, candidate's sum of two game points is `s_i` with win=1, draw=0.5 and loss=0. Classify `s_i > 1` as an advantageous pair, `< 1` as disadvantageous, and `= 1` as tied. Report all W/D/L, pair scores and ties descriptively. Let `m` be non-tied pairs and `k` advantageous pairs. The predeclared two-sided sign/binomial working-model probability is:
+
+```text
+p = min(1, 2 * sum(C(m, j), j=0..min(k, m-k)) / 2^m)
+if m=0: p=1; conditional advantage-rate estimate absent; interval [0,1]
+95% interval: exact Clopper-Pearson for k successes in m non-tied pairs
+```
+
+Use the standard equal-tail exact interval, including endpoints 0/1, computed by binomial-tail inversion with 60 bisection iterations. The method matches the exact binomial and confidence-interval definitions in [SciPy's binomial-test documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.binomtest.html) and [its exact-interval documentation](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats._result_classes.BinomTestResult.proportion_ci.html). No SciPy dependency is added. Unit reference values include `(m=5,k=5): p=0.0625`, `(6,6): p=0.03125`, `(20,15): p=0.04138946533203125`, and `(20,10): p=1`; for all advantageous pairs the lower interval endpoint is `0.025^(1/m)` and the upper is 1. Check color/WDL reconstruction and interval bounds separately.
+
+Only a complete 20-pair, 40-game, zero-fault cohort is analysis-eligible. For that cohort, `p <= 0.05` with `k > m/2` yields `advantage_signal_on_locked_suite`; with `k < m/2` it yields `regression_signal_on_locked_suite`; otherwise `no_detectable_advantage`. Any fault, early stop or incomplete pair yields `inconclusive`, even if completed games look favorable. Keep raw descriptive counts without partial-cohort significance claims. No sequential significance stopping or repeated-candidate tuning is allowed.
+
+The sign/binomial rule assumes independent pair outcomes and symmetry under its null. These deterministic, hand-selected openings share families and are not a random sample of all chess positions. The nominal probability and interval are a conditional working-model screen; neither proves those assumptions nor calibrates a population rating. The conditional interval describes advantage among non-tied pairs, not game-score rate or Elo. Report the paired score difference too, without transforming either statistic into Elo. An all-tied or nonsignificant cohort does not prove equivalence or that software can never help. A favorable screen supports only this locked browser comparison and requires an independent follow-up before broad strength claims.
+
+### 7. Commands, green changes, effort, and admission gates
+
+Use the following package command boundaries. The harness unit tests are required before an evaluation and included in the final verification checklist; browser/model work remains an explicit local command.
+
+| Command                               | Definition                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------- |
+| `npm run test:scripts`                | `node --test 'scripts/**/*.test.mjs'`                                                 |
+| `npm run test:core`                   | `node --experimental-strip-types --test 'src/**/*.test.ts'`                           |
+| `npm test`                            | `npm run test:scripts && npm run test:core`                                           |
+| `npm run test:browser-harness`        | `node --test 'train/scripts/browser_eval/*.test.mjs'`                                 |
+| `npm run test:template-authoring`     | `node --test scripts/template-authoring/contract.mjs`, requiring `GROK_TEMPLATE_ROOT` |
+| `npm run test:chess-browser -- …`     | `node train/scripts/browser_eval/cli.mjs check …`                                     |
+| `npm run eval:browser:preflight -- …` | `node train/scripts/browser_eval/cli.mjs preflight …`                                 |
+| `npm run eval:browser -- …`           | `node train/scripts/browser_eval/cli.mjs compare …`                                   |
+
+Create the Python environment before its tests. Commands are proposed future invocations from the repository root, not steps executed during drafting:
+
+```sh
+/opt/homebrew/opt/python@3.11/bin/python3.11 -m venv train/.venv
+train/.venv/bin/python -m pip install pip==25.2
+train/.venv/bin/python -m pip install -r train/requirements-verify.txt
+train/.venv/bin/python -m pip check
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_encode.py
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_lichess_split.py
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_climb_loop.py
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_engine_uci.py
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_challenge_rotator.py
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/test_mcts.py
+```
+
+`TINYAZ_EVAL_DIR` below is an explicitly created absolute temporary directory outside the repository. Commands share its footprint/peak accounting across all phase directories. The check phase is capped at 10 minutes; parity at 10 minutes; throughput preflight at the approved 10 minutes; comparison at the approved 60 minutes. These separate verification phases do not extend the final comparison ceiling. Missing prerequisite manifests/hashes fail closed.
+
+```sh
+npm run test:scripts
+npm run test:core
+npm test
+npm run typecheck
+npm run test:browser-harness
+npm run test:chess-browser -- --protocol train/fixtures/browser-protocol.json --candidate HEAD --out "$TINYAZ_EVAL_DIR"
+PYTHONPATH=train/src train/.venv/bin/python train/scripts/check_browser_parity.py --protocol train/fixtures/browser-protocol.json --candidate HEAD --out "$TINYAZ_EVAL_DIR"
+npm run eval:browser:preflight -- --protocol train/fixtures/browser-protocol.json --candidate HEAD --out "$TINYAZ_EVAL_DIR"
+npm run eval:browser -- --protocol train/fixtures/browser-protocol.json --candidate HEAD --out "$TINYAZ_EVAL_DIR"
+```
+
+The public Python parity entrypoint delegates with process replacement to the Node `parity` supervisor. That phase exports actual browser results, then launches the same Python file in internal reference mode to import Torch and compare them. The active Python model process is a monitored descendant and counts toward RSS/time/output ceilings. A passed check/parity/preflight is bound to the identical candidate, model, toolchain, protocol and fixtures. Changing any executed input invalidates downstream prerequisites. The compare phase starts its own 60-minute clock before final fixture/browser startup and includes that startup/cleanup accounting. Setup/package downloads happen beforehand. A new final cohort needs a new workspace and owner decision; do not automatically rerun an inconclusive cohort. Exit 0 means the phase completed its required method/checks, including a complete comparison with no detected advantage or a regression signal. Exit 1 means invalid input or a failed functional assertion; exit 2 means an inconclusive interrupted/faulted run. Never interpret exit 0 alone as a strength gain.
+
+Execute this sequence after final design approval and independent EGM review. Each green change includes named affected docs and an updated implementation checklist. Introduce APIs with all their consumers in the same green change; do not leave the branch intentionally uncompilable between commits.
+
+| Change | Scope and gate                                                                                                                                                                                                                                                                                                  | Planning effort estimate         |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| C0     | Preserve/review the existing documentation baseline; record source/control hashes and reproduce V01-V16/missing checks. Commit only reviewed EGM docs on the scoped branch. No functional closure.                                                                                                              | 1-2 engineer-hours               |
+| C1     | Portable script-test repair, four retained authoring checks under their explicit ownership, package discovery scripts and related docs. Required script/core baseline plus typecheck must be green. Retain the before/after ledger.                                                                             | 3-5 hours                        |
+| C2     | F2-F10 comments and inventories, F10 regression, local Python environment/packaging, Python restoration regression and narrow fix. Python checks must pass. No migration/database/live workflow.                                                                                                                | 3-5 hours                        |
+| C3     | Verified checkpoint and full-position/raw-target/search/protocol/client/worker change with all UI/gauntlet consumers, focused tests and all affected contracts. Actual M identity, one fallback, terminal/history/raw-target restoration, cancellation and stale-result unit gates must pass.                   | 8-13 hours                       |
+| C4     | Browser harness/fixtures/records/watchdog/statistics and usage contracts. Harness unit tests and development-snapshot Workbench/worker/main/parity checks pass, then commit green. No final-opening games yet.                                                                                                  | 6-10 hours                       |
+| C5     | Freeze the green candidate/protocol, bind check/parity evidence to that exact commit, run preflight, then one bounded final cohort if prerequisites pass. Commit protocol/evidence interpretation and F1-F10/K1/K2 closure ledger after final code-to-doc comparison. Do not modify the candidate during games. | 2-4 hours plus measured run time |
+
+The total estimate is **23-39 engineer-hours**, derived from this file map and its test surface, including raw-target tracking. It is not measured implementation throughput or a delivery-date promise. Downloads/import compatibility, raw-target restoration, real M latency and browser fault control are the main uncertainties. Subdivide C2-C4 into smaller independently green changes where possible, updating this file map/checklist without splitting an incompatible API migration across commits. Commit after each such green change, not only at the end of a row. Use the preflight's observed timings to estimate the final run; the planned throughput plus cohort have at most 70 minutes of timed execution. A nonterminal long game can still exhaust the cohort and leave it inconclusive.
+
+### 8. Finding closure, rollback, and handoff evidence
+
+F4's inventory is exactly these 24 names, grouped by owner in the script contract: `siteDeclaresOgTypeGame`; `normalizeBodyText`, `normalizedBodyTextHash`, `bodyTextPrefix`, `derivedPaths`; `authInvariantWarnings`; `escapeHtml`, `publicAppHost`, `grokPwaHeadTags`, `readGrokProjectId`, `readXCreator`, `readXCreatorId`, `grokXCreatorHeadTags`, `customOgAssetPath`, `titleFromDocument`, `siteHasCustomCard`, `resolveOgCardAsset`, `stripShareMetaTags`; `parsePid`, `parsePgid`, `parseListenerInodes`, `looksLikePreviewProcess`; `projectRoot`, `isMainModule`. Revalidate names/signatures against source before writing their entries.
+
+F5 adds `isGrokEmbedderOrigin`, `PREVIEW_BRIDGE_CHANNEL`, `PREVIEW_BRIDGE_VERSION`. F6 adds `CONNECTORS_HOST_STAGING`, `CONNECTORS_HOST_PROD`. F7 adds `GateJwks`, `VerifyGateIdentityTokenOptions`, `GateLinkedAccount`, `GATE_IDENTITY_HEADER`, `GATE_JWKS_PATH`, `PREVIEW_CLIENT_SECRET`, `GROK_ISSUER_DEFAULT`, `PREVIEW_ALLOWED_HOSTS`, `GrokProvider`. F8 adds `fileOf`, `rankOf`, `algebraicToIndex`, `indexToAlgebraic`. F9 adds `square_index`, `file_of`, `rank_of`, `algebraic_to_index`, `index_to_algebraic`. Document useful types/roles rather than secret values or copied implementation. F10 states that valid moves before an invalid later move remain applied and the `position` command emits no protocol response; it does not change that behavior.
+
+Track the additional reproduced Python restoration defect as K1 and the browser/live-Python input mismatch as K2. Both are OPEN. These labels supplement the original F1-F10 report; they do not rewrite its findings or imply source repairs have occurred.
+
+| Finding | Required closure proof                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F1      | Committed source/contracts plus successful actual M worker and main-recovery checks, stable identity/no re-fetch, visible load failure and explicit demo, race/deadline/history evidence, and truthful card display. A default-URL assertion alone cannot close it.                                                                                                                                                          |
+| F2      | Comment-only SQL diff agrees with both actual top-level migration appliers and accurate migration contracts. SQL statements and filename unchanged. No database execution.                                                                                                                                                                                                                                                   |
+| F3      | JSDoc-only diff agrees with pg, PGlite and deploy initialization. No behavior added to the pg wrapper.                                                                                                                                                                                                                                                                                                                       |
+| F4-F9   | Each exact export set above has source-backed owning-contract entries, valid links and signatures/roles. No unrelated runtime edits inferred from a missing inventory name.                                                                                                                                                                                                                                                  |
+| F10     | Documented existing prefix/no-response behavior agrees with source and the focused regression. UCI implementation unchanged.                                                                                                                                                                                                                                                                                                 |
+| K1      | The real imported Python search reproduces the injected evaluator failure before repair, then restores board/history on that error with the narrow fix. Deterministic normal-path search statistics and best move are unchanged.                                                                                                                                                                                             |
+| K2      | Approved choice 3 is implemented in actual browser encoding/search. Thirteen shared real-history/raw-FEN cases have exact input/policy mapping parity; native M numeric output meets the predeclared tolerance; raw-target push/undo/cancel/error restoration passes. Python encoder and dataset generation remain unchanged. The inspected default-FEN training versus live-input difference stays explicit and unresolved. |
+
+Record each F1-F10/K1/K2 finding's closure commit, check/evidence path and remaining limitation in the experiment plan and finalized design checklist. Keep the dated drift report and original accepted brief/reviews as historical evidence, not an edited account of what was originally found. Numeric parity, comparison eligibility, authoring-gate availability, draw-rule compatibility and strength conclusions have separate ledger entries. An error-free no-advantage result can finish the local milestone. An inconclusive budget stop can finish the authorized bounded attempt, but cannot be reported as a measured strength result. A failed required functional check remains unfinished repair work.
+
+Rollback restores the previous complete scoped code and selection configuration from the captured baseline, while verifying unchanged M/S binaries and metadata against saved hashes. Use a reviewed inverse commit on the branch; preserve unrelated dirty work and evidence. Do not overwrite the whole checkout, reset main, or restore selected files while leaving mismatched API consumers. Restart local fixture/browser thinkers after rollback so cached decoders cannot retain a different session. Verify active digest/mode/backend again. If rollback returns to the old S-versus-M discrepancy, report that discrepancy as restored/unrepaired rather than claiming M delivery still works. There is no deployed or bot rollback in this scope.
+
+Before every green commit and final completion claim, inspect the actual final diff and compare affected docs with behavior, APIs, invariants, side effects, filenames, paths and runnable commands. Review root and directory READMEs plus the experiment/design ledger. Verify that historical assets/ratings and approved requirements were preserved. Record why verify-only documentation needs no edit where it already matches. Run appropriate changed-area gates once, then the final combined required gates; do not keep rerunning green checks without a new change or unresolved concern. Report any unresolved mismatch explicitly.
+
+The implementation handoff must include the final candidate commit, F1-F10/K1/K2 closure ledger, V01-V16 ownership/results, all required command exits, numeric errors/tolerances, browser identity/fault/UI evidence, frozen protocol and raw game paths, complete/incomplete counts, resource peaks/cleanup, statistical interpretation/limitations, unchanged asset hashes and the final code-to-doc comparison. Local evidence cannot prove deployment, live bot configuration or a new public rating. Section approval, predecessor reconciliation and the owner-selected final save are complete. Fresh-context EGM review is the next step before production implementation.
+
+## Additional Resources
+
+- [Accepted concepts brief](../../../concepts_brief.md)
+- [Resolved annotated review](../../../goldfish_review_report.md)
+- [Goldfish brainstorm findings and provenance](../../../goldfish_brainstorm_review.md)
+- [Dated drift report](../../../2026-11-01_DRIFT_REPORT.md)
+- [Repository overview and recorded verification](../../../README.md)
+- [Approved M ladder](2026-08-29-tinyaz-m-ladder-design.md)
+- [Accepted model-loading selection](../../../architecture_options.md)
+- [Accepted browser-evaluation selection](../../../evaluation_options.md)
+- [Accepted raw en-passant selection and evidence](../../../encoding_options.md)
+
+_Drafted with EGM_
