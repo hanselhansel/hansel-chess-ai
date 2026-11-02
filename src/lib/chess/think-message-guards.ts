@@ -14,6 +14,7 @@ import type {
 } from "./search-types.ts";
 import type {
   ClientMessage,
+  ErrorCode,
   RequestContext,
   WorkerMessage,
 } from "./think-protocol.ts";
@@ -55,6 +56,11 @@ const FATAL_KEYS = ["protocolVersion", "type", "code", "diagnostic"];
 
 function isRecord(u: unknown): u is Record<string, unknown> {
   return typeof u === "object" && u !== null && !Array.isArray(u);
+}
+
+/** True only for the exact eighteen canonical wire error codes. */
+export function isErrorCode(u: unknown): u is ErrorCode {
+  return typeof u === "string" && ERROR_CODES.includes(u);
 }
 
 function exactKeys(u: Record<string, unknown>, keys: readonly string[]): boolean {
@@ -153,7 +159,7 @@ function isGamePosition(u: unknown): u is GamePosition {
   return true;
 }
 
-function isContext(u: unknown): u is RequestContext {
+export function isContext(u: unknown): u is RequestContext {
   return (
     isRecord(u) &&
     exactKeys(u, CONTEXT_KEYS) &&

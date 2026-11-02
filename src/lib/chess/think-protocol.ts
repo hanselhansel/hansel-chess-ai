@@ -127,7 +127,7 @@ export type ResultMessage = WireSession &
     modelIdentity: ModelIdentity;
     outcome: SearchOutcome;
   }>;
-type WireFailure = Readonly<{
+export type WireFailure = Readonly<{
   code: ErrorCode;
   diagnostic: string;
   searchMs: number | null;

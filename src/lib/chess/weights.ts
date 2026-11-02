@@ -4,13 +4,25 @@ import {
   CHANNELS_S,
   N_BLOCKS,
   N_PLANES,
+  PACKED_WEIGHT_VERSION,
   POLICY_PLANES,
+  SELECTED_CHECKPOINT,
+  SOURCE_LICHESS_2013_01,
   SOURCE_NAMES,
   SOURCE_RANDOM,
   VALUE_CH,
   VALUE_HIDDEN,
   paramCount,
 } from "./constants.ts";
+import {
+  CheckpointError,
+  hashCheckpointBytes,
+  verifyCheckpointBytes,
+  type CheckpointSpec,
+  type ModelIdentity,
+  type VerifiedCheckpoint,
+} from "./checkpoint.ts";
+import { thinkRuntime } from "./think-runtime.ts";
 
 export { paramCount };
 
@@ -178,14 +190,108 @@ export function unpackWeights(data: ArrayBuffer | Uint8Array): WeightSet {
   };
 }
 
-export async function loadPlayWeights(url = "/weights/tinyaz-s.bin"): Promise<WeightSet> {
+export type TimedVerifiedCheckpoint = Readonly<{
+  checkpoint: VerifiedCheckpoint;
+  fetchMs: number;
+  verificationMs: number;
+}>;
+
+function selectedIdentity(spec: CheckpointSpec): ModelIdentity {
+  return {
+    mode: "trained",
+    modelName: spec.name,
+    sha256: spec.expectedSha256,
+    packedVersion: spec.packedVersion,
+    parameterCount: spec.parameterCount,
+    byteLength: spec.byteLength,
+    channels: spec.parameterCount === paramCount(CHANNELS_M) ? CHANNELS_M : CHANNELS_S,
+    sourceId: SOURCE_LICHESS_2013_01,
+  } as ModelIdentity;
+}
+
+/** Verified fetch with stage timing for session diagnostics. */
+export async function loadPlayWeightsTimed(
+  spec: CheckpointSpec = SELECTED_CHECKPOINT,
+  signal?: AbortSignal,
+): Promise<TimedVerifiedCheckpoint> {
+  const throwAbort = (): void => {
+    if (signal?.aborted) throw signal.reason;
+  };
+  throwAbort();
+  const expected = selectedIdentity(spec);
+  const t0 = thinkRuntime.now();
+  let response: Response;
   try {
-    const res = await fetch(url);
-    if (!res.ok) return randomWeights(2026);
-    return unpackWeights(await res.arrayBuffer());
-  } catch {
-    return randomWeights(2026);
+    response = await thinkRuntime.fetch(spec.url, { signal: signal ?? null });
+  } catch (cause) {
+    throwAbort();
+    throw new CheckpointError("LOAD_HTTP", `checkpoint fetch failed for ${spec.url}`, {
+      cause,
+    });
   }
+  throwAbort();
+  if (!response.ok) {
+    throw new CheckpointError(
+      "LOAD_HTTP",
+      `checkpoint fetch for ${spec.url} returned HTTP ${response.status}`,
+    );
+  }
+  let bytes: ArrayBuffer;
+  try {
+    bytes = await response.arrayBuffer();
+  } catch (cause) {
+    throwAbort();
+    throw new CheckpointError("LOAD_HTTP", `checkpoint body read failed for ${spec.url}`, {
+      cause,
+    });
+  }
+  throwAbort();
+  const fetchMs = thinkRuntime.now() - t0;
+  let checkpoint: VerifiedCheckpoint;
+  try {
+    checkpoint = await verifyCheckpointBytes(bytes, expected);
+  } catch (cause) {
+    throwAbort();
+    throw cause;
+  }
+  throwAbort();
+  return Object.freeze({
+    checkpoint,
+    fetchMs,
+    verificationMs: thinkRuntime.now() - t0 - fetchMs,
+  });
+}
+
+/**
+ * Fetch and verify the selected checkpoint. Returns privately owned verified
+ * bytes plus the proven identity; never decodes tensors and never falls back
+ * to random weights.
+ */
+export function loadPlayWeights(
+  spec: CheckpointSpec = SELECTED_CHECKPOINT,
+  signal?: AbortSignal,
+): Promise<VerifiedCheckpoint> {
+  return loadPlayWeightsTimed(spec, signal).then((timed) => timed.checkpoint);
+}
+
+/**
+ * Build and verify the deterministic seed-2026 S demo checkpoint locally.
+ * Explicitly demo-only: no fetch and no trained identity.
+ */
+export async function loadDemoWeights(): Promise<VerifiedCheckpoint> {
+  const packed = packWeights(randomWeights(2026), SOURCE_RANDOM);
+  const identity = {
+    mode: "random-demo",
+    modelName: "tinyaz-s",
+    sha256: await hashCheckpointBytes(packed),
+    packedVersion: PACKED_WEIGHT_VERSION,
+    parameterCount: paramCount(CHANNELS_S),
+    byteLength: 16 + paramCount(CHANNELS_S) * 4,
+    channels: CHANNELS_S,
+    sourceId: SOURCE_RANDOM,
+    seed: 2026,
+  } as ModelIdentity;
+  return verifyCheckpointBytes(packed, identity);
 }
 
 export function packWeights(w: WeightSet, sourceId = SOURCE_RANDOM): ArrayBuffer {

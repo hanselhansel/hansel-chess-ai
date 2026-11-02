@@ -18,9 +18,11 @@ The recorded **Phase 2, rated** checkpoint is **tinyaz-m** (8×128, 2.43M params
 
 1-visit, 64-visit Stockfish, and Lichess blitz stay separate.
 
-## Unresolved implementation drift
+## Verified browser checkpoint
 
-The [approved M ladder](./docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md), First experiment item 6, requires the browser and card to use published `tinyaz-m`. The checked-in browser thinker and worker call `loadPlayWeights()` without a URL, which fetches `/weights/tinyaz-s.bin`. Frontend constants and metadata identify M, while the UCI engine independently defaults to M. The recorded M results above do not establish the strength of this browser default. This discrepancy remains unresolved; the approved requirement is unchanged. [src/lib/chess/weights.ts:loadPlayWeights] [src/lib/chess/think-client.ts:createThinker] [src/workers/think.worker.ts:self.onmessage] [src/lib/chess/constants.ts:WEIGHTS_URL] [src/components/chess/workbench.tsx:Workbench] [train/src/tinyaz/engine_uci.py:default_weights]
+The [approved M ladder](./docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md), First experiment item 6, requires the browser and card to use published `tinyaz-m`. Trained mode now loads only `/weights/tinyaz-m.bin` through a strict verifier: format, exact byte length, architecture, source, finite tensors, and the SHA256 digest are all checked before a usable session exists, and the worker independently re-verifies the transferred bytes. There is no random-weight fallback in trained play; `random-demo` mode is an explicit untrained seed-2026 S demonstration. The recorded M results above still do not establish the strength of this browser path; native browser execution remains a separate check.
+
+`SELECTED_CHECKPOINT` is a local pin. The legacy train/promotion publishers may still write public weights, metadata, and frontend constants, but they do not maintain this new digest/length/source/input identity: a future public replacement requires a coordinated reviewed selection-description and input-identity update with fresh verification, and a mismatch must fail visibly. [src/lib/chess/weights.ts:loadPlayWeightsTimed] [src/lib/chess/checkpoint.ts:verifyCheckpointBytes] [src/lib/chess/think-client.ts:createThinker] [src/workers/think.worker.ts:createWorkerHandler] [src/lib/chess/constants.ts:SELECTED_CHECKPOINT] [src/components/chess/workbench.tsx:Workbench] [train/src/tinyaz/engine_uci.py:default_weights]
 
 ## UCI
 
@@ -36,10 +38,10 @@ Speaks UCI. Default 64 visits, weights `public/weights/tinyaz-m.bin`. Flags: `--
 Open the app. You are White.
 
 1. Click a piece, then a highlighted square.
-2. The thinker tries a Web Worker, with main-thread asynchronous search as fallback.
+2. The thinker verifies the pinned M checkpoint, then tries a Web Worker, with a main-thread asynchronous backend as the one controlled recovery.
 3. Toggle **1 visit** (naked net) vs **64 visits** (the published number).
 4. Read the tree: SAN, visits `n`, prior `P`, value `Q`.
-5. Read 1-visit and 64-visit results as separate claims. Card labels do not validate checkpoint identity.
+5. Read 1-visit and 64-visit results as separate claims. The card reports the verified model identity for the active session; stored evaluation rows stay labeled historical records.
 
 Play Black if you want the model to move first.
 
@@ -57,7 +59,7 @@ Legacy Phase 2 and human-month self-play generate at 64 visits. The [training co
 
 ## Architecture (tinyaz-s)
 
-The published medium checkpoint is **tinyaz-m** (8×128, 2.43M). s is the same stem at 64 channels (~0.64M), still on disk. The browser default discrepancy is recorded above.
+The published medium checkpoint is **tinyaz-m** (8×128, 2.43M). s is the same stem at 64 channels (~0.64M), still on disk. The earlier browser S-loader discrepancy is resolved at source level, recorded above.
 
 19-plane side-to-move-canonical board → stem 3×3 → 8 residual blocks × 64 channels (~0.64M params) → 73-plane AlphaZero policy + tanh value. PUCT `c_puct = 1.5`. Rank-flip is `i ^ 56` (files stay put).
 
@@ -85,7 +87,7 @@ The web application also contains preview, authentication, connector, database, 
 
 ## Subdirectories & System Boundaries
 
-- [src](./src/README.md): browser router, chess workbench, inference worker, and service libraries. [src/router.tsx:getRouter] [src/components/chess/workbench.tsx:Workbench] [src/workers/think.worker.ts:self.onmessage]
+- [src](./src/README.md): browser router, chess workbench, inference worker, and service libraries. [src/router.tsx:getRouter] [src/components/chess/workbench.tsx:Workbench] [src/workers/think.worker.ts:createWorkerHandler]
 - [train](./train/README.md): Python model, training/data/rating/promotion, UCI, and bot integration. [train/src/tinyaz/model.py:TinyAZ] [train/src/tinyaz/promote.py:maybe_promote] [train/src/tinyaz/engine_uci.py:TinyazUci]
 - [scripts](./scripts/README.md): environment wrapping, PWA/build integration, browser captures, preview lifecycle, migrations, and sign-out helpers. [scripts/with-app-env.mjs:main] [scripts/grok-pwa-plugin.mjs:grokPwaPlugin] [scripts/migrate.mjs:main]
 - [server](./server/README.md): deployed PWA middleware and the virtual OG identity declaration. [server/middleware/grok-pwa.ts:grokPwaMiddleware] [server/virtual-grok-og-identity.d.ts:grokOgIdentity]
@@ -117,7 +119,7 @@ Non-code documentation, weight assets, ignored dependencies/data, and test-only 
 - Board/policy contracts use 19 side-to-move input planes, 73 policy planes, and rank flip `i ^ 56`. Packed loaders recognize `TAZS` version 1 and the S/M parameter counts. This is a structural interface contract, not a numerical-parity test. [src/lib/chess/encode.ts:encodeBoard] [src/lib/chess/policy.ts:legalLogits] [src/lib/chess/weights.ts:unpackWeights] [train/src/tinyaz/encode.py:encode_board] [train/src/tinyaz/pack.py:load_model]
 - Visit budgets and promotion gates belong to each entrypoint. Small climb uses a 1-visit snapshot gate; medium climb and human-month paths use 64. `maybe_promote(False, ...)` performs no public writes. Successful publication replaces each artifact separately. [train/scripts/climb.py:main] [train/scripts/climb_m.py:one_loop] [train/scripts/human_month.py:selfplay_loop] [train/src/tinyaz/promote.py:maybe_promote]
 - Migration discovery is nonrecursive and keyed by basename. Nested auth SQL is opt-in. PGlite applies eligible top-level files; configured PostgreSQL migrations run through the deploy script. [scripts/migration-plan.mjs:pendingMigrations] [scripts/migrate.mjs:main] [src/lib/db.ts:createPgliteSql] [src/lib/db.ts:createNeonSql]
-- The approved design keeps the under-3M goal and distinct measurement budgets. It requires promoted M in the browser. The S-loader mismatch above is unresolved implementation drift, not an accepted requirement change. [docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md:Claim (unchanged)] [docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md:First experiment (this spec’s ship)]
+- The approved design keeps the under-3M goal and distinct measurement budgets. It requires promoted M in the browser; the earlier S-loader mismatch is resolved at source level through verified pinned loading, while native browser proof remains open. [docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md:Claim (unchanged)] [docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md:First experiment (this spec’s ship)]
 
 ## Global Side Effects
 

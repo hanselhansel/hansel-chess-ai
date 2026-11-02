@@ -1,3 +1,4 @@
+import type { Square } from "chess.js";
 import { cn } from "@/lib/cn";
 import { PieceGlyph } from "./pieces";
 
@@ -10,7 +11,7 @@ type Props = {
   legalTargets: Set<string>;
   lastFrom?: string;
   lastTo?: string;
-  heatmap?: Record<string, number>;
+  heatmap?: Readonly<Partial<Record<Square, number>>>;
   thinking?: boolean;
   banner?: string;
   onSquare: (alg: string) => void;
@@ -52,7 +53,7 @@ export function ChessBoard({
             const piece = board[7 - rank][file];
             const isSel = selected === sq;
             const isLast = lastFrom === sq || lastTo === sq;
-            const heat = heatmap?.[sq] ?? 0;
+            const heat = heatmap?.[sq as Square] ?? 0;
             const isLegal = legalTargets.has(sq);
             return (
               <button

@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { Chess } from "chess.js";
+import { Chess, type Square } from "chess.js";
 import {
   CHANNELS_M,
   FLOPS_PER_EVAL,
@@ -93,19 +93,29 @@ describe("tinyaz-s", () => {
   it("1-visit search returns a legal move that is the policy argmax", () => {
     const weights = randomWeights(2026);
     const fen = new Chess().fen();
-    const result = search(fen, 1, weights);
+    const out = search(fen, 1, weights);
+    assert.equal(out.kind, "move");
+    if (out.kind !== "move") return;
     const legal = new Chess(fen).moves({ verbose: true }).map((m) => m.from + m.to + (m.promotion ?? ""));
-    assert.ok(legal.includes(result.uci), `illegal ${result.uci}`);
-    const best = [...result.children].sort((a, b) => b.prior - a.prior)[0];
-    assert.equal(result.uci, best.uci);
+    assert.ok(legal.includes(out.result.uci), `illegal ${out.result.uci}`);
+    const best = [...out.result.children].sort((a, b) => b.prior - a.prior)[0];
+    assert.equal(out.result.uci, best.uci);
   });
 
   it("4-visit search still only plays legal moves", () => {
     const weights = randomWeights(7);
     const chess = new Chess();
     chess.move("e4");
-    const result = search(chess.fen(), 4, weights);
-    assert.ok(chess.move({ from: result.from, to: result.to, promotion: result.promotion }));
+    const out = search(chess.fen(), 4, weights);
+    assert.equal(out.kind, "move");
+    if (out.kind !== "move") return;
+    assert.ok(
+      chess.move({
+        from: out.result.from,
+        to: out.result.to,
+        promotion: out.result.promotion,
+      }),
+    );
   });
 
   it("searchAsync matches 1-visit search", async () => {
@@ -113,8 +123,11 @@ describe("tinyaz-s", () => {
     const fen = new Chess().fen();
     const a = search(fen, 1, weights);
     const b = await searchAsync(fen, 1, weights);
-    assert.equal(b.uci, a.uci);
-    assert.ok(b.ms >= 0);
+    assert.equal(b.kind, "move");
+    if (a.kind === "move" && b.kind === "move") {
+      assert.equal(b.result.uci, a.result.uci);
+      assert.ok(b.result.ms >= 0);
+    }
   });
 
   it("packs and unpacks the same weights", () => {
@@ -127,7 +140,43 @@ describe("tinyaz-s", () => {
     assert.equal(again.blocks.length, 8);
     assert.equal(again.valueFc2B[0], w.valueFc2B[0]);
     const fen = new Chess().fen();
-    assert.equal(search(fen, 1, again).uci, search(fen, 1, w).uci);
+    const a = search(fen, 1, again);
+    const b = search(fen, 1, w);
+    assert.equal(a.kind, "move");
+    assert.equal(b.kind, "move");
+    if (a.kind === "move" && b.kind === "move") assert.equal(a.result.uci, b.result.uci);
+  });
+});
+
+describe("encodeBoard en-passant plane", () => {
+  const epPlane = (p: Float32Array) => p.slice(16 * 64, 17 * 64);
+  const outside16 = (a: Float32Array, b: Float32Array) => {
+    for (let i = 0; i < a.length; i++) {
+      if (Math.floor(i / 64) !== 16) assert.equal(a[i], b[i]);
+    }
+  };
+
+  it("derives, overrides, clears, and expires the raw target", () => {
+    const g = new Chess();
+    g.move("e4");
+    const derived = encodeBoard(g);
+    assert.equal(epPlane(derived)[44], 1);
+    const explicit = encodeBoard(g, "e3" as Square);
+    assert.deepEqual(epPlane(explicit), epPlane(derived));
+    const none = encodeBoard(g, null);
+    assert.ok(epPlane(none).every((v) => v === 0));
+    outside16(derived, none);
+    g.move("Nf6");
+    assert.ok(epPlane(encodeBoard(g)).every((v) => v === 0));
+  });
+
+  it("keeps a FEN-declared raw target and leaves other planes unchanged", () => {
+    const g = new Chess("rnbqkbnr/pppp1ppp/8/4p3/8/8/PPPPPPPP/RNBQKBNR w KQkq e6 0 2");
+    const planes = encodeBoard(g);
+    assert.equal(epPlane(planes)[algebraicToIndex("e6")], 1);
+    const cleared = encodeBoard(g, null);
+    outside16(planes, cleared);
+    assert.equal(planes[5 * 64 + algebraicToIndex("e1")], 1);
   });
 });
 
@@ -141,8 +190,23 @@ describe("phase 1 checkpoint", () => {
     assert.ok(w.source === "lichess-2013-01" || w.source === "selfplay-64", w.source);
     assert.equal(w.paramCount, paramCount());
     const fen = new Chess().fen();
-    const result = search(fen, 1, w);
+    const out = search(fen, 1, w);
+    assert.equal(out.kind, "move");
+    if (out.kind !== "move") return;
     const legal = new Chess(fen).moves({ verbose: true }).map((m) => m.from + m.to + (m.promotion ?? ""));
-    assert.ok(legal.includes(result.uci), `illegal ${result.uci}`);
+    assert.ok(legal.includes(out.result.uci), `illegal ${out.result.uci}`);
+  });
+});
+
+describe("tinyaz-m checkpoint decoder", () => {
+  it("decodes the pinned M bytes as 8 blocks of width 128", () => {
+    const file = new URL("../../../public/weights/tinyaz-m.bin", import.meta.url).pathname;
+    const w = unpackWeights(readFileSync(file));
+    assert.equal(w.paramCount, paramCount(CHANNELS_M));
+    assert.equal(w.blocks.length, 8);
+    assert.equal(w.stemW.length, CHANNELS_M * 19 * 9);
+    assert.equal(w.blocks[0].w1.length, CHANNELS_M * CHANNELS_M * 9);
+    assert.equal(w.valueFc2B.length, 1);
+    assert.equal(w.stemB.length, CHANNELS_M);
   });
 });

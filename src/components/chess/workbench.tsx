@@ -2,16 +2,23 @@ import { Chess, type Piece, type Square } from "chess.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PLAY_VISITS } from "@/lib/chess/constants";
 import checkpoint from "@/lib/chess/checkpoint-meta.json";
-import { paramCount } from "@/lib/chess/weights";
-import type { ThinkResult } from "@/lib/chess/mcts";
-import { createThinker } from "@/lib/chess/think-client";
+import { capturePosition } from "@/lib/chess/position";
+import type { RequestContext, ThinkResponse } from "@/lib/chess/think-protocol";
 import { ChessBoard, type SquarePiece } from "./board";
-import { CardPanel } from "./card-panel";
+import { CardPanel, type HistoricalRecords } from "./card-panel";
 import { MoveList } from "./move-list";
 import { Roadmap } from "./roadmap";
 import { ThinkPanel } from "./think-panel";
+import { shortThinkerFailure, useThinker } from "./use-thinker";
+import { WorkbenchControls } from "./workbench-controls";
 
 type Promo = "q" | "r" | "b" | "n";
+
+/** A completed response bound to the side that was to move at request time. */
+type Completed = Readonly<{ response: ThinkResponse; mover: "w" | "b" }>;
+
+/** The literal root every owned game history starts from. */
+const ROOT_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 function snapshot(chess: Chess): SquarePiece[][] {
   return chess.board().map((row) =>
@@ -19,35 +26,56 @@ function snapshot(chess: Chess): SquarePiece[][] {
   );
 }
 
+function uciOf(m: { from: string; to: string; promotion?: string }): string {
+  return m.from + m.to + (m.promotion ?? "");
+}
+
+function sameHistory(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((m, i) => m === b[i]);
+}
+
+const HISTORY_SEED: HistoricalRecords = {
+  vsRandom: checkpoint.vsRandom ?? null,
+  vsPhase1: checkpoint.vsPhase1 ?? null,
+  selfplayGames:
+    typeof checkpoint.selfplayGames === "number" ? checkpoint.selfplayGames : null,
+  gauntletElo: checkpoint.gauntletElo ?? null,
+};
+
 export function Workbench() {
   const gameRef = useRef(new Chess());
-  const thinkerRef = useRef<ReturnType<typeof createThinker> | null>(null);
+  const uciRef = useRef<string[]>([]);
+  const generationRef = useRef(0);
+  const requestIdRef = useRef(0);
+  const {
+    state: engine,
+    session,
+    sessionError,
+    mode,
+    pendingRequestId,
+    turnFailed,
+    runTurn,
+    cancelPending,
+    clearTurnFailed,
+    restart,
+  } = useThinker("trained");
   const [fen, setFen] = useState(() => gameRef.current.fen());
   const [human, setHuman] = useState<"w" | "b">("w");
   const [selected, setSelected] = useState<string | null>(null);
   const [visits, setVisits] = useState(PLAY_VISITS);
-  const [thinking, setThinking] = useState(false);
-  const [result, setResult] = useState<ThinkResult | null>(null);
+  const [result, setResult] = useState<Completed | null>(null);
   const [last, setLast] = useState<{ from: string; to: string } | null>(null);
   const [promo, setPromo] = useState<{ from: string; to: string } | null>(null);
-  const [params, setParams] = useState(paramCount());
-  const [seed, setSeed] = useState(2026);
-  const [source, setSource] = useState(checkpoint.source ?? "random");
-  const [vsRandom, setVsRandom] = useState(checkpoint.vsRandom ?? null);
-  const [vsPhase1, setVsPhase1] = useState(checkpoint.vsPhase1 ?? null);
-  const [selfplayGames, setSelfplayGames] = useState<number | null>(
-    typeof checkpoint.selfplayGames === "number" ? checkpoint.selfplayGames : null,
-  );
-  const [gauntletElo, setGauntletElo] = useState(checkpoint.gauntletElo ?? null);
-  const [ready, setReady] = useState(false);
-  const [status, setStatus] = useState("Starting the engine…");
-  const [err, setErr] = useState<string | null>(null);
-  const inflight = useRef(false);
+  const [history, setHistory] = useState<HistoricalRecords>(HISTORY_SEED);
+  const [status, setStatus] = useState("Verifying the selected checkpoint.");
+  const [detail, setDetail] = useState<string | null>(null);
 
   const chess = gameRef.current;
   const turn = chess.turn();
   const over = chess.isGameOver();
-  const flipped = human === "b";
+  const busy = pendingRequestId !== null;
+  const identity = session?.modelIdentity ?? engine?.modelIdentity ?? null;
+  const demo = mode === "random-demo";
 
   const legalTargets = useMemo(() => {
     void fen;
@@ -58,18 +86,12 @@ export function Workbench() {
     }
     return set;
   }, [selected, fen]);
-
-  const board = useMemo(() => {
-    void fen;
-    return snapshot(gameRef.current);
-  }, [fen]);
-  const sans = useMemo(() => {
-    void fen;
-    return gameRef.current.history();
-  }, [fen]);
-  const whiteValue =
-    result == null ? null : human === "b" ? result.value : -result.value;
-
+  const board = useMemo(() => (void fen, snapshot(gameRef.current)), [fen]);
+  const sans = useMemo(() => (void fen, gameRef.current.history()), [fen]);
+  const response = result?.response ?? null;
+  const lastMove = response?.kind === "move" ? response : null;
+  const whiteValue = result == null || response?.kind !== "move" ? null
+    : result.mover === "w" ? response.result.value : -response.result.value;
   const sync = useCallback(() => {
     setFen(gameRef.current.fen());
     setSelected(null);
@@ -84,119 +106,144 @@ export function Workbench() {
     return null;
   }, []);
 
-  const runThink = useCallback(async () => {
-    const g = gameRef.current;
-    if (g.isGameOver() || g.turn() === human) return;
-    if (inflight.current) return;
-    const thinker = thinkerRef.current;
-    if (!thinker) return;
-    inflight.current = true;
-    setThinking(true);
-    setErr(null);
-    setStatus("Model is thinking…");
-    try {
-      const r = await thinker.think(g.fen(), visits);
-      const move = g.move({
-        from: r.from,
-        to: r.to,
-        promotion: (r.promotion as Promo | undefined) ?? undefined,
-      });
-      if (!move) throw new Error(`Illegal model move ${r.uci}`);
-      setResult(r);
-      setLast({ from: r.from, to: r.to });
-      sync();
-      const end = outcomeText();
-      setStatus(end ?? `Model played ${r.san} · ${r.visits} visits · ${r.ms} ms`);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : String(e));
-      setStatus("Think failed — reset with Play White.");
-    } finally {
-      inflight.current = false;
-      setThinking(false);
-    }
-  }, [human, visits, sync, outcomeText]);
+  const modeLine = useCallback(
+    (forBlack: boolean) => {
+      const who = forBlack ? "You have Black. Model moves first." : "Your move.";
+      if (demo) return `${who} Untrained random demo. No rating claims.`;
+      if (identity === null) return `${who} Checkpoint verification pending.`;
+      return `${who} Verified ${identity.modelName}.`;
+    },
+    [demo, identity],
+  );
 
-  const phase =
-    checkpoint.source === "selfplay-64" || checkpoint.gauntletElo
-      ? 2
-      : checkpoint.source === "random"
-        ? 0
-        : 1;
-  const rated = Boolean(checkpoint.gauntletElo || gauntletElo);
-  const trained = source !== "random";
-  const yourMove = gauntletElo
-    ? `Your move. 64-visit Elo ${gauntletElo.eloLabel} vs Stockfish (not a Lichess rating).`
-    : phase === 2
-      ? "Your move. 64-visit self-play net."
-      : phase === 1
-        ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
-        : "Your move. Random net — play it to see the tree.";
-  const blackMove = gauntletElo
-    ? `You have Black. 64-visit Elo ${gauntletElo.eloLabel}. Model moves first.`
-    : phase === 2
-      ? "You have Black. Self-play net moves first."
-      : phase === 1
-        ? "You have Black. Supervised net moves first."
-        : "You have Black. Model moves first.";
-
-  useEffect(() => {
-    const thinker = createThinker();
-    thinkerRef.current = thinker;
-    thinker.ready
-      .then((r) => {
-        setParams(r.paramCount);
-        setSeed(r.seed);
-        setSource(r.source);
-        setReady(true);
-        if (checkpoint.source && checkpoint.source !== "random" && r.source === "random") {
-          setErr("Trained weights failed to load. Roadmap is still Phase 2 — this session fell back to random.");
-        }
-        const line =
-          r.source === "selfplay-64"
-            ? "Your move. Self-play net. 64-visit Elo is the published number."
-            : r.source !== "random"
-              ? "Your move. Lichess-supervised net. No Elo yet — it should beat random."
-              : "Your move. Random net — play it to see the tree.";
-        setStatus((s) => (s === "Starting the engine…" ? line : s));
-      })
-      .catch((e) => {
-        setErr(e instanceof Error ? e.message : String(e));
-        setStatus("Engine failed to start.");
+  const runThink = useCallback(
+    (auto: boolean) => {
+      const g = gameRef.current;
+      if (g.isGameOver() || g.turn() === human) return;
+      if (pendingRequestId !== null) return;
+      if (auto && engine?.stage !== "ready") return;
+      const engineSessionId = session?.engineSessionId ?? engine?.engineSessionId;
+      if (engineSessionId === undefined) return;
+      const generation = generationRef.current;
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
+      const mover = g.turn();
+      const fenAtRequest = g.fen();
+      const context: RequestContext = {
+        engineSessionId, gameGeneration: generation, requestId,
+        position: capturePosition(ROOT_FEN, [...uciRef.current], fenAtRequest),
+        requestedVisits: visits,
+      };
+      setDetail(null);
+      setStatus("Model is thinking.");
+      void runTurn(context, {
+        isPositionCurrent: (ctx) =>
+          gameRef.current === g && generationRef.current === generation &&
+          g.fen() === fenAtRequest && ctx.requestId === requestId &&
+          ctx.engineSessionId === engineSessionId &&
+          ctx.position.expectedFen === fenAtRequest &&
+          sameHistory(ctx.position.movesUci, uciRef.current),
+        onSuccess: (r) => {
+          if (r.kind === "terminal") {
+            setResult({ response: r, mover });
+            setStatus(`Position is terminal (${r.terminal.reason}). No move played.`);
+            return;
+          }
+          const applied = g.move({
+            from: r.result.from, to: r.result.to, promotion: r.result.promotion,
+          });
+          if (!applied) throw new Error(`Illegal model move ${r.result.uci}`);
+          uciRef.current.push(uciOf(applied));
+          setResult({ response: r, mover });
+          setLast({ from: r.result.from, to: r.result.to });
+          sync();
+          setStatus(
+            outcomeText() ??
+              `Model played ${r.result.san} · ${r.completedVisits} visits · ${Math.round(r.searchMs)} ms · ${r.backend}`,
+          );
+        },
+        onFailure: (failure) => {
+          setDetail(shortThinkerFailure(failure));
+          setStatus("No model move was applied.");
+        },
       });
-    return () => thinker.terminate();
+    },
+    [engine, session, human, visits, pendingRequestId, runTurn, sync, outcomeText],
+  );
+
+  const freshBoard = useCallback(() => {
+    gameRef.current = new Chess();
+    uciRef.current = [];
+    setResult(null);
+    setLast(null);
+    setPromo(null);
+    setSelected(null);
+    setFen(gameRef.current.fen());
   }, []);
+
+  const reset = useCallback(
+    (color: "w" | "b") => {
+      cancelPending();
+      generationRef.current += 1;
+      freshBoard();
+      setHuman(color);
+      setDetail(null);
+      clearTurnFailed();
+      setStatus(modeLine(color === "b"));
+    },
+    [cancelPending, clearTurnFailed, freshBoard, modeLine],
+  );
+
+  const retryMove = useCallback(() => {
+    if (!turnFailed) return;
+    clearTurnFailed();
+    void runThink(false);
+  }, [turnFailed, clearTurnFailed, runThink]);
+
+  const restartEngine = useCallback(
+    (next?: "trained" | "random-demo", newGame = false) => {
+      cancelPending();
+      generationRef.current += 1;
+      clearTurnFailed();
+      setStatus(
+        next === "random-demo" ? "Starting the demo engine." : "Verifying the selected checkpoint.",
+      );
+      restart(next);
+      if (newGame) freshBoard();
+    },
+    [cancelPending, clearTurnFailed, freshBoard, restart],
+  );
 
   useEffect(() => {
     void fetch("/weights/tinyaz-m.meta.json")
       .then((res) => (res.ok ? res.json() : null))
       .then((meta) => {
-        if (meta?.vsRandom) setVsRandom(meta.vsRandom);
-        if (meta?.vsPhase1) setVsPhase1(meta.vsPhase1);
-        if (typeof meta?.selfplayGames === "number") setSelfplayGames(meta.selfplayGames);
-        if (meta?.gauntletElo) setGauntletElo(meta.gauntletElo);
+        if (!meta) return;
+        setHistory((h) => ({
+          vsRandom: meta.vsRandom ?? h.vsRandom,
+          vsPhase1: meta.vsPhase1 ?? h.vsPhase1,
+          selfplayGames: typeof meta.selfplayGames === "number" ? meta.selfplayGames : h.selfplayGames,
+          gauntletElo: meta.gauntletElo ?? h.gauntletElo,
+        }));
       })
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!ready || thinking || over) return;
-    if (gameRef.current.turn() !== human) {
-      void runThink();
+    if (sessionError) {
+      setStatus("Engine unavailable.");
+    } else if (session) {
+      setDetail(null);
+      setStatus((s) =>
+        s.startsWith("Verifying") || s.startsWith("Starting the demo") ? modeLine(human === "b") : s,
+      );
     }
-  }, [ready, fen, human, thinking, over, runThink]);
+  }, [session, sessionError, human, modeLine]);
 
-  function reset(color: "w" | "b") {
-    gameRef.current.reset();
-    inflight.current = false;
-    setHuman(color);
-    setResult(null);
-    setLast(null);
-    setPromo(null);
-    setErr(null);
-    setThinking(false);
-    setStatus(color === "w" ? yourMove : blackMove);
-    sync();
-  }
+  useEffect(() => {
+    if (busy || over || turnFailed || engine?.stage !== "ready") return;
+    if (gameRef.current.turn() !== human) void runThink(true);
+  }, [engine?.stage, fen, human, busy, over, turnFailed, runThink]);
 
   function tryMove(from: string, to: string, promotion?: Promo) {
     const g = gameRef.current;
@@ -209,17 +256,18 @@ export function Workbench() {
     }
     const moved = g.move({ from, to, promotion: promotion ?? (needsPromo ? "q" : undefined) });
     if (!moved) return;
+    uciRef.current.push(uciOf(moved));
     setPromo(null);
     setLast({ from, to });
+    clearTurnFailed();
     const end = outcomeText();
     setStatus(end ?? `You played ${moved.san}`);
     sync();
-    void runThink();
+    void runThink(true);
   }
 
   function onSquare(sq: string) {
-    if (thinking || over || chess.turn() !== human) return;
-    if (promo) return;
+    if (busy || over || promo || chess.turn() !== human) return;
     const piece = chess.get(sq as Square);
     if (selected && legalTargets.has(sq)) {
       tryMove(selected, sq);
@@ -232,10 +280,13 @@ export function Workbench() {
     setSelected(null);
   }
 
-  const banner = !ready
-    ? "Starting engine…"
-    : thinking || (turn !== human && !over)
-      ? "Model is thinking…"
+  const engineStage = engine?.stage ?? null;
+  const displayDetail =
+    sessionError !== null ? shortThinkerFailure(sessionError) : detail;
+  const banner = sessionError
+    ? "Engine failed to start."
+    : !session || busy || (turn !== human && !over && !turnFailed)
+      ? session ? "Model is thinking." : "Verifying checkpoint."
       : undefined;
 
   return (
@@ -247,87 +298,78 @@ export function Workbench() {
             Watch it think
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted md:text-base">
-            From-scratch AlphaZero-style net under 3M params. Lichess games, then
-            64-visit self-play. The published Elo is 64-visit vs Stockfish UCI_Elo —
-            never mixed with 1-visit. Click a piece, then a highlighted square.
+            {demo
+              ? "Random demo: an untrained seed-2026 net drives the board. No rating claims."
+              : "From-scratch AlphaZero-style net under 3M params. The browser verifies the selected checkpoint before play. Click a piece, then a highlighted square."}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="rounded-lg bg-fg px-4 py-2.5 text-sm font-medium text-bg"
-            onClick={() => reset("w")}
-          >
-            Play White
-          </button>
-          <button
-            type="button"
-            className="rounded-lg bg-subtle px-4 py-2.5 text-sm font-medium text-fg ring-1 ring-border"
-            onClick={() => reset("b")}
-          >
-            Play Black
-          </button>
-        </div>
+        <WorkbenchControls
+          onPlayWhite={() => reset("w")}
+          onPlayBlack={() => reset("b")}
+          showRetryMove={turnFailed}
+          onRetryMove={retryMove}
+          showRetryEngine={sessionError !== null || engineStage === "failed"}
+          onRetryEngine={() => restartEngine()}
+          demo={demo}
+          onToggleMode={() => restartEngine(demo ? "trained" : "random-demo", true)}
+        />
       </header>
 
       <div className="flex flex-col gap-5">
         <div className="order-2 lg:order-1">
-          <Roadmap current={phase} rated={rated} />
+          <Roadmap />
         </div>
         <div className="order-1 lg:order-2 grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]">
-        <div className="flex flex-col gap-4">
-          <ChessBoard
-            board={board}
-            flipped={flipped}
-            selected={selected}
-            legalTargets={legalTargets}
-            lastFrom={last?.from}
-            lastTo={last?.to}
-            heatmap={result?.heatmap}
-            thinking={thinking || !ready}
-            banner={banner}
-            disabled={thinking || over || turn !== human}
-            onSquare={onSquare}
-          />
-          {promo && (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-elevated p-3 ring-1 ring-border">
-              <span className="text-sm text-muted">Promote to</span>
-              {(["q", "r", "b", "n"] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  className="rounded-md bg-subtle px-3 py-2 text-sm font-medium uppercase text-fg"
-                  onClick={() => tryMove(promo.from, promo.to, p)}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
-          {err && <p className="text-sm text-danger">{err}</p>}
-          <MoveList sans={sans} />
-        </div>
-        <div className="flex flex-col gap-5">
-          <ThinkPanel
-            visits={visits}
-            onVisits={setVisits}
-            thinking={thinking || !ready}
-            result={result}
-            whiteValue={whiteValue}
-          />
-          <CardPanel
-            paramCount={params}
-            seed={seed}
-            source={source}
-            vsRandom={vsRandom}
-            vsPhase1={vsPhase1}
-            selfplayGames={selfplayGames}
-            gauntletElo={gauntletElo}
-            visits={visits}
-            lastMs={result?.ms ?? null}
-            status={status}
-          />
-        </div>
+          <div className="flex flex-col gap-4">
+            <ChessBoard
+              board={board}
+              flipped={human === "b"}
+              selected={selected}
+              legalTargets={legalTargets}
+              lastFrom={last?.from}
+              lastTo={last?.to}
+              heatmap={lastMove?.result.heatmap}
+              thinking={busy || !session}
+              banner={banner}
+              disabled={busy || over || turn !== human}
+              onSquare={onSquare}
+            />
+            {promo && (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg bg-elevated p-3 ring-1 ring-border">
+                <span className="text-sm text-muted">Promote to</span>
+                {(["q", "r", "b", "n"] as const).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className="rounded-md bg-subtle px-3 py-2 text-sm font-medium uppercase text-fg"
+                    onClick={() => tryMove(promo.from, promo.to, p)}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
+            {displayDetail && <p className="text-xs leading-relaxed text-muted">{displayDetail}</p>}
+            <MoveList sans={sans} />
+          </div>
+          <div className="flex flex-col gap-5">
+            <ThinkPanel
+              visits={visits}
+              onVisits={setVisits}
+              thinking={busy || engineStage === "thinking"}
+              response={response}
+              whiteValue={whiteValue}
+            />
+            <CardPanel
+              identity={identity}
+              backend={response?.backend ?? engine?.backend ?? null}
+              visits={visits}
+              lastResponse={response}
+              status={status}
+              history={history}
+              demoMode={demo}
+            />
+          </div>
         </div>
       </div>
     </div>

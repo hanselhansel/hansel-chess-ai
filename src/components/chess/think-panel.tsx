@@ -1,12 +1,15 @@
-import type { ThinkResult } from "@/lib/chess/mcts";
 import { ONE_VISIT, PLAY_VISITS } from "@/lib/chess/constants";
+import type { ThinkResponse } from "@/lib/chess/think-protocol";
 import { cn } from "@/lib/cn";
 
 type Props = {
+  /** Visit budget for the next request. */
   visits: number;
   onVisits: (n: number) => void;
   thinking: boolean;
-  result: ThinkResult | null;
+  /** Last completed response (move or terminal). */
+  response: ThinkResponse | null;
+  /** White-perspective value of the last completed move, or null. */
   whiteValue: number | null;
 };
 
@@ -15,8 +18,10 @@ function barWidth(v: number, max: number) {
   return Math.max(4, (v / max) * 100);
 }
 
-export function ThinkPanel({ visits, onVisits, thinking, result, whiteValue }: Props) {
-  const maxVisits = result?.children[0]?.visits ?? 1;
+export function ThinkPanel({ visits, onVisits, thinking, response, whiteValue }: Props) {
+  const move = response?.kind === "move" ? response : null;
+  const terminal = response?.kind === "terminal" ? response : null;
+  const maxVisits = move?.result.children[0]?.visits ?? 1;
   const shownValue = whiteValue ?? 0;
   const whitePct = (shownValue + 1) / 2;
 
@@ -28,7 +33,11 @@ export function ThinkPanel({ visits, onVisits, thinking, result, whiteValue }: P
           <h2 className="font-display text-xl font-medium tracking-tight text-fg">Search tree</h2>
         </div>
         <p className="font-mono text-xs tabular-nums text-muted">
-          {thinking ? "searching" : result ? `${result.ms} ms` : "idle"}
+          {thinking
+            ? "searching"
+            : response
+              ? `${response.completedVisits} visits · search ${Math.round(response.searchMs)} ms · move ${Math.round(response.moveElapsedMs)} ms · ${response.backend}`
+              : "idle"}
         </p>
       </header>
 
@@ -56,8 +65,8 @@ export function ThinkPanel({ visits, onVisits, thinking, result, whiteValue }: P
       </div>
       <p className="text-sm leading-relaxed text-muted">
         {visits === ONE_VISIT
-          ? "Naked net: one look, no calculation. This is the 1-visit number."
-          : "Play / rated mode: 64 look-aheads. This is the Elo we will publish."}
+          ? "Next request: one network evaluation at the root."
+          : "Next request: a 64-visit search budget."}
       </p>
 
       <div>
@@ -73,20 +82,27 @@ export function ThinkPanel({ visits, onVisits, thinking, result, whiteValue }: P
           />
         </div>
         <p className="mt-1 font-mono text-xs tabular-nums text-muted">
-          {shownValue >= 0 ? "+" : ""}
-          {shownValue.toFixed(3)}
+          {whiteValue === null
+            ? "no completed move yet"
+            : `${shownValue >= 0 ? "+" : ""}${shownValue.toFixed(3)}`}
         </p>
       </div>
 
       <div className="flex flex-col gap-2">
         <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted">Root children</p>
-        {thinking && (
-          <p className="animate-pulse text-sm text-muted">Walking lines…</p>
+        {thinking && <p className="animate-pulse text-sm text-muted">Walking lines…</p>}
+        {!thinking && terminal && (
+          <p className="text-sm text-muted">
+            Position is terminal: {terminal.terminal.reason}
+            {terminal.terminal.winner
+              ? ` · winner ${terminal.terminal.winner === "w" ? "White" : "Black"}`
+              : " · draw"}
+          </p>
         )}
-        {!thinking && !result && (
+        {!thinking && !response && (
           <p className="text-sm text-muted">Make a move, or start a game as Black.</p>
         )}
-        {result?.children.map((ch) => (
+        {move?.result.children.map((ch) => (
           <div key={ch.uci} className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-2">
             <span className="font-mono text-sm tabular-nums text-fg">{ch.san}</span>
             <div className="h-1.5 overflow-hidden rounded-full bg-subtle">

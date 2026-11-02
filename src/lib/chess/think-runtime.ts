@@ -1,10 +1,15 @@
+export type ThinkWorker = Pick<
+  Worker,
+  "postMessage" | "terminate" | "addEventListener" | "removeEventListener"
+>;
+
 export type ThinkRuntime = {
   fetch: typeof fetch;
   digestSha256(bytes: ArrayBuffer): Promise<ArrayBuffer> | null;
   now(): number;
   setTimeout(handler: () => void, ms: number): ReturnType<typeof setTimeout>;
   clearTimeout(id: ReturnType<typeof setTimeout>): void;
-  createWorker(): Worker;
+  createWorker(): ThinkWorker;
 };
 
 /** Real platform capabilities, resolved at call time so tests can mock them. */

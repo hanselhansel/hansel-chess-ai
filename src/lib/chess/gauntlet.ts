@@ -45,7 +45,13 @@ function playGame(weights: WeightSet, netWhite: boolean, visits: number, rng: ()
   while (!g.isGameOver() && plies < 240) {
     const netTurn = (g.turn() === "w") === netWhite;
     if (netTurn) {
-      const r = search(g.fen(), visits, weights);
+      const outcome = search(g.fen(), visits, weights);
+      if (outcome.kind !== "move") {
+        throw new Error(
+          `unexpected terminal outcome ${outcome.terminal.reason} in nonterminal loop`,
+        );
+      }
+      const r = outcome.result;
       g.move({ from: r.from, to: r.to, promotion: r.promotion });
     } else {
       const ms = g.moves({ verbose: true });

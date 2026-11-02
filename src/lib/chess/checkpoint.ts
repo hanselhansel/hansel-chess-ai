@@ -46,6 +46,7 @@ export type VerifiedCheckpoint = Readonly<{
 }>;
 
 export type CheckpointErrorCode =
+  | "LOAD_HTTP"
   | "LOAD_FORMAT"
   | "LOAD_LENGTH"
   | "LOAD_NONFINITE"

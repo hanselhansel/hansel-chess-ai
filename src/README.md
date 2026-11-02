@@ -23,10 +23,11 @@ tree; the route source contract identifies the explicit `/` page.
   [lib/chess/think-client.ts:createThinker](./lib/chess/think-client.ts))
 - [Routes](./routes/README.md) own the HTML shell and `/` workbench page.
   ([routes/__root.tsx:Route](./routes/__root.tsx), [routes/index.tsx:Route](./routes/index.tsx))
-- [Workers](./workers/README.md) own the `init`/`think` message entry point and
-  ready/result/error replies using shared `ThinkResult` data.
-  ([workers/think.worker.ts:self.onmessage](./workers/think.worker.ts),
-  [lib/chess/mcts.ts:ThinkResult](./lib/chess/mcts.ts))
+- [Workers](./workers/README.md) own the protocol-v1 `init`/`think` message
+  entry point and ready/result/error/fatal replies carrying typed
+  `SearchOutcome` data.
+  ([workers/think.worker.ts:createWorkerHandler](./workers/think.worker.ts),
+  [lib/chess/search-types.ts:SearchOutcome](./lib/chess/search-types.ts))
 
 ## Invariants
 
@@ -37,14 +38,17 @@ tree; the route source contract identifies the explicit `/` page.
   transactionally; the configured pg path does not apply migrations here.
   ([lib/db.ts:createSql](./lib/db.ts), [lib/db.ts:createPgliteSql](./lib/db.ts),
   [lib/db.ts:createNeonSql](./lib/db.ts))
-- Unresolved implementation drift: the thinker/worker use the loader's default
-  S asset while `WEIGHTS_URL` and M metadata/display labels declare M. The
+- The earlier S-loader drift is resolved at source level: trained mode loads
+  only through `loadPlayWeightsTimed(SELECTED_CHECKPOINT)`, which fetches the
+  pinned M asset once and enforces the full SHA256/architecture/length
+  verification; the worker independently re-verifies transferred bytes; and
+  the main-thread recovery decodes the same retained verified bytes. The
   [approved M ladder spec](../docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md),
-  First experiment item 6, requires published M in the browser and its card.
-  ([lib/chess/weights.ts:loadPlayWeights](./lib/chess/weights.ts),
+  First experiment item 6, is satisfied in source; native browser execution
+  remains a separate check. ([lib/chess/weights.ts:loadPlayWeightsTimed](./lib/chess/weights.ts),
   [lib/chess/think-client.ts:createThinker](./lib/chess/think-client.ts),
-  [workers/think.worker.ts:self.onmessage](./workers/think.worker.ts),
-  [lib/chess/constants.ts:WEIGHTS_URL](./lib/chess/constants.ts),
+  [workers/think.worker.ts:createWorkerHandler](./workers/think.worker.ts),
+  [lib/chess/constants.ts:SELECTED_CHECKPOINT](./lib/chess/constants.ts),
   [components/chess/workbench.tsx:Workbench](./components/chess/workbench.tsx))
 
 ## Side Effects
@@ -55,10 +59,11 @@ tree; the route source contract identifies the explicit `/` page.
   ([routes/__root.tsx:Route](./routes/__root.tsx),
   [components/preview-host-bridge.tsx:PreviewHostBridge](./components/preview-host-bridge.tsx),
   [components/chess/workbench.tsx:Workbench](./components/chess/workbench.tsx))
-- Worker messages mutate cached weights, fetch model data, run synchronous CPU
-  search, and post replies. Server library imports/use can initialize databases,
-  queries, migrations, and authentication adapters, as their contracts specify.
-  ([workers/think.worker.ts:self.onmessage](./workers/think.worker.ts),
+- Worker messages verify transferred model bytes, run synchronous CPU search,
+  and post replies through the handler's send. Server library imports/use can
+  initialize databases, queries, migrations, and authentication adapters, as
+  their contracts specify.
+  ([workers/think.worker.ts:createWorkerHandler](./workers/think.worker.ts),
   [lib/db.ts:globalBoot](./lib/db.ts), [lib/auth/server.ts:auth](./lib/auth/server.ts))
 
 ## Verification
