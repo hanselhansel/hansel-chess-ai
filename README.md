@@ -70,7 +70,7 @@ See [docs/LATER.md](./docs/LATER.md) and [the tinyaz-m ladder spec](./docs/super
 ## Develop
 
 ```
-npm test          # includes src/lib/chess/chess.test.ts
+npm test          # test:scripts (scripts/**/*.test.mjs) then test:core (src/**/*.test.ts)
 npm run typecheck
 npm run dev
 ```
@@ -136,7 +136,9 @@ npm test
 npm run typecheck
 ```
 
-`npm test` runs script tests first and reaches the three TypeScript suites only if that stage passes. `npm run check:auth` is an HTTP probe against an already running dev server; an unobservable server is indeterminate. Python commands and dependencies are documented in [train](./train/README.md). [package.json:scripts.test] [package.json:scripts.typecheck] [scripts/check-auth-invariant.mjs:probeDevAuthEnabled] [scripts/check-auth-invariant.mjs:main]
+`npm test` is `npm run test:scripts && npm run test:core`: `node --test 'scripts/**/*.test.mjs'` first, then `node --experimental-strip-types --test 'src/**/*.test.ts'`, which discovers the three existing TypeScript suites and any later core test. `npm run check:auth` is an HTTP probe against an already running dev server; an unobservable server is indeterminate. Python commands and dependencies are documented in [train](./train/README.md). [package.json:scripts.test] [package.json:scripts.test:scripts] [package.json:scripts.test:core] [package.json:scripts.typecheck] [scripts/check-auth-invariant.mjs:probeDevAuthEnabled] [scripts/check-auth-invariant.mjs:main]
+
+`npm run test:template-authoring` is a separate upstream contract, not part of `npm test`. It runs `scripts/template-authoring/contract.mjs` against the real authoring documents (`AGENTS.md`, `.grok/skills/og/SKILL.md`, `.grok/skills/og/references/`) of an external template checkout named by a nonempty `GROK_TEMPLATE_ROOT`, using this checkout's own marker constants and argument/staging parsers. This app does not ship those documents; a missing, unreadable or incomplete `GROK_TEMPLATE_ROOT` fails the command nonzero and is an unavailable external check, never a pass. [package.json:scripts.test:template-authoring] [scripts/template-authoring/README.md] [scripts/template-authoring/contract.mjs]
 
 Bootstrap checks on 2026-11-01, based on revision `bb76439`:
 

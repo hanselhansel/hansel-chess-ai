@@ -25,6 +25,7 @@ Node entry points and shared helpers for environment flags, Vite integration, br
 | [migrate.mjs](./migrate.mjs)                             | `npm run db:migrate` runs the `DATABASE_URL`-gated PostgreSQL migrator. `npm run build` invokes it after the wrapped Vite build. `[migrate.mjs:databaseUrl]` `[migrate.mjs:main]` `[../package.json:scripts.build]`                                                                                                                                                       |
 | [sign-out-plan.mjs](./sign-out-plan.mjs)                 | `signOutTimeoutMs()`, `settleWithin()`, `runSignOut()`, and `runPreSignInSignOut()` coordinate supplied request, token-clear, and redirect callbacks. `[sign-out-plan.mjs:signOutTimeoutMs]` `[sign-out-plan.mjs:settleWithin]` `[sign-out-plan.mjs:runSignOut]` `[sign-out-plan.mjs:runPreSignInSignOut]`                                                                |
 | [write-atomic.mjs](./write-atomic.mjs)                   | `node scripts/write-atomic.mjs <staged-file> <target>`. Exports `parseWriteAtomicArgs()`, `stagingError()`, and injectable-rename `handOver()`. `[write-atomic.mjs:parseWriteAtomicArgs]` `[write-atomic.mjs:stagingError]` `[write-atomic.mjs:handOver]`                                                                                                                 |
+| [template-authoring/contract.mjs](./template-authoring/contract.mjs) | Explicit `node --test` entrypoint for the four upstream Grok authoring checks. Requires a nonempty `GROK_TEMPLATE_ROOT` with the real `AGENTS.md`, `.grok/skills/og/SKILL.md`, and `.grok/skills/og/references/` documents; missing input exits nonzero. Its basename is outside the app `*.test.mjs` glob. See [template-authoring/README.md](./template-authoring/README.md). `[template-authoring/contract.mjs]` |
 
 ## Invariants
 
@@ -60,10 +61,16 @@ Node entry points and shared helpers for environment flags, Vite integration, br
 Run from the repository root:
 
 ```sh
+npm run test:scripts
+npm run test:core
 npm test
 npm run typecheck
 ```
 
-`npm test` runs the script test glob first, then the configured app-data, auth-identity, and chess TypeScript suites through `&&`. A script-test failure prevents that second stage. `typecheck` runs `tsc --noEmit`. `[../package.json:scripts.test]` `[../package.json:scripts.typecheck]`
+`npm test` is `npm run test:scripts && npm run test:core`: `node --test 'scripts/**/*.test.mjs'` first, then `node --experimental-strip-types --test 'src/**/*.test.ts'` so later core tests are discovered automatically. A script-test failure prevents that second stage. `typecheck` runs `tsc --noEmit`. `[../package.json:scripts.test]` `[../package.json:scripts.test:scripts]` `[../package.json:scripts.test:core]` `[../package.json:scripts.typecheck]`
+
+Script-test fixtures are portable: app-env/auth tests build temporary roots containing `.grok/app-env.json` and execute a byte-identical copy of `with-app-env.mjs` from the fixture's own `scripts/` directory, so nothing depends on this checkout's absent `.grok` files or ambient `VITE_*`/`X_*` values. The PWA suite is split into `grok-pwa-head.test.mjs` (head/meta/card cases) and `grok-pwa-plugin.test.mjs` (install, streaming, manifest, and deployment-integration cases); the real Vite config `serverDir` wiring, Nitro middleware/assets, virtual-identity plugin source, install template, icon, and install stylesheet assertions remain in the latter and still read this checkout's actual files. Both files isolate `cwd`, `site`, and the `VITE_PUBLIC_HOSTNAME`/`VITE_OG_SERVICE_URL`/`VITE_PROJECT_ID`/`X_CREATOR`/`X_CREATOR_ID` worker flags.
+
+`npm run test:template-authoring` is a separate upstream authoring gate, not part of `npm test`: the four document checks pin `AGENTS.md` and the og skill's `SKILL.md`/`references/` prose to this checkout's real parsers and marker constants inside an explicit `GROK_TEMPLATE_ROOT` checkout. Missing input fails nonzero; see [template-authoring/README.md](./template-authoring/README.md). `[../package.json:scripts.test:template-authoring]`
 
 Against an already running dev server, `npm run check:auth -- --dev-url http://127.0.0.1:8080` checks environment agreement. It performs an HTTP probe. `[../package.json:scripts.check:auth]` `[check-auth-invariant.mjs:main]`

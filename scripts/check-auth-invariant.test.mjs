@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { mkdtempSync, symlinkSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -12,7 +12,7 @@ import {
   compareAuthInvariant,
   probeDevAuthEnabled,
 } from "./check-auth-invariant.mjs";
-import { projectRoot } from "./with-app-env.mjs";
+import { APP_ENV_REL_PATH, projectRoot } from "./with-app-env.mjs";
 
 /**
  * The JSON body `/__app-env` would serve. Do not start a real Vite server —
@@ -90,15 +90,31 @@ test("only a divergence warns the smoke verdict", () => {
   }
 });
 
-test("the build side resolves the template's shipped app-env", () => {
-  assert.equal(buildAuthEnabled(projectRoot(), {}), false);
-  assert.equal(buildAuthEnabled(projectRoot(), { VITE_AUTH_ENABLED: "true" }), true);
+test("the build side resolves a controlled app-env fixture", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "auth-build-env-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, ".grok"), { recursive: true });
+  writeFileSync(join(root, APP_ENV_REL_PATH), '{"VITE_AUTH_ENABLED":"false"}');
+  assert.equal(buildAuthEnabled(root, {}), false);
+  assert.equal(buildAuthEnabled(root, { VITE_AUTH_ENABLED: "true" }), true);
+
+  const absent = mkdtempSync(join(tmpdir(), "auth-build-env-absent-"));
+  t.after(() => rmSync(absent, { recursive: true, force: true }));
+  assert.equal(buildAuthEnabled(absent, {}), true);
+
+  const malformed = mkdtempSync(join(tmpdir(), "auth-build-env-bad-"));
+  t.after(() => rmSync(malformed, { recursive: true, force: true }));
+  mkdirSync(join(malformed, ".grok"), { recursive: true });
+  writeFileSync(join(malformed, APP_ENV_REL_PATH), "{not json");
+  assert.equal(buildAuthEnabled(malformed, {}), true);
 });
 
-test("the CLI reports rather than silently passing when run via a symlink", async () => {
+test("the CLI reports rather than silently passing when run via a symlink", async (t) => {
   // A check whose exit code is the whole signal must never no-op to 0 because
   // process.argv[1] came in through a symlinked path.
-  const link = join(mkdtempSync(join(tmpdir(), "auth-invariant-link-")), "scripts");
+  const linkParent = mkdtempSync(join(tmpdir(), "auth-invariant-link-"));
+  t.after(() => rmSync(linkParent, { recursive: true, force: true }));
+  const link = join(linkParent, "scripts");
   symlinkSync(join(projectRoot(), "scripts"), link);
   const error = await promisify(execFile)(process.execPath, [
     join(link, "check-auth-invariant.mjs"),
