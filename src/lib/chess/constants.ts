@@ -1,5 +1,7 @@
 /** TinyAZ-S: 8 residual blocks × 64 channels. ~0.64M params. */
 
+import type { CheckpointSpec } from "./checkpoint.ts";
+
 export const N_PLANES = 19;
 export const CHANNELS_S = 64;
 export const CHANNELS_M = 128;
@@ -31,6 +33,34 @@ export const PARAM_CAP = 3_000_000;
 export const FLOPS_PER_EVAL_S = 38_813_760;
 export const FLOPS_PER_EVAL_M = 153_092_160;
 export const FLOPS_PER_EVAL = FLOPS_PER_EVAL_M;
+
+export const PACKED_WEIGHT_VERSION = 1;
+export const THINK_PROTOCOL_VERSION = 1;
+/** Whole-operation deadline for initialization or one move, in milliseconds. */
+export const OPERATION_DEADLINE_MS = 90_000;
+/** Subordinate worker start acknowledgement bound, in milliseconds. */
+export const WORKER_ACK_MS = 8_000;
+/** Explicit protocol visit bound: the existing UCI ceiling, not a clamp. */
+export const MAX_VISITS = 4_096;
+
+export function paramCount(channels: number = CHANNELS): number {
+  const stem = N_PLANES * channels * 9 + channels;
+  const block = 2 * (channels * channels * 9 + channels);
+  const policy = channels * POLICY_PLANES + POLICY_PLANES;
+  const vconv = channels * VALUE_CH + VALUE_CH;
+  const fc1 = VALUE_CH * 64 * VALUE_HIDDEN + VALUE_HIDDEN;
+  const fc2 = VALUE_HIDDEN + 1;
+  return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2;
+}
+
+export const SELECTED_CHECKPOINT = Object.freeze({
+  name: MODEL_NAME,
+  url: WEIGHTS_URL,
+  packedVersion: PACKED_WEIGHT_VERSION,
+  parameterCount: 2_426_706,
+  byteLength: 9_706_840,
+  expectedSha256: "b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee",
+} as const) satisfies CheckpointSpec;
 
 export const QUEEN_DIRS: readonly [number, number][] = [
   [0, 1],

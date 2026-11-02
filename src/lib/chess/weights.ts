@@ -9,7 +9,10 @@ import {
   SOURCE_RANDOM,
   VALUE_CH,
   VALUE_HIDDEN,
+  paramCount,
 } from "./constants.ts";
+
+export { paramCount };
 
 export type WeightSet = {
   stemW: Float32Array;
@@ -54,16 +57,6 @@ function kaiming(out: Float32Array, fanIn: number, rng: () => number) {
 
 function zeros(n: number): Float32Array {
   return new Float32Array(n);
-}
-
-export function paramCount(channels: number = CHANNELS): number {
-  const stem = N_PLANES * channels * 9 + channels;
-  const block = 2 * (channels * channels * 9 + channels);
-  const policy = channels * POLICY_PLANES + POLICY_PLANES;
-  const vconv = channels * VALUE_CH + VALUE_CH;
-  const fc1 = VALUE_CH * 64 * VALUE_HIDDEN + VALUE_HIDDEN;
-  const fc2 = VALUE_HIDDEN + 1;
-  return stem + N_BLOCKS * block + policy + vconv + fc1 + fc2;
 }
 
 export function randomWeights(seed = 1): WeightSet {
