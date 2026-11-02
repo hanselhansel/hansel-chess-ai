@@ -183,8 +183,13 @@ async function createSql(): Promise<Sql> {
  * Get the shared, **server-only** SQL client. Neon when `DATABASE_URL` is set,
  * otherwise the local PGLite fallback. Memoized — safe to call per request.
  *
- * Schema comes from `migrations/*.sql`, auto-applied before the first query on
- * both backends — define tables there, never inline in server functions.
+ * PGLite: instance readiness and the eligible top-level `migrations/*.sql`
+ * files finish before the SQL wrapper resolves; module startup can kick that
+ * work off earlier (see `ensureDbReady`). Neon/pg: `getSql` only creates or
+ * reuses the pg-backed wrapper and pool — it applies no migrations and issues
+ * no readiness query; queries run when the wrapper is called, and deploy
+ * migrations are a separate build step (`scripts/migrate.mjs`). Define schema
+ * in top-level `migrations/*.sql` files, not inline in server functions.
  */
 export function getSql(): Promise<Sql> {
   sqlPromise ??= createSql().catch((err) => {

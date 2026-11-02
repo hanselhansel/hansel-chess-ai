@@ -12,10 +12,17 @@ checkpoints against random legal moves and can publish S assets.
 - Constants describe the 19-plane input, S/M widths (64/128), eight residual
   blocks, 73 policy planes, source identifiers, display metrics, and visit
   defaults. Geometry helpers convert algebraic squares, indices, files/ranks,
-  and rank-flipped indices.
+  and rank-flipped indices using the existing a1 = 0 rank-major layout:
+  `fileOf(i: number): number` keeps the low three bits, `rankOf(i: number):
+  number` shifts by three, and `algebraicToIndex(sq: string): number` /
+  `indexToAlgebraic(i: number): string` map between algebraic squares and
+  indices. These conversions assume valid caller coordinates and add no
+  validation.
   ([constants.ts:N_PLANES](./constants.ts), [constants.ts:CHANNELS_S](./constants.ts),
   [constants.ts:CHANNELS_M](./constants.ts), [constants.ts:SOURCE_NAMES](./constants.ts),
-  [constants.ts:squareIndex](./constants.ts), [constants.ts:flipIndex](./constants.ts))
+  [constants.ts:squareIndex](./constants.ts), [constants.ts:fileOf](./constants.ts),
+  [constants.ts:rankOf](./constants.ts), [constants.ts:algebraicToIndex](./constants.ts),
+  [constants.ts:indexToAlgebraic](./constants.ts), [constants.ts:flipIndex](./constants.ts))
 - `encodeBoard(chess)` returns canonical `Float32Array` planes; `stmIsBlack`
   reports the side to move. `moveToPlane`, `encodeMovePlane`, `legalLogits`, and
   `softmax` map legal moves to policy scores; `PromoPiece` describes promotions.

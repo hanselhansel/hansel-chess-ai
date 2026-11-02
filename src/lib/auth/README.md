@@ -11,12 +11,23 @@ that a corresponding application route is registered.
 
 - Browser exports include `authClient`, `authEnabled`, `getBearerToken`,
   `signIn(providerId, options?)`, and `signOut(redirectTo?)`. `GROK_PROVIDERS`
-  currently lists Google and X broker providers. Email/password is disabled;
-  preview broker configuration is exported separately.
+  currently lists Google and X broker providers; each
+  `GrokProvider = { providerId: string; idp: string; label: string }` supplies
+  the local provider/callback ID, the upstream broker hint, and the display
+  label. Email/password is disabled. Preview broker configuration is exported
+  separately: `PREVIEW_CLIENT_ID` and the server-only `PREVIEW_CLIENT_SECRET`
+  are the shared preview OAuth client credentials, used only when effective
+  per-app configuration is absent; `GROK_ISSUER_DEFAULT` is the default shared
+  broker issuer; `PREVIEW_ALLOWED_HOSTS` is the readonly callback-host pattern
+  list used to derive and validate preview redirect origins.
   ([client.ts:authClient](./client.ts), [client.ts:signIn](./client.ts),
   [client.ts:signOut](./client.ts), [providers.ts:GROK_PROVIDERS](./providers.ts),
+  [providers.ts:GrokProvider](./providers.ts),
   [email-password.ts:emailAndPasswordEnabled](./email-password.ts),
-  [preview.ts:PREVIEW_CLIENT_ID](./preview.ts))
+  [preview.ts:PREVIEW_CLIENT_ID](./preview.ts),
+  [preview.ts:PREVIEW_CLIENT_SECRET](./preview.ts),
+  [preview.ts:GROK_ISSUER_DEFAULT](./preview.ts),
+  [preview.ts:PREVIEW_ALLOWED_HOSTS](./preview.ts))
 - `useCurrentUserState()` returns `CurrentUserState`; `useCurrentUser()` returns
   its normalized `AppUser`. `DEV_USER` is the disabled-auth fallback.
   `SignedIn`, `SignedOut`, `RedirectToSignIn`, `SIGN_IN_PATH`, and `UserButton`
@@ -39,8 +50,26 @@ that a corresponding application route is registered.
 - Gate exports include identity/JWKS/account option types, header/key-path
   constants, `gateIdentityEnabled`, `gateKeyResolver`, `verifyGateIdentityToken`,
   `resolveGateEndpoints`, `gateIdentityFromHeaders`, and `sessionBoundToGateIdentity`.
-  `gateIdentitySessions()` builds the Better Auth plugin using `GATE_PROVIDER_ID`.
+  `GateJwks = { keys: JWK[] }` is the public JWKS record;
+  `VerifyGateIdentityTokenOptions` is the supplied verifier configuration
+  `{ issuer: string; audience: string; getKey: JWTVerifyGetKey }`;
+  `GateLinkedAccount = { providerId: string; accountId: string }` supports the
+  exact provider/subject session binding. `GATE_IDENTITY_HEADER` names the
+  incoming identity-token header and `GATE_JWKS_PATH` the identity-key endpoint
+  path used by endpoint resolution. `JwksFetch = (url: string) =>
+  Promise<GateJwks | null>` is the public injected JWKS-fetch callback accepted
+  by `gateKeyResolver(url, jwksFetch)` and optional
+  `gateIdentityFromHeaders(headers, jwksFetch)`; it is distinct from the
+  private `defaultJwksFetch`. `gateIdentitySessions()` builds the Better Auth
+  plugin using `GATE_PROVIDER_ID`.
   ([gate-identity.server.ts:GateIdentity](./gate-identity.server.ts),
+  [gate-identity.server.ts:GateJwks](./gate-identity.server.ts),
+  [gate-identity.server.ts:JwksFetch](./gate-identity.server.ts),
+  [gate-identity.server.ts:VerifyGateIdentityTokenOptions](./gate-identity.server.ts),
+  [gate-identity.server.ts:GateLinkedAccount](./gate-identity.server.ts),
+  [gate-identity.server.ts:GATE_IDENTITY_HEADER](./gate-identity.server.ts),
+  [gate-identity.server.ts:GATE_JWKS_PATH](./gate-identity.server.ts),
+  [gate-identity.server.ts:gateKeyResolver](./gate-identity.server.ts),
   [gate-identity.server.ts:verifyGateIdentityToken](./gate-identity.server.ts),
   [gate-identity.server.ts:gateIdentityFromHeaders](./gate-identity.server.ts),
   [gate-session.server.ts:gateIdentitySessions](./gate-session.server.ts))

@@ -20,11 +20,16 @@ remote service; this package does not implement each provider's tools.
   ([types.ts:ConnectorType](./types.ts), [types.ts:GoogleDriveTools](./types.ts),
   [types.ts:CONNECTOR_TOKEN_HEADER](./types.ts))
 - `resolveGateAppDataBase()`, `getConnectorAccessToken()`, and `failureMemoSize()`
-  expose resolved request context and failure-cache size. Staging and production
-  connector host constants are also exported.
+  expose resolved request context and failure-cache size. The exported
+  connector-host strings `CONNECTORS_HOST_STAGING` and `CONNECTORS_HOST_PROD`
+  supply the base for recognized `app-builder-testing.com` and `grok.me`
+  public hosts respectively; explicit `GROK_CONNECTORS_URL` takes precedence,
+  and unmatched or loopback hosts have no default base.
   ([client.server.ts:resolveGateAppDataBase](./client.server.ts),
   [client.server.ts:getConnectorAccessToken](./client.server.ts),
-  [client.server.ts:failureMemoSize](./client.server.ts))
+  [client.server.ts:failureMemoSize](./client.server.ts),
+  [client.server.ts:CONNECTORS_HOST_STAGING](./client.server.ts),
+  [client.server.ts:CONNECTORS_HOST_PROD](./client.server.ts))
 - `isLoginRequired(result)` identifies failed login-required envelopes.
   `redirectToLoginIfRequired(result)` attempts browser navigation and returns
   whether it initiated a redirect. `assertAppDataServerOnly()` guards transport

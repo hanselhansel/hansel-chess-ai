@@ -19,12 +19,22 @@ execution boundaries.
   ([db.ts:DbSource](./db.ts), [db.ts:Sql](./db.ts), [db.ts:getSql](./db.ts),
   [db.ts:getPglite](./db.ts), [db.ts:ensureDbReady](./db.ts))
 - Origin helpers classify Grok/sandbox hosts and resolve an eligible parent.
+  `isGrokEmbedderOrigin(origin: string): boolean` accepts HTTP(S) Grok hosts
+  and subdomains plus loopback origins, returning false for malformed input
+  (also re-exported by `preview-host-bridge.ts`). The broader parent
+  resolution described under Invariants remains unchanged.
   `installPreviewHostBridge(options?)` returns a disposer; options supply
   navigation and route suggestions. `isSafeBridgePath` validates navigation,
   and `collectRoutePathsFromTree` returns deduplicated path patterns.
-  ([preview-embedder-origin.ts:resolveParentEmbedderOrigin](./preview-embedder-origin.ts),
+  `PREVIEW_BRIDGE_CHANNEL` is the fixed message-envelope channel string and
+  `PREVIEW_BRIDGE_VERSION` the current protocol-version literal; both identify
+  bridge messages and neither proves a bridge is installed or active.
+  ([preview-embedder-origin.ts:isGrokEmbedderOrigin](./preview-embedder-origin.ts),
+  [preview-embedder-origin.ts:resolveParentEmbedderOrigin](./preview-embedder-origin.ts),
   [preview-host-bridge.ts:PreviewHostBridgeOptions](./preview-host-bridge.ts),
   [preview-host-bridge.ts:installPreviewHostBridge](./preview-host-bridge.ts),
+  [preview-host-bridge.ts:PREVIEW_BRIDGE_CHANNEL](./preview-host-bridge.ts),
+  [preview-host-bridge.ts:PREVIEW_BRIDGE_VERSION](./preview-host-bridge.ts),
   [preview-host-bridge.ts:isSafeBridgePath](./preview-host-bridge.ts),
   [preview-host-bridge.ts:collectRoutePathsFromTree](./preview-host-bridge.ts))
 - [App Data](./app-data/README.md) owns remote connector transport and shared
