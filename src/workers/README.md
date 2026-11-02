@@ -17,6 +17,18 @@ request promises, timeout handling, and main-thread fallback.
   elapsed milliseconds, child statistics, and heatmap. Search implementation
   belongs to the chess library.
   ([mcts.ts:ThinkResult](../lib/chess/mcts.ts))
+- Prepared, not yet active: `think-protocol.ts` defines the versioned
+  protocol-v1 unions (client `init`/`think`; worker `ready`/`result`/`error`
+  scoped `initialization`/`request`/unscoped `fatal`), and
+  `think-message-guards.ts` validates unknown records against exact keys,
+  discriminators, ranges, and session/context agreement. These are C3b
+  foundations; the C3c cutover that migrates this worker and its client onto
+  them is pending. The active worker still uses the unversioned legacy
+  messages described above with no runtime validation.
+  ([think-protocol.ts:ClientMessage](../lib/chess/think-protocol.ts),
+  [think-protocol.ts:WorkerMessage](../lib/chess/think-protocol.ts),
+  [think-message-guards.ts:isClientMessage](../lib/chess/think-message-guards.ts),
+  [think-message-guards.ts:isWorkerMessage](../lib/chess/think-message-guards.ts))
 
 ## Invariants
 

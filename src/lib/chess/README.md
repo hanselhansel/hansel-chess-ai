@@ -87,6 +87,85 @@ checkpoints against random legal moves and can publish S assets.
   members through `mock.method`.
   ([think-runtime.ts:ThinkRuntime](./think-runtime.ts),
   [think-runtime.ts:thinkRuntime](./think-runtime.ts))
+- `GamePosition` is a frozen snapshot of `initialFen`, `movesUci`, and
+  `expectedFen`. `capturePosition` copies and freezes the caller-owned root
+  FEN string, complete UCI sequence, and expected FEN before any asynchronous
+  work; it never derives a root from chess history or a current FEN.
+  `createPositionState(GamePosition | string)` loads the exact initial FEN
+  into a new private `Chess` board, replays the full UCI history through
+  public chess.js legality (castling, promotions, en-passant captures), and
+  verifies the legal-convention `expectedFen`; malformed UCI, illegal
+  prefixes, invalid roots, and final mismatches throw without mutating any
+  caller board. `PositionState` is a frozen facade exposing only readonly
+  `board`/`rawEpTarget` getter accessors; the mutable target and undo
+  storage lives in module-private WeakMap state reachable only through the
+  helper functions. `pushPositionMove` applies a legal `PositionMove` (`{from, to, promotion?}`)
+  and `undoPositionMove` restores the saved board and prior raw target. The
+  independent raw en-passant target initializes from the initial FEN's fourth
+  field even when chess.js normalizes it away, becomes the midpoint square
+  after every legal same-file double pawn move regardless of adjacent
+  capturers, and clears after any other move.
+  ([position.ts:GamePosition](./position.ts),
+  [position.ts:PositionMove](./position.ts),
+  [position.ts:PositionState](./position.ts),
+  [position.ts:capturePosition](./position.ts),
+  [position.ts:createPositionState](./position.ts),
+  [position.ts:pushPositionMove](./position.ts),
+  [position.ts:undoPositionMove](./position.ts))
+- `search-types.ts` owns the canonical future result and control types:
+  `Promotion` (`q`/`r`/`b`/`n`), `ChildStat`, `ThinkResult`, `DrawReason`,
+  `TerminalOutcome`, `SearchOutcome`, and `SearchControl`, all readonly.
+  `SearchOutcome` is `kind: "move"` with `result`/`completedVisits`/`searchMs`
+  or `kind: "terminal"` with `terminal`/`completedVisits: 0`/`searchMs`.
+  These are prepared C3b definitions that no existing active production
+  consumer imports yet; active search still returns the legacy `mcts.ts`
+  `ThinkResult`, and the C3c cutover migrates consumers atomically.
+  ([search-types.ts:Promotion](./search-types.ts),
+  [search-types.ts:ChildStat](./search-types.ts),
+  [search-types.ts:ThinkResult](./search-types.ts),
+  [search-types.ts:DrawReason](./search-types.ts),
+  [search-types.ts:TerminalOutcome](./search-types.ts),
+  [search-types.ts:SearchOutcome](./search-types.ts),
+  [search-types.ts:SearchControl](./search-types.ts))
+- `think-protocol.ts` owns the canonical protocol-v1 application types and
+  wire unions: `ErrorCode` (exactly eighteen stable codes), `Backend`,
+  `RequestContext`, `Attempt`, `FailureData`, `ThinkerFailure`,
+  `SessionReady`, `ThinkResponse`, `EngineState`, `ThinkerOptions`,
+  `Thinker`, `InitMessage`, `ThinkMessage`, `ReadyMessage`,
+  `ResultMessage`, `WorkerErrorMessage`, `FatalMessage`, `ClientMessage`, and
+  `WorkerMessage`. It re-exports the `GamePosition` type, the
+  checkpoint-owned `sameModelIdentity`, and the guard boundary
+  (`sameContext`, `isClientMessage`, `isWorkerMessage`) implemented in
+  `think-message-guards.ts`. The canonical `createThinker(options?:
+  ThinkerOptions): Thinker` signature describes the future factory in
+  `think-client.ts`; no bodyless runtime stub exists and the active factory
+  return type is unchanged. ([think-protocol.ts:ErrorCode](./think-protocol.ts),
+  [think-protocol.ts:RequestContext](./think-protocol.ts),
+  [think-protocol.ts:Attempt](./think-protocol.ts),
+  [think-protocol.ts:FailureData](./think-protocol.ts),
+  [think-protocol.ts:ThinkerFailure](./think-protocol.ts),
+  [think-protocol.ts:SessionReady](./think-protocol.ts),
+  [think-protocol.ts:ThinkResponse](./think-protocol.ts),
+  [think-protocol.ts:EngineState](./think-protocol.ts),
+  [think-protocol.ts:ThinkerOptions](./think-protocol.ts),
+  [think-protocol.ts:Thinker](./think-protocol.ts),
+  [think-protocol.ts:ClientMessage](./think-protocol.ts),
+  [think-protocol.ts:WorkerMessage](./think-protocol.ts))
+- `isClientMessage` and `isWorkerMessage` validate unknown records at
+  runtime: exact allowed keys, branch discriminators, protocol version 1,
+  safe integer IDs and counts, finite durations, value/prior/heat ranges,
+  SHA256 strings, model-identity discriminants, session/context agreement,
+  UCI and FEN syntax, an `ArrayBuffer` init body, complete move-budget
+  equality, unique top-eight child records, omitted optional promotion,
+  `result.ms === Math.round(searchMs)`, and zero terminal visits. Move
+  histories must be dense index-owned UCI strings, FEN fields must carry
+  single-digit rank counts with a safe nonnegative halfmove and a safe
+  positive fullmove. `sameContext` compares every context field and every
+  ordered history index symmetrically. Malformed or unknown variants return
+  false rather than trusting a cast.
+  ([think-message-guards.ts:isClientMessage](./think-message-guards.ts),
+  [think-message-guards.ts:isWorkerMessage](./think-message-guards.ts),
+  [think-message-guards.ts:sameContext](./think-message-guards.ts))
 - `search(fen, visits, weights)` returns `ThinkResult`; `searchAsync` returns
   its promise. Results contain move coordinates/UCI/SAN, value, visits, timing,
   up to eight `ChildStat` records, and destination heat.
@@ -134,6 +213,24 @@ checkpoints against random legal moves and can publish S assets.
   replacement requires a coordinated reviewed selection-description and
   input-identity update with fresh verification, and a mismatch must fail
   visibly. ([constants.ts:SELECTED_CHECKPOINT](./constants.ts))
+- The position helpers never read or write private chess.js fields, never
+  reload the board from FEN between visits, and never infer a target from
+  pawn layout. `GamePosition.initialFen` must be the explicit original root
+  and `movesUci` the complete sequence, both supplied by the caller; the UI
+  retains them independently and appends only after a successful legal move.
+  A legacy FEN string input is a root with zero earlier history and only the
+  raw data present in that string: an already-normalized FEN cannot recover a
+  discarded raw target or repetition history, which is the known FEN-only
+  limitation for legacy callers.
+  ([position.ts:capturePosition](./position.ts),
+  [position.ts:createPositionState](./position.ts))
+- The protocol guards validate wire values only: they start no timers, fetch
+  no weights, construct no workers, run no search, and mutate no application
+  state. Legality and expected-FEN reconstruction inside the operation
+  budget, plus the client's stale-discard policy, belong to the pending C3c
+  cutover; no existing active production consumer imports the new
+  foundations. ([think-message-guards.ts:isClientMessage](./think-message-guards.ts),
+  [think-message-guards.ts:isWorkerMessage](./think-message-guards.ts))
 - Every search starts with a fresh root and expands only legal moves. PUCT uses
   `C_PUCT = 1.5`; backpropagation alternates value signs. Final selection sorts
   by visits, then prior, so one visit selects the policy argmax. A search with no
@@ -174,6 +271,11 @@ checkpoints against random legal moves and can publish S assets.
   The verification helpers read a supplied buffer and the capability digest
   only. ([checkpoint.ts:verifyCheckpointBytes](./checkpoint.ts),
   [think-runtime.ts:thinkRuntime](./think-runtime.ts))
+- The position, search-types, protocol, and message-guard modules add no
+  import-time effects and hold no timers, workers, fetches, or model state.
+  ([position.ts](./position.ts), [search-types.ts](./search-types.ts),
+  [think-protocol.ts](./think-protocol.ts),
+  [think-message-guards.ts](./think-message-guards.ts))
 - The gauntlet CLI reads checkpoints, creates `public/weights`, logs results,
   and writes `tinyaz-s.meta.json` before checking its pass gate. Passing also
   copies the S binary and overwrites bundled `checkpoint-meta.json`. Missing
@@ -190,6 +292,24 @@ The focused command
 runs the checkpoint validation suite directly: it reads the real pinned M file,
 exercises the deterministic seed-2026 S demo, malformed/mismatched payloads,
 the mocked capability boundary, and buffer-ownership invariants.
+
+The focused command
+`node --experimental-strip-types --test src/lib/chess/position.test.ts src/lib/chess/think-protocol.test.ts`
+runs the prepared position/protocol suites directly: immutable snapshots,
+full-history replay with castling, promotions and both en-passant directions,
+raw-target retention for arbitrary and pinned roots, push/undo restoration,
+threefold history versus a final-FEN-only board, and schema-level message,
+identity, context, and result validation. These are C3b foundation checks;
+they assert no real worker handshake, availability recovery, or active
+runtime change.
+
+`think-test-fixtures.ts` is a test-only module of canonical sample records:
+`START_FEN`, `OPEN_FEN`, `POSITION`, `CONTEXT`, `SESSION`, `DEMO_IDENTITY`,
+`MOVE_RESULT`, `MOVE_OUTCOME`, `INIT_MESSAGE`, `THINK_MESSAGE`,
+`READY_MESSAGE`, `RESULT_MESSAGE`, `INIT_ERROR`, `REQUEST_ERROR`, and
+`FATAL_MESSAGE`. Only test files import it; it carries no production import,
+runtime knob, player test mode, or alternate engine.
+([think-test-fixtures.ts](./think-test-fixtures.ts))
 
 The separate command `node --experimental-strip-types src/lib/chess/gauntlet.ts`
 runs the real random-move gauntlet and can publish assets. Append a checkpoint
