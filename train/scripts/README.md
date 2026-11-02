@@ -24,7 +24,8 @@ Historical small-model entrypoints retain their own defaults.
 | [rematch_32.py](./rematch_32.py)           | `rate` and `main`; fixed historical medium checkpoint, 16 openings with both colors per Elo rung. `[rematch_32.py:rate]` `[rematch_32.py:main]` `[rematch_32.py:CAND]` `[rematch_32.py:OPENINGS]`                                                                                                                                                                                                                                                                                               |
 | [tinyaz_uci.py](./tinyaz_uci.py)           | `main`; `--weights`, `--visits`, and `--device` delegate to `tinyaz.engine_uci`. Defaults are imported weights, 64 visits, and CPU. `[tinyaz_uci.py:main]` `[tinyaz_uci.py:PLAY_VISITS]`                                                                                                                                                                                                                                                                                                        |
 | [hansel-chess-ai](./hansel-chess-ai)       | Extensionless bash wrapper; prepends `train/src` to `PYTHONPATH` and forwards all arguments to unbuffered `tinyaz_uci.py`. `[hansel-chess-ai:PYTHONPATH]` `[hansel-chess-ai:exec]`                                                                                                                                                                                                                                                                                                              |
-| [fetch_stockfish.sh](./fetch_stockfish.sh) | Ubuntu x86-64 binary fetch helper; destination is `train/bin/stockfish`. `[fetch_stockfish.sh:DEST]` `[fetch_stockfish.sh:curl]`                                                                                                                                                                                                                                                                                                                                                                |
+| [fetch_stockfish.sh](./fetch_stockfish.sh) | Ubuntu x86-64 binary fetch helper; destination is `train/bin/stockfish`. `[fetch_stockfish.sh:DEST]` `[fetch_stockfish.sh:curl]` |
+| [uci_child_test_support.py](./uci_child_test_support.py) | Test-only support imported by `test_engine_uci.py`: `SITECUSTOMIZE` identity hook, `build_child_env`, `select_python3`, `parent_identity`/`validate_parent`, `validate_child`, `run_help_child`, and `run_help`. Owns the pinned project-venv child environment, `python3` resolution against the actual child `PATH`, bounded identity sidecar comparison, and the help-only subprocess boundary. Never imported by production code. `[uci_child_test_support.py:run_help]` `[uci_child_test_support.py:select_python3]` `[uci_child_test_support.py:validate_child]` |
 
 ## Invariants
 
@@ -49,18 +50,37 @@ Historical small-model entrypoints retain their own defaults.
 
 ## Verification
 
-Run these standalone checks from the repository root. Use Python >=3.10 with
-NumPy and `python-chess`; the encode/climb/UCI checks also need PyTorch. PGN
-workflows import `zstandard`, which is absent from the current
-[manifest's dependency list](../pyproject.toml). No pytest runner is configured.
+Run these standalone checks from the repository root in the pinned project
+environment `train/.venv` (CPython 3.11, pip 25.2; see
+[train/README.md](../README.md)) with the four pinned libraries in
+`train/requirements-verify.txt` (numpy, chess, zstandard, torch). No pytest
+runner is configured.
 
 ```sh
-PYTHONPATH=train/src python3 train/scripts/test_encode.py
-PYTHONPATH=train/src python3 train/scripts/test_lichess_split.py
-PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
-PYTHONPATH=train/src python3 train/scripts/test_engine_uci.py
-PYTHONPATH=train/src python3 train/scripts/test_challenge_rotator.py
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_encode.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_lichess_split.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_climb_loop.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_engine_uci.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_challenge_rotator.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_mcts.py
 ```
 
-Training, gauntlets, the binary fetch helper, UCI sessions, promotion, and bot
-launches are operational workflows. They were not run as documentation checks.
+`test_mcts.py` exercises imported search mechanics with a scripted fake
+evaluator, including injected-error board restoration and optional
+`--capture-control` / `--compare-control` modes writing a deterministic
+normal-path control plus separate provenance companions. `test_engine_uci.py`
+spawns its CLI and wrapper help children only with the project venv `PATH`
+built by `uci_child_test_support.py`: `python3` is resolved against the
+actual child `PATH` and rejected before launch when it lands outside the
+venv, and each child's `sitecustomize` sidecar records invocation path,
+resolved executable, executable binary SHA256, full `sys.version` and
+`version_info`, prefix and base-prefix — all compared to the running parent
+interpreter, with the validated records printed as bounded labeled JSON
+before cleanup. A controlled wrong-`python3` selection is proven rejected
+before a no-spawn sentinel. `test_climb_loop.py` uses controlled test doubles
+behind fail-fast compute guards; `test_climb_real_regressions.py` retains the
+original real-S snapshot/self-play cases as deferred coverage and is never
+imported or run here. Training, gauntlets, the binary fetch helper, UCI
+sessions, promotion, and bot launches are operational workflows. They were
+not run as documentation checks.

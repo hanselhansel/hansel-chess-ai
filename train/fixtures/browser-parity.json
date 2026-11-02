@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "id": "start",
+      "initialFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "after-e4",
+      "initialFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "movesUci": ["e2e4"],
+      "expectedRawEpTarget": "e3"
+    },
+    {
+      "id": "castle-white",
+      "initialFen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "castle-black",
+      "initialFen": "r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "ep-white",
+      "initialFen": "4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 2",
+      "movesUci": [],
+      "expectedRawEpTarget": "d6"
+    },
+    {
+      "id": "ep-black",
+      "initialFen": "4k3/8/8/8/3Pp3/8/8/4K3 b - d3 0 2",
+      "movesUci": [],
+      "expectedRawEpTarget": "d3"
+    },
+    {
+      "id": "promote-white",
+      "initialFen": "7k/P7/8/8/8/8/8/7K w - - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "promote-black",
+      "initialFen": "7k/8/8/8/8/8/p7/7K b - - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "mate",
+      "initialFen": "7k/6Q1/6K1/8/8/8/8/8 b - - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "stalemate",
+      "initialFen": "7k/5Q2/6K1/8/8/8/8/8 b - - 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": null
+    },
+    {
+      "id": "after-e4-d5",
+      "initialFen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+      "movesUci": ["e2e4", "d7d5"],
+      "expectedRawEpTarget": "d6"
+    },
+    {
+      "id": "initial-raw-e3",
+      "initialFen": "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+      "movesUci": [],
+      "expectedRawEpTarget": "e3"
+    },
+    {
+      "id": "pinned-ep",
+      "initialFen": "k3r3/8/8/3pP3/8/8/8/4K3 w - d6 0 2",
+      "movesUci": [],
+      "expectedRawEpTarget": "d6"
+    }
+  ]
+}

@@ -91,20 +91,49 @@ Not a fork of `hansel-chesslite`. That repo perfected a measuring instrument and
 
 ## Verification
 
-Run standalone scripts from the repository root using an active Python >=3.10
-interpreter with the required dependencies. The manifest declares NumPy and
-optional PyTorch/`python-chess` training dependencies. PGN imports also require
-`zstandard`, which is currently undeclared. No pytest command is configured.
+Use the pinned project environment `train/.venv` (CPython 3.11, pip 25.2) with
+the four pinned libraries in [requirements-verify.txt](./requirements-verify.txt)
+(numpy 2.3.5, chess 1.11.2, zstandard 0.25.0, torch 2.10.0). The
+[manifest](./pyproject.toml) keeps base package use NumPy-only and declares
+PyTorch, `python-chess`, and now `zstandard` in the optional `train` group.
+Setup, if the venv is absent:
 
 ```sh
-PYTHONPATH=train/src python3 train/scripts/test_encode.py
-PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
-PYTHONPATH=train/src python3 train/scripts/test_engine_uci.py
-PYTHONPATH=train/src python3 train/scripts/test_challenge_rotator.py
-PYTHONPATH=train/src python3 train/scripts/test_lichess_split.py
+/opt/homebrew/opt/python@3.11/bin/python3.11 -m venv train/.venv
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+"$TINYAZ_VERIFY_BIN/python" -m pip install pip==25.2
+"$TINYAZ_VERIFY_BIN/python" -m pip install -r train/requirements-verify.txt
+"$TINYAZ_VERIFY_BIN/python" -m pip check
 ```
 
-The encode/climb/UCI checks need PyTorch in that interpreter. The rotator check
-uses mocked requests. Operational examples above were not run for this
-documentation pass; no training, public promotion, live bot, or full gauntlet
-was used as a documentation check.
+Standalone checks run from the repository root:
+
+```sh
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_encode.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_lichess_split.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_climb_loop.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_engine_uci.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_challenge_rotator.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_mcts.py
+```
+
+`test_mcts.py` also supports test-only `--capture-control <json>` and
+`--compare-control <json>` modes for the deterministic normal-path control
+with separate provenance companions; it uses a scripted fake evaluator, never
+a checkpoint. `test_climb_loop.py` verifies aggregation, dispatch, JSONL
+append and legality through controlled test doubles behind fail-fast compute
+guards; it does not play games. `test_climb_real_regressions.py` retains the
+original real-S snapshot/self-play cases and is deferred coverage: never
+invoked by the required gate, not run, not passed, and not equivalent.
+`test_engine_uci.py` adds valid-prefix `position` regressions and proves the
+actual wrapper/CLI children's interpreters through the test-only
+`train/scripts/uci_child_test_support.py` sitecustomize sidecars: full
+build/version, resolved executable and binary digest, prefixes, and a
+controlled wrong-`python3` no-spawn rejection, with bounded identity JSON
+emitted before cleanup; its real-S one-visit/terminal checks stay
+test-position UCI checks, not games, rating or a bot. `test_encode.py` requires the real tinyaz-m file,
+hash, header, load, channel and parameter identity plus the thirteen shared
+[input/policy cases](./fixtures/browser-parity.json). The rotator check uses
+mocked requests. No pytest runner is configured; no training, promotion,
+game, bot or gauntlet is a check here.

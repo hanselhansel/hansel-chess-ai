@@ -4,14 +4,19 @@
 from __future__ import annotations
 
 import io
-import subprocess
+import json
+import os
 import sys
+import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "train" / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import chess  # noqa: E402
+import uci_child_test_support as uci_child  # noqa: E402
 from tinyaz.constants import PLAY_VISITS  # noqa: E402
 from tinyaz.engine_uci import (  # noqa: E402
     ENGINE_AUTHOR,
@@ -25,6 +30,24 @@ from tinyaz.engine_uci import (  # noqa: E402
 )
 
 S_WEIGHTS = ROOT / "public" / "weights" / "tinyaz-s.bin"
+
+
+def _prefix_board(fen: str, moves: list[str]) -> chess.Board:
+    board = chess.Board(fen)
+    for u in moves:
+        board.push_uci(u)
+    return board
+
+
+def _assert_position_prefix(e: TinyazUci, expected: chess.Board) -> None:
+    assert e.board.fen() == expected.fen()
+    assert [m.uci() for m in e.board.move_stack] == [m.uci() for m in expected.move_stack]
+    assert e.board.turn == expected.turn
+    assert e.board.castling_rights == expected.castling_rights
+    assert e.board.halfmove_clock == expected.halfmove_clock
+    assert e.board.fullmove_number == expected.fullmove_number
+    assert e.board.ep_square == expected.ep_square
+    assert e._ev is None
 
 
 def test_parse_go_nodes_and_clock() -> None:
@@ -160,22 +183,36 @@ def test_run_stdio_and_missing_weights() -> None:
         raise AssertionError("expected FileNotFoundError")
     except FileNotFoundError as err:
         assert "tinyaz.bin" in str(err)
-    help_py = subprocess.run(
-        [sys.executable, str(ROOT / "train" / "scripts" / "tinyaz_uci.py"), "--help"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert help_py.returncode == 0
-    assert "weights" in help_py.stdout.lower()
-    wrap = subprocess.run(
-        [str(ROOT / "train" / "scripts" / "hansel-chess-ai"), "--help"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert wrap.returncode == 0
-    assert "visits" in wrap.stdout.lower() or "weights" in wrap.stdout.lower()
+    parent = uci_child.validate_parent()
+    with tempfile.TemporaryDirectory() as td:
+        hook = Path(td)
+        (hook / "sitecustomize.py").write_text(uci_child.SITECUSTOMIZE)
+        help_py = uci_child.run_help(
+            [str(ROOT / "train" / "scripts" / "tinyaz_uci.py"), "--help"],
+            "direct",
+            uci_child.build_child_env(hook / "id-direct.json", hook),
+            parent,
+            use_project_python3=True,
+        )
+        assert "weights" in help_py["stdout"].lower()
+        wrap = uci_child.run_help(
+            [str(ROOT / "train" / "scripts" / "hansel-chess-ai"), "--help"],
+            "wrapper",
+            uci_child.build_child_env(hook / "id-wrapper.json", hook),
+            parent,
+            use_project_python3=False,
+        )
+        assert "visits" in wrap["stdout"].lower() or "weights" in wrap["stdout"].lower()
+        wrapped = wrap["identity"]
+        direct = help_py["identity"]
+        assert wrapped["resolvedExecutable"] == direct["resolvedExecutable"]
+        assert wrapped["executableSha256"] == direct["executableSha256"]
+        evidence = {
+            "parent": parent,
+            "direct-help": direct,
+            "wrapper-help": wrapped,
+        }
+        print("UCI-EVIDENCE " + json.dumps(evidence, sort_keys=True))
 
 
 def test_ucinewgame_resets_board() -> None:
@@ -206,6 +243,83 @@ def test_go_on_checkmate_emits_bestmove() -> None:
     e.handle("position fen rnb1kbnr/pppp1ppp/8/4p3/6Pq/5P2/PPPPP2P/RNBQKBNR w KQkq - 1 3")
     out = e.handle("go nodes 1")
     assert any(x.startswith("bestmove ") for x in out)
+
+
+def test_position_invalid_later_move_keeps_prefix() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=1)
+    assert e.handle("position startpos moves e2e4 e7e5 e1e3 g8f6") == []
+    _assert_position_prefix(e, _prefix_board(chess.STARTING_FEN, ["e2e4", "e7e5"]))
+    e2 = TinyazUci(weights=S_WEIGHTS, visits=1)
+    assert e2.handle("position startpos moves e2e4 bogus e7e5") == []
+    _assert_position_prefix(e2, _prefix_board(chess.STARTING_FEN, ["e2e4"]))
+    e3 = TinyazUci(weights=S_WEIGHTS, visits=1)
+    assert e3.handle("position startpos moves e1e3 e2e4") == []
+    _assert_position_prefix(e3, _prefix_board(chess.STARTING_FEN, []))
+
+
+def test_position_fen_invalid_later_move_keeps_prefix() -> None:
+    fen = chess.STARTING_FEN
+    e = TinyazUci(weights=S_WEIGHTS, visits=1)
+    assert e.handle(f"position fen {fen} moves g1f3 e7e5 b1b1 g8f6") == []
+    _assert_position_prefix(e, _prefix_board(fen, ["g1f3", "e7e5"]))
+    e2 = TinyazUci(weights=S_WEIGHTS, visits=1)
+    assert e2.handle(f"position fen {fen} moves g1f3 z9 e7e5") == []
+    _assert_position_prefix(e2, _prefix_board(fen, ["g1f3"]))
+
+
+def test_position_only_stdio_emits_no_response() -> None:
+    e = TinyazUci(weights=S_WEIGHTS, visits=1)
+    cmds = (
+        "position startpos moves e2e4 e7e5 e1e3 g8f6\n"
+        f"position fen {chess.STARTING_FEN} moves g1f3 zzz e7e5\n"
+        "quit\n"
+    )
+    buf_out = io.StringIO()
+    old_in, old_out = sys.stdin, sys.stdout
+    sys.stdin, sys.stdout = io.StringIO(cmds), buf_out
+    try:
+        run_stdio(e)
+    finally:
+        sys.stdin, sys.stdout = old_in, old_out
+    assert buf_out.getvalue() == ""
+    _assert_position_prefix(e, _prefix_board(chess.STARTING_FEN, ["g1f3"]))
+
+
+def test_wrong_python3_selection_rejects_before_spawn() -> None:
+    parent = uci_child.validate_parent()
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td)
+        hook = tmp / "hook"
+        hook.mkdir()
+        (hook / "sitecustomize.py").write_text(uci_child.SITECUSTOMIZE)
+        wrong_bin = tmp / "wrong-bin"
+        wrong_bin.mkdir()
+        foreign = wrong_bin / "python3"
+        foreign.write_text("#!/bin/sh\n")
+        foreign.chmod(0o755)
+        env = uci_child.build_child_env(tmp / "id-wrong.json", hook)
+        env["PATH"] = str(wrong_bin) + os.pathsep + env["PATH"]
+        spawned: list[list[str]] = []
+
+        def sentinel(argv, env):
+            spawned.append(argv)
+            raise AssertionError("launcher reached despite rejected python3")
+
+        with patch.object(uci_child, "run_help_child", sentinel):
+            rejected = False
+            try:
+                uci_child.run_help(
+                    ["--help"],
+                    "wrong",
+                    env,
+                    parent,
+                    use_project_python3=True,
+                )
+            except AssertionError:
+                rejected = True
+            assert spawned == [], "a child was launched despite wrong python3 selection"
+            assert rejected, "wrong python3 selection was not rejected"
+            assert not (tmp / "id-wrong.json").exists(), "sidecar written without a child"
 
 
 def main() -> None:
@@ -239,6 +353,14 @@ def main() -> None:
     print("ok test_setoption_visits_rejects_non_int")
     test_go_on_checkmate_emits_bestmove()
     print("ok test_go_on_checkmate_emits_bestmove")
+    test_position_invalid_later_move_keeps_prefix()
+    print("ok test_position_invalid_later_move_keeps_prefix")
+    test_position_fen_invalid_later_move_keeps_prefix()
+    print("ok test_position_fen_invalid_later_move_keeps_prefix")
+    test_position_only_stdio_emits_no_response()
+    print("ok test_position_only_stdio_emits_no_response")
+    test_wrong_python3_selection_rejects_before_spawn()
+    print("ok test_wrong_python3_selection_rejects_before_spawn")
     print("engine-uci tests ok")
 
 

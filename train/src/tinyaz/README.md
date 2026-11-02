@@ -30,11 +30,12 @@ the board and legal moves. The package modules are imported by `train/scripts`;
 ## Invariants
 
 - Board input is 19 float32 planes of 64 squares. Black-to-move input flips ranks using `i ^ 56`, preserving files. Piece and castling planes are relative to the side to move. `[encode.py:encode_board]` `[constants.py:flip_index]`
+- Live encoding reads the raw `board.ep_square` state for its en-passant plane, including noncapturable targets. Saved rows store `board.fen()`, whose default legal-only en-passant field can omit those noncapturable raw targets; Python and browser draw-claim policies remain separate and unchanged. `[encode.py:encode_board]` `[encode.py:algebraic_ep_index]` `[data.py:game_rows]`
 - Policy targets use `plane * 64 + from_square` across 73 planes. Queen promotions use ordinary movement encoding; the last nine planes encode underpromotions. Unmapped moves return `-1`. `[policy.py:move_to_plane]` `[policy.py:policy_target_index]`
 - The network has eight residual blocks, a 73-plane policy head, and a tanh value head. Recognized packed models use 64 or 128 channels. `PARAM_CAP` is a declared target, not a constructor guard. `[model.py:TinyAZ]` `[model.py:TinyAZ.forward]` `[constants.py:channels_for_count]` `[constants.py:PARAM_CAP]`
 - Packed headers use `<4sIII`: `TAZS`, version 1, parameter count, source ID. Tensor order is stem, residual blocks, policy, value convolution, value FC1, value FC2, each weight before its bias. Packing checks the float count; loading checks header and recognized architecture. `[pack.py:pack_model]` `[pack.py:_tensors]` `[pack.py:load_model]`
 - Human-month data splits by game identity using the first SHA-256 byte (`<26` selects validation). The older `write_jsonl` instead splits by accepted-game ordinal. Sampled game groups may exceed a row quota by their final group. `[data.py:split_for_game]` `[data.py:write_human_months]` `[data.py:write_jsonl]`
-- Search expands legal moves, normalizes their logits, and alternates value signs during backup. Root expansion counts as the first visit. At 1 visit, `best_move` selects by prior because child visits are zero; `pick_move` requires positive child visits. `[mcts.py:_expand]` `[mcts.py:search_root]` `[mcts.py:best_move]` `[mcts.py:pick_move]`
+- Search expands legal moves, normalizes their logits, and alternates value signs during backup. Root expansion counts as the first visit. At 1 visit, `best_move` selects by prior because child visits are zero; `pick_move` requires positive child visits. Each visit unwinds only the moves it pushed, including on evaluator, selection, or backup errors; the narrow per-visit finally restoration is the C2b K1 repair asserted by `test_mcts.py`. `[mcts.py:_expand]` `[mcts.py:search_root]` `[mcts.py:best_move]` `[mcts.py:pick_move]`
 - Default budgets are play 64, training 256, and snapshot 1. These are function defaults; callers can select different budgets. `SOURCE_SELFPLAY_64` is a source tag and does not prove a row was generated at 64 visits. `[constants.py:PLAY_VISITS]` `[constants.py:TRAIN_VISITS]` `[constants.py:SNAPSHOT_VISITS]` `[constants.py:SOURCE_SELFPLAY_64]` `[generate.py:generate]`
 - Self-play requires an output path for positive game counts, uses CPU workers, adds root noise, samples moves for the first 12 plies, and stops at 160 plies. Generation returns no rows for nonpositive game counts. `[generate.py:generate]` `[generate.py:_eval_from]` `[generate.py:play_game]`
 - Capture replay before generation appends new rows. Training concatenates new rows, prior replay, and human rows. Empty training input raises; `drop_last=True` means input smaller than a batch performs no optimizer steps. `[train_loop.py:mix_for_train]` `[train_loop.py:train_fresh]` `[train_loop.py:train_candidate]` `[train_loop.py:_train_on]`
@@ -54,17 +55,26 @@ the board and legal moves. The package modules are imported by `train/scripts`;
 
 ## Verification
 
-Run standalone scripts from the repository root in a Python >=3.10 environment.
-The [manifest](../../pyproject.toml) declares NumPy and optional training dependencies
-PyTorch and `python-chess`. PGN imports also require `zstandard`, which the
-manifest does not currently declare. No pytest command is configured here.
+Run standalone scripts from the repository root in the pinned project
+environment `train/.venv` (CPython 3.11, pip 25.2; see
+[train/README.md](../../README.md)) with the four pinned libraries in
+`train/requirements-verify.txt`. The base package imports NumPy only; the
+[manifest](../../pyproject.toml) optional `train` group supplies PyTorch,
+`python-chess`, and `zstandard` for PGN work. No pytest command is configured
+here.
 
 ```sh
-PYTHONPATH=train/src python3 train/scripts/test_encode.py
-PYTHONPATH=train/src python3 train/scripts/test_lichess_split.py
-PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
-PYTHONPATH=train/src python3 train/scripts/test_engine_uci.py
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_encode.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_lichess_split.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_climb_loop.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_engine_uci.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_mcts.py
 ```
 
-These checks are separate from training, public promotion, full gauntlets, and
-bot operation. No such operational workflow was run for this documentation pass.
+`test_climb_loop.py` runs controlled aggregation/dispatch checks behind
+fail-fast compute guards; the retained real-S snapshot/self-play cases moved
+to `test_climb_real_regressions.py`, which is deferred and excluded from
+every required gate. These checks are separate from training, public
+promotion, full gauntlets, and bot operation. No such operational workflow
+was run for this documentation pass.

@@ -31,16 +31,23 @@ The [manifest](../pyproject.toml) packages `src/tinyaz` with Hatchling.
 
 ## Verification
 
-From the repository root, use Python >=3.10 with NumPy, `python-chess`, and
-PyTorch for the package checks. PGN module imports additionally need
-`zstandard`, which is not declared in the current manifest.
+From the repository root, use the pinned project environment `train/.venv`
+(CPython 3.11, pip 25.2; see [train/README.md](../README.md)) with the four
+pinned libraries in [requirements-verify.txt](../requirements-verify.txt).
+The base package imports NumPy only; the optional `train` group supplies
+PyTorch, `python-chess`, and `zstandard` for PGN work.
 
 ```sh
-PYTHONPATH=train/src python3 train/scripts/test_encode.py
-PYTHONPATH=train/src python3 train/scripts/test_lichess_split.py
-PYTHONPATH=train/src python3 train/scripts/test_climb_loop.py
-PYTHONPATH=train/src python3 train/scripts/test_engine_uci.py
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_encode.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_lichess_split.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_climb_loop.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_engine_uci.py
+PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_mcts.py
 ```
 
-These are standalone script entrypoints. Training, gauntlets, publication, and
-bot operation were not run to check this blueprint.
+These are standalone script entrypoints. `test_climb_loop.py` runs controlled
+aggregation/dispatch checks; the retained real-S regressions live in
+`test_climb_real_regressions.py`, which is deferred, excluded from required
+gates, and never run here. Training, gauntlets, publication, and bot
+operation were not run to check this blueprint.

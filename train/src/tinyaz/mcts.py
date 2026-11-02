@@ -116,24 +116,26 @@ def search_root(
     for _ in range(visits - 1):
         node = root
         pushed = 0
-        while node.expanded and not node.terminal and node.children:
-            node = _select(node)
-            assert node.move is not None
-            board.push(node.move)
-            pushed += 1
-        if node.terminal:
-            value = node.terminal_value
-        else:
-            value = _expand(board, node, ev)
-        walk: Node | None = node
-        sign = 1.0
-        while walk is not None:
-            walk.visits += 1
-            walk.value_sum += value * sign
-            sign = -sign
-            walk = walk.parent
-        for _ in range(pushed):
-            board.pop()
+        try:
+            while node.expanded and not node.terminal and node.children:
+                node = _select(node)
+                assert node.move is not None
+                board.push(node.move)
+                pushed += 1
+            if node.terminal:
+                value = node.terminal_value
+            else:
+                value = _expand(board, node, ev)
+            walk: Node | None = node
+            sign = 1.0
+            while walk is not None:
+                walk.visits += 1
+                walk.value_sum += value * sign
+                sign = -sign
+                walk = walk.parent
+        finally:
+            for _ in range(pushed):
+                board.pop()
     return root
 
 
