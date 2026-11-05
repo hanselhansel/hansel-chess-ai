@@ -4,8 +4,9 @@
 // every original name/assertion/purpose preserved — finish exact
 // fields + close join/unwind, close-after-stop held-body ordering,
 // and the real callback-error/unknown-sync-throw fault pair — plus
-// the C4b-07 first-pull admission-fence regression (four cases
-// total). Fake
+// the C4b-07 first-pull admission-fence regression (four bridge
+// cases total), and the C4b-11e real-FS fixture-teardown ordering
+// regression appended at capacity. Fake
 // child process.send/message transport and fake interval clock
 // only (heartbeat control — the actual default lifetime keepalive
 // is a real lazy hold, never a fake timer); every emitted d2s
@@ -13,21 +14,36 @@
 // the REAL createProtocolValidator oracle over a real
 // createWatchdogLifetime; the bounded createHold spy appears only
 // in the deliberately unknown-submission fault case, whose pending
-// actual is never awaited. Every controlled fact is released
+// actual is never awaited. The appended case uses fakeVite and a
+// genuine AbortSignal over REAL confined temp inputs — no real
+// server listen or network. Every controlled fact is released
 // unconditionally by the shared fixture's real TestContext
 // teardown before genuine joins. TEST file — excluded from the
 // functional-runtime union.
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import fsp from "node:fs/promises";
 import { canonicalBytes } from "./canonical-json.mjs";
 import { identity } from "./test-fixtures.mjs";
+import { startFixtureServer } from "./server.mjs";
 import {
   flush,
   deferred,
   makeEnv,
   driveStart,
 } from "./driver-bridge-test-fixtures.mjs";
+import {
+  fakeVite,
+  makeServerCaps as makeCaps,
+  makeServerDeps as makeDeps,
+  makeServerTree as makeTree,
+  ownResourceStart,
+} from "./connected-resource-test-fixtures.mjs";
+import {
+  disposeFixture,
+  registerFixtureTeardown,
+} from "./watchdog-teardown-test-fixtures.mjs";
 
 test("finish sends the exact six fields; close joins real callbacks then unwinds", async (t) => {
   const env = makeEnv(t);
@@ -215,4 +231,69 @@ test("stop during the first iterator pull admits no second pull or artifact fram
   await env.owner.whenSettled();
   assert.equal(pulls, 1);
   assert.equal(env.sends.filter((s) => s.msg.type === "artifact").length, 0);
+});
+
+test("fixture teardown releases gates, joins the real start body and closes the SDK before root removal", async (t) => {
+  // fakeVite + a genuine AbortSignal only; the tree and model are REAL
+  // confined temp files. The held model read proves the owner ordering:
+  // release -> actual start-body completion -> fake-SDK close -> root
+  // removal, all through the ONE shared teardown owner.
+  const tree = await makeTree(t);
+  const vite = fakeVite();
+  const modelReal = await fsp.realpath(tree.modelRef.path);
+  let readEntered = 0;
+  let readDone = 0;
+  let releaseRead = () => {};
+  const readGate = new Promise((resolve) => {
+    releaseRead = resolve;
+  });
+  const deps = makeDeps(vite, {
+    readFile: async (p) => {
+      if (p === modelReal) {
+        readEntered += 1;
+        await readGate;
+        readDone += 1;
+      }
+      return fsp.readFile(p);
+    },
+  });
+  // The IDENTICAL original start promise is never awaited by the test
+  // body — the owner's settle stage joins the real held body.
+  ownResourceStart(
+    t,
+    () => startFixtureServer({ ...tree, arm: "candidate", capabilities: makeCaps() }, deps),
+    { release: () => releaseRead() },
+  );
+  // The actual read entry is observed BEFORE teardown runs — the start
+  // body is genuinely held inside its real model readFile.
+  while (readEntered === 0) {
+    await new Promise((resolve) => setImmediate(resolve));
+  }
+  // A captured early-failure marker stands in for the real test error
+  // this teardown would follow — the owner stages never swallow it.
+  const earlyError = new Error("simulated early test failure");
+  let captured;
+  try {
+    throw earlyError;
+  } catch (error) {
+    captured = error;
+  }
+  // The afterSettle probe runs after the actual start body and SDK
+  // close, but BEFORE the root removal — it must see the read done and
+  // the root still present.
+  let observed = null;
+  registerFixtureTeardown(t, {
+    afterSettle: async () => {
+      observed = {
+        readDone,
+        sdkClosed: vite.calls.server.closed ?? 0,
+        rootPresent: await fsp.stat(tree.root).then(() => true, () => false),
+      };
+    },
+  });
+  await disposeFixture(t);
+  assert.strictEqual(captured, earlyError);
+  assert.deepEqual(observed, { readDone: 1, sdkClosed: 1, rootPresent: true });
+  // The owner's remove stage ran after the probe — the root is gone.
+  await assert.rejects(fsp.stat(tree.root), { code: "ENOENT" });
 });

@@ -1,0 +1,19 @@
+<!doctype html>
+<!--
+  Evaluation-only engine fixture page. Served only at /engine by
+  server.mjs; the server injects the frozen window.__tinyazArm arm/config
+  as DATA ahead of this module script and rewrites the module path to
+  /workbench-fixture.mjs for the candidate-only /workbench route. No
+  model, context or engine work happens at document or module import
+  time.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tinyaz evaluation fixture</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/fixture.mjs"></script>
+  </body>
+</html>

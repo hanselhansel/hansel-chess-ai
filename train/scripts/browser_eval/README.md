@@ -62,12 +62,17 @@ re-exports included); the three Python sources stay exactly
 | `artifact-owned-file.mjs` | 226 | `createOwnedFileOperations` |
 | `artifact-sinks.mjs` | 184 | `openStoreArtifact` |
 | `artifact-store.mjs` | 384 | `inspectArtifactRef`, `phaseArtifactRefs`, `createArtifactStore`, `artifactStoreLifetime` |
+| `browser-contexts.mjs` | gate-enforced | `createBrowserContexts` |
+| `browser.mjs` | gate-enforced | `openBrowser` |
+| `browser.test.mjs` | gate-enforced | (TEST entry — no exports) |
 | `canonical-json.mjs` | 258 | `canonicalBytes`, `parseCanonicalBytes`, `sha256Bytes` |
 | `collector-protocol.mjs` | 347 | `collectC2S`, `collectS2C` |
 | `completion-file-observation.mjs` | 337 | `observeFailedCompletionFile`, `readPreparedCompletionFile` |
 | `completion-prepared-read.mjs` | 248 | `createPreparedCompletionReader` |
 | `completion-publication.mjs` | 389 | `prepareCompletionFile`, `publishCompletionFile`, `retainFailedCompletion`, `markPublicationSealed`, `recoverPreparedCompletion`, `readPreparedCompletion` |
+| `connected-resource-test-fixtures.mjs` | gate-enforced | `BROWSER_ENV`, `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`, `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`, `makeServerTree`, `makeServerCaps`, `fakeVite`, `makeServerDeps`, `hitFixture`, `ownResourceStart` |
 | `driver-protocol.mjs` | 381 | `driverD2S`, `driverS2D`, `bridgeError`, `defer`, `createDriverBridgeActual` |
+| `fixture.mjs` | gate-enforced | (browser-side fixture module — `window.__tinyazEval` side effect, no exports) |
 | `identity-schema.mjs` | 299 | `assertBackendIdentity`, `assertCommonIdentity` |
 | `native-fixture-admission.mjs` | 375 | `createNativeFixtureAdmission` |
 | `native-fixture-io.mjs` | 388 | `createNativeFixtureIO` |
@@ -106,6 +111,8 @@ re-exports included); the three Python sources stay exactly
 | `records.mjs` | 319 | `writeWorkspaceOnce`, `phaseRecorderLifetime`, `createPhaseRecorder` |
 | `schema-constants.mjs` | 144 | `PHASES`, `RECORDED_PHASES`, `EVENT_KINDS`, `BASELINE_COMMIT`, `REQUIRED_CHECK_IDS`, `REQUIRED_PARENT_PHASES`, `PROTOCOL_IDS`, `MODEL_IDENTITY`, `FIXED_LIMITS`, `PYTHON_MODULES`, `FIXTURE_PATHS`, `PYTHON_IMPORTS`, `PYTHON_EXECUTABLE`, `PYTHON_PREFIX`, `PYTHON_VERSION` |
 | `schema-primitives.mjs` | 133 | `schemaFail`, `freezeDeep`, `isPlainObject`, `isRelPath`, `CHECK`, `arr`, `oneOf`, `shape`, `exactOnly`, `deepEqual`, `eqLiteral`, `sortedUnique`, `assertArtifactRef`, `assertProcessIdentity`, `sortedRefs` |
+| `server.mjs` | gate-enforced | `startFixtureServer` |
+| `server.test.mjs` | gate-enforced | (TEST entry — no exports) |
 | `stats.mjs` | 262 | `signProbability`, `clopperPearson95`, `summarizePairs` |
 | `supervision-test-fixtures.mjs` | 399 | `identity`, `identityKeyOf`, `bsdRow`, `frame`, `sampleReply`, `fakeClock`, `fakeFile`, `fakeFileSystem`, `fakeBinStream`, `fakePipe`, `fakeChild`, `fakeFailedSpawnChild`, `collectorFixture` |
 | `supervisor-protocol.mjs` | 210 | `IPC_LIMITS`, `TIMING_LIMITS`, `RESOURCE_LIMITS`, `createProtocolValidator` |
@@ -132,6 +139,7 @@ re-exports included); the three Python sources stay exactly
 | `watchdog-test-fixtures.mjs` | 339 | `forkDriverFixture`, `watchdogTestClock`, `cleanupMonitorFixture`, `instrumentRecorderFs`, `watchdogRecordWorkspace`, `assembleOwnedWatchdogCheckWorkspace`, `closeOwnedWatchdogWorkspace`, `removeOwnedWatchdogWorkspace`, `row`, `OBS`, `observeRecorderFixtureClosure` |
 | `watchdog.mjs` | 376 | `createWatchdog` |
 | `workspace-footprint.mjs` | 180 | `createFootprintObserver` |
+| `workbench-fixture.mjs` | 17 | (browser-side fixture module — mounts `Workbench`, no exports) |
 
 The roster above is the C4a2-era AST-derived roster, historical to the
 accepted C4b base `41d5bf36bae8bfd1759a664953b45ce9ac389c5c`. C4b-01
@@ -347,6 +355,15 @@ platform fakes isolated, no pass/Native/phase claim.
 | [process_macos_test_support.py](./process_macos_test_support.py) | fixture builders only | TEST-ONLY fake ABI/library/ctypes-buffer/backend scaffolding for `process-macos.test.py`; no assert/test discovery/real CDLL/libproc/os.kill and excluded from the runtime union and `BackendIdentity.helpers`. |
 | [process-lsof-test-fixtures.mjs](./process-lsof-test-fixtures.mjs) | fixture builders only | TEST-ONLY `createLsofGateFixture`/`finishLsofFixture`/`lsofFixtureOut` gate environment for `process-lsof.test.mjs`; fake clock/spawn/ordered spies over the REAL validator; excluded from the functional-runtime input union and `BackendIdentity.helpers`. |
 | [process_macos_path_test_cases.py](./process_macos_path_test_cases.py) | test cases only | TEST-ONLY `make_pid_path_cases(N, fake_be)` pid-path `unittest` companion bound into `process-macos.test.py`; strict UTF-8/denied path cases over synthetic callables; excluded from the runtime union and `BackendIdentity.helpers`. |
+| [server.mjs](./server.mjs) | `startFixtureServer` | C4b-11 (declared before creation): evaluation-only Vite fixture server over confined immutable snapshot/harness/dependencies roots, pinned `MODEL_IDENTITY` verification after the awaited `capabilities.register` listener ACK, baseline-only S->M normalization, evaluation-only `/engine` + candidate `/workbench` routes and `delivery` event facts. Private trusted test-dependency keys exactly `lstat`/`stat`/`readFile`/`realpath`/`sha256`/`importModule`. No Native/proof/status authority. C4b-11c (declared before creation): real `AbortSignal` brand validation; Vite `root` = canonical SELECTED `snapshotRoot`, `cacheDir` `<workspace>/cache/<arm>` under the derived `<workspace>/inputs/{harness,<arm>,model/}` layout, `watch:null` + `hmr:false`, pages rewrite to `/@fs/<fixtureDir>/<module>`; baseline normalization EXACTLY `/weights/tinyaz-s.bin`; delivery facts record actual served `byteLength`/`sha256` with the `delivery` record awaited before response (`next(error)` on rejection); admission fenced by `!signal.aborted && !closing` with synchronous close-fencing. C4b-11e: `cap.event` is required pre-IO; `fence()` wraps EACH module import and confinement await; route admission/signal/closing rechecks run after the awaited `delivery` record and `transformIndexHtml` before `res.end`; the injected config installs as a deep-frozen non-writable `window.__tinyazArm` data property; retained metadata binds `<workspace>/inputs/setup/tinyaz-m-metadata.json`; the memoized `close()` promise arms via `Promise.resolve().then` BEFORE the real `vite.close()` effect so reentrant callers share the one attempt. |
+| [browser.mjs](./browser.mjs) | `openBrowser` | C4b-11 (declared before creation): one recorded headless Chromium through public `launchServer`/`wsEndpoint`/`connect` only — browser-root plus fixture-RPC registrations (both real ACKs) strictly before connect/context/page work, strict loopback endpoint parsing, isolated per-game contexts gated to recorded loopback origins, sticky unexpected-closure fault, expected-close marking and graceful `close()` — never a Native physical proof. Private trusted test-dependency keys exactly `importModule`/`mkdir`. C4b-11d corrections: real `AbortSignal` brand validation; class-instance `BrowserType` accepted by public methods; `launchServer` binds `chromiumSandbox:true`/`ignoreDefaultArgs:false` with `securityOptionsSha256` recomputed exactly over `canonicalBytes({headless,chromiumSandbox,ignoreDefaultArgs,args})` and explicit security-disabling args rejected; per-context lifecycle delegated to `browser-contexts.mjs`; `cap.manifest.phase` makes worker/model faults sticky only in `compare`/`preflight` cohorts; `close()` runs contexts -> browser -> server all-attempted with first arbitrary thrown value retained, and the abort-driven close rejection is handled into the sticky slot. C4b-11e: the memoized `close()` promise arms via `Promise.resolve().then` BEFORE any SDK close effect — a reentrant `close()` (disconnect firing mid-close) shares the one attempt — and the startup catch routes through the SAME memoized `close()` so an abort-driven close can neither double-close nor orphan the server. |
+| [fixture.html](./fixture.html) | evaluation-only page | C4b-11 (declared before creation): the transformed engine page — `#root` plus the `/fixture.mjs` module script, served only at `/engine`; the server injects the frozen `window.__tinyazArm` arm/config as DATA and rewrites the module to `/workbench-fixture.mjs` for the candidate-only `/workbench`. |
+| [fixture.mjs](./fixture.mjs) | browser-side fixture module | C4b-11 (declared before creation): `window.__tinyazEval = {initialize,think,numeric,dispose}` — no model/context work at import; candidate uses the actual snapshot `createThinker`/`ready`/`think(RequestContext)`/`terminate`, baseline the recorded old `createThinker`/`ready`/`think(fen,visits)`; numeric runs the actual `createPositionState`/`encodeBoard`/`unpackWeights`/`forward`/`encodeMovePlane` pipeline over verified delivered bytes — no alternate engine or random fallback. C4b-11d corrections: the delivered bytes verify `crypto.subtle` SHA-256 against the injected pin before `unpackWeights`/numeric — byteLength alone is not a check; each raw parity case `{id,initialFen,movesUci,expectedRawEpTarget}` replays `createPositionState(initialFen)` plus one `pushPositionMove` per move with the actual `rawEpTarget` compared to the recorded expectation; `dispose` binds the literal `terminate()` on both arms. |
+| [workbench-fixture.mjs](./workbench-fixture.mjs) | browser-side fixture module | C4b-11 (declared before creation): mounts the actual `@/components/chess/workbench.tsx` `Workbench` with actual `@/styles.css` through `react`/`react-dom/client` `createRoot` as-is — no production route or test props. |
+| [server.test.mjs](./server.test.mjs) | test cases only | TEST-ONLY C4b-11 owner (declared before creation): fake Vite/fs adapters, real confined temporary roots; excluded from the functional-runtime input union. C4b-11c (declared before creation): helpers move whole into connected-resource-test-fixtures.mjs under identical local aliases — original seven test names/assertions preserved. C4b-11e: every `startFixtureServer` issue wraps `ownResourceStart` with controlled gates in the owner's release stage (no independent `t.after` rm); the injected config is proven deep-frozen/non-writable by executing the emitted script in `node:vm` and inspecting the real descriptor; added coverage — missing `cap.event` rejected pre-IO, retained metadata outside `inputs/setup/` rejected after confinement, and a `delivery` ACK released after `close()` answering 503 through the post-await recheck. |
+| [browser.test.mjs](./browser.test.mjs) | test cases only | TEST-ONLY C4b-11 owner (declared before creation): fake Playwright adapter, real confined workspace; excluded from the functional-runtime input union. C4b-11d: helpers imported whole from connected-resource-test-fixtures.mjs under identical local aliases — original nine test names/assertions preserved plus added causal coverage (genuine vs duck signal, exact security-digest and unsafe-arg rejection before work, class `BrowserType`, `Request.url()` function, held-abort mkdir, nil first close value, handled abort-close, quiet expected teardown vs cohort-sticky vs check-recorded worker close). C4b-11e: every `openBrowser` issue wraps `ownResourceStart`; the actual `worker` event drives the fake page handlers; inside the close case, `handle.close()` identity equality proves the memoized promise arms before the SDK effect and the nil first-value case loops BOTH `null` and `undefined`. |
+| [connected-resource-test-fixtures.mjs](./connected-resource-test-fixtures.mjs) | fixture builders only | TEST-ONLY C4b-11c shared leaf (declared before creation): EXACT11 exports `BROWSER_ENV`, `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`, `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`, `makeServerTree`, `makeServerCaps`, `fakeVite`, `makeServerDeps`, `hitFixture` — complete helper bodies moved whole from both connected-resource owners; real canonical `securityOptionsSha256` binding, class-instance `chromium`, function `Request.url`; imports Node plus pure `canonical-json`/`schema-constants`/`test-fixtures` only; never imported by production modules and excluded from the functional-runtime input union. C4b-11e: EXACT12 exports adding `ownResourceStart(t, issueThunk, {release})` — controlled gates prearm in the owner's release stage before issue, `ownFixtureAttempt` returns the IDENTICAL original start promise, and the settle stage awaits the actual start body then closes the produced fake-SDK resource (expected close rejections stay on the caller channel — neutral settlement, never a Native/FD proof). `fakeVite` returns the faithful `{calls, createServer}` shape over the SAME recorded calls object; `makeServerTree`/`makeBrowserArgs` register root removal on the ONE `watchdog-teardown-test-fixtures` owner (`registerFixtureTeardown`/`ownFixtureAttempt` imported directly — TEST-leaf-to-teardown-DAG edge, no project backedge) and the tree carries the `inputs/setup/tinyaz-m-metadata.json` retained-metadata path. |
+| [browser-contexts.mjs](./browser-contexts.mjs) | `createBrowserContexts` | C4b-11c (declared before creation; created in C4b-11d): sole export `createBrowserContexts({browser,launch,assertLive,noteFault}) -> frozen {openGame,openWorkbench,closeAll}` — pure constructor over the ONE connected public `Browser`; the whole per-context/page/origin-gate/close methods move out of `browser.mjs` over the same public functions, no clock/timer/queue/debt-ledger/proof/owner, per-context expected-close before actual close, actual resource pointers retained until true close; DAG `browser -> contexts -> existing pure protocol/values` — contexts never imports its parent. Included in the functional-runtime input union. C4b-11e: the actual public `Page.on('worker')`/`Worker.on('close')` events replace the invented `workercreated`; each admitted entry OWNS its memoized close promise — `expected` marks synchronously and `Promise.resolve().then` arms the real `context.close()` BEFORE the SDK callout — so `game.close`, `closeAll` and the partial-start finally share the ONE attempt through the same `closeEntries`, entries leaving `owned` only on actual close fulfillment. |
 
 ## Native supervision boundary (C4a2)
 
@@ -6213,9 +6230,394 @@ train/scripts/browser_eval/process-backend.test.mjs` and
 the same for `process-backend-setup.test.mjs`; no test,
 import, Native or green claim is made.
 
+## C4b-11 connected browser/server fixture resources (declared before creation)
+
+Declared before creation under scope
+`c4b-scope-11-connected-resources.json` (global 119 /
+active 22 / map 217 -> 219 — exactly TWO TEST-only Create
+rows for `server.test.mjs` and `browser.test.mjs` appended
+at the unique tail of the unified map immediately before
+`### 3.`, every prior map action/path/order preserved, the
+locked Runtime `070fbf` slice byte-exact) on
+`feat/tinyaz-browser-harness` at committed base
+`a49f83f473a72c57f5bc66b8d2ded142d35cd074`; the five
+remaining functional-runtime inputs keep their already-
+mapped Create rows and are implemented under the current
+C4b contracts here, which supersede earlier proposal
+wording wherever it differs. This slice claims no test
+result, phase admission, Native/browser/model execution
+or green status.
+
+- `server.mjs` — sole export
+  `startFixtureServer({snapshotRoot,harnessRoot,
+  dependenciesRoot,modelRef,arm,capabilities},
+  dependencies?) -> Promise<frozen {engineUrl,workbenchUrl,
+  listener,close}>`. Every serializable input is
+  validated/copied/frozen before the first await; `arm` is
+  exactly `candidate`/`baseline`; `modelRef` is the
+  explicit `{path,byteLength,sha256,metadataPath}`
+  descriptor required to equal the `MODEL_IDENTITY` pin
+  from `schema-constants.mjs` (the pin, never the caller
+  hash, is the authority — actual file bytes must hash to
+  it after the registration ACK). Roots are absolute,
+  rejected when the supplied path is a symlink or not a
+  real directory, canonicalized through `realpath`, and
+  the snapshot must contain a real `src/`; the fixture
+  HTML stays confined under
+  `harnessRoot/train/scripts/browser_eval`. Vite runs with
+  `configFile:false`/`envFile:false`/`publicDir:false`/
+  `appType:"custom"`, `server.host:"127.0.0.1"`,
+  `port:0`, `hmr:false`, `fs.strict:true` allow limited to
+  the fixture root, snapshot `src`, the recorded
+  dependencies root and a run-owned `os.tmpdir()` cache;
+  `@` aliases the snapshot `src` and
+  `react`/`react-dom`/`chess.js` resolve explicitly from
+  the recorded dependencies root. The real
+  `vite.createServer`, `@vitejs/plugin-react` and
+  `@tailwindcss/vite` factories arrive through the
+  `importModule` dependency — defaults dynamically resolve
+  the recorded installed packages via
+  `createRequire(dependenciesRoot)` + dynamic `import()`;
+  the private trusted test-dependency keys are exactly
+  `lstat`/`stat`/`readFile`/`realpath`/`sha256`/
+  `importModule`, never a public CLI or capability field.
+  The bound listener registers `{kind:"fixture",
+  rootPid:null,expectedExecutable:null,listener:{address,
+  port}}` through `capabilities.register` and the real ACK
+  is awaited BEFORE model bytes are read or any route
+  admits traffic (the `admitted` gate answers 503
+  earlier). Routes are evaluation-only: `/engine` serves
+  the transformed fixture HTML with the frozen
+  `window.__tinyazArm` arm/config injected as DATA;
+  `/workbench` is candidate-only; `/weights/*` serves only
+  the verified model/metadata bytes — any baseline
+  `/weights/*.bin`/`*.json` normalizes to the exact pinned
+  M/metadata while candidate requests outside the exact
+  `MODEL_URL`/`META_URL` fail 404; each controlled
+  delivery is emitted through
+  `capabilities.event("delivery",fact)` when available —
+  no baseline Native identity is ever fabricated. The
+  caller signal fences every await, post-listen failure
+  closes the real server, and `close()` runs the genuine
+  `vite.close()` once with error preservation.
+- `browser.mjs` — sole export
+  `openBrowser({environment,workspaceRoot,capabilities},
+  dependencies?) -> Promise<frozen {openGame,openWorkbench,
+  close}>`. `environment.chromium` is the recorded
+  EXEC_SPEC `{invocationPath,realPath,sha256,version}` and
+  `environment.launch` the recorded literals
+  (`127.0.0.1`/headless/`{1280,800}`/scale `1`/args/
+  security hash) — any deviation or private field rejects
+  before work. Only public `chromium.launchServer`/
+  `process`/`wsEndpoint`/`connect` plus context/page
+  methods are used; launch receives the recorded
+  executable/headless/args with `downloadsPath`/`TMPDIR`
+  confined under `workspaceRoot`. Registration runs in the
+  caller driver Node — first `{kind:"browser",rootPid:
+  process().pid,expectedExecutable:chromium.realPath,
+  listener:null}`, then `{kind:"fixture",rootPid:null,
+  expectedExecutable:null,listener:{address,port}}` — and
+  BOTH real ACKs complete before `chromium.connect`,
+  context/page creation or model work; the endpoint must
+  parse as strict `ws://127.0.0.1:<port>` and capability
+  path/token never enters evidence. `openGame` creates two
+  isolated contexts on the same launched Chromium (no
+  cross-game cache/tree), gates every request to the
+  recorded loopback fixture origins and closes partials on
+  error; `openWorkbench` does the same for the one
+  candidate context. Unexpected process exit/disconnect is
+  a sticky fault; failed requests/page errors are emitted
+  through `capabilities.event("fault",fact)` when
+  available, never silently passed; expected close is
+  marked BEFORE graceful teardown, `close()` runs real
+  `browser.close()`/`server.close()` once preserving the
+  first error for duplicate callers, and external abort
+  rejects ordinary waits while starting that same
+  graceful close — public close is never a Native
+  physical proof. Private trusted test-dependency keys are
+  exactly `importModule` (default the actual installed
+  `playwright` dynamic import) and `mkdir`.
+- `fixture.html`/`fixture.mjs` — the evaluation-only
+  engine fixture: `#root` plus the `/fixture.mjs` module
+  script; the module does NO model/context work at import
+  and installs exactly
+  `window.__tinyazEval = {initialize,think,numeric,
+  dispose}` driven by injected `window.__tinyazArm` data.
+  Candidate initialize dynamically imports the actual
+  `@/lib/chess/think-client.ts` `createThinker()`, awaits
+  the real `thinker.ready` and returns the actual
+  `SessionReady`; think builds the actual `RequestContext`
+  (real `engineSessionId`/`gameGeneration`/`requestId`/
+  `position`/`requestedVisits`) and returns the actual
+  `ThinkResponse`; numeric uses the actual
+  `createPositionState`/`pushPositionMove`,
+  `encodeBoard(state.board,state.rawEpTarget)`,
+  `unpackWeights` over the verified delivered bytes,
+  `forward` and `encodeMovePlane` and emits all
+  planes/logits/legal-UCI-and-indices/rawEP/value/fen/
+  history; dispose terminates the real thinker. Baseline
+  uses the same snapshot modules at their recorded paths —
+  the real old Ready/`think(fen,visits)` over a
+  chess.js-replayed FEN, with the external controlled M
+  delivery recorded separately by the server — no
+  invented digest/context/epoch, no alternate
+  search/encoder/network, no trained-to-random fallback.
+- `workbench-fixture.mjs` — imports the actual
+  `@/components/chess/workbench.tsx` `Workbench`,
+  `react`/`react-dom/client` and the actual
+  `@/styles.css`, mounting the component as-is through
+  `createRoot` — no production route, component test
+  props, alternate UI or synthetic replacement; the
+  baseline arm gets no workbench URL.
+- `server.test.mjs`/`browser.test.mjs` — TEST-only
+  whole-owner pure-fake suites (excluded from the
+  functional-runtime union): injected fake
+  Vite/Playwright namespaces through `importModule`, real
+  confined temporary roots/files, fixed-shape
+  capabilities with controlled ACK gates — proving ACK
+  ordering before exposure/connect/model reads,
+  confinement/descriptor/arm/environment rejections,
+  baseline-only M normalization vs candidate-S failure,
+  evaluation-only route rules, isolated per-game contexts
+  with origin gating, unconditional partial/abort
+  cleanup, sticky unexpected closure vs expected-close
+  marking, and duplicate/failure close error preservation.
+  Meaningful whole-owner commands for Main: `node --test
+  --test-concurrency=1 train/scripts/browser_eval/
+  server.test.mjs` and the same for `browser.test.mjs`.
+  No test, import, Native, browser, model, network or
+  green claim is made.
+
+C4b-11c correction slice under
+`c4b-scope-11c-resource-corrections.json` (global 128 /
+active 24 / map 219 -> 221 — two Create rows appended at
+the same unique map tail) at committed base
+`a49f83f473a72c57f5bc66b8d2ded142d35cd074`; it declares
+BOTH cohesive new leaves before creation and corrects
+concrete `server.mjs`/`server.test.mjs` defects while
+`browser.mjs`/`browser.test.mjs`/`fixture*` stay
+read-only until the immediately-following 11d slice:
+
+- `connected-resource-test-fixtures.mjs` — TEST-only
+  shared leaf, EXACT11 exports `BROWSER_ENV`,
+  `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`,
+  `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`,
+  `makeServerTree`, `makeServerCaps`, `fakeVite`,
+  `makeServerDeps`, `hitFixture`; the complete helper
+  bodies/comments/private dependencies (`makePage`,
+  `HTML`, the fake server/browser/process) move whole
+  from BOTH connected-resource owners under these alias
+  names, and the leaf imports Node plus the existing pure
+  `canonical-json`/`schema-constants`/`test-fixtures`
+  modules only — never `server`/`browser`/
+  `browser-contexts` or any `*.test.mjs` owner.
+  `SERVER_MODEL_BYTES` is a unit-controlled buffer of
+  exactly `MODEL_IDENTITY.byteLength` and
+  `makeServerDeps.sha256` returns the pin only for those
+  bytes — the real Node digest otherwise, so metadata
+  records its own actual digest.
+  `BROWSER_ENV.launch.securityOptionsSha256` is the REAL
+  `SHA256(canonicalBytes({headless:true,
+  chromiumSandbox:true,ignoreDefaultArgs:false,
+  args:[copiedArgs]}))` — the binding declared for 11d:
+  actual `launchServer` MUST run `chromiumSandbox:true`,
+  the browser recomputes and checks this exact constant
+  against the recorded field, no schema field is added.
+  `fakePlaywright.chromium` is a CLASS instance exposing
+  public `launchServer`/`connect` and the fake route
+  `Request.url` is a function.
+- `browser-contexts.mjs` — declared functional-runtime
+  leaf (created in 11d): sole export
+  `createBrowserContexts({browser,launch,assertLive,
+  noteFault}) -> frozen {openGame,openWorkbench,
+  closeAll}` — pure constructor over the ONE connected
+  public `Browser`; the whole per-context/page/
+  origin-gate/close methods move out of `browser.mjs`
+  over the same public functions, real effects only
+  through the explicit methods, per-context
+  expected-close before actual close, actual resource
+  pointers retained until true close; DAG
+  `browser -> contexts -> existing pure
+  protocol/values` — contexts never imports its parent.
+- `server.mjs` corrections: `capabilities.signal` uses
+  the REAL `AbortSignal.prototype.aborted` getter `.call`
+  in a guarded try plus `add/removeEventListener` (duck/
+  prototype fakes reject before IO); the Vite `root` is
+  the canonical SELECTED `snapshotRoot`, `cacheDir` is
+  `<workspace>/cache/<arm>` under the derived frozen
+  `<workspace>/inputs/{harness,<arm>,model/}` layout
+  (other or mixed root bindings reject), `fs.allow` is
+  exactly `[snapshotReal, fixtureDir, depsReal,
+  cacheDir]`, `server.watch:null` joins `hmr:false`, and
+  pages rewrite the module script to `/@fs/<fixtureDir>/
+  <module>` URLs; baseline normalization is EXACTLY
+  `/weights/tinyaz-s.bin` -> pinned M (all other
+  `*.bin`/`*.json` 404 on either arm); delivery facts
+  record the ACTUAL served `byteLength`/`sha256` and the
+  `cap.event("delivery")` record is awaited inside the
+  route before the response — a rejected record surfaces
+  as `next(error)`; admission also requires
+  `!signal.aborted && !closing`, `close()` fences
+  admission synchronously before the real `vite.close()`,
+  and `fence()` runs before AND after every fresh
+  await/IO inside `confineDirectory`/`confineFile`.
+- `server.test.mjs` keeps its original seven test names/
+  assertions with helpers imported from the shared leaf
+  under identical local aliases; added coverage: genuine
+  vs duck/prototype signal fakes with zero IO, abort
+  inside the first `lstat` blocking later `stat`/imports,
+  workspace-internal root/cacheDir assertions, strict
+  S-only baseline plus arbitrary-bin 404, actual metadata
+  digest facts, and the awaited delivery ACK holding the
+  response with a rejected record surfacing through
+  `next(error)`.
+
+C4b-11d correction slice under
+`c4b-scope-11d-compact-identical-authority.json` (same
+global 128 / active 24 / map 221 — the two 11c Create
+rows already cover both new leaves) at committed base
+`a49f83f473a72c57f5bc66b8d2ded142d35cd074`; it creates
+the declared `browser-contexts.mjs` and corrects
+concrete `browser.mjs`/`browser.test.mjs`/`fixture.mjs`
+defects while the shared TEST leaf, `server.mjs` and
+`server.test.mjs` stay read-only:
+
+- `browser-contexts.mjs` — CREATED functional-runtime
+  leaf exactly as declared in 11c: sole export
+  `createBrowserContexts({browser,launch,assertLive,
+  noteFault}) -> frozen {openGame,openWorkbench,
+  closeAll}` — pure constructor invoking nothing; the
+  whole `parseHttpUrl`/route-gate/`newIsolatedContext`/
+  page+worker tracking/`closeOnce`/`openGame`/
+  `openWorkbench` block moved out of `browser.mjs` over
+  the same borrowed closures. Every fresh
+  `newContext`/`route`/`newPage`/`goto` await is fenced
+  before AND immediately after with the returned
+  resource adopted into `owned` BEFORE the post-fence;
+  cleanup never runs the ordinary fence; per-context
+  `expected` marks BEFORE the true close and entries
+  leave `owned` only on real close fulfillment;
+  `closeAll` attempts every admitted context retaining
+  the FIRST arbitrary thrown value by an explicit
+  presence flag.
+- `browser.mjs` — genuine `AbortSignal.prototype.aborted`
+  getter `.call` brand validation; the Playwright
+  `chromium` surface is accepted as a non-null object
+  with public `launchServer`/`connect` (the real
+  BrowserType is a class instance — no isObj brand
+  check); `launchServer` binds `chromiumSandbox:true`
+  and `ignoreDefaultArgs:false`, explicit
+  security-disabling args (`--no-sandbox`,
+  `--disable-web-security`, `--disable-setuid-sandbox`)
+  reject outright, and `securityOptionsSha256` is
+  recomputed EXACTLY over
+  `canonicalBytes({headless:true,chromiumSandbox:true,
+  ignoreDefaultArgs:false,args:[copiedArgs]})` — never
+  a caller-supplied hash. `cap.manifest.phase` makes
+  unexpected worker/model faults sticky only in the
+  `compare`/`preflight` cohort phases — deliberate
+  check-phase facts record through `cap.event("fault")`
+  without poisoning the run — while crash/process/
+  disconnect facts stay fatal always; `noteFault`
+  guards synchronous sink throws and rejections. One
+  flag-guarded `teardown` shared by `close()` and the
+  startup catch runs contexts -> browser -> server
+  all-attempted with the first arbitrary value
+  retained (null/undefined included); `close()` arms
+  the memoized promise before effects, new ordinary
+  calls reject on `closing`, and the abort listener's
+  close rejection is handled into the sticky slot.
+- `fixture.mjs` — delivered model bytes verify the
+  ACTUAL `crypto.subtle` SHA-256 against the injected
+  `cfg.model.sha256` pin before `unpackWeights`/
+  numeric (byteLength alone was not a check); each raw
+  parity case `{id,initialFen,movesUci,
+  expectedRawEpTarget}` replays
+  `createPositionState(initialFen)` then ONE
+  `pushPositionMove` per `movesUci` entry and compares
+  the actual `rawEpTarget` to the recorded expectation;
+  `dispose` binds the literal `terminate()` on both
+  arms — no `dispose` duck fallback.
+- `browser.test.mjs` — keeps its original nine test
+  names/assertions with the helpers imported from the
+  shared leaf under identical local aliases; added
+  coverage: duck-signal rejection before work, wrong
+  digest/stale-digest/correctly-hashed `--no-sandbox`
+  rejection, `Request.url()` as a function, abort at
+  the first `mkdir` never reaching launch, a nil first
+  close value retained with all closes attempted, the
+  abort-driven close rejection handled, and quiet
+  expected teardown vs cohort-sticky vs check-recorded
+  worker closes.
+
+C4b-11e final existing-file corrections under
+`c4b-scope-11e-final-existing-resource-fixes.json`
+(same global 128 / active 24 / map 221 — no new file,
+no new map row) at committed base
+`a49f83f473a72c57f5bc66b8d2ded142d35cd074`; concrete
+defect fixes only, all case names/assertions/comments
+preserved:
+
+- `connected-resource-test-fixtures.mjs` — `fakeVite`
+  returns the faithful `{calls, createServer}` shape
+  over the SAME recorded calls object (the real defect
+  behind the actual first-case TypeError); `makeServerTree`
+  and `makeBrowserArgs` register root removal on the ONE
+  existing `watchdog-teardown-test-fixtures` per-test
+  owner instead of independent `t.after` rm; the tree
+  adds `inputs/setup/tinyaz-m-metadata.json`; EXACT12
+  exports add `ownResourceStart(t, issueThunk,
+  {release})` — release callbacks prearm before issue,
+  `ownFixtureAttempt` returns the IDENTICAL original
+  start promise, the settle stage awaits the actual
+  start body then closes the produced fake-SDK resource
+  (expected close rejections stay on the caller
+  channel; neutral settlement, never a Native/FD
+  proof). New DAG edge: TEST leaf -> teardown owner
+  (`registerFixtureTeardown`/`ownFixtureAttempt`), no
+  project backedge.
+- `server.mjs` — `cap.event` is REQUIRED (missing sink
+  rejects before IO); `fence()` wraps EACH `importModule`
+  and confinement await before AND after; the awaited
+  `delivery` record and `transformIndexHtml` recheck
+  admission/signal/closing before `res.end` so a late
+  ACK after close answers 503; the injected config
+  installs `window.__tinyazArm` via `Object.defineProperty`
+  with an in-page deep-freeze literal (non-writable,
+  non-configurable DATA); retained metadata binds
+  `<workspace>/inputs/setup/tinyaz-m-metadata.json`;
+  `close()` arms the memoized promise BEFORE the SDK
+  effect; the original `isSignal` braced guard is
+  restored (the 424->392 reflow accidentally dropped
+  its braces).
+- `browser.mjs`/`browser-contexts.mjs` — the actual
+  public `Page.on('worker')`/`Worker.on('close')`
+  events replace `workercreated`; `browser.close()` and
+  each context entry arm their memoized close promises
+  via `Promise.resolve().then` BEFORE any SDK callout
+  (reentrant close shares the ONE attempt; the startup
+  catch routes through the same `close()`); partial-start
+  catches call the SAME `closeEntries`.
+- `server.test.mjs`/`browser.test.mjs` — every
+  `startFixtureServer`/`openBrowser` issue wraps
+  `ownResourceStart` with controlled gates in the
+  owner's release stage; the vm-executed injected
+  script proves the frozen non-writable descriptor;
+  added coverage for missing `cap.event`, stray
+  metadata path, late-ACK 503, same-promise reentrant
+  close and a `null`/`undefined` first-value loop.
+- `driver-bridge-lifecycle.test.mjs` — appended a fifth
+  case (real confined temp tree, fakeVite only, genuine
+  AbortSignal, held model-read entry) proving the ONE
+  owner ordering release -> actual start-body
+  completion -> fake-SDK close -> root removal via an
+  `afterSettle` probe plus post-dispose ENOENT; the
+  original four bridge case names/assertions are
+  preserved.
+
 ## Test suites
 
-Thirty-eight `*.test.mjs` files plus two stdlib `*.test.py` suites —
+Forty `*.test.mjs` files plus two stdlib `*.test.py` suites —
 all created (the actual-native group included), all test-only. `watchdog-test-fixtures.mjs` and
 `watchdog-records.test.mjs` are created test-only owners, as are
 `watchdog-run-test-fixtures.mjs`, `watchdog-cleanup-test-fixtures.mjs`
@@ -6348,7 +6750,9 @@ verified with the whole harness):
 | native-supervision.test.mjs | Serial actual-native suite: real collector spawn/sampling/gated lsof listener query/TERM-reparent/cleanup/collector order/failure facts/leak proof. Bounded whole-group 60 s, each fixture 10 s, 4 MiB combined output, all cleanup in `finally`. |
 | driver-bridge.test.mjs | C4b-01 TEST-only suite (created; dated actual04 whole-owner receipt 10/10 exit0): pure fake transport/fake clock only — no real child/kernel/browser/model/filesystem — driving `createDriverCapabilities` against the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` through the shared `driver-bridge-test-fixtures.mjs` leaf. Keeps the FIRST TEN of the original thirteen cases under the C4b-04 whole split (the finish/close lifecycle trio moved whole to `driver-bridge-lifecycle.test.mjs`): hello/start ordering and subscriber-before-reentrant-reply, send-false submitted once, real callbacks versus public ACK order, exact registered/begun/recorded binding, pending 500 ms heartbeat with a pending operation and no work before begun, independent stop while callback/work held with released controlled facts before genuine join, contiguous event/artifact recordSeq across multichunk artifacts and final/nonfinal refs, malformed/duplicate/wrong ACKs, reused operation IDs, and nil throws held truthfully — no fabricated proof. |
 | driver-bridge-test-fixtures.mjs | C4b-04 TEST-only shared fixture leaf (declared before creation — now created; C4b-05 drops only the conflicting generic timers wording in its header, no body change): EXACT9 exports `RUN`, `SHA`, `MANIFEST`, `MANIFEST_PATH`, `LISTENER`, `flush`, `deferred`, `makeEnv`, `driveStart` — the WHOLE original fixture block over the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` (the default lifetime keepalive is a real lazy hold; the fake clock controls heartbeat only). `makeEnv(t,opts)` arms real TestContext teardown before any bridge effect; the per-env send-callback tracker and controlled `deferred(env)` gates retire every held fact — including a deliberately unknown sync-throw submission — before a genuine fresh `owner.whenSettled` join and only then drop the transport/unsubscribe lane. Excluded from the functional-runtime union. |
-| driver-bridge-lifecycle.test.mjs | C4b-04 TEST-only lifecycle owner (declared before creation — now created; dated actual04 whole-owner receipt 3/3 exit0; C4b-05 strengthened the held-body causality with a controlled entry proof and body-independent close ordering — the strengthened whole owner then gated 3/3 pass, exit0/0.1130 s, warnings [], stderr 0, hashes exact after): the WHOLE final THREE original cases — `finish` exact six fields plus close join/unwind, close-after-stop held-body/closed-callback ordering (two real chunks before the held gate so the first nonfinal send genuinely exists), and the real callback-error/unknown-sync-throw fault pair (the actual queued step awaited before the send lookup) — every original assertion/name/purpose preserved over the same shared fixture bindings, PLUS the appended C4b-07 first-pull admission-fence regression `stop during the first iterator pull admits no second pull or artifact frame` (four cases; a controlled iterator proves pulls===1 and zero artifact frames after a stop during a pending pull — a concrete red without the fence; the four-case owner then gated 4/4 pass, exit0/0.0801 s, warnings [], stderr 0, hashes exact after). Excluded from the functional-runtime union. |
+| driver-bridge-lifecycle.test.mjs | C4b-04 TEST-only lifecycle owner (declared before creation — now created; dated actual04 whole-owner receipt 3/3 exit0; C4b-05 strengthened the held-body causality with a controlled entry proof and body-independent close ordering — the strengthened whole owner then gated 3/3 pass, exit0/0.1130 s, warnings [], stderr 0, hashes exact after): the WHOLE final THREE original cases — `finish` exact six fields plus close join/unwind, close-after-stop held-body/closed-callback ordering (two real chunks before the held gate so the first nonfinal send genuinely exists), and the real callback-error/unknown-sync-throw fault pair (the actual queued step awaited before the send lookup) — every original assertion/name/purpose preserved over the same shared fixture bindings, PLUS the appended C4b-07 first-pull admission-fence regression `stop during the first iterator pull admits no second pull or artifact frame` (four cases; a controlled iterator proves pulls===1 and zero artifact frames after a stop during a pending pull — a concrete red without the fence; the four-case owner then gated 4/4 pass, exit0/0.0801 s, warnings [], stderr 0, hashes exact after), PLUS the appended C4b-11e fifth case `fixture teardown releases gates, joins the real start body and closes the SDK before root removal` (real confined temp tree, fakeVite only, genuine AbortSignal, held model-read entry — the shared owner ordering release -> actual start-body completion -> fake-SDK close -> root removal is proven by an `afterSettle` probe and post-dispose ENOENT). Excluded from the functional-runtime union. |
+| server.test.mjs | C4b-11 TEST-only owner (declared before creation): fake Vite/plugin/fs adapters over real confined temporary roots — listener-registration ACK gating before exposure or model reads, root/symlink/descriptor/arm/capability rejections before IO, pinned `MODEL_IDENTITY` verification with the pin as authority, baseline-S normalization versus candidate-S failure, candidate-only workbench route, injected frozen `window.__tinyazArm` config, unconditional post-listen failure/abort close, `delivery` event facts and once-only close error preservation. C4b-11c (declared before creation): helpers moved whole into connected-resource-test-fixtures.mjs under identical local aliases; genuine vs duck/prototype `AbortSignal` fakes with zero IO, abort inside the first `lstat` blocking later `stat`/imports, workspace-derived root/`cacheDir`/`fs.allow`/`watch:null` assertions, strict S-only baseline normalization plus arbitrary `*.bin`/`*.json` 404s, actual metadata digest delivery facts, and the awaited `delivery` record holding the response with a rejected record surfacing through `next(error)`. C4b-11e: `ownResourceStart` wraps every start with controlled gates in the owner's release stage; a `node:vm` execution of the emitted script proves the injected `window.__tinyazArm` descriptor is non-writable/deep-frozen; missing `cap.event`, a stray `inputs/setup/` metadata path and a post-close delivery ACK answering 503 are covered. Excluded from the functional-runtime union. |
+| browser.test.mjs | C4b-11 TEST-only owner (declared before creation): fake Playwright namespace through `importModule` — browser-root plus fixture-RPC registration ACKs strictly before connect/context/page work, environment/launch literal validation, workspace-confined temp/download paths, strict loopback endpoint parsing with token redaction, isolated per-game contexts with recorded-origin request gating, partial-resource cleanup on error, sticky unexpected-closure fault versus expected-close marking, abort-driven graceful close and duplicate/failure close error preservation. C4b-11d: helpers imported from connected-resource-test-fixtures.mjs under identical aliases; class-instance `BrowserType` positive, duck-signal negative, exact `securityOptionsSha256` recompute plus correctly-hashed unsafe-arg rejection before work, `Request.url()` function fixture, held-abort at the first `mkdir` blocking launch/registration, arbitrary nil first close value with all closes still attempted, handled abort-driven close rejection, and quiet expected vs cohort-sticky vs check-recorded worker close. C4b-11e: `ownResourceStart` wraps every `openBrowser` issue; the actual `worker` event name drives the fake handlers; the same-promise reentrant close and the `null`/`undefined` first-value loop extend the existing close cases. Excluded from the functional-runtime union. |
 
 ### CURRENT71 native-fixture declaration (TEST-ONLY — declared before creation; now created and verified)
 
