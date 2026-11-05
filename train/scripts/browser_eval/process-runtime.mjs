@@ -187,6 +187,8 @@ export function createProcessRuntime({ config, state, authority }) {
     typeof authority.nowMonoMs !== "function" ||
     (authority.releaseHorizonAfter !== null &&
       typeof authority.releaseHorizonAfter !== "function") ||
+    (authority.verifyExpectedBackend != null &&
+      typeof authority.verifyExpectedBackend !== "function") ||
     !isObj(config.clock) ||
     typeof config.clock.setInterval !== "function" ||
     typeof config.clock.clearInterval !== "function" ||
@@ -235,8 +237,9 @@ export function createProcessRuntime({ config, state, authority }) {
   // The whole start path under ONE readiness handle and ONE
   // ownOperation lifetime: a live-check and the stopping fence gate
   // the actual spawn (a spent bound or closed admission performs no
-  // IO), the bootstrap-ready wait, the native bootstrap proof, lsof
-  // composition, the sample interval and the first covering cycle all
+  // IO), the bootstrap-ready wait, the native bootstrap proof, the
+  // optional trusted static-backend comparison, lsof composition,
+  // the sample interval and the first covering cycle all
   // consume the same borrowed handle, and the public finally releases
   // only the owner acquisition — the handle is disposed when actual
   // settlement completes, not when the public promise settles. After
@@ -332,6 +335,14 @@ export function createProcessRuntime({ config, state, authority }) {
       );
       h.assertLive("start deadline");
       if (state.stopping) throw acct("monitor stopping");
+      // C4b-09: when configured, the static backend-identity
+      // expectation is compared against a FRESH capture on the SAME
+      // start handle and operation retainer before any ready commit.
+      if (authority.verifyExpectedBackend != null) {
+        await authority.verifyExpectedBackend(ready, h, lifetime.retainActual);
+        h.assertLive("start deadline");
+        if (state.stopping) throw acct("monitor stopping");
+      }
       state.ownUid = boot.ownUid;
       state.readyEvidence = ready;
       state.lsof = createLsofQueries({

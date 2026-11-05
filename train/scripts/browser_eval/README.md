@@ -76,8 +76,8 @@ re-exports included); the three Python sources stay exactly
 | `native-normal-test-cases.mjs` | 399 | `runNativeNormalCases` |
 | `native-test-fixtures.mjs` | 388 | `createNativeTestHarness` |
 | `prerequisites.mjs` | 244 | `verifyReceipt`, `admitPhase`, `verifyInternalSelfTest`, `inspectIncompletePhase` |
-| `process-backend-reader.mjs` | 256 | `createBackendReader`, `resolvePythonProcessImage` |
-| `process-backend.mjs` | 287 | `captureBackendIdentity` |
+| `process-backend-reader.mjs` | 339 | `createBackendReader`, `resolvePythonProcessImage`, `parsePythonVenvConfiguration`, `createBackendIdentityExpectation` |
+| `process-backend.mjs` | 398 | `captureBackendIdentity`, `captureSetupBackendIdentity`, `createMonitorBackendCapture` |
 | `process-budget.mjs` | 398 | `captureDeadlineMs`, `createBudgetHandle`, `waitHandle`, `sleepHandle`, `pollHandle`, `createBoundedQueue` |
 | `process-framing.mjs` | 89 | `createCollectorFramer` |
 | `process-horizon.mjs` | 144 | `assertNativeHorizon`, `createNativeHorizon`, `bindProcessHorizon` |
@@ -89,10 +89,10 @@ re-exports included); the three Python sources stay exactly
 | `process-observation.mjs` | 311 | `readProcessInspections`, `readHelperReadyInspection`, `readLiveWorkloadPids`, `createProcessObservation` |
 | `process-ownership.mjs` | 310 | `createOwnership` |
 | `process-proof.mjs` | 398 | `createProcessProofs` |
-| `process-runtime.mjs` | 387 | `realProcessClock`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `createProcessRuntime` |
+| `process-runtime.mjs` | 398 | `realProcessClock`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `createProcessRuntime` |
 | `process-stop.mjs` | 214 | `createProcessStop` |
 | `process-transport.mjs` | 397 | `createCollectorTransport` |
-| `processes.mjs` | 398 | `processMonitorLifetime`, `createProcessMonitor` |
+| `processes.mjs` | 399 | `processMonitorLifetime`, `createProcessMonitor` |
 | `protocol-values.mjs` | 207 | `fail`, `isObj`, `strNE`, `nat`, `pos`, `isPid`, `isPort`, `isU64`, `isH`, `isIdentity`, `isRel`, `isAbs`, `isRef`, `isListener`, `eq`, `copyDeep`, `exactFields`, `identityKey`, `unique`, `base`, `eventKinds`, `phases`, `rootKinds`, `workloadKinds`, `faultReasons`, `ABI`, `isBsdRow`, `isSample`, `isInspection`, `isProbeResult`, `isQuery`, `poison`, `need`, `envelope` |
 | `receipt-files.mjs` | 213 | `confinedRead`, `loadRecord`, `verifyInputRefs` |
 | `receipt-verification.mjs` | 383 | `selftestOutcome`, `addClosure`, `verifyReceiptGraph`, `verifyPreparedReceiptGraph`, `consumePreparedVerification` |
@@ -249,7 +249,37 @@ preflight and the ONE approved comparison stay unimplemented
 and unrun, the earlier 352-case C4a2 Native fullglob stays
 pre-C4b dated evidence, the dated actual04/actual05 receipts
 stay dated history, and no fresh fullglob/Native/phase/
-browser/Elo/cohort claim is made.
+browser/Elo/cohort claim is made. C4b-09 (scope
+`c4b-scope-09-static-backend-identity.json`, global 119 /
+active 14 / map 216 -> 217, declared before creation/use on
+the committed bridge foundation at
+`63c8923c9d218a983276c6c0d01d16534160257e`) implements the
+approved static backend identity / manifest-first startup
+coupling repair: `process-backend-reader.mjs` gains the two
+pure data helpers `parsePythonVenvConfiguration` (strict
+pyvenv.cfg fields, closed-failure) and
+`createBackendIdentityExpectation` (undefined-only null,
+frozen full-eight-field snapshot plus pure
+`assertMatches`); `process-backend.mjs` exports EXACT3 —
+the original verified-ready `captureBackendIdentity`
+unchanged plus `captureSetupBackendIdentity` (bounded
+static setup capture through the SAME owned reader, NO
+ready arg, never a forged envelope) and the pure
+`createMonitorBackendCapture` factory (`capture` +
+nullable `verifyStartup` over the genuine entry, never an
+injected callback); `processes.mjs` takes the optional
+data-only `expectedBackendIdentity` validated before the
+bound getter/any IO and binds only the private trusted
+`authority.verifyExpectedBackend`; `process-runtime.mjs`
+awaits that same-factory comparison AFTER real awaitReady
+and genuine Native proveBootstrap, BEFORE every
+ownUid/ready/lsof/timer/first-cycle/start commit, on the
+SAME start handle and `ownOperation` retainer. New TEST-only
+`process-backend-setup.test.mjs` (excluded from the
+functional-runtime union) covers the parse/bind
+closed-failure matrix, pre-IO rejections, snapshot
+immunity and match/mismatch under a borrowed handle — all
+platform fakes isolated, no pass/Native/phase claim.
 
 | Module | Exports | Boundary |
 | ------ | ------- | -------- |
@@ -287,8 +317,8 @@ browser/Elo/cohort claim is made.
 | [process-lsof-fields.mjs](./process-lsof-fields.mjs) | `parseLsofResult` | Pure fixed `-F0pn` field grammar: strict UTF8, real NUL+newline separators, canonical PID/port checks, exact exit/stderr rules. No subprocess/clock/IO. |
 | [process-transport.mjs](./process-transport.mjs) | `createCollectorTransport` | Collector child/frame/request lifecycle: pending replies, backpressure, reap; LF byte assembly delegated to process-framing.mjs. |
 | [process-framing.mjs](./process-framing.mjs) | `createCollectorFramer` | Pure bounded LF byte-assembly: pre-concat 1 MiB inclusive-LF bound, coalesced chunks, truncated-EOF rule. No IO/validators/timers. |
-| [process-backend.mjs](./process-backend.mjs) | `captureBackendIdentity` | Closed `BackendIdentity` capture from verified ready facts plus real file/OS evidence under one owned bounded reader; pure same-process assembly. |
-| [process-backend-reader.mjs](./process-backend-reader.mjs) | `createBackendReader` | The one owned bounded stat/stream/hash reader extracted from process-backend.mjs: pre/post stat, counted bytes, real-close listener release; same borrowed handle, injected IO adapters. |
+| [process-backend.mjs](./process-backend.mjs) | `captureBackendIdentity`, `captureSetupBackendIdentity`, `createMonitorBackendCapture` | Closed `BackendIdentity` capture from verified ready facts plus real file/OS evidence under one owned bounded reader; pure same-process assembly. C4b-09 (declared before use): adds the bounded STATIC `captureSetupBackendIdentity` (actual selected-venv `pyvenv.cfg` through the SAME reader, config/home/command bound to the same canonical resolved invocation, no ready arg, never a forged envelope — static expectation, not proof) and the pure `createMonitorBackendCapture` (`capture` + nullable `verifyStartup` over the genuine entry); ONE shared internal assembly backs both entries. C4b-10: the setup entry binds the ACTUAL darwin/arm64 host before any config/FS IO (trusted `osPlatform`/`osArch` adapters for isolated tests only); ONE same-handle `liveResolve` fences every fresh resolve with `assertLive` before AND after the actual resolve (passed into `resolvePythonProcessImage`); the factory rejects reserved own `ready`/`budget`/`retainActual`/`setup`/`pyMeta` keys via `Object.hasOwn` before IO and binds genuine passed fields LAST. |
+| [process-backend-reader.mjs](./process-backend-reader.mjs) | `createBackendReader`, `resolvePythonProcessImage`, `parsePythonVenvConfiguration`, `createBackendIdentityExpectation` | The one owned bounded stat/stream/hash reader extracted from process-backend.mjs: pre/post stat, counted bytes, real-close listener release; same borrowed handle, injected IO adapters. C4b-09: gains the two pure data helpers — the strict pyvenv.cfg parser (closed-failure cfg5, strict UTF-8) and the frozen BackendIdentity expectation (undefined-only null, copied/deep-frozen snapshot plus pure `assertMatches`). |
 | [watchdog-driver.mjs](./watchdog-driver.mjs) | `createDriverChannel` | Frozen-cwd detached Node fork IPC channel: bounded message queue, sends, close/error settlement. R4 (declared before use): required trusted `retainActual` registrar — raw fork issuance and the physical child lifecycle receipts are pre-registered before fork; public keys stay exactly `{send, close, reap, pid, exited, exitCode, connected, failed, closedByUs}`. Corrective 66 (declared before use — PLANNED, not yet implemented or verified green): the WHOLE 47-line physical observer block/comments moves to [watchdog-driver-actual.mjs](#watchdog-driver-actualmjs-created--corrective-65)'s new private `observeDriverPhysicalChild`, called ONCE immediately after `physicalChild.adopt(child)`/before connected/pid/user reads over the returned actual pipe refs, the borrowed `onPipeClose` updating the SAME public `outClosed`/`errClosed`/`noteSettle` — EXACT3 exports/EXACT13 ctor/EXACT9 roster unchanged, the observer never re-exported; a caught `child.send` throw now settles `settle(error, true)` on the existing error channel. Corrective 65 (declared before creation/use — leaf created; delegation current, not verified green): the WHOLE scope brand/tree, constructor admission, shared neutral-receipt prearming, strong pending-resource index and the WHOLE original `fail` error factory delegate to [watchdog-driver-actual.mjs](#watchdog-driver-actualmjs-created--corrective-65) — the roster stays EXACT3 `createDriverChannel` plus IDENTICAL re-exports of the leaf's `createDriverActualScope`/`finishDriverActualScope` (ctor EXACT13/public EXACT9 unchanged, `driverError` imported as `fail`, `beginDriverActualAttempt`/`driverError` never re-exported); the corrective-64 wording stays valid as the same contract now owned by the leaf. Corrective 64 (declared before use — not yet implemented): module roster becomes EXACT3 adding private `createDriverActualScope`/`finishDriverActualScope`; the channel gains REQUIRED trusted `retainActual`+`actualScope` (EXACT13 ctor fields, EXACT9 returns unchanged), scope brand/registrar/runId/open+unused admission validated before fork, and physical debt retires only on genuine exit plus BOTH actual close events — the WC07 `closed===true` shortcut wording is DATED, superseded by R4 actual events plus the required scope (preserved history). |
 | [watchdog-driver-actual.mjs](./watchdog-driver-actual.mjs) | `createDriverActualScope`, `finishDriverActualScope`, `beginDriverActualAttempt`, `driverError`, `observeDriverPhysicalChild` (EXACT5 private exports) | Corrective 66 (declared before use — PLANNED, not yet implemented or verified green): roster becomes EXACT5 adding private `observeDriverPhysicalChild({child, physicalChild, onPipeClose}) -> frozen {stdout, stderr}` — EXACT3 trusted refs -> frozen two actual pipe refs — owning the WHOLE 47-line Driver physical-facts/listener block/comments with only the borrowed `onPipeClose` substitution; the prior four exports unchanged. created — corrective 65 (declared before file creation/use; consumer delegation current — not verified green). WHOLE private Driver actual owner extracted from watchdog-driver.mjs under literal `65-expanded-driver-whole-owner-input.json`: pure `createDriverActualScope({retainActual, runId, parentScope = null})` mints the frozen WeakMap-branded scope (parent `runId` may differ; same registrar/ancestors-open only; child ctor still matches own `runId`); `finishDriverActualScope(scope) -> Promise<void>` synchronously fences the ENTIRE enrolled subtree then passively joins the SAME real receipts (nested joins only its own subtree); effectful `beginDriverActualAttempt({retainActual, runId, actualScope}) -> frozen {isOpen, rawFork, physicalChild, armSend}` (EXACT3 args -> EXACT4 private caps; TWO neutral reserved receipt promises (rawfork issuance, physical child) indexed in the SAME scope and module-owned strong pending Set BEFORE the FIRST reentrant retainer call — `physicalChild` is `{promise, settle, adopt}` and the DRIVER owns the actual exit plus BOTH pipe-close listeners, calling the private physical settle only on true facts; begin never forks); `driverError(code, detail)` is the WHOLE original fail factory imported by Driver as `fail`. DAG Driver -> leaf one-way; JS intrinsics only, no Node/Driver/Config/Shutdown/back import. Functional runtime input; never TEST or a BackendPython helper. |
 | [watchdog-operations.mjs](./watchdog-operations.mjs) | `createWatchdogOperations` | Private validated driver dispatch/selftest owner over the shared run context. R4 (declared before use): private roster becomes frozen `{dispatch, selftestEvidence, closeOrdinaryAdmission, whenOrdinarySettled}` — synchronous idempotent fence on first stop and normal finish; `whenOrdinarySettled` synchronously throws `IPC_INVALID` before the fence and returns the SAME actual admitted chain after. Corrective 61 (declared before use): the WHOLE ordinary queue (`MAX_QUEUE=256`, chain/queued counter, full enqueue) delegates to the new watchdog-ordinary.mjs owner; `ordinaryAdmissionOpen` is its private passive `!closed` query checked by dispatch before any synchronous arm, and the returned roster stays EXACT4 with `closeOrdinaryAdmission`/`whenOrdinarySettled` as identical owner references. Corrective 64 (declared before use — not yet implemented): the operation `ctx` carries the SAME opaque `ctx.driverActualScope` reference and the trusted `runInternalSelfTest` callback context gains EXACT field `parentDriverScope: ctx.driverActualScope` — never copied, serialized or exposed as proof. |
@@ -297,8 +327,8 @@ browser/Elo/cohort claim is made.
 | [watchdog-runtime.mjs](./watchdog-runtime.mjs) | `captureWatchdogRuntimeConfig`, `runWatchdogLifecycle` | Private run-context capture and whole lifecycle extraction for the watchdog facade. Corrective 66 (declared before use — PLANNED, not yet implemented or verified green): the Awaiter owner changes to [watchdog-config.mjs](#watchdog-configmjs) — this module imports `createWatchdogAwaiter` from Config instead of Shutdown, still calling the SAME ONE factory once per run over identical refs and delegating identical `bounded`/`checkLive` function refs; the corrective-63 "into existing watchdog-shutdown.mjs" wording below is DATED superseded (preserved history). Corrective 63 (declared before use): the WHOLE `bounded`/`checkLive` wait block plus all comments moves verbatim into existing watchdog-shutdown.mjs as `createWatchdogAwaiter({timing, control, makeError}) -> frozen {bounded, checkLive}`; runtime creates ONE instance per run over the same timing/control/fail and delegates identical refs. The raw initial `footprint.scan` stays retained in `state.resourceTask` until actual settlement, with pure payload capture then synchronous stop/narrow/fence before resource/fault callbacks. Corrective 64 (declared before use — not yet implemented): `runWatchdogLifecycle` passes `actualScope: capabilities.driverActualScope` to the real `createDriverChannel` alongside the SAME `io.retainActual`, and the operational nested-selftest assembly forwards the trusted callback's `parentDriverScope` unchanged into the child's `internalContext.parentDriverScope`. |
 | [watchdog-config.mjs](./watchdog-config.mjs) | `captureWatchdogRuntimeConfig`, `createWatchdogOperationContext`, `createWatchdogAwaiter` | Pure config/context extraction: whole option validation/derivation plus the whole ctx literal assembly; re-exported through watchdog-runtime.mjs and watchdog-operations.mjs. Corrective 66 (declared before use — PLANNED, not yet implemented or verified green): roster becomes EXACT3 adding `createWatchdogAwaiter({timing, control, makeError}) -> frozen {bounded, checkLive}` — the WHOLE unchanged 44-line factory and ALL comments moved from watchdog-shutdown.mjs (the exact corrective-63 pure contract; owner-only move, no re-export/extra clock/queue/state/back-import needed). Corrective 62 (declared before use): trusted `lifetime`/`nativeHorizon`/`onBookkeepingSettlement` options validated to the SAME owner by brand/equality — genuine Native association required when supplied, never a new default owner; grouped `capabilities.{lifetime,nativeHorizon,onBookkeepingSettlement,io}` and operation `ctx.{retainActual,io}` forward the SAME values before use. Corrective 63 (declared before use): `captureWatchdogRuntimeConfig(options, defaultClock?)` gains an optional PRIVATE second trusted clock; the facade passes the ORIGINAL `options` object (never spread, preserving nonenumerable own `lifetime`/`nativeHorizon`) plus its SAME `realClock`, the default applies only when the own `clock` is absent, and explicit `undefined`/`null` stays invalid. Corrective 64 (declared before use — not yet implemented): the selftest-only `internalContext` gains the REQUIRED private `parentDriverScope` (genuine, mandatory for `watchdog-selftest` only, retained by reference — no new public option or permissive nested root fallback); a top phase derives ONE root scope via pure `createDriverActualScope`, a nested selftest supplies its own parent to the SAME factory, and grouped `capabilities.driverActualScope`/`ctx.driverActualScope` forward the SAME opaque reference. |
 | [watchdog-shutdown.mjs](./watchdog-shutdown.mjs) | `createWatchdogShutdown`, `createWatchdogCleanupArgs` | Private bounded shutdown/finalization owner: `{finalize(expected), shutdown()}` over the same grouped run context; pure construction, IO only in methods. Corrective 66 (declared before use — PLANNED, not yet implemented or verified green): roster becomes EXACT2 `createWatchdogShutdown`/`createWatchdogCleanupArgs` — the WHOLE unchanged 44-line `createWatchdogAwaiter` plus ALL comments moves to [watchdog-config.mjs](#watchdog-configmjs), so the corrective-64 EXACT3 roster wording below is DATED superseded (preserved history); Runtime imports the factory from Config directly with no re-export, extra queue/clock/state or back-import. R4 (declared before use): a fresh `lifetime.whenSettled()` barrier is taken only after issuance closes and the publication safe transaction settles. Corrective 63 (declared before use): module exports become EXACT2 factories — the existing `createWatchdogShutdown` (same `{finalize, shutdown}` return) plus the new private `createWatchdogAwaiter({timing, control, makeError}) -> frozen {bounded, checkLive}`; the finalize caller later adds `{deadlineMonoMs: state.cleanupEnd}`, the ORIGINAL captured end, with no B-leg race. Corrective 64 (declared before use — not yet implemented): module roster becomes EXACT3 factories — existing `createWatchdogShutdown`/`createWatchdogAwaiter` plus new pure `createWatchdogCleanupArgs({config, capabilities, state, timing})` receiving the WHOLE facade `cleanupArgs` declaration; the outer `settleWorkloadHandles` awaits the actual `state.ops.whenOrdinarySettled()` chain outside its body, then own channel reap/close, then `finishDriverActualScope(capabilities.driverActualScope)` and required liveEvidence before collector-last. |
-| [processes.mjs](./processes.mjs) | `createProcessMonitor` | Request allocator, serialized scheduling, fault authority, API facade; delegates lifecycle to process-runtime.mjs, proof to process-proof.mjs, budget handles/queue to process-budget.mjs, observation to process-observation.mjs and closed backend identity to process-backend.mjs. R4 (declared before use): optional trusted `horizon = null`/`lifetime` members bound before effects, `processMonitorLifetime` genuine association, the whole `ownOperation` factory moves to `createProcessLifetimeOwner` in process-runtime.mjs; the 13 public keys stay exact. The whole capture/`op` glue delegates to the already-declared `createProcessOperationCapture` factory in existing process-runtime.mjs — the armed `readBounds` guard and the ordinary stopping fence remain in the facade. Capacity decision 50 (declared before use): the facade imports `realProcessClock` as `realClock` from process-runtime.mjs and passes that SAME default clock object via existing `config.clock` — the whole seven-line object moves without invocation, freezing or roster change. |
-| [process-runtime.mjs](./process-runtime.mjs) | `createProcessRuntime`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `realProcessClock` | Whole collector lifecycle (spawn, bootstrap, first observation, lsof composition, sampling tick, teardown, stop/reap) over the monitor's ONE shared state and borrowed authorities. Pure/lazy factories. R4 (declared before use): hosts `createProcessLifetimeOwner` (the moved `ownOperation` factory) and the ONE pre-spawn collector physical receipt; the whole stop flow delegates to process-stop.mjs. `createProcessOperationCapture({clock, nowMonoMs, queue, readBounds}) -> frozen {captureOperationBound, op}` is declared before its future use: the WHOLE existing 42-line capture/`op` block moves from `processes.mjs` preserving comments, guards and layout over the SAME `clock`/`queue`, pure construction invoking no callback, timer, queue or IO; `readBounds()` is the facade-owned armed/brand guard returning `{constructorDeadlineMs, laterDeadlineMs}`, strict deadline capture and BudgetHandle construction delegate to existing process-budget.mjs with `createBudgetHandle` for handle creation over the SAME queue (`queue.track` acquisitions belong to `createProcessLifetimeOwner`, never this capture factory), and the monotonic STOPPING rejection stays on facade ORDINARY `op` entry around `factory.op` — not inside `readBounds`/`captureOperationBound` — so a repeated stop may still validate and min-narrow after stopping; no public monitor-key change, no second owner/clock/queue, and the `{start, stopAndReap}` roster stays unchanged. Capacity decision 50 (declared before use): `realProcessClock` is an additional private module export receiving the WHOLE existing seven-line default `realClock` object (`{setTimeout, clearTimeout, setInterval, clearInterval, nowMonoNs: () => process.hrtime.bigint().toString()}`) moved whole from `processes.mjs` — pure uninvoked declaration, no freezing, second clock, origin or roster change; the facade imports it as `realClock` and passes the SAME object via existing `config.clock`. |
+| [processes.mjs](./processes.mjs) | `createProcessMonitor` | Request allocator, serialized scheduling, fault authority, API facade; delegates lifecycle to process-runtime.mjs, proof to process-proof.mjs, budget handles/queue to process-budget.mjs, observation to process-observation.mjs and closed backend identity to process-backend.mjs. R4 (declared before use): optional trusted `horizon = null`/`lifetime` members bound before effects, `processMonitorLifetime` genuine association, the whole `ownOperation` factory moves to `createProcessLifetimeOwner` in process-runtime.mjs; the 13 public keys stay exact. The whole capture/`op` glue delegates to the already-declared `createProcessOperationCapture` factory in existing process-runtime.mjs — the armed `readBounds` guard and the ordinary stopping fence remain in the facade. Capacity decision 50 (declared before use): the facade imports `realProcessClock` as `realClock` from process-runtime.mjs and passes that SAME default clock object via existing `config.clock` — the whole seven-line object moves without invocation, freezing or roster change. C4b-09 (declared before use): optional data-only `expectedBackendIdentity` validated/copied/frozen BEFORE the bound getter or any IO; the whole backendIdentity capture-options closure delegates to `createMonitorBackendCapture`, the 13 public keys stay exact and only private `authority.verifyExpectedBackend` is bound. |
+| [process-runtime.mjs](./process-runtime.mjs) | `createProcessRuntime`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `realProcessClock` | Whole collector lifecycle (spawn, bootstrap, first observation, lsof composition, sampling tick, teardown, stop/reap) over the monitor's ONE shared state and borrowed authorities. Pure/lazy factories. R4 (declared before use): hosts `createProcessLifetimeOwner` (the moved `ownOperation` factory) and the ONE pre-spawn collector physical receipt; the whole stop flow delegates to process-stop.mjs. `createProcessOperationCapture({clock, nowMonoMs, queue, readBounds}) -> frozen {captureOperationBound, op}` is declared before its future use: the WHOLE existing 42-line capture/`op` block moves from `processes.mjs` preserving comments, guards and layout over the SAME `clock`/`queue`, pure construction invoking no callback, timer, queue or IO; `readBounds()` is the facade-owned armed/brand guard returning `{constructorDeadlineMs, laterDeadlineMs}`, strict deadline capture and BudgetHandle construction delegate to existing process-budget.mjs with `createBudgetHandle` for handle creation over the SAME queue (`queue.track` acquisitions belong to `createProcessLifetimeOwner`, never this capture factory), and the monotonic STOPPING rejection stays on facade ORDINARY `op` entry around `factory.op` — not inside `readBounds`/`captureOperationBound` — so a repeated stop may still validate and min-narrow after stopping; no public monitor-key change, no second owner/clock/queue, and the `{start, stopAndReap}` roster stays unchanged. C4b-09 (declared before use): the private nullable trusted `authority.verifyExpectedBackend` is awaited after real awaitReady and genuine proveBootstrap, before every ownUid/ready/lsof/timer/first-cycle/start commit, on the SAME start h and `ownOperation` retainer — constructor stays pure, roster unchanged. Capacity decision 50 (declared before use): `realProcessClock` is an additional private module export receiving the WHOLE existing seven-line default `realClock` object (`{setTimeout, clearTimeout, setInterval, clearInterval, nowMonoNs: () => process.hrtime.bigint().toString()}`) moved whole from `processes.mjs` — pure uninvoked declaration, no freezing, second clock, origin or roster change; the facade imports it as `realClock` and passes the SAME object via existing `config.clock`. |
 | [process-horizon.mjs](./process-horizon.mjs) | `createNativeHorizon`, `bindProcessHorizon`, `assertNativeHorizon` | Module exists — earlier PLANNED wording and its line counts are dated declarations. Pure branded one-shot/min-only reader+writer and synchronous `queue.narrowAll` subscription — ALL live listeners run, then the FIRST thrown value (null/undefined included) is rethrown. Corrective 62 (dated before-implementation declaration): EXACT3 roster adds pure private `assertNativeHorizon(owner) -> void` over the SAME OWNERS WeakMap — genuine owner returns void; primitive/null/forged/spread/proxy reject with PROCESS_HORIZON owner-brand detail BEFORE any owner property read/effect. Identity checker only, never clock/pairing/cleanup proof. No timer/clock/process/IO. Functional runtime input. |
 | [process-stop.mjs](./process-stop.mjs) | `createProcessStop` | created (before-creation declaration dated). Whole Native stop flow `{stopAndReap, teardownCollector}` over the same runtime state/clock/authority; collector-last ordering preserved. Functional runtime input. |
 | [process-proof.mjs](./process-proof.mjs) | `createProcessProofs` | Native bootstrap/root/probe/signal/listener IO proof over the monitor's ownership/protocol/transport state through explicit callbacks. |
@@ -6007,9 +6037,185 @@ pre-C4b dated evidence, the dated actual04/actual05
 receipts stay dated history, and no fresh fullglob/Native/
 phase/browser/Elo/cohort claim is made.
 
+## C4b-09 static backend identity and startup comparison (declared before creation/use)
+
+Declared before creation/use under scope
+`c4b-scope-09-static-backend-identity.json` (global 119 /
+active 14 / map 216 -> 217 — exactly ONE TEST-only Create
+row for `process-backend-setup.test.mjs`, every prior map
+action/path/order preserved, the locked Runtime `070fbf`
+slice byte-exact) on `feat/tinyaz-browser-harness` at the
+committed, published and clean bridge foundation
+`63c8923c9d218a983276c6c0d01d16534160257e`; this slice
+claims no phase admission, Native pass or test result.
+
+Root approved the two-stage static setup capture plus the
+mandatory fresh startup comparison: BackendIdentity is
+STATIC OS/software/Python/libproc/tool/helper facts with no
+PID/readiness token, while the manifest/CommonIdentity must
+precede phase children.
+
+- `process-backend-reader.mjs` (256 -> 339): keeps the
+  original `createBackendReader` and
+  `resolvePythonProcessImage` bodies/semantics byte-exact
+  and gains TWO pure data helpers (four exports total).
+  `parsePythonVenvConfiguration(text) -> frozen
+  {home,includeSystemSitePackages,version,executable,command}`
+  accepts only strict UTF-8 text, requires each real
+  pyvenv.cfg field exactly once, rejects
+  unknown/duplicate/missing/malformed lines, requires
+  `include-system-site-packages = false`, the pinned
+  `3.11.14` version and nonempty absolute home/executable —
+  no eval/spawn/IO.
+  `createBackendIdentityExpectation(value)` returns null
+  ONLY for `undefined`; a supplied malformed/null rejects
+  synchronously before any IO. Otherwise it validates the
+  closed BackendIdentity, copies/deep-freezes the SAME
+  full-eight-field python identity and returns a frozen
+  `{assertMatches(actual)}` — pure data equality and
+  closed-shape validation only, never a status/proof
+  getter/setter or user callback.
+- `process-backend.mjs` (287 -> 398): EXACT3 exports. The
+  original `captureBackendIdentity` VERIFIED-ready entry
+  keeps every original ready/platform/ABI/Python
+  invocation/helper/budget/physical-closure guard and error
+  channel. The new `captureSetupBackendIdentity(options)`
+  is the bounded static setup entry — NO ready argument
+  accepted and never a fabricated envelope: it reads the
+  actual `<prefix>/pyvenv.cfg` through the SAME bounded
+  owned reader under the same original handle/receipts/
+  default horizon, binds `config.executable` and resolved
+  `home/python<maj.min>` to the SAME canonical resolved
+  selected invocation (home realpath is NOT the launcher
+  dirname on the Homebrew layout — resolved executable
+  paths are compared, never the dirs), binds
+  version/prefix/command to the selected venv, derives
+  `basePrefix` as the canonical launcher parent-parent,
+  then hashes the actual launcher/payload/helpers/lsof/
+  libproc/OS exactly as before — STATIC EXPECTATION data,
+  never a Native availability proof. The pure
+  `createMonitorBackendCapture({expectedBackendIdentity,
+  captureOptions}) -> frozen {capture(ready,h,retainActual),
+  verifyStartup}` uses the same private expectation helper
+  and the genuine `captureBackendIdentity`, never an
+  injected verifier/capture callback: helperPaths copied,
+  expected data snapshot-frozen, `capture` calls the
+  genuine entry with the dynamic SAME original budget h and
+  actual retainActual (no new deadline), and `verifyStartup`
+  is null only for omitted isolated-library compatibility —
+  otherwise it awaits the genuine capture then checks the
+  same-handle live guard plus pure expected equality (no
+  fake/no-op operational verification). One shared internal
+  bounded file/OS/hash assembly backs both entries over the
+  original ONE `createBackendReader` — no copied IO
+  implementation, second ledger or cache. C4b-10: the setup
+  entry binds the actual darwin/arm64 host before any IO
+  (trusted `osPlatform`/`osArch` adapters exist for isolated
+  tests only, defaults the real Node properties); every
+  fresh synchronous resolve runs under ONE same-handle
+  `liveResolve` — `assertLive` before AND after the actual
+  resolve, raw throws/null propagating unchanged, passed
+  into `resolvePythonProcessImage` too; and the factory
+  rejects reserved own `ready`/`budget`/`retainActual`/
+  `setup`/`pyMeta` keys via `Object.hasOwn` before IO,
+  binding the genuine passed fields LAST.
+- `processes.mjs` (398 -> 399): two exports and the
+  returned-13 public roster unchanged. New optional
+  DATA-only `expectedBackendIdentity` (undefined omitted;
+  malformed/null rejected BEFORE the constructor bound
+  getter or any IO — operational C4b always supplies the
+  frozen `CommonIdentity.environment.monitoring`); the WHOLE
+  backendIdentity capture-options closure delegates to
+  `createMonitorBackendCapture` over the same bound
+  config/clock; public `backendIdentity(options)` still
+  performs the fresh actual capture; only the private
+  trusted `authority.verifyExpectedBackend =
+  backendCapture.verifyStartup` is added — no new public
+  callback/proof hook and omitted-caller behavior retained.
+- `process-runtime.mjs` (387 -> 398): four exports/results
+  and lifecycle semantics unchanged, constructor still pure
+  and lazy. The private nullable trusted
+  `authority.verifyExpectedBackend` (never a user-provided
+  runtime hook) is awaited AFTER the real awaitReady AND
+  the existing genuine Native `proveBootstrap`, BEFORE the
+  ownUid/readyEvidence/lsof/timer/first-cycle/start-ready
+  commits, using the SAME start h and the SAME
+  `ownOperation` `lifetime.retainActual` — `h.assertLive`
+  plus the monotonic stopping fence are rechecked
+  immediately before/after the awaited stage and before
+  every commit; no new budget/clock/queue/owner/ledger or
+  global join, no queued public API or self-wait, and no
+  phase/workload admission until the actual start resolves.
+  Physical collector adoption, proof/ACK guards and
+  stop/error cleanup are untouched.
+- `process-backend-setup.test.mjs` (NEW, TEST-only,
+  excluded from the functional-runtime union): meaningful
+  pure-fake coverage — a strict config-derived static
+  descriptor equals the existing verified capture on the
+  SAME supplied Python facts; launcher AND payload bytes
+  retained/hashed; duplicate/unknown/missing/malformed/
+  wrong-version/system-site and home/executable/command
+  mismatches all fail closed; malformed UTF-8, config
+  prelude errors and ready-shaped input trigger no IO;
+  supplied malformed expectation and `null` reject
+  synchronously before IO; the expected snapshot stays
+  immune to original mutation; expected match/mismatch runs
+  through the real capture under the SAME borrowed
+  handle/retainer; an already-spent handle performs no
+  fresh IO; omitted expectation preserves isolated
+  compatibility while capture stays real — over existing
+  fakeClock/fakeFile/fakeFileSystem/createBudgetHandle and
+  a genuine lifetime only, no Kernel/real child/actual
+  environment mutation and all platform fakes explicitly
+  isolated (never availability evidence).
+
+The `environment.monitoring.python ===
+environment.python.runtime` full-eight-field coherence, the
+original helper-paths/hash capture, the ENOENT-only
+shared-cache rule and the real reader close receipts stay
+intact — every fresh actual resolve/stat/read runs under
+the original live handle with no reset; the launcher
+seven-field facts are not repurposed as the full identity
+and Runtime070/model6/protected17 are unchanged. No test,
+import, Native, browser, model, network or Git execution
+occurred and no green/phase/parity/strength claim is made.
+
+C4b-10 (scope
+`c4b-scope-10-backend-guard-corrections.json`; same global
+119 / map 217 unchanged / Runtime `070fbf` byte-exact)
+closes three concrete source-contract gaps in the same
+owners: the static setup entry now binds the ACTUAL host —
+real `process.platform`/`process.arch` must equal the
+pinned darwin/arm64 BEFORE any config/FS IO (static
+expected facts only, never Native readiness), with trusted
+`osPlatform`/`osArch` adapters defaulting to the real Node
+properties for isolated tests and malformed supplied
+adapters failing closed before IO — while the
+verified-ready entry's Native-ready platform/ABI guards
+stay unchanged. ONE same-handle `liveResolve` wrapper over
+the original supplied resolve function now fences every
+fresh synchronous resolve — `assertLive` BEFORE the actual
+resolve and AFTER a successful return, raw throws and
+null/undefined propagating unchanged — and is passed into
+`resolvePythonProcessImage` as well. The monitor-capture
+factory rejects reserved own authority keys
+`ready`/`budget`/`retainActual`/`setup`/`pyMeta` in
+`captureOptions` synchronously BEFORE any IO
+(`Object.hasOwn` catches even nonenumerable props) and the
+genuine passed `ready`/`budget`/`retainActual` are bound
+LAST. Coverage: the setup owner gains a
+non-darwin/malformed-adapter no-IO case and the backend
+owner gains reserved-key no-IO plus
+one-live-guarded-resolve cases — the meaningful
+affected-whole-owner commands are `node --test
+--test-concurrency=1
+train/scripts/browser_eval/process-backend.test.mjs` and
+the same for `process-backend-setup.test.mjs`; no test,
+import, Native or green claim is made.
+
 ## Test suites
 
-Thirty-seven `*.test.mjs` files plus two stdlib `*.test.py` suites —
+Thirty-eight `*.test.mjs` files plus two stdlib `*.test.py` suites —
 all created (the actual-native group included), all test-only. `watchdog-test-fixtures.mjs` and
 `watchdog-records.test.mjs` are created test-only owners, as are
 `watchdog-run-test-fixtures.mjs`, `watchdog-cleanup-test-fixtures.mjs`
@@ -6124,7 +6330,8 @@ verified with the whole harness):
 | process-backend-reader.test.mjs | Bounded owned-reader physical ownership: deferred receipts before stat/stream, pending-after-public-timeout to real late close, cap/restat/raw-IO distinctions and streamed binary digest through a buffer-reusing fake. |
 | process-budget.test.mjs | Injected-clock deadline/narrowing coverage: queued expiry never dispatches, active/queued/unqueued narrowing, spent-bound no-IO, losing-timer clearing, `whenSettled`/`settled({excludeHandle})` and actual ownership after public timeout. |
 | process-transport.test.mjs | Strict LF/UTF-8 framing, coalesced frames, pre-retention oversize bound, pending-before-write, late-ack rejection of actual work plus public wrapper, `send(false)` no-replay, `whenReaped` and real-close-vs-`end`/`destroy` settlement. |
-| process-backend.test.mjs | Closed `BackendIdentity` through injected stat/stream/build adapters: one entry horizon, budget-before-IO ordering, bounded text/binary, stable pre/post facts, ENOENT-only cache, listener release on real close and binary streaming without whole-buffer retention. |
+| process-backend.test.mjs | Closed `BackendIdentity` through injected stat/stream/build adapters: one entry horizon, budget-before-IO ordering, bounded text/binary, stable pre/post facts, ENOENT-only cache, listener release on real close and binary streaming without whole-buffer retention. C4b-10 adds the monitor-capture factory reserved-key rejections (`ready`/`budget`/`retainActual`/`setup`/`pyMeta` via `Object.hasOwn` before any IO, genuine passed fields bound LAST) and the one-live-guarded-resolve case — a controlled resolve spending the borrowed horizon at its first call sees exactly one resolve and no later fact IO. |
+| process-backend-setup.test.mjs | C4b-09 TEST-only owner (declared before creation): strict `parsePythonVenvConfiguration` closed-failure matrix plus the static `captureSetupBackendIdentity`/`createMonitorBackendCapture`/`createBackendIdentityExpectation` entries — config-derived static descriptor equals the verified capture on same supplied facts, launcher and process-image payload bytes retained, UTF-8/ready-shaped/malformed rejection before IO, expectation snapshot immunity and match/mismatch through the genuine capture under a borrowed handle and retainer, spent-handle no-IO and omitted-expectation compatibility — fakeClock/fakeFile/fakeFileSystem/createBudgetHandle and a genuine lifetime only, all platform fakes isolated, never availability evidence. Excluded from the functional-runtime union. C4b-10 adds the non-darwin/malformed-adapter rejection — the actual-host bind runs BEFORE any config/FS IO (trusted `osPlatform`/`osArch` fakes only). |
 | workspace-footprint.test.mjs | Whole-union counting exactly once, no link recursion, allocated charge, scan-start observedAtMs, nondecreasing in-flight joins, error retention and stop. |
 | watchdog-cleanup.test.mjs | Fourteen named cases locally (the withheld-driver-close settlement case moved whole to `watchdog-boundaries.test.mjs` under capacity move 36 and is declared to move whole again to `watchdog-driver-boundaries.test.mjs`, and under corrective 46 the WHOLE `staged offsets anchor to the ORIGINAL captured start under delayed IO` case is likewise declared to move whole to `watchdog-driver-boundaries.test.mjs` — all fifteen original local purposes retained across the discovered owners): staged 0/2/4/5 timing anchored to the ORIGINAL `cleanupStartMonoMs` under delayed IO and a shorter inherited horizon, descendants-first ordering, sticky unavailable probe verdicts, all-scope/ports coverage, nested-parent protection, missing/failed driver settlement before collector-last reap, private settled proof vs `claimedProof`. |
 | watchdog.test.mjs | Seven named cases (the pure N08 command case `a command operation with fresh heartbeats expires at its original deadline` moved whole to `watchdog-boundaries.test.mjs` under capacity move 36 and is declared under corrective 47 to move whole again to `watchdog-driver-boundaries.test.mjs`; the two high-resource-poll cases moved whole to `watchdog-resource.test.mjs` under corrective 38), becoming eight under corrective 39 when the WHOLE genuine selftest handshake positive-control case `the genuine selftest handshake produces a real verified completionRef` moves here from `watchdog-evidence-boundaries.test.mjs` with all assertions/comments intact — strengthened to observe the four recorder-derived passed selftest checks without caller-supplied claims: watchdog lifecycle through the fork-IPC fixture and fake clock — manifest-before-running, Native accounting before driver/model, exact hello/register/start/operation/stop order, receipt-derived output, heartbeat expiry while registration stalls, blocked fault-event teardown, partial `monitor.start` ownership, failed-stop inconclusive 2 and normal-finish null reason. |

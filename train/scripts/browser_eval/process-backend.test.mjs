@@ -8,7 +8,10 @@ import { createHash } from "node:crypto";
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { captureBackendIdentity } from "./process-backend.mjs";
+import {
+  captureBackendIdentity,
+  createMonitorBackendCapture,
+} from "./process-backend.mjs";
 import { resolvePythonProcessImage } from "./process-backend-reader.mjs";
 import {
   assertBackendIdentity,
@@ -306,4 +309,76 @@ test("monitoring python processImage-only drift fails the unchanged coherence gu
     () => assertCommonIdentity(drifted),
     (e) => e.code === "SCHEMA_COHERENCE",
   );
+});
+
+// C4b-10: reserved authority keys in the factory's capture options are
+// rejected synchronously (Object.hasOwn catches even nonenumerable own
+// props), so a supplied ready/budget/retainActual/setup/pyMeta can
+// never impersonate the genuine passed fields — bound LAST.
+test("reserved capture option keys reject before any IO while genuine fields still capture", async () => {
+  const fs = boundFs(fullFs());
+  const captureOptions = {
+    pythonExecutable: PY,
+    helperPaths: HELPERS,
+    recordRoot: ROOT,
+    statFile: fs.statFile,
+    createStream: fs.createStream,
+    resolvePath: (p) => p,
+    osRelease: () => "25.6.0",
+    osVersion: () => "Darwin 25.6.0",
+  };
+  for (const key of ["ready", "budget", "retainActual", "setup", "pyMeta"]) {
+    assert.throws(
+      () =>
+        createMonitorBackendCapture({
+          expectedBackendIdentity: undefined,
+          captureOptions: { ...captureOptions, [key]: true },
+        }),
+      (e) => e.code === "ACCOUNTING_UNAVAILABLE",
+    );
+  }
+  assert.equal(fs.calls.length, 0);
+  // The same factory still runs the genuine verified-ready capture
+  // with the caller's real ready/budget/retainer bound last.
+  const clock = fakeClock();
+  const h = createBudgetHandle({
+    deadlineMonoMs: clock.nowMs() + 90000,
+    clock,
+    nowMonoMs: clock.nowMs,
+  });
+  const backendCapture = createMonitorBackendCapture({
+    expectedBackendIdentity: undefined,
+    captureOptions,
+  });
+  const id = await backendCapture.capture(ready(), h, () => {});
+  assert.equal(id.backendId, "darwin-arm64-libproc-v1");
+});
+
+// C4b-10: every fresh synchronous resolve is fenced by assertLive on
+// the SAME captured handle, before AND after the actual resolve. A
+// controlled fake that spends the borrowed horizon at its FIRST call
+// sees exactly one resolve and no later fact IO.
+test("a resolve spending the borrowed horizon stops at one live-guarded call", async () => {
+  const clock = fakeClock();
+  const h = createBudgetHandle({
+    deadlineMonoMs: clock.nowMs() + 10,
+    clock,
+    nowMonoMs: clock.nowMs,
+  });
+  const fs = boundFs(fullFs());
+  let resolves = 0;
+  await acct(
+    capture(fs, {
+      budget: h,
+      retainActual: () => {},
+      resolvePath: (p) => {
+        resolves += 1;
+        clock.advance(20); // spends the whole horizon at the first resolve
+        return p;
+      },
+    }),
+  );
+  assert.equal(resolves, 1);
+  // The os-build fact read precedes the first resolve; nothing after.
+  assert.ok(fs.calls.every((c) => c.includes("SystemVersion")));
 });

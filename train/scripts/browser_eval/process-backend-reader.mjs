@@ -19,6 +19,9 @@ import path from "node:path";
 
 import { waitHandle } from "./process-budget.mjs";
 import { isAbs, isObj } from "./protocol-values.mjs";
+import { assertBackendIdentity } from "./record-schema.mjs";
+import { PYTHON_VERSION } from "./schema-constants.mjs";
+import { deepEqual, freezeDeep } from "./schema-primitives.mjs";
 
 const acct = (detail) => {
   const e = new Error(`ACCOUNTING_UNAVAILABLE backend ${detail}`);
@@ -253,4 +256,84 @@ export function resolvePythonProcessImage(
     throw acct("python image payload");
   }
   return expected;
+}
+
+// C4b-09: the strict pyvenv.cfg parser — a pure data helper over the
+// caller-supplied text only (the caller decodes the actual bounded
+// bytes with strict UTF-8; replacement decoding is never tolerated,
+// so a U+FFFD already fails closed). Each real pyvenv.cfg field must
+// appear exactly once: unknown, duplicate, missing or malformed
+// lines fail closed, `include-system-site-packages` must be exactly
+// `false`, the version is pinned to the selected interpreter version
+// and home/executable must be nonempty absolute paths. No eval,
+// spawn, filesystem IO or asynchronous work ever runs here.
+const VENV_KEYS = [
+  "home",
+  "include-system-site-packages",
+  "version",
+  "executable",
+  "command",
+];
+
+export function parsePythonVenvConfiguration(text) {
+  if (typeof text !== "string" || text.indexOf("�") !== -1) {
+    throw acct("venv config utf8");
+  }
+  const seen = new Map();
+  for (const raw of text.split("\n")) {
+    const line = raw.trim();
+    if (line === "") continue;
+    const eq = line.indexOf("=");
+    const key = eq <= 0 ? "" : line.slice(0, eq).trim();
+    const val = eq <= 0 ? "" : line.slice(eq + 1).trim();
+    if (!VENV_KEYS.includes(key) || val === "") {
+      throw acct("venv config syntax");
+    }
+    if (seen.has(key)) throw acct("venv config duplicate");
+    seen.set(key, val);
+  }
+  for (const k of VENV_KEYS) {
+    if (!seen.has(k)) throw acct("venv config missing");
+  }
+  if (
+    seen.get("include-system-site-packages") !== "false" ||
+    seen.get("version") !== PYTHON_VERSION ||
+    !isAbs(seen.get("home")) ||
+    !isAbs(seen.get("executable"))
+  ) {
+    throw acct("venv config binding");
+  }
+  return Object.freeze({
+    home: seen.get("home"),
+    includeSystemSitePackages: false,
+    version: seen.get("version"),
+    executable: seen.get("executable"),
+    command: seen.get("command"),
+  });
+}
+
+// C4b-09: the frozen BackendIdentity expectation — a pure data
+// helper. `undefined` is the omitted case and returns null ONLY;
+// a supplied null or any malformed value rejects synchronously
+// BEFORE any IO. A valid input is validated as the closed
+// BackendIdentity, then copied and deep-frozen so the SAME full
+// eight-field python identity (mandatory processImage included) can
+// never move under later mutation of the original. The returned
+// frozen `{assertMatches(actual)}` performs pure data equality and
+// closed-shape validation only — it exposes no status/proof or
+// settlement getter and is never a user-provided runtime callback
+// or hook.
+export function createBackendIdentityExpectation(value) {
+  if (value === undefined) return null;
+  // A supplied null or malformed value fails closed synchronously.
+  assertBackendIdentity(value);
+  const expected = freezeDeep(structuredClone(value));
+  return Object.freeze({
+    assertMatches(actual) {
+      assertBackendIdentity(actual);
+      if (!deepEqual(actual, expected)) {
+        throw acct("expected backend identity");
+      }
+    },
+  });
 }

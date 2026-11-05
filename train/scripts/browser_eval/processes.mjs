@@ -35,7 +35,7 @@ import { bindProcessHorizon } from "./process-horizon.mjs";
 import { createProcessProofs } from "./process-proof.mjs";
 import { createProcessObservation } from "./process-observation.mjs";
 import { createBoundedQueue } from "./process-budget.mjs";
-import { captureBackendIdentity } from "./process-backend.mjs";
+import { createMonitorBackendCapture } from "./process-backend.mjs";
 import { TIMING_LIMITS } from "./supervisor-protocol.mjs";
 import {
   copyDeep,
@@ -76,6 +76,7 @@ export function createProcessMonitor({
   getDeadlineMonoMs = null,
   horizon = null,
   lifetime = undefined,
+  expectedBackendIdentity = undefined,
 }) {
   if (
     !strNE(runId) ||
@@ -109,6 +110,16 @@ export function createProcessMonitor({
   const ownership = createOwnership({ runId });
   const helperDir = path.dirname(helperPath);
   const helperPaths = HELPER_NAMES.map((n) => path.join(helperDir, n));
+  const nowMonoMs = () => Number(BigInt(clock.nowMonoNs()) / 1000000n);
+  // C4b-09: the optional static expectation is validated/copied/frozen BEFORE the bound getter or any IO.
+  const backendCapture = createMonitorBackendCapture({
+    expectedBackendIdentity,
+    captureOptions: {
+      pythonExecutable, helperPaths, recordRoot, nowMonoMs,
+      delay: (fn, ms) => clock.setTimeout(fn, ms),
+      clearDelay: (t) => clock.clearTimeout(t),
+    },
+  });
   // The constructor-captured absolute bound: later getter reads may
   // narrow it, never extend.
   const constructorDeadlineMs =
@@ -134,7 +145,6 @@ export function createProcessMonitor({
   let reqNo = 0;
 
   const nextRid = (p) => `${p}-${runId}-${(reqNo += 1)}`;
-  const nowMonoMs = () => Number(BigInt(clock.nowMonoNs()) / 1000000n);
 
   // The one serialized bounded queue: public promises settle at their
   // handles' expiry and op() narrows every tracked active AND queued
@@ -269,6 +279,7 @@ export function createProcessMonitor({
     captureOperationBound: capture.captureOperationBound,
     nowMonoMs,
     retainSupervisorActual: lifetimeOwner.retainActual,
+    verifyExpectedBackend: backendCapture.verifyStartup,
     releaseHorizonAfter: binding === null ? null : binding.releaseAfter,
     hasAccountingFault: () => stickyFault !== null,
     proofs,
@@ -353,23 +364,13 @@ export function createProcessMonitor({
 
   const stopAndReap = (options) => runtime.stopAndReap(options);
 
-  // The backend capture borrows this op's handle (documented private
-  // `budget` option) and the monitor's own clock adapters, so one
-  // injected clock drives every stat/read/hash/close wait.
+  // The backend capture borrows this op's handle through the shared
+  // monitor-capture factory (documented private `budget` option), so
+  // one injected clock drives every stat/read/hash/close wait.
   const backendIdentity = (options) =>
     callUnqueued(
       (h, retainActual) =>
-        captureBackendIdentity({
-          ready: state.readyEvidence,
-          pythonExecutable,
-          helperPaths,
-          recordRoot,
-          budget: h,
-          retainActual,
-          nowMonoMs,
-          delay: (fn, ms) => clock.setTimeout(fn, ms),
-          clearDelay: (t) => clock.clearTimeout(t),
-        }),
+        backendCapture.capture(state.readyEvidence, h, retainActual),
       options,
     );
 

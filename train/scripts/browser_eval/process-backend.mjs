@@ -17,7 +17,11 @@
 // unavailable/unproven with its unresolved reader evidence retained,
 // and no next IO or success is attempted. The only OS_SHARED_CACHE
 // image is the documented case where the standalone libproc path
-// provably does not exist (ENOENT only).
+// provably does not exist (ENOENT only). C4b-09 adds the bounded
+// STATIC setup entry and the pure monitor-capture factory: the same
+// ONE internal assembly backs both entries — no copied IO
+// implementation, second ledger or cache — and the setup descriptor
+// is static expectation data, never a Native availability proof.
 import { promises as fsp, createReadStream, realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -26,6 +30,8 @@ import { assertBackendIdentity } from "./record-schema.mjs";
 import { createBudgetHandle, waitHandle } from "./process-budget.mjs";
 import {
   createBackendReader,
+  createBackendIdentityExpectation,
+  parsePythonVenvConfiguration,
   resolvePythonProcessImage,
 } from "./process-backend-reader.mjs";
 import { isAbs, isObj, strNE } from "./protocol-values.mjs";
@@ -35,9 +41,7 @@ const LSOF_PATH = "/usr/sbin/lsof";
 const SYSTEM_VERSION_PLIST =
   "/System/Library/CoreServices/SystemVersion.plist";
 const HELPER_NAMES = new Set([
-  "process-macos.py",
-  "process-macos-native.py",
-  "process-macos-abi.py",
+  "process-macos.py", "process-macos-native.py", "process-macos-abi.py",
 ]);
 const ABI = { bsdInfoSize: 136, taskInfoSize: 96 };
 // Stat-gated ceilings before any read: frozen plist/helper text vs the
@@ -66,8 +70,16 @@ const defaultReadOsBuild = async (readFile) => {
   return m[1];
 };
 
-export async function captureBackendIdentity({
-  ready,
+// The ONE shared bounded static file/OS/hash assembly backing both
+// public entries — an internal function, never a public proof knob.
+// It owns the original entry-horizon/receipts/readFact composition and
+// every identical stage; `setup` selects the actual selected-venv
+// config read that derives the expected python metadata, while
+// `pyMeta` supplies the monitor-verified ready facts on the fresh
+// entry. No second reader, queue, clock or ledger exists.
+const assembleBackendIdentity = async ({
+  setup,
+  pyMeta,
   pythonExecutable,
   helperPaths,
   recordRoot,
@@ -79,34 +91,14 @@ export async function captureBackendIdentity({
   resolvePath = realpathSync,
   osRelease = () => os.release(),
   osVersion = () => os.version(),
+  osPlatform = () => process.platform,
+  osArch = () => process.arch,
   readOsBuild = defaultReadOsBuild,
   nowMonoMs = () => Number(process.hrtime.bigint() / 1000000n),
   delay = setTimeout,
   clearDelay = clearTimeout,
-}) {
-  // Only the monitor's natively verified startup facts may seed this
-  // record: the accepted ready envelope carries the exact backend/ABI and
-  // the collector's own Python fact set.
-  if (!isObj(ready) || !isObj(ready.python) || !isObj(ready.abi)) {
-    throw acct("ready evidence");
-  }
-  if (
-    ready.platform !== "darwin" ||
-    ready.arch !== "arm64" ||
-    ready.abi.bsdInfoSize !== ABI.bsdInfoSize ||
-    ready.abi.taskInfoSize !== ABI.taskInfoSize
-  ) {
-    throw acct("backend facts");
-  }
-  const py = ready.python;
-  for (const f of ["executable", "prefix", "basePrefix", "version"]) {
-    if (!strNE(py[f])) throw acct(`ready python ${f}`);
-  }
-  if (
-    !isAbs(pythonExecutable) ||
-    !isAbs(recordRoot) ||
-    py.executable !== pythonExecutable
-  ) {
+}) => {
+  if (!isAbs(pythonExecutable) || !isAbs(recordRoot)) {
     throw acct("python invocation binding");
   }
   if (
@@ -130,28 +122,21 @@ export async function captureBackendIdentity({
   if (!own && typeof retainActual !== "function") {
     throw acct("retention");
   }
-  if (
-    deadlineMonoMs !== undefined &&
-    deadlineMonoMs !== null &&
-    (typeof deadlineMonoMs !== "number" || !Number.isFinite(deadlineMonoMs))
-  ) {
+  if (deadlineMonoMs !== undefined && deadlineMonoMs !== null &&
+    (typeof deadlineMonoMs !== "number" || !Number.isFinite(deadlineMonoMs))) {
     throw acct("deadline");
   }
   const handle = own
     ? createBudgetHandle({
-        deadlineMonoMs:
-          deadlineMonoMs === undefined || deadlineMonoMs === null
-            ? nowMonoMs() + IO_CEILING_MS
-            : deadlineMonoMs,
+        deadlineMonoMs: deadlineMonoMs === undefined || deadlineMonoMs === null
+          ? nowMonoMs() + IO_CEILING_MS
+          : deadlineMonoMs,
         clock: { setTimeout: delay, clearTimeout: clearDelay },
         nowMonoMs,
       })
     : budget;
-  if (
-    !isObj(handle) ||
-    typeof handle.assertLive !== "function" ||
-    typeof handle.onExpire !== "function"
-  ) {
+  if (!isObj(handle) || typeof handle.assertLive !== "function" ||
+    typeof handle.onExpire !== "function") {
     throw acct("budget");
   }
 
@@ -167,13 +152,68 @@ export async function captureBackendIdentity({
     if (typeof retainActual === "function") retainActual(receipt);
   };
   const readFact = createBackendReader({
-    handle,
-    retainActual: retain,
-    statFile,
-    createStream,
+    handle, retainActual: retain, statFile, createStream,
   }).readFact;
+  // ONE same-handle live wrapper over the original supplied resolve:
+  // every fresh synchronous resolve is fenced by assertLive BEFORE
+  // the actual resolve and again after a successful return — a raw
+  // throw or a null/undefined return propagates unchanged, with no
+  // new clock, deadline or IO owner.
+  const liveResolve = (p) => {
+    handle.assertLive("backend resolve");
+    const r = resolvePath(p);
+    handle.assertLive("backend resolve");
+    return r;
+  };
 
   try {
+    let meta = pyMeta;
+    let pyReal;
+    if (setup) {
+      // The static entry binds the ACTUAL host before any config/FS
+      // IO — expected static facts only, never Native readiness;
+      // the trusted adapters exist for isolated tests and a
+      // malformed supplied adapter fails closed the same way.
+      if (
+        typeof osPlatform !== "function" || typeof osArch !== "function" ||
+        osPlatform() !== "darwin" || osArch() !== "arm64"
+      ) {
+        throw acct("backend platform");
+      }
+      // The actual selected-venv pyvenv.cfg is read through the SAME
+      // bounded owned reader under this entry horizon, decoded with
+      // strict UTF-8 (never replacement) and bound to the SAME
+      // canonical resolved selected invocation — static expectation
+      // data, never a Native availability proof or a forged envelope.
+      const prefix = path.dirname(path.dirname(pythonExecutable));
+      const cfgRead = await readFact(
+        path.join(prefix, "pyvenv.cfg"), TEXT_CAP, "venv config",
+      );
+      let text;
+      try {
+        text = new TextDecoder("utf-8", { fatal: true }).decode(cfgRead.buf);
+      } catch {
+        throw acct("venv config utf8");
+      }
+      const cfg = parsePythonVenvConfiguration(text);
+      pyReal = liveResolve(pythonExecutable);
+      // The recorded executable and the resolved home/python<maj.min>
+      // must resolve to the selected launcher's canonical path; home
+      // realpath is NOT the launcher dirname on the Homebrew layout,
+      // so resolved executable paths are compared, never the dirs.
+      const verMM = cfg.version.slice(0, cfg.version.lastIndexOf("."));
+      const homePy = path.join(cfg.home, `python${verMM}`);
+      if (liveResolve(cfg.executable) !== pyReal || liveResolve(homePy) !== pyReal) {
+        throw acct("venv config invocation");
+      }
+      if (cfg.command !== `${homePy} -m venv ${prefix}`) {
+        throw acct("venv config command");
+      }
+      meta = {
+        version: cfg.version, executable: pythonExecutable, prefix,
+        basePrefix: path.dirname(path.dirname(pyReal)),
+      };
+    }
     const osBuild = await waitHandle(
       handle,
       Promise.resolve(
@@ -185,28 +225,22 @@ export async function captureBackendIdentity({
       ),
       "os build",
     );
-    const pyReal = resolvePath(pythonExecutable);
-    const pyImage = resolvePythonProcessImage(pythonExecutable, {
-      resolvePath,
-    });
-    const lsofReal = resolvePath(LSOF_PATH);
+    if (!setup) pyReal = liveResolve(pythonExecutable);
+    const pyImage = resolvePythonProcessImage(pythonExecutable, { resolvePath: liveResolve });
+    const lsofReal = liveResolve(LSOF_PATH);
 
     // Exactly the three frozen Python sources, sorted by their
     // recorded-root-relative refs with real size/digest. A helper outside
     // the recorded root fails confinement.
     const helpers = [];
     for (const h of helperPaths) {
-      const abs = resolvePath(h);
+      const abs = liveResolve(h);
       const rel = path.relative(recordRoot, abs).split(path.sep).join("/");
       if (rel === "" || rel.startsWith("..") || path.isAbsolute(rel)) {
         throw acct(`helper outside recordRoot ${rel}`);
       }
       const r = await readFact(abs, TEXT_CAP, "helper");
-      helpers.push({
-        path: rel,
-        byteLength: r.buf.length,
-        sha256: r.sha256,
-      });
+      helpers.push({ path: rel, byteLength: r.buf.length, sha256: r.sha256 });
     }
     helpers.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
@@ -217,11 +251,8 @@ export async function captureBackendIdentity({
     // fallback.
     let image;
     try {
-      image = {
-        kind: "file",
-        sha256: (await readFact(LIBPROC_PATH, BIN_CAP, "libproc", true))
-          .sha256,
-      };
+      image = { kind: "file",
+        sha256: (await readFact(LIBPROC_PATH, BIN_CAP, "libproc", true)).sha256 };
     } catch (e) {
       if (e && e.code === "ENOENT") {
         image = { kind: "OS_SHARED_CACHE", osBuild };
@@ -236,37 +267,23 @@ export async function captureBackendIdentity({
     // stat/read/close fact through the same owned reader while a
     // direct image reuses the launcher's fact unchanged.
     const pyFact = await readFact(pyReal, BIN_CAP, "python", true);
-    const pyImageFact =
-      pyImage === pyReal
-        ? pyFact
-        : await readFact(pyImage, BIN_CAP, "python image", true);
+    const pyImageFact = pyImage === pyReal
+      ? pyFact
+      : await readFact(pyImage, BIN_CAP, "python image", true);
     const identity = {
       backendId: "darwin-arm64-libproc-v1",
-      os: {
-        platform: "darwin",
-        arch: "arm64",
-        release: osRelease(),
-        version: osVersion(),
-        build: osBuild,
-      },
+      os: { platform: "darwin", arch: "arm64", release: osRelease(),
+        version: osVersion(), build: osBuild },
       python: {
-        invocationPath: pythonExecutable,
-        realPath: pyReal,
-        sha256: pyFact.sha256,
-        processImage: {
-          realPath: pyImage,
-          sha256: pyImageFact.sha256,
-        },
-        version: py.version,
-        executable: py.executable,
-        prefix: py.prefix,
-        basePrefix: py.basePrefix,
+        invocationPath: pythonExecutable, realPath: pyReal, sha256: pyFact.sha256,
+        processImage: { realPath: pyImage, sha256: pyImageFact.sha256 },
+        version: meta.version, executable: meta.executable,
+        prefix: meta.prefix, basePrefix: meta.basePrefix,
       },
       helpers,
       libproc: { path: LIBPROC_PATH, abi: { ...ABI }, image },
       lsof: {
-        invocationPath: LSOF_PATH,
-        realPath: lsofReal,
+        invocationPath: LSOF_PATH, realPath: lsofReal,
         sha256: (await readFact(lsofReal, BIN_CAP, "lsof", true)).sha256,
       },
     };
@@ -284,4 +301,96 @@ export async function captureBackendIdentity({
       );
     }
   }
+};
+
+export async function captureBackendIdentity({ ready, ...options }) {
+  // Only the monitor's natively verified startup facts may seed this
+  // record: the accepted ready envelope carries the exact backend/ABI and
+  // the collector's own Python fact set.
+  if (!isObj(ready) || !isObj(ready.python) || !isObj(ready.abi)) {
+    throw acct("ready evidence");
+  }
+  if (
+    ready.platform !== "darwin" ||
+    ready.arch !== "arm64" ||
+    ready.abi.bsdInfoSize !== ABI.bsdInfoSize ||
+    ready.abi.taskInfoSize !== ABI.taskInfoSize
+  ) {
+    throw acct("backend facts");
+  }
+  const py = ready.python;
+  for (const f of ["executable", "prefix", "basePrefix", "version"]) {
+    if (!strNE(py[f])) throw acct(`ready python ${f}`);
+  }
+  if (py.executable !== options.pythonExecutable) {
+    throw acct("python invocation binding");
+  }
+  return assembleBackendIdentity({
+    ...options,
+    setup: false,
+    pyMeta: { version: py.version, executable: py.executable, prefix: py.prefix, basePrefix: py.basePrefix },
+  });
+}
+
+// The bounded STATIC setup entry (C4b-09): it captures the same closed
+// BackendIdentity from the actual selected-venv configuration and real
+// file/OS facts BEFORE monitor readiness exists, so the manifest /
+// CommonIdentity can precede phase children. It never takes a `ready`
+// argument and never fabricates a ready-shaped envelope — the result is
+// static expectation data, not Native readiness or bootstrap proof.
+export async function captureSetupBackendIdentity(options) {
+  if (!isObj(options) || "ready" in options) {
+    throw acct("setup options");
+  }
+  return assembleBackendIdentity({ ...options, setup: true });
+}
+
+// The pure monitor backend-capture factory (C4b-09): it holds the
+// bound config/clock options and the frozen expectation privately and
+// NEVER accepts an injected verifier or capture callback. `capture`
+// always calls the genuine verified-ready entry with the dynamic SAME
+// original borrowed budget h and the actual retainActual — no new
+// deadline is created. `verifyStartup` is null ONLY for the omitted
+// isolated-library-compatibility case; when configured it awaits the
+// genuine capture on the same borrowed handle/retainer, rechecks the
+// same-handle live guard and applies the pure expected equality —
+// never a fake or no-op operational verification.
+export function createMonitorBackendCapture({
+  expectedBackendIdentity = undefined,
+  captureOptions,
+}) {
+  const expected = createBackendIdentityExpectation(expectedBackendIdentity);
+  if (
+    !isObj(captureOptions) ||
+    !isAbs(captureOptions.pythonExecutable) ||
+    !isAbs(captureOptions.recordRoot) ||
+    !Array.isArray(captureOptions.helperPaths) ||
+    !captureOptions.helperPaths.every(isAbs)
+  ) {
+    throw acct("monitor capture options");
+  }
+  // Reserved authority keys are rejected synchronously BEFORE any IO
+  // (Object.hasOwn catches even nonenumerable own props): a supplied
+  // ready/budget/retainActual/setup/pyMeta can never impersonate the
+  // genuine passed fields, which are always bound LAST.
+  for (const k of ["ready", "budget", "retainActual", "setup", "pyMeta"]) {
+    if (Object.hasOwn(captureOptions, k)) {
+      throw acct(`reserved option ${k}`);
+    }
+  }
+  const bound = Object.freeze({
+    ...captureOptions,
+    helperPaths: Object.freeze([...captureOptions.helperPaths]),
+  });
+  const capture = (ready, h, retainActual) => captureBackendIdentity({ ...bound, ready, budget: h, retainActual });
+  const verifyStartup =
+    expected === null
+      ? null
+      : async (ready, h, retainActual) => {
+          h.assertLive("backend startup");
+          const actual = await capture(ready, h, retainActual);
+          h.assertLive("backend startup");
+          expected.assertMatches(actual);
+        };
+  return Object.freeze({ capture, verifyStartup });
 }
