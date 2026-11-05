@@ -7,7 +7,7 @@ import { syncBuiltinESMExports } from "node:module";
 import test from "node:test";
 
 import { captureEnvironment, verifyEnvironment } from "./environment.mjs";
-import { makeEnvironmentFixture } from "./environment-test-fixtures.mjs";
+import { makeEnvironmentFixture, runPythonAuditValidatorCases } from "./environment-test-fixtures.mjs";
 import { PYTHON_PREFIX } from "./schema-constants.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
@@ -157,79 +157,7 @@ test("setup preserves a first arbitrary failure value and later physical closure
   await f.context.lifetime.whenSettled();
 });
 
-// Select the production validator definitions by AST. No audit bootstrap,
-// main(), third-party import, model, or Native module executes in this bridge.
-const WHEEL_BRIDGE = `import ast
-import hashlib
-import json
-import os
-import stat
-import sys
-import tempfile
-import zipfile
-
-payload = json.loads(sys.stdin.read())
-tree = ast.parse(payload["source"])
-names = {"_die", "file_digest", "verify_torch_wheel"}
-selected = [node for node in tree.body
-            if isinstance(node, ast.FunctionDef) and node.name in names]
-assert {node.name for node in selected} == names
-exec(compile(ast.Module(body=selected, type_ignores=[]), "actual-audit", "exec"))
-
-with tempfile.TemporaryDirectory(prefix="tinyaz-wheel-validator-") as root:
-    wheel_path = os.path.join(root, "torch.whl")
-    record = "torch-2.10.0.dist-info/RECORD"
-    normal = b"original installed payload"
-    actual = hashlib.sha256(normal).hexdigest()
-    rows = [("torch/code.py", "sha256=recorded", len(normal), actual),
-            (record, "", 9, hashlib.sha256(b"rewritten").hexdigest()),
-            ("torch-2.10.0.dist-info/INSTALLER", "sha256=recorded", 3,
-             hashlib.sha256(b"pip").hexdigest()),
-            ("torch/__pycache__/code.pyc", "", 3,
-             hashlib.sha256(b"pyc").hexdigest())]
-    mode = payload["mode"]
-    if mode == "cleared-hash-mismatch":
-        rows[0] = (rows[0][0], "", rows[0][2], actual)
-    with zipfile.ZipFile(wheel_path, "w") as archive:
-        archive.writestr("torch/code.py", b"changed" if mode == "cleared-hash-mismatch" else normal)
-        archive.writestr(record, b"original archive RECORD")
-        if mode == "duplicate-member":
-            archive.writestr("torch/code.py", b"different duplicate")
-    result = verify_torch_wheel({"rows": rows, "recordRel": record})
-    assert result["matchedHashed"] == 1
-    assert result["matchedBytes"] == len(normal)
-    assert result["generated"] == ["torch-2.10.0.dist-info/INSTALLER"]
-    assert result["installOnly"] == [record, "torch/__pycache__/code.pyc"]
-    print(json.dumps({"validated": True, "mode": mode}))
-`;
-
-for (const [mode, expected] of [
-  ["valid-regenerated-record", null],
-  ["cleared-hash-mismatch", "torch wheel mismatch torch/code.py"],
-  ["duplicate-member", "torch wheel duplicate"],
-]) {
-  test(`actual wheel validator: ${mode}`, async () => {
-    const { AUDIT_SCRIPT } = await import("./environment-python-program.mjs");
-    const result = childProcess.spawnSync("/usr/bin/python3", ["-I", "-B", "-c", WHEEL_BRIDGE], {
-      input: JSON.stringify({ source: AUDIT_SCRIPT, mode }),
-      encoding: "utf8",
-      timeout: 10000,
-      maxBuffer: 1024 * 1024,
-      env: { PATH: "/usr/bin:/bin", PYTHONDONTWRITEBYTECODE: "1" },
-    });
-    assert.equal(result.error, undefined);
-    assert.equal(result.signal, null);
-    if (expected === null) {
-      assert.equal(result.status, 0, result.stderr);
-      assert.deepEqual(JSON.parse(result.stdout), { validated: true, mode });
-    } else {
-      assert.equal(result.status, 1);
-      assert.match(result.stderr, new RegExp(expected));
-      assert.equal(result.stdout, "");
-    }
-  });
-}
-
+runPythonAuditValidatorCases();
 
 const capture = (t, f, options = {}) => ownFixtureAttempt(t, () => captureEnvironment(
   { recordRoot: f.root, ...options }, f.context, f.adapters,
@@ -386,5 +314,44 @@ test("verification uses its current live handle on the original genuine owner", 
   assert.equal(f.spawnCalls.length, 4);
   budget.narrow(1);
   await assert.rejects(issue(), (error) => error.code === "ACCOUNTING_UNAVAILABLE");
+  assert.equal(f.spawnCalls.length, 4);
+});
+
+test("Python child failures preserve bounded actual command diagnostics", async (t) => {
+  const { capturePythonEnvironment } = await import("./environment-python.mjs");
+  const f = fixture(t);
+  const stderr = Buffer.alloc(5000, 120);
+  const result = ownFixtureAttempt(t, () => capturePythonEnvironment({
+    pythonExecutable: "/Users/hansel/Workspace/github/hanselhansel/hansel-chess-ai/train/.venv/bin/python",
+  }, f.context, { spawn: () => f.child }));
+  const rejected = assert.rejects(result, (error) => {
+    assert.equal(error.code, "ACCOUNTING_UNAVAILABLE");
+    assert.equal(error.command.exitCode, 1);
+    assert.equal(error.command.stdoutBytes, 0);
+    assert.equal(error.command.stderrBytes, 5000);
+    assert.deepEqual(error.command.stderr, stderr.subarray(0, 4096));
+    return true;
+  });
+  f.child.stderr.emit("data", stderr);
+  f.close(1);
+  await rejected;
+});
+
+test("environment binds setup buffers to genuine capture provenance", async (t) => {
+  const f = await makeEnvironmentFixture(t);
+  const { environment, setupFiles } = await capture(t, f);
+  const issue = (files) => ownFixtureAttempt(t, () => verifyEnvironment({
+    recordRoot: f.root, expectedEnvironment: environment, setupFiles: files,
+  }, f.context, f.adapters));
+  assert.deepEqual(await issue(setupFiles), environment);
+  const changed = setupFiles.map((file) => ({ path: file.path, bytes: Buffer.from(file.bytes) }));
+  changed[0].bytes[0] ^= 1;
+  for (const files of [changed, setupFiles.slice(1),
+    [...setupFiles, { path: "inputs/setup/zzz-extra", bytes: Buffer.from("forged") }]]) {
+    await assert.rejects(issue(files), /setup file provenance/);
+  }
+  for (const files of [null, undefined]) {
+    await assert.rejects(issue(files), /setup files array/);
+  }
   assert.equal(f.spawnCalls.length, 4);
 });

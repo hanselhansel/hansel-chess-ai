@@ -9,7 +9,7 @@ import { createEnvironmentFiles } from "./environment-files.mjs";
 import { capturePythonEnvironment } from "./environment-python.mjs";
 import { assertEnvironment } from "./identity-schema.mjs";
 import { captureSetupBackendIdentity } from "./process-backend.mjs";
-import { exactFields, isAbs, isObj } from "./protocol-values.mjs";
+import { exactFields, isAbs, isObj, isRel } from "./protocol-values.mjs";
 import { PYTHON_EXECUTABLE } from "./schema-constants.mjs";
 import { deepEqual, freezeDeep } from "./schema-primitives.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
@@ -61,6 +61,25 @@ const fileAdapters = (a) => subset(a, ["statFile", "createStream", "resolvePath"
 const setupFile = (name, value) => ({
   path: `inputs/setup/${name}.json`, bytes: canonicalBytes(value),
 });
+const ownSetupFiles = (files) => {
+  if (!Array.isArray(files)) {
+    throw fail("setup files array");
+  }
+  const own = files.map((file) => {
+    if (!isObj(file) || !exactFields(file, ["path", "bytes"]) ||
+      !isRel(file.path) || !file.path.startsWith("inputs/setup/") || !Buffer.isBuffer(file.bytes)) {
+      throw fail("setup file binding");
+    }
+    return { path: file.path, bytes: Buffer.from(file.bytes) };
+  });
+  if (own.some((file, i) => i > 0 && own[i - 1].path >= file.path)) {
+    throw fail("setup file order");
+  }
+  return own;
+};
+const setupDescriptors = (files) => files.map((file) => ({
+  path: file.path, byteLength: file.bytes.length, sha256: sha256Bytes(file.bytes),
+}));
 const fingerprint = (environment) => sha256Bytes(canonicalBytes(environment));
 
 // This shared assembly contains no subprocess or SDK-load path. Raw sys
@@ -246,12 +265,14 @@ export async function captureEnvironment(options, context, adapters = undefined)
     recordRoot: own.recordRoot, initial,
     nodeSha256: measured.nodeInventory.sha256, appSha256: measured.appInventory.sha256,
     pythonSha256: measured.installed.inventory.sha256,
+    setupDescriptors: freezeDeep(setupDescriptors(setupFiles)),
   };
   const previous = captures.get(key);
   if (previous !== undefined && (
     previous.recordRoot !== provenance.recordRoot ||
     previous.nodeSha256 !== provenance.nodeSha256 || previous.appSha256 !== provenance.appSha256 ||
-    previous.pythonSha256 !== provenance.pythonSha256
+    previous.pythonSha256 !== provenance.pythonSha256 ||
+    !deepEqual(previous.setupDescriptors, provenance.setupDescriptors)
   )) {
     throw fail("conflicting initial capture provenance");
   }
@@ -264,10 +285,12 @@ export async function captureEnvironment(options, context, adapters = undefined)
 
 export async function verifyEnvironment(options, context, adapters = undefined) {
   context = ownContext(context);
-  const own = ownOptions(options, ["expectedEnvironment", "recordRoot"]);
-  if (!exactFields(own, ["expectedEnvironment", "recordRoot"])) {
+  const own = ownOptions(options, ["expectedEnvironment", "recordRoot", "setupFiles"]);
+  if (!exactFields(own, ["expectedEnvironment", "recordRoot"]) &&
+    !exactFields(own, ["expectedEnvironment", "recordRoot", "setupFiles"])) {
     throw fail("verify fields");
   }
+  const setup = Object.hasOwn(own, "setupFiles") ? ownSetupFiles(own.setupFiles) : null;
   const expected = freezeDeep(structuredClone(own.expectedEnvironment));
   assertEnvironment(expected);
   const a = bindAdapters(adapters);
@@ -276,6 +299,9 @@ export async function verifyEnvironment(options, context, adapters = undefined) 
   const provenance = PROVENANCE.get(context.lifetime)?.get(fingerprint(expected));
   if (provenance === undefined || provenance.recordRoot !== own.recordRoot) {
     throw fail("initial capture provenance");
+  }
+  if (setup !== null && !deepEqual(setupDescriptors(setup), provenance.setupDescriptors)) {
+    throw fail("setup file provenance");
   }
   const measured = await measure(own.recordRoot, provenance.initial, context, a, files);
   if (!deepEqual(measured.environment, expected) ||

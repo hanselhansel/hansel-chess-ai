@@ -1152,6 +1152,9 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/setup-process-actual.mjs` | C4b-13c functional-runtime leaf DECLARED before creation under scope `c4b-scope-13c-program-split.json` (see `#### C4b-13c python program/evidence and setup-actual split private contract (declared before creation)` and the owning README C4b-13c section): SOLE exports `armSetupReceipt` and `adoptSetupHandle` — direct stable aliases of the WHOLE existing arm/adopt pair plus ONE private strong pending set and their complete comments; the same receipt object/settler, no new counter/ledger/clock/owner/resolver copy; the whole actual-resource group moves out of `setup-process.mjs` under its own packet while the provider imports the aliases and retains the exit/pipe facts — no imports, no import-side IO, leaving room for the actual async-no-child/BOTH-pipe-close repair without premature debt retirement. DAG `setup -> actual`, never reverse. Included in the functional-runtime input union. |
 | Create | `./train/scripts/browser_eval/environment-files.mjs` | C4b-13 environment static inventory leaf declared before creation: sole export `createEnvironmentFiles(context, adapters)`. Shared bounded owned FS reader, complete inventories, installed RECORD remeasurement and canonical path checks; DAG environment -> files -> reader/pure helpers. No subprocess, parent import or new clock/lifetime. Functional-runtime input. |
 | Create | `./train/scripts/browser_eval/environment-test-fixtures.mjs` | C4b-13 TEST-only confined environment fixture declared before creation: sole export `makeEnvironmentFixture(t)`. Lowlevel filesystem/spawn/OS/Playwright interfaces with one shared actual teardown owner. Excluded from functional-runtime inputs. |
+| Create | `./train/scripts/browser_eval/snapshot-files.mjs` | C4b-14 declared before creation. Runtime literal union and seven bounded immutable file/Git methods. Exact API and DAG in the C4b-14 immutable input capture contract. |
+| Create | `./train/scripts/browser_eval/snapshot-io.mjs` | C4b-14 declared before creation. Private runtime bounded owned FS read/write/list/link operations. Exact API and DAG in the C4b-14 immutable input capture contract. |
+| Create | `./train/scripts/browser_eval/snapshot-identity.mjs` | C4b-14 declared before creation. Pure runtime original-ref/model/CommonIdentity assembly. Exact API and DAG in the C4b-14 immutable input capture contract. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -1260,6 +1263,205 @@ identity and captured data, not the earlier setup handle object. A later
 live finalizer handle is accepted after the setup handle is disposed; a
 spent current handle still rejects before new IO. Conflicting initial
 inventories for the same captured environment cannot overwrite provenance.
+
+The existing TEST fixture additionally exports
+`runPythonAuditValidatorCases() -> undefined`, an explicit test-registration
+helper. The complete prior wheel bridge/case group moves there without
+changing its three case names or assertions. The bridge also AST-selects
+actual distribution audit definitions for confined stdlib-only own/vendored
+RECORD cases. No tests register at module import. Python audit selection
+requires exactly one top-level `<name>-<version>.dist-info/RECORD` matching
+normalized distribution name and version; vendored RECORDs remain payload
+rows. Failed setup child diagnostics retain exit/output counts and at most
+4096 actual stderr bytes, with no return/status or raw-error substitution.
+
+Operational immutable snapshots pass `setupFiles` to `verifyEnvironment`.
+Its existing closed options additionally permit optional `setupFiles`, a
+strict sorted unique array of exact `{path,bytes}` owned Buffers confined
+to `inputs/setup/`. Explicit null/undefined are invalid; only true omission
+retains isolated compatibility. Capture pins private exact byte descriptors
+before exposing returned buffers. Verification compares supplied descriptors
+to that genuine capture association, then performs unchanged file-only
+remeasurement. Caller-crafted data cannot set provenance or skip inspection.
+
+#### C4b-14 immutable input capture contract
+
+`snapshots.mjs` exports only `captureInputs({candidate,protocolPath,
+workspaceRoot,environment,setupFiles}, {repoRoot,budget,lifetime})` returning
+`{workspace,inputs,frozenCliPath}`, and `verifyIdentity({workspaceId,runId,
+phase,expectedCommonIdentity,inputs}, {workspaceRoot,budget,lifetime})`
+returning the freshly verified CommonIdentity. Each operation snapshots
+serializable data and its original capability references before callouts.
+Verification calls the genuine file-only `verifyEnvironment` directly;
+there is no caller-supplied identity verifier or successful phase stub.
+Same-process environment provenance remains required on the original owner,
+using the current operation's live handle.
+
+`snapshot-files.mjs` is declared before creation, runtime-only. It exports
+frozen literal `RUNTIME_PATHS` and pure `createSnapshotFiles({workspaceRoot,
+repoRoot,budget,lifetime})`. The frozen returned roster is exactly
+`{readActive,readGit,listGit,listActive,writeFrozen,readFrozen,
+linkDependencies}`. Read methods return owned Buffers, list methods return
+sorted original relative regular-file paths, write returns the actual
+workspace-relative ArtifactRef. Git reads use argv arrays and fixed
+read-only commands. The three `inputs/{baseline,candidate,harness}/
+node_modules` links share the measured canonical dependency root and are
+excluded from frozen-file enumeration. No other links are accepted.
+
+`snapshot-io.mjs` is declared before creation, runtime-only. Sole export
+`createSnapshotIO({workspaceRoot,repoRoot,budget,lifetime})` returns frozen
+`{call,readAt,writeFrozen,listAt,linkDependencies}`. `call(tag,thunk)` owns
+raw metadata settlement before issue; `readAt(root,rel,readonly?)` returns
+stable owned bytes; `listAt(root,prefixes)` returns original regular-file
+paths. Explicit write/link operations exclusively create and seal inputs.
+Actual open/read/write/close and Git child debt use existing genuine owners
+and the same original bound. Mandatory actual close continues on failure;
+a timeout cannot prove it complete or supply a new grace period.
+
+`snapshot-identity.mjs` is declared before creation, runtime-only. Sole
+exports `validateModelBytes(bytes)`, `inventoryDigest(refs)`, and
+`assembleSnapshotIdentity({candidate,baselineFiles,candidateFiles,
+harnessFiles,pythonFiles,environment})`. They are pure data validation and
+assembly over original-path refs, the selected model pin and the existing
+closed CommonIdentity validator. Model checking covers raw magic, packed
+version, parameter count, source, exact length/digest and finite floats.
+
+`snapshots.test.mjs` is declared before creation, TEST-only, no exports.
+It uses confined temporary filesystem/Git data, actual pinned M bytes, and
+existing shared teardown ownership. Synthetic environments are data only;
+they cannot pass genuine environment provenance verification. No fixture
+phase code, model inference, Native backend or browser executes.
+
+DAG: snapshots -> files + IO + identity + environment; files -> snapshot-io +
+setup-process; snapshot-io -> existing owned-file/reader/budget/lifetime
+helpers; identity -> canonical/schema constants and closed identity schema.
+No child imports its parent or a TEST owner. Runtime union adds both new
+private runtime helpers; snapshots tests are excluded. Required missing
+future runtime inputs fail closed. Active path sets and bytes are measured
+before and after extraction. Committed candidates additionally bind active
+executed inputs to the requested Git objects. Baseline stays fixed at
+`bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Workspace creation and every file
+are exclusive, readonly, and never resumed or removed on failure.
+
+The exact current functional runtime union is the following literal list.
+Package/lock and all genuine helper imports are included; TEST/docs/support
+are excluded. This declaration supersedes earlier runtime registries:
+
+```json
+[
+  "package-lock.json",
+  "package.json",
+  "train/fixtures/browser-openings.json",
+  "train/fixtures/browser-parity.json",
+  "train/fixtures/browser-protocol.json",
+  "train/scripts/browser_eval/artifact-completion-failure.mjs",
+  "train/scripts/browser_eval/artifact-completion.mjs",
+  "train/scripts/browser_eval/artifact-files.mjs",
+  "train/scripts/browser_eval/artifact-owned-file.mjs",
+  "train/scripts/browser_eval/artifact-sinks.mjs",
+  "train/scripts/browser_eval/artifact-store.mjs",
+  "train/scripts/browser_eval/browser-contexts.mjs",
+  "train/scripts/browser_eval/browser.mjs",
+  "train/scripts/browser_eval/canonical-json.mjs",
+  "train/scripts/browser_eval/checks.mjs",
+  "train/scripts/browser_eval/cli.mjs",
+  "train/scripts/browser_eval/collector-protocol.mjs",
+  "train/scripts/browser_eval/completion-file-observation.mjs",
+  "train/scripts/browser_eval/completion-prepared-read.mjs",
+  "train/scripts/browser_eval/completion-publication.mjs",
+  "train/scripts/browser_eval/driver-bridge-methods.mjs",
+  "train/scripts/browser_eval/driver-bridge-wire.mjs",
+  "train/scripts/browser_eval/driver-bridge.mjs",
+  "train/scripts/browser_eval/driver-protocol.mjs",
+  "train/scripts/browser_eval/environment-files.mjs",
+  "train/scripts/browser_eval/environment-python-evidence.mjs",
+  "train/scripts/browser_eval/environment-python-program.mjs",
+  "train/scripts/browser_eval/environment-python.mjs",
+  "train/scripts/browser_eval/environment.mjs",
+  "train/scripts/browser_eval/fixture.html",
+  "train/scripts/browser_eval/fixture.mjs",
+  "train/scripts/browser_eval/identity-schema.mjs",
+  "train/scripts/browser_eval/match.mjs",
+  "train/scripts/browser_eval/pgn-evidence.mjs",
+  "train/scripts/browser_eval/phase-runners.mjs",
+  "train/scripts/browser_eval/prerequisites.mjs",
+  "train/scripts/browser_eval/process-backend-reader.mjs",
+  "train/scripts/browser_eval/process-backend.mjs",
+  "train/scripts/browser_eval/process-budget.mjs",
+  "train/scripts/browser_eval/process-framing.mjs",
+  "train/scripts/browser_eval/process-horizon.mjs",
+  "train/scripts/browser_eval/process-lsof-fields.mjs",
+  "train/scripts/browser_eval/process-lsof-io.mjs",
+  "train/scripts/browser_eval/process-lsof.mjs",
+  "train/scripts/browser_eval/process-macos-abi.py",
+  "train/scripts/browser_eval/process-macos-native.py",
+  "train/scripts/browser_eval/process-macos.py",
+  "train/scripts/browser_eval/process-observation.mjs",
+  "train/scripts/browser_eval/process-ownership.mjs",
+  "train/scripts/browser_eval/process-proof.mjs",
+  "train/scripts/browser_eval/process-runtime.mjs",
+  "train/scripts/browser_eval/process-stop.mjs",
+  "train/scripts/browser_eval/process-transport.mjs",
+  "train/scripts/browser_eval/processes.mjs",
+  "train/scripts/browser_eval/protocol-values.mjs",
+  "train/scripts/browser_eval/receipt-files.mjs",
+  "train/scripts/browser_eval/receipt-verification.mjs",
+  "train/scripts/browser_eval/record-bookkeeping.mjs",
+  "train/scripts/browser_eval/record-evidence.mjs",
+  "train/scripts/browser_eval/record-finalization.mjs",
+  "train/scripts/browser_eval/record-finalizer.mjs",
+  "train/scripts/browser_eval/record-inputs.mjs",
+  "train/scripts/browser_eval/record-lifecycle.mjs",
+  "train/scripts/browser_eval/record-schema.mjs",
+  "train/scripts/browser_eval/records.mjs",
+  "train/scripts/browser_eval/run.mjs",
+  "train/scripts/browser_eval/schema-constants.mjs",
+  "train/scripts/browser_eval/schema-primitives.mjs",
+  "train/scripts/browser_eval/server.mjs",
+  "train/scripts/browser_eval/setup-process-actual.mjs",
+  "train/scripts/browser_eval/setup-process.mjs",
+  "train/scripts/browser_eval/snapshot-files.mjs",
+  "train/scripts/browser_eval/snapshot-identity.mjs",
+  "train/scripts/browser_eval/snapshot-io.mjs",
+  "train/scripts/browser_eval/snapshots.mjs",
+  "train/scripts/browser_eval/stats.mjs",
+  "train/scripts/browser_eval/supervisor-protocol.mjs",
+  "train/scripts/browser_eval/watchdog-cleanup.mjs",
+  "train/scripts/browser_eval/watchdog-config.mjs",
+  "train/scripts/browser_eval/watchdog-driver-actual.mjs",
+  "train/scripts/browser_eval/watchdog-driver.mjs",
+  "train/scripts/browser_eval/watchdog-lifetime.mjs",
+  "train/scripts/browser_eval/watchdog-operations.mjs",
+  "train/scripts/browser_eval/watchdog-ordinary.mjs",
+  "train/scripts/browser_eval/watchdog-records.mjs",
+  "train/scripts/browser_eval/watchdog-runtime.mjs",
+  "train/scripts/browser_eval/watchdog-shutdown.mjs",
+  "train/scripts/browser_eval/watchdog.mjs",
+  "train/scripts/browser_eval/workbench-fixture.mjs",
+  "train/scripts/browser_eval/workspace-footprint.mjs",
+  "train/scripts/check_browser_parity.py"
+]
+```
+
+Pure verification command: `node --test --test-concurrency=1
+train/scripts/browser_eval/snapshots.test.mjs`. Capture checks do not imply
+phase admission. WORKTREE remains forbidden for preflight/compare.
+
+The facade uses the IO leaf's bounded `listAt(workspaceRoot,["inputs"])`
+for a complete frozen path-set recheck, without expanding the file factory's
+seven-method roster. Verification also reads the actual Store-written phase
+manifest and binds workspaceId, runId, phase, input refs and CommonIdentity
+hash to that record. Synthetic test setup can exercise capture as data, but
+cannot pass the fixed genuine environment setup-provenance verification.
+
+Workspace and frozen input files require readonly OS modes. The phase
+manifest uses the same bounded owned reader without that mode requirement:
+ArtifactStore enforces logical immutability and writes it with normal file
+permissions. Its full schema and workspace/run/phase/common/input bindings
+remain mandatory. The regression uses genuine ArtifactStore.writeOnce plus
+the actual footprint observer, without a manual chmod of the manifest.
+The snapshots TEST entry already had a canonical Create row; its existing
+row is preserved. Only the three new runtime leaves append map rows.
 
 ### 3. Exact runtime contracts and source migration
 

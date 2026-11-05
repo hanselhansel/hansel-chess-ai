@@ -116,9 +116,18 @@ def audit_distribution(dist):
         _die("distribution version")
     matches = []
     if dist.files is not None:
-        matches = [
-            str(e) for e in dist.files if str(e).endswith(".dist-info/RECORD")
-        ]
+        for entry in dist.files:
+            rel = str(entry)
+            parts = rel.split("/")
+            if len(parts) != 2 or parts[1] != "RECORD":
+                continue
+            if not parts[0].endswith(".dist-info"):
+                continue
+            stem = parts[0][:-len(".dist-info")]
+            own_name, sep, own_version = stem.rpartition("-")
+            if (sep and norm_name(own_name) == name
+                    and own_version == version.replace("-", "_")):
+                matches.append(rel)
     if len(matches) != 1:
         _die("distribution record " + name)
     record_path = str(dist.locate_file(matches[0]))

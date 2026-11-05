@@ -1,5 +1,8 @@
 // TEST-only confined lowlevel environment. Virtual identity paths map into
 // one owned temporary root. No actual selected interpreter or SDK runs.
+import assert from "node:assert/strict";
+import childProcess from "node:child_process";
+import test from "node:test";
 import { EventEmitter } from "node:events";
 import { promises as fsp, createReadStream, realpathSync } from "node:fs";
 import os from "node:os";
@@ -175,4 +178,159 @@ export async function makeEnvironmentFixture(t) {
     root: recordRoot, context: { budget, lifetime }, adapters, audit, write,
     spawnCalls, finish, expire: () => { now = 90001; },
   };
+}
+
+// Select the production validator definitions by AST. No audit bootstrap,
+// main(), third-party import, model, or Native module executes in this bridge.
+const WHEEL_BRIDGE = `import ast
+import hashlib
+import json
+import os
+import stat
+import sys
+import tempfile
+import zipfile
+
+payload = json.loads(sys.stdin.read())
+tree = ast.parse(payload["source"])
+names = {"_die", "file_digest", "verify_torch_wheel"}
+selected = [node for node in tree.body
+            if isinstance(node, ast.FunctionDef) and node.name in names]
+assert {node.name for node in selected} == names
+exec(compile(ast.Module(body=selected, type_ignores=[]), "actual-audit", "exec"))
+
+with tempfile.TemporaryDirectory(prefix="tinyaz-wheel-validator-") as root:
+    wheel_path = os.path.join(root, "torch.whl")
+    record = "torch-2.10.0.dist-info/RECORD"
+    normal = b"original installed payload"
+    actual = hashlib.sha256(normal).hexdigest()
+    rows = [("torch/code.py", "sha256=recorded", len(normal), actual),
+            (record, "", 9, hashlib.sha256(b"rewritten").hexdigest()),
+            ("torch-2.10.0.dist-info/INSTALLER", "sha256=recorded", 3,
+             hashlib.sha256(b"pip").hexdigest()),
+            ("torch/__pycache__/code.pyc", "", 3,
+             hashlib.sha256(b"pyc").hexdigest())]
+    mode = payload["mode"]
+    if mode == "cleared-hash-mismatch":
+        rows[0] = (rows[0][0], "", rows[0][2], actual)
+    with zipfile.ZipFile(wheel_path, "w") as archive:
+        archive.writestr("torch/code.py", b"changed" if mode == "cleared-hash-mismatch" else normal)
+        archive.writestr(record, b"original archive RECORD")
+        if mode == "duplicate-member":
+            archive.writestr("torch/code.py", b"different duplicate")
+    result = verify_torch_wheel({"rows": rows, "recordRel": record})
+    assert result["matchedHashed"] == 1
+    assert result["matchedBytes"] == len(normal)
+    assert result["generated"] == ["torch-2.10.0.dist-info/INSTALLER"]
+    assert result["installOnly"] == [record, "torch/__pycache__/code.pyc"]
+    print(json.dumps({"validated": True, "mode": mode}))
+`;
+
+const DISTRIBUTION_BRIDGE = `import ast
+import base64
+import csv
+import hashlib
+import io
+import json
+import os
+import re
+import stat
+import sys
+import tempfile
+
+payload = json.loads(sys.stdin.read())
+names = {"_die", "canon", "file_digest", "norm_name", "record_want",
+         "regular_inside", "audit_distribution"}
+selected = [node for node in ast.parse(payload["source"]).body
+            if isinstance(node, ast.FunctionDef) and node.name in names]
+assert {node.name for node in selected} == names
+exec(compile(ast.Module(body=selected, type_ignores=[]), "actual-distribution-audit", "exec"))
+with tempfile.TemporaryDirectory(prefix="tinyaz-distribution-validator-") as root:
+    root = os.path.realpath(root)
+    prefix_real = root
+    own = "demo-1.0.0.dist-info/RECORD"
+    vendor = "demo/_vendor/other-2.0.dist-info/RECORD"
+    code = "demo/code.py"
+    data = {code: b"actual code", vendor: b"vendored RECORD payload"}
+    rows = []
+    for rel, content in data.items():
+        target = os.path.join(root, rel)
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        with open(target, "wb") as handle:
+            handle.write(content)
+        encoded = base64.urlsafe_b64encode(hashlib.sha256(content).digest()).rstrip(b"=").decode()
+        rows.append([rel, "sha256=" + encoded, str(len(content))])
+    rows.append([own, "", ""])
+    target = os.path.join(root, own)
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    with open(target, "w", newline="") as handle:
+        csv.writer(handle).writerows(rows)
+    class Distribution:
+        metadata = {"Name": "Demo"}
+        version = "1.0.0"
+        files = [own, vendor, code]
+        def locate_file(self, rel):
+            return os.path.join(root, rel)
+    dist = Distribution()
+    if payload["mode"] == "missing-own":
+        dist.files = [vendor, code]
+    elif payload["mode"] == "ambiguous-own":
+        dist.files = [own, own, vendor, code]
+    result = audit_distribution(dist)
+    assert result["recordPath"] == target
+    assert {row[0] for row in result["rows"]} == {own, vendor, code}
+    assert result["name"] == "demo"
+    print(json.dumps({"validated": True, "mode": payload["mode"]}))
+`;
+
+export function runPythonAuditValidatorCases() {
+for (const [mode, expected] of [
+  ["valid-regenerated-record", null],
+  ["cleared-hash-mismatch", "torch wheel mismatch torch/code.py"],
+  ["duplicate-member", "torch wheel duplicate"],
+]) {
+  test(`actual wheel validator: ${mode}`, async () => {
+    const { AUDIT_SCRIPT } = await import("./environment-python-program.mjs");
+    const result = childProcess.spawnSync("/usr/bin/python3", ["-I", "-B", "-c", WHEEL_BRIDGE], {
+      input: JSON.stringify({ source: AUDIT_SCRIPT, mode }),
+      encoding: "utf8",
+      timeout: 10000,
+      maxBuffer: 1024 * 1024,
+      env: { PATH: "/usr/bin:/bin", PYTHONDONTWRITEBYTECODE: "1" },
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
+    if (expected === null) {
+      assert.equal(result.status, 0, result.stderr);
+      assert.deepEqual(JSON.parse(result.stdout), { validated: true, mode });
+    } else {
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, new RegExp(expected));
+      assert.equal(result.stdout, "");
+    }
+  });
+}
+
+
+  for (const mode of ["own-plus-vendored", "missing-own", "ambiguous-own"]) {
+    test(`actual distribution validator: ${mode}`, async () => {
+      const { AUDIT_SCRIPT } = await import("./environment-python-program.mjs");
+      const result = childProcess.spawnSync("/usr/bin/python3", ["-I", "-B", "-c", DISTRIBUTION_BRIDGE], {
+        input: JSON.stringify({ source: AUDIT_SCRIPT, mode }), encoding: "utf8",
+        timeout: 10000, maxBuffer: 1024 * 1024,
+        env: { PATH: "/usr/bin:/bin", PYTHONDONTWRITEBYTECODE: "1" },
+      });
+      assert.equal(result.error, undefined);
+      assert.equal(result.signal, null);
+      if (mode === "own-plus-vendored") {
+        assert.equal(result.status, 0, result.stderr);
+        assert.deepEqual(JSON.parse(result.stdout), { validated: true, mode });
+      } else {
+        assert.equal(result.status, 1);
+        assert.match(result.stderr, /SETUP_AUDIT distribution record demo/);
+        assert.equal(result.stdout, "");
+      }
+    });
+  }
+
 }

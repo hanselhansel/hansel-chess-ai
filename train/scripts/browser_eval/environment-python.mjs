@@ -179,7 +179,13 @@ export async function capturePythonEnvironment(
     );
     budget.assertLive(tag);
     if (result.exitCode !== 0 || result.stderr.length !== 0) {
-      throw acct(`${tag} child`);
+      const error = acct(`${tag} child`);
+      error.command = Object.freeze({
+        tag, exitCode: result.exitCode,
+        stdoutBytes: result.stdout.length, stderrBytes: result.stderr.length,
+        stderr: Buffer.from(result.stderr.subarray(0, 4096)),
+      });
+      throw error;
     }
     return result;
   };
