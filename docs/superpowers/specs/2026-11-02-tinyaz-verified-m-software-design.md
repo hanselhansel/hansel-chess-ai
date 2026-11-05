@@ -1155,6 +1155,9 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/snapshot-files.mjs` | C4b-14 declared before creation. Runtime literal union and seven bounded immutable file/Git methods. Exact API and DAG in the C4b-14 immutable input capture contract. |
 | Create | `./train/scripts/browser_eval/snapshot-io.mjs` | C4b-14 declared before creation. Private runtime bounded owned FS read/write/list/link operations. Exact API and DAG in the C4b-14 immutable input capture contract. |
 | Create | `./train/scripts/browser_eval/snapshot-identity.mjs` | C4b-14 declared before creation. Pure runtime original-ref/model/CommonIdentity assembly. Exact API and DAG in the C4b-14 immutable input capture contract. |
+| Create | `./train/scripts/browser_eval/snapshot-reopen.mjs` | C4b-15 private runtime archived-workspace admission leaf, declared before creation. Sole inspectReopenedInputs export; genuine current source/Git/frozen/setup audit, fixed environment capture, no provenance setter. |
+| Create | `./train/scripts/browser_eval/phase-fixtures.mjs` | C4b-15 pure runtime protocol/opening validators and fixed compare/preflight schedule, declared before creation. Exact API/DAG in owning contract. |
+| Create | `./train/scripts/browser_eval/phase-fixtures.test.mjs` | C4b-15 TEST-only locked protocol/opening/schedule rules regressions, declared before creation. No model/Native/browser work. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -1383,6 +1386,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/identity-schema.mjs",
   "train/scripts/browser_eval/match.mjs",
   "train/scripts/browser_eval/pgn-evidence.mjs",
+  "train/scripts/browser_eval/phase-fixtures.mjs",
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",
   "train/scripts/browser_eval/process-backend-reader.mjs",
@@ -1423,6 +1427,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/snapshot-files.mjs",
   "train/scripts/browser_eval/snapshot-identity.mjs",
   "train/scripts/browser_eval/snapshot-io.mjs",
+  "train/scripts/browser_eval/snapshot-reopen.mjs",
   "train/scripts/browser_eval/snapshots.mjs",
   "train/scripts/browser_eval/stats.mjs",
   "train/scripts/browser_eval/supervisor-protocol.mjs",
@@ -1462,6 +1467,63 @@ remain mandatory. The regression uses genuine ArtifactStore.writeOnce plus
 the actual footprint observer, without a manual chmod of the manifest.
 The snapshots TEST entry already had a canonical Create row; its existing
 row is preserved. Only the three new runtime leaves append map rows.
+
+#### C4b-15 archived workspace admission
+
+`snapshots.mjs` additionally exports private operational
+`reopenInputs({workspaceRoot,candidate}, {repoRoot,budget,lifetime})`.
+It admits an existing completed immutable workspace in a fresh archived
+process. It never rewrites workspace/input files or imports expected hashes
+as provenance. The original Git repository root is distinct from the
+archived `inputs/harness` record root. Existing source, requested Git
+objects, every original frozen inventory, exact readonly dependency links,
+model and retained setup are independently remeasured before admission.
+The new process performs genuine `captureEnvironment` against its archived
+harness and compares actual identity and setup bytes to retained evidence.
+Only that successful audit binds the existing owner's private association.
+
+`snapshot-reopen.mjs` is declared before creation, runtime-only. Its sole
+export `inspectReopenedInputs({workspaceRoot,candidate}, context)` returns
+`{workspace,inputs,repoRoot,recordRoot,producerSetup}` after complete actual
+read/hash/identity/setup verification. It receives the same exact capture
+context `{repoRoot,budget,lifetime}` and owns no new deadline or lifecycle.
+DAG: snapshots -> snapshot-reopen -> existing snapshot files/IO/identity,
+environment capture and pure schema helpers. No parent/TEST backedge.
+The literal runtime union adds this helper before use. Phase finalization
+continues to use fixed file-only verification on the genuine new owner and
+archived record root. No callback verifier, proof setter or resume path is
+added. Missing runtime inputs continue to fail closed.
+
+#### C4b-15 locked protocol and game schedules
+
+`browser-protocol.json` has closed `{schemaVersion,conventions,limits,
+requiredCheckIds,preflight,comparison}` fields. Conventions, literal limits
+and every fixed required-check set equal existing schema constants.
+Preflight fixes the disjoint A/A FEN and five fresh requests per arm.
+Comparison fixes the twenty-opening, forty-game schedule. No fixture field
+can supply a pass, a different cap, adjudication or extra cohort.
+
+`browser-openings.json` has closed `{schemaVersion,openings}`. Its ordered
+entries are exact `{id,label,initialFen,movesUci}` records for the twenty
+prefixes in locked Runtime section 6, with IDs p01 through p20. The ordinary
+initial FEN and every six-ply UCI prefix remain literal fixed inputs.
+
+`phase-fixtures.mjs` is declared before creation, runtime-only, exporting
+`validateProtocolFixture(value)`, `validateOpeningFixture(value)`, and
+`buildGameSchedule({phase,openings?})`. The validators return owned frozen
+data and replay the actual pinned chess.js rules; they do no engine work.
+The schedule returns exact game records `{gameId,pairNumber,gameNumber,
+openingId,candidateColor,initialFen,movesUci}`. Compare uses p01-g1 through
+p20-g2 with odd/even pair colors and both games completed before advancing.
+Preflight uses only aa-g1/aa-g2 from the disjoint control FEN. No random
+opening, tree, timeout loss, material/ply adjudication or inferred result is
+introduced. DAG: phase runners/match -> phase-fixtures -> chess.js and
+existing pure schema/constants. It never imports a parent or TEST source.
+
+`phase-fixtures.test.mjs` is declared before creation, TEST-only, no exports.
+It checks literal protocol bindings, exact locked opening prefixes/legal
+rules, disjoint fixtures and schedule/color/accounting. Rules-only fixture
+validation is not a played game or inference result.
 
 ### 3. Exact runtime contracts and source migration
 

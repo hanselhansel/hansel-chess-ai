@@ -12,6 +12,7 @@ import { BASELINE_COMMIT, FIXTURE_PATHS, FIXED_LIMITS, PYTHON_MODULES, RECORDED_
 import { assertArtifactRef, deepEqual, freezeDeep } from "./schema-primitives.mjs";
 import { createSnapshotFiles, RUNTIME_PATHS } from "./snapshot-files.mjs";
 import { assembleSnapshotIdentity, validateModelBytes } from "./snapshot-identity.mjs";
+import { inspectReopenedInputs } from "./snapshot-reopen.mjs";
 import { createSnapshotIO } from "./snapshot-io.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
 
@@ -205,7 +206,7 @@ export async function captureInputs(options, context) {
     CAPTURES.set(context.lifetime, captures);
   }
   captures.set(workspace.workspaceId, {
-    repoRoot: context.repoRoot, workspaceRoot: own.workspaceRoot,
+    repoRoot: context.repoRoot, recordRoot: context.repoRoot, workspaceRoot: own.workspaceRoot,
     inputs: freezeDeep(copy(inputs)), producerSetup,
   });
   return Object.freeze({ workspace, inputs: freezeDeep(inputs),
@@ -265,7 +266,7 @@ export async function verifyIdentity(options, context) {
     harnessFiles: original(own.inputs.harness.files, "harness"),
     pythonFiles: candidateFiles.filter((ref) => PYTHON_MODULES.includes(ref.path)),
     environment: await verifyEnvironment({
-      expectedEnvironment: own.expectedCommonIdentity.environment, recordRoot: captured.repoRoot,
+      expectedEnvironment: own.expectedCommonIdentity.environment, recordRoot: captured.recordRoot,
       setupFiles: captured.producerSetup.map((file) => ({ path: file.path, bytes: observed.get(file.path) })),
     }, { budget: context.budget, lifetime: context.lifetime }),
   });
@@ -274,4 +275,24 @@ export async function verifyIdentity(options, context) {
   }
   context.budget.assertLive("snapshot verified");
   return actualIdentity;
+}
+
+export async function reopenInputs(options, context) {
+  context = contextFor(context, "repoRoot");
+  const own = freezeDeep(copy(options));
+  const reopened = await inspectReopenedInputs(own, context);
+  let captures = CAPTURES.get(context.lifetime);
+  if (captures === undefined) {
+    captures = new Map();
+    CAPTURES.set(context.lifetime, captures);
+  }
+  captures.set(reopened.workspace.workspaceId, {
+    repoRoot: reopened.repoRoot, recordRoot: reopened.recordRoot,
+    workspaceRoot: own.workspaceRoot,
+    inputs: reopened.inputs, producerSetup: ownSetup(reopened.producerSetup),
+  });
+  return Object.freeze({
+    workspace: reopened.workspace, inputs: reopened.inputs,
+    frozenCliPath: path.join(own.workspaceRoot, "inputs/harness/train/scripts/browser_eval/cli.mjs"),
+  });
 }

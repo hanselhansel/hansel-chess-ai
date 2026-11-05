@@ -1,7 +1,8 @@
 # Evaluation fixtures
 
-Machine-readable shared inputs for the tinyaz verification plan. These are
-evaluation fixtures, not application endpoints, and not the final-opening set.
+Machine-readable evaluation inputs for the tinyaz verification plan, not
+application endpoints. Parity, development and control fixtures stay separate
+from the locked final-opening fixture in `browser-openings.json`.
 
 ## browser-parity.json
 
@@ -32,5 +33,22 @@ Schema: `{"schemaVersion": 1, "cases": [...]}`. Each case has exactly:
   finite logit/value within `1e-4 + 1e-4 * abs(python)` at CPU Float32, one
   thread. Passing fixture checks here are not parity or K2 closure.
 
-Final-opening game fixtures live in `browser-openings.json` (planned) and are
-a separate control set; never tune on the final set.
+Final-opening prefixes live in `browser-openings.json` as a separate locked
+control set. Never tune on the final set.
+
+## browser-protocol.json
+
+The closed protocol binds existing conventions, literal limits and every
+required check group. It fixes five fresh requests per arm, the disjoint
+A/A control FEN, and the declared comparison size. The runtime validator
+rejects missing checks, changed limits and unknown fields. These are method
+inputs, not evidence that a check or game passed.
+
+## browser-openings.json
+
+The ordered entries preserve the twenty Runtime-section-6 opening prefixes,
+IDs p01 through p20, full initial FENs and exact six-ply UCI histories.
+Rules-only validation requires distinct nonterminal White-to-move end
+positions. Compare uses both color-swapped games in each pair before the
+next pair. Preflight consumes its separate A/A fixture and no final opening.
+No browser, model or strength game runs while validating these JSON inputs.

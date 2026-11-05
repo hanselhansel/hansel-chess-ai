@@ -13,7 +13,7 @@ import { createBudgetHandle } from "./process-budget.mjs";
 import { BASELINE_COMMIT, FIXTURE_PATHS, MODEL_IDENTITY, PYTHON_MODULES } from "./schema-constants.mjs";
 import { createSnapshotFiles, RUNTIME_PATHS } from "./snapshot-files.mjs";
 import { inventoryDigest, validateModelBytes } from "./snapshot-identity.mjs";
-import { captureInputs, verifyIdentity } from "./snapshots.mjs";
+import { captureInputs, verifyIdentity, reopenInputs } from "./snapshots.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
 import { fixtureCommonIdentity, fixtureManifest } from "./test-fixtures.mjs";
 import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
@@ -118,7 +118,7 @@ async function manifestFor(t, f, result) {
 }
 
 test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 91);
+  assert.equal(RUNTIME_PATHS.length, 93);
   assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
@@ -238,6 +238,11 @@ test("WORKTREE capture retains original inventories, readonly links and immutabl
   // Synthetic setup DATA is intentionally unable to obtain genuine
   // environment provenance, even after all frozen bytes match.
   await assert.rejects(verify(), /initial capture provenance/);
+  const freshOwner = createWatchdogLifetime();
+  registerFixtureTeardown(t, { afterSettle: () => freshOwner.whenSettled() });
+  await assert.rejects(own(t, () => reopenInputs({
+    workspaceRoot: f.workspaceRoot, candidate: "WORKTREE",
+  }, { ...f.context, lifetime: freshOwner })), /missing retained setup evidence/);
   await assert.rejects(f.capture(), (error) => error.code === "EEXIST");
 });
 
