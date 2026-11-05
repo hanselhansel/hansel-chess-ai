@@ -22,23 +22,24 @@ import {
   createBackendIdentityExpectation,
 } from "./process-backend-reader.mjs";
 import { fixtureCommonIdentity } from "./test-fixtures.mjs";
-import {
-  PYTHON_EXECUTABLE,
-  PYTHON_PREFIX,
-  PYTHON_VERSION,
-} from "./schema-constants.mjs";
+import { PYTHON_PREFIX, PYTHON_VERSION } from "./schema-constants.mjs";
 import {
   fakeClock,
   fakeFile as file,
   fakeFileSystem as boundFs,
 } from "./supervision-test-fixtures.mjs";
+import {
+  BACKEND_SETUP,
+  backendSetupAdapters as adapters,
+  backendSetupFiles as fullFs,
+  backendSetupReady as ready,
+} from "./process-backend-test-fixtures.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
 import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
 
-const PY = PYTHON_EXECUTABLE; // the frozen selected interpreter
-const ROOT = "/record";
-const PLIST = "/System/Library/CoreServices/SystemVersion.plist";
-const CFG = `${PYTHON_PREFIX}/pyvenv.cfg`;
+const {
+  PY, ROOT, PLIST, CFG, HOME, LAUNCH, BASE, HELPERS, CFG_TEXT,
+} = BACKEND_SETUP;
 const acct = (p) =>
   p.then(
     () => {
@@ -47,77 +48,16 @@ const acct = (p) =>
     (e) => assert.equal(e.code, "ACCOUNTING_UNAVAILABLE"),
   );
 
-// The Homebrew-style layout the tests share: the venv invocation and
-// the base interpreter's home/python3.11 both resolve to the SAME
-// canonical launcher, whose parent-parent is the real basePrefix.
-const HOME = "/opt/py311/bin";
-const LAUNCH = `${HOME}/python3.11`;
-const BASE = "/opt/py311";
-const resolveLaunch = (p) => (p === PY || p === LAUNCH ? LAUNCH : p);
-
-const ready = () => ({
-  platform: "darwin",
-  arch: "arm64",
-  abi: { bsdInfoSize: 136, taskInfoSize: 96 },
-  python: {
-    executable: PYTHON_EXECUTABLE,
-    prefix: PYTHON_PREFIX,
-    basePrefix: BASE,
-    version: PYTHON_VERSION,
-  },
-});
-
-const HELPERS = [
-  `${ROOT}/process-macos.py`,
-  `${ROOT}/process-macos-native.py`,
-  `${ROOT}/process-macos-abi.py`,
-];
-
-// The direct-image config: the recorded executable and the resolved
-// home/python3.11 bind to the same canonical launcher, and the
-// command is the bound `<homePy> -m venv <prefix>` literal.
-const CFG_TEXT = [
-  `home = ${HOME}`,
-  "include-system-site-packages = false",
-  `version = ${PYTHON_VERSION}`,
-  `executable = ${LAUNCH}`,
-  `command = ${LAUNCH} -m venv ${PYTHON_PREFIX}`,
-  "",
-].join("\n");
-
-const fullFs = () => ({
-  [PLIST]: file(
-    "<plist><key>ProductBuildVersion</key><string>25A123</string></plist>",
-  ),
-  [CFG]: file(CFG_TEXT),
-  [LAUNCH]: file("python-bytes"),
-  [HELPERS[0]]: file("entry"),
-  [HELPERS[1]]: file("core"),
-  [HELPERS[2]]: file("abi"),
-  "/usr/lib/libproc.dylib": file("libproc-bytes"),
-  "/usr/sbin/lsof": file("lsof-bytes"),
-});
-
-const adapters = (fs, extra = {}) => ({
-  pythonExecutable: PY,
-  helperPaths: HELPERS,
-  recordRoot: ROOT,
-  statFile: fs.statFile,
-  createStream: fs.createStream,
-  resolvePath: resolveLaunch,
-  osRelease: () => "25.6.0",
-  osVersion: () => "Darwin 25.6.0",
-  // Explicit trusted host fakes keep the isolated units portable;
-  // they are never availability evidence.
-  osPlatform: () => "darwin",
-  osArch: () => "arm64",
-  ...extra,
-});
-
 const captureReady = (fs, extra = {}) =>
   captureBackendIdentity({ ready: ready(), ...adapters(fs, extra) });
+// The setup entry REQUIRES the isolated setup python metadata as
+// static expectation data — supplied here only, never through the
+// factory's captureOptions.
 const captureSetup = (fs, extra = {}) =>
-  captureSetupBackendIdentity(adapters(fs, extra));
+  captureSetupBackendIdentity({
+    setupPythonMetadata: ready().python,
+    ...adapters(fs, extra),
+  });
 const handle = (clock, ms = 90000) =>
   createBudgetHandle({
     deadlineMonoMs: clock.nowMs() + ms,
@@ -141,10 +81,19 @@ test("the config-derived static descriptor equals the verified capture on the sa
 // The framework launcher layout: the recorded executable and the
 // resolved home/python3.11 bind to the same canonical launcher while
 // the process image hashes the distinct Python.app payload bytes.
+// The RAW basePrefix stays an /opt/homebrew-style alias whose
+// canonical path is the framework version root.
 const FW_ROOT = "/opt/fw/Python.framework/Versions/3.11";
 const FW_LAUNCHER = `${FW_ROOT}/bin/python3.11`;
 const FW_PAYLOAD = `${FW_ROOT}/Resources/Python.app/Contents/MacOS/Python`;
-const fwResolve = (p) => (p === PY || p === FW_LAUNCHER ? FW_LAUNCHER : p);
+const FW_BASE_RAW =
+  "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11";
+const fwResolve = (p) =>
+  p === PY || p === FW_LAUNCHER
+    ? FW_LAUNCHER
+    : p === FW_BASE_RAW
+      ? FW_ROOT
+      : p;
 
 test("the setup capture retains and hashes both launcher and payload bytes", async () => {
   const fwCfg = [
@@ -161,7 +110,18 @@ test("the setup capture retains and hashes both launcher and payload bytes", asy
     [FW_LAUNCHER]: file("launcher-bytes"),
     [FW_PAYLOAD]: file("payload-bytes"),
   });
-  const id = await captureSetup(fs, { resolvePath: fwResolve });
+  const fwPython = { ...ready().python, basePrefix: FW_BASE_RAW };
+  const [id, verified] = await Promise.all([
+    captureSetup(fs, {
+      resolvePath: fwResolve,
+      setupPythonMetadata: fwPython,
+    }),
+    captureBackendIdentity({
+      ready: { ...ready(), python: fwPython },
+      ...adapters(fs, { resolvePath: fwResolve }),
+    }),
+  ]);
+  assert.deepEqual(id, verified);
   assert.equal(id.python.realPath, FW_LAUNCHER);
   assert.equal(
     id.python.sha256,
@@ -171,7 +131,9 @@ test("the setup capture retains and hashes both launcher and payload bytes", asy
     realPath: FW_PAYLOAD,
     sha256: createHash("sha256").update("payload-bytes").digest("hex"),
   });
-  assert.equal(id.python.basePrefix, FW_ROOT);
+  // The RAW sys.base_prefix alias is preserved verbatim — never the
+  // canonical framework root it resolves to.
+  assert.equal(id.python.basePrefix, FW_BASE_RAW);
 });
 
 test("a non-darwin host or malformed host adapter rejects before any IO", async () => {
@@ -180,11 +142,29 @@ test("a non-darwin host or malformed host adapter rejects before any IO", async 
     { osArch: () => "x64" },
     { osPlatform: 42 },
     { osArch: null },
+    // Malformed setup-python metadata — null, extra-field and
+    // schema-drifted version/executable/prefix/basePrefix — fails the
+    // same synchronous closed check before any IO.
+    { setupPythonMetadata: null },
+    { setupPythonMetadata: { ...ready().python, extra: "x" } },
+    { setupPythonMetadata: { ...ready().python, version: "3.10.9" } },
+    {
+      setupPythonMetadata: {
+        ...ready().python,
+        executable: "/elsewhere/bin/python",
+      },
+    },
+    { setupPythonMetadata: { ...ready().python, prefix: "/elsewhere" } },
+    { setupPythonMetadata: { ...ready().python, basePrefix: "rel/base" } },
   ]) {
     const fs = boundFs(fullFs());
     await acct(captureSetup(fs, extra));
     assert.equal(fs.calls.length, 0);
   }
+  // An absent setupPythonMetadata is the same pre-IO rejection.
+  const fs = boundFs(fullFs());
+  await acct(captureSetupBackendIdentity(adapters(fs)));
+  assert.equal(fs.calls.length, 0);
 });
 
 test("the strict config parser fails closed on every malformed variant", () => {
@@ -247,6 +227,14 @@ test("home, executable and command bindings fail closed on the actual config", a
         " -m venv /opt/other",
       ))),
     ),
+  );
+  // A schema-valid metadata whose RAW basePrefix resolves to a
+  // different canonical root than the launcher's parent-parent fails
+  // closed on the same actual facts.
+  await acct(
+    captureSetup(boundFs(fullFs()), {
+      setupPythonMetadata: { ...ready().python, basePrefix: "/opt/other" },
+    }),
   );
 });
 

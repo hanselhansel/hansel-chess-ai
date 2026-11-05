@@ -29,8 +29,10 @@ import path from "node:path";
 import { assertBackendIdentity } from "./record-schema.mjs";
 import { createBudgetHandle, waitHandle } from "./process-budget.mjs";
 import {
+  capturePythonSetupMetadata,
   createBackendReader,
   createBackendIdentityExpectation,
+  defaultReadOsBuild,
   parsePythonVenvConfiguration,
   resolvePythonProcessImage,
 } from "./process-backend-reader.mjs";
@@ -38,8 +40,6 @@ import { isAbs, isObj, strNE } from "./protocol-values.mjs";
 
 const LIBPROC_PATH = "/usr/lib/libproc.dylib";
 const LSOF_PATH = "/usr/sbin/lsof";
-const SYSTEM_VERSION_PLIST =
-  "/System/Library/CoreServices/SystemVersion.plist";
 const HELPER_NAMES = new Set([
   "process-macos.py", "process-macos-native.py", "process-macos-abi.py",
 ]);
@@ -58,25 +58,14 @@ const acct = (detail) => {
   return e;
 };
 
-// The real OS build comes from the fixed SystemVersion.plist — bounded
-// same-process metadata evidence, never a sysctl child or a release()
-// fallback. A missing or unpinned build string is unavailable evidence.
-const defaultReadOsBuild = async (readFile) => {
-  const plist = await readFile(SYSTEM_VERSION_PLIST, "utf8");
-  const m = plist.match(
-    /<key>ProductBuildVersion<\/key>\s*<string>([0-9A-Za-z]{4,20})<\/string>/,
-  );
-  if (!m) throw acct("os build evidence");
-  return m[1];
-};
-
 // The ONE shared bounded static file/OS/hash assembly backing both
 // public entries — an internal function, never a public proof knob.
 // It owns the original entry-horizon/receipts/readFact composition and
 // every identical stage; `setup` selects the actual selected-venv
-// config read that derives the expected python metadata, while
-// `pyMeta` supplies the monitor-verified ready facts on the fresh
-// entry. No second reader, queue, clock or ledger exists.
+// config read that BINDS the supplied python metadata, while `pyMeta`
+// carries the genuine verified-ready facts on the monitor entry and
+// the isolated setup data on the static entry. No
+// second reader, queue, clock or ledger exists.
 const assembleBackendIdentity = async ({
   setup,
   pyMeta,
@@ -167,7 +156,7 @@ const assembleBackendIdentity = async ({
   };
 
   try {
-    let meta = pyMeta;
+    const meta = pyMeta;
     let pyReal;
     if (setup) {
       // The static entry binds the ACTUAL host before any config/FS
@@ -209,10 +198,18 @@ const assembleBackendIdentity = async ({
       if (cfg.command !== `${homePy} -m venv ${prefix}`) {
         throw acct("venv config command");
       }
-      meta = {
-        version: cfg.version, executable: pythonExecutable, prefix,
-        basePrefix: path.dirname(path.dirname(pyReal)),
-      };
+      // The supplied static python metadata is bound to the same
+      // canonical facts — the version pinned by the cfg and the RAW
+      // basePrefix resolving to the launcher's parent-parent — while
+      // the recorded value preserves the interpreter's raw alias
+      // verbatim, never the resolved canonical path.
+      if (
+        !isObj(meta) ||
+        meta.version !== cfg.version ||
+        liveResolve(meta.basePrefix) !== path.dirname(path.dirname(pyReal))
+      ) {
+        throw acct("venv config python metadata");
+      }
     }
     const osBuild = await waitHandle(
       handle,
@@ -342,7 +339,12 @@ export async function captureSetupBackendIdentity(options) {
   if (!isObj(options) || "ready" in options) {
     throw acct("setup options");
   }
-  return assembleBackendIdentity({ ...options, setup: true });
+  // The isolated setup python metadata is a REQUIRED static fact
+  // set, validated and copied synchronously BEFORE any IO; its raw
+  // basePrefix is bound to the canonical launcher layout inside the
+  // SAME assembly slot as the verified-ready entry.
+  const pyMeta = capturePythonSetupMetadata(options.setupPythonMetadata);
+  return assembleBackendIdentity({ ...options, setup: true, pyMeta });
 }
 
 // The pure monitor backend-capture factory (C4b-09): it holds the

@@ -18,9 +18,13 @@ import { realpathSync } from "node:fs";
 import path from "node:path";
 
 import { waitHandle } from "./process-budget.mjs";
-import { isAbs, isObj } from "./protocol-values.mjs";
+import { exactFields, isAbs, isObj } from "./protocol-values.mjs";
 import { assertBackendIdentity } from "./record-schema.mjs";
-import { PYTHON_VERSION } from "./schema-constants.mjs";
+import {
+  PYTHON_EXECUTABLE,
+  PYTHON_PREFIX,
+  PYTHON_VERSION,
+} from "./schema-constants.mjs";
 import { deepEqual, freezeDeep } from "./schema-primitives.mjs";
 
 const acct = (detail) => {
@@ -337,3 +341,48 @@ export function createBackendIdentityExpectation(value) {
     },
   });
 }
+
+// The strict setup-python metadata capture — a pure data helper over
+// the caller-supplied isolated setup fact set. The value is
+// the static expectation the bounded setup entry binds to the actual
+// selected-venv configuration: a plain object with EXACTLY the four
+// keys, the pinned version/executable/prefix schema facts and an
+// absolute RAW sys.base_prefix. The raw alias is preserved verbatim —
+// canonicalization is a binding check in the caller, never a rewrite —
+// so the recorded basePrefix equals the interpreter's own report.
+// Absent, null, malformed or extra-field values fail closed
+// synchronously BEFORE any IO; the returned copy is frozen before any
+// await can interleave and no resolve, callback, clock, queue or
+// owner exists here.
+export function capturePythonSetupMetadata(value) {
+  if (
+    !exactFields(value, ["version", "executable", "prefix", "basePrefix"]) ||
+    value.version !== PYTHON_VERSION ||
+    value.executable !== PYTHON_EXECUTABLE ||
+    value.prefix !== PYTHON_PREFIX ||
+    !isAbs(value.basePrefix)
+  ) {
+    throw acct("python setup metadata");
+  }
+  return Object.freeze({
+    version: value.version,
+    executable: value.executable,
+    prefix: value.prefix,
+    basePrefix: value.basePrefix,
+  });
+}
+
+const SYSTEM_VERSION_PLIST =
+  "/System/Library/CoreServices/SystemVersion.plist";
+
+// The real OS build comes from the fixed SystemVersion.plist — bounded
+// same-process metadata evidence, never a sysctl child or a release()
+// fallback. A missing or unpinned build string is unavailable evidence.
+export const defaultReadOsBuild = async (readFile) => {
+  const plist = await readFile(SYSTEM_VERSION_PLIST, "utf8");
+  const m = plist.match(
+    /<key>ProductBuildVersion<\/key>\s*<string>([0-9A-Za-z]{4,20})<\/string>/,
+  );
+  if (!m) throw acct("os build evidence");
+  return m[1];
+};
