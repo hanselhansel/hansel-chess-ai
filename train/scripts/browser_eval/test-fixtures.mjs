@@ -7,6 +7,7 @@
 // functional-runtime input union. A synthetic fixture pass is never an
 // actual phase or cleanup pass.
 
+import assert from "node:assert/strict";
 import { promises as fsp } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -20,6 +21,18 @@ import {
 import { createArtifactStore } from "./artifact-store.mjs";
 import { createPhaseRecorder, writeWorkspaceOnce } from "./records.mjs";
 import { PYTHON_EXECUTABLE, PYTHON_PREFIX, PYTHON_VERSION } from "./schema-constants.mjs";
+
+// Shared rejection-code assertion: awaits the promise, requires the
+// thrown value to carry the expected code and fails otherwise.
+export const assertRejectCode = async (promise, want) => {
+  try {
+    await promise;
+  } catch (e) {
+    assert.equal(e.code, want);
+    return;
+  }
+  assert.fail(`expected ${want}`);
+};
 
 const h = (seed) => `${seed}`.padStart(64, "0").slice(0, 64).replace(/[^0-9a-f]/g, "0");
 export const H = (seed) => h(seed);
@@ -37,6 +50,11 @@ const PY_RUNTIME = Object.freeze({
   invocationPath: PYTHON_EXECUTABLE,
   realPath: `${PYTHON_PREFIX}/bin/python3.11`,
   sha256: h(11),
+  processImage: Object.freeze({
+    realPath:
+      "/opt/homebrew/opt/python@3.11/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python",
+    sha256: h(12),
+  }),
   version: PYTHON_VERSION,
   executable: PYTHON_EXECUTABLE,
   prefix: PYTHON_PREFIX,
@@ -278,7 +296,7 @@ export const verifyCallbacks = ({ commonIdentity, cleanupProof } = {}) => ({
 export async function makeRecorder({ manifest, workspace, callbacks, env } = {}) {
   const base = env ?? (await makeWorkspace());
   const ws = workspace ?? base.ws;
-  const mf = manifest ?? fixtureManifest({ workspace: ws });
+  const mf = manifest ?? fixtureManifest({ workspace: ws, inputs: base.inputs });
   const cb = callbacks ?? verifyCallbacks({ commonIdentity: ws.commonIdentity });
   const recorder = createPhaseRecorder({
     store: base.store,

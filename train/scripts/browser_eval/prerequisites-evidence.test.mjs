@@ -9,6 +9,7 @@ import assert from "node:assert/strict";
 import { promises as fsp } from "node:fs";
 import path from "node:path";
 import test from "node:test";
+import { artifactStoreLifetime } from "./artifact-store.mjs";
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { REQUIRED_CHECK_IDS } from "./record-schema.mjs";
 import { admitPhase, verifyReceipt } from "./prerequisites.mjs";
@@ -35,6 +36,17 @@ const code = async (promise, want) => {
 };
 
 const gone = async () => "gone";
+
+// A denied phase leaves no canonical completion.json, and the SAME
+// genuine owner drains once the failed publication is actually
+// contained — physical debt, never a caught error, is the proof.
+const absentAndSettled = async (env, phase) => {
+  await code(
+    fsp.lstat(path.join(env.workspaceRoot, phase, "completion.json")),
+    "ENOENT",
+  );
+  await artifactStoreLifetime(env.store).whenSettled();
+};
 
 // A real check-phase receipt whose verified-delivery check cites one real
 // retained evidence file written through the recorder's own artifact lane.
@@ -113,29 +125,28 @@ test("an input ref that never existed on disk is not admitted", async () => {
   const cb = verifyCallbacks({ commonIdentity: env.ws.commonIdentity });
   cb.verifyCleanup.impl = async () => proof("phase-workload", identity(4242));
   const rec = await makeRecorder({ env, manifest: mf, callbacks: cb });
-  const completionRef = await rec.recorder.finalize({
-    intent: {
-      status: "passed",
-      exitCode: 0,
-      stopReason: null,
-      summary: {},
-      unplannedFaultCount: 0,
-      analysisEligible: false,
-    },
-    checks: REQUIRED_CHECK_IDS.check
-      .filter((id) => id !== "cleanup")
-      .map((id) => ({ id, status: "passed", evidencePaths: [] })),
-    prerequisites: [],
-    expectedSelfTest: null,
-  });
+  // The mandatory full-graph check before publication now denies the
+  // ghost declared input inside finalize itself: no completionRef is
+  // ever minted for the malformed manifest.
   await code(
-    verifyReceipt({
-      workspaceRoot: env.workspaceRoot,
-      completionRef,
-      expectedIdentity: env.ws.commonIdentity,
+    rec.recorder.finalize({
+      intent: {
+        status: "passed",
+        exitCode: 0,
+        stopReason: null,
+        summary: {},
+        unplannedFaultCount: 0,
+        analysisEligible: false,
+      },
+      checks: REQUIRED_CHECK_IDS.check
+        .filter((id) => id !== "cleanup")
+        .map((id) => ({ id, status: "passed", evidencePaths: [] })),
+      prerequisites: [],
+      expectedSelfTest: null,
     }),
     "EVIDENCE_INCOMPLETE",
   );
+  await absentAndSettled(env, "check");
 });
 
 test("check evidence binds the declared inventory and tampering fails", async () => {
@@ -203,26 +214,26 @@ test("the nested selftest is admitted on outcome, not merely presence", async ()
       analysisEligible: false,
     },
   });
-  const preflight = await runReceiptPhase({
-    env,
-    phase: "preflight",
-    prerequisites: [
-      { phase: "check", runId: "run-check", completion: check.completionRef },
-      { phase: "parity", runId: "run-parity", completion: parity.completionRef },
-    ],
-    expectedSelfTest: {
-      completion: selftest.completionRef,
-      expectedStopReason: "HEARTBEAT_TIMEOUT",
-    },
-  });
+  // The failed selftest is still a legitimate standalone receipt, but
+  // the mandatory full-graph check before publication now denies the
+  // parent preflight inside its own generation — no canonical
+  // preflight/completion.json is ever minted.
   await code(
-    verifyReceipt({
-      workspaceRoot: env.workspaceRoot,
-      completionRef: preflight.completionRef,
-      expectedIdentity: env.ws.commonIdentity,
+    runReceiptPhase({
+      env,
+      phase: "preflight",
+      prerequisites: [
+        { phase: "check", runId: "run-check", completion: check.completionRef },
+        { phase: "parity", runId: "run-parity", completion: parity.completionRef },
+      ],
+      expectedSelfTest: {
+        completion: selftest.completionRef,
+        expectedStopReason: "HEARTBEAT_TIMEOUT",
+      },
     }),
     "SELFTEST_INVALID",
   );
+  await absentAndSettled(env, "preflight");
 });
 
 test("a selftest owner that mismatches the parent supervisor fails", async () => {
@@ -242,26 +253,24 @@ test("a selftest owner that mismatches the parent supervisor fails", async () =>
       { phase: "check", runId: "run-check", completion: check.completionRef },
     ],
   });
-  const preflight = await runReceiptPhase({
-    env,
-    phase: "preflight",
-    prerequisites: [
-      { phase: "check", runId: "run-check", completion: check.completionRef },
-      { phase: "parity", runId: "run-parity", completion: parity.completionRef },
-    ],
-    expectedSelfTest: {
-      completion: selftest.completionRef,
-      expectedStopReason: "HEARTBEAT_TIMEOUT",
-    },
-  });
+  // The wrong nested owner likewise fails the parent's mandatory
+  // pre-publication graph check inside its own generation.
   await code(
-    verifyReceipt({
-      workspaceRoot: env.workspaceRoot,
-      completionRef: preflight.completionRef,
-      expectedIdentity: env.ws.commonIdentity,
+    runReceiptPhase({
+      env,
+      phase: "preflight",
+      prerequisites: [
+        { phase: "check", runId: "run-check", completion: check.completionRef },
+        { phase: "parity", runId: "run-parity", completion: parity.completionRef },
+      ],
+      expectedSelfTest: {
+        completion: selftest.completionRef,
+        expectedStopReason: "HEARTBEAT_TIMEOUT",
+      },
     }),
     "SELFTEST_INVALID",
   );
+  await absentAndSettled(env, "preflight");
 });
 
 test("loadRecord binds the parsed record to the declared stable bytes", async () => {

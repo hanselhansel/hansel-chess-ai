@@ -1,8 +1,10 @@
 // Finalization-output regressions: literal positive check/exit-code output,
 // cleanup-event admittance through finalizing until sink closure and their
 // post-closure hashes, immutable caller snapshots, competing-finalizer
-// rejection and post-close refusal. Driven on real temporary workspaces;
-// fixture passes are never actual phase or cleanup evidence.
+// rejection and post-close refusal. The discovered unfinished-evidence
+// closure cases live in record-lifecycle.test.mjs. Driven on real
+// temporary workspaces; fixture passes are never actual phase or cleanup
+// evidence.
 
 import assert from "node:assert/strict";
 import { promises as fsp } from "node:fs";
@@ -18,7 +20,7 @@ import {
   makeRecorder,
   makeWorkspace,
   proof,
-  ref,
+  runReceiptPhase,
   verifyCallbacks,
 } from "./test-fixtures.mjs";
 
@@ -205,7 +207,8 @@ test("a competing finalizer is rejected while the first completes", async () => 
 
 test("prerequisite inputs are snapshotted before the first await", async () => {
   const env = await makeWorkspace();
-  const parent = { phase: "check", runId: "run-check", completion: ref("check/completion.json", 1, 9) };
+  const ancestor = await runReceiptPhase({ env, phase: "check", runId: "run-check" });
+  const parent = { phase: "check", runId: ancestor.mf.runId, completion: ancestor.completionRef };
   const mf = fixtureManifest({
     workspace: env.ws,
     phase: "parity",

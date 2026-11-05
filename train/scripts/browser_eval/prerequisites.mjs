@@ -2,16 +2,19 @@
 // workspace admission. Read-only: it never writes, signals or upgrades
 // evidence. Every admission sits behind the mandatory live-identity probe
 // and a full CommonIdentity snapshot, never a caller-supplied digest alone.
-// The parsed record bytes are the exact stable bytes bound to the declared
-// hashes; retained input and check-evidence refs are verified against the
-// same inventory and the nested selftest receipt is admitted semantically.
-// Confined byte/ref IO lives in receipt-files.mjs.
+// The whole exact-byte receipt-graph core — inventory, record binding,
+// identity, check/input/selftest and closure verification — delegates to
+// receipt-verification.mjs; confined byte/ref IO lives in
+// receipt-files.mjs. The optional private io is the EXACT frozen
+// same-owner {retainActual} forwarded unchanged through the graph and
+// the direct incomplete-phase filesystem calls: absent keeps legacy
+// untimed reads, a malformed supplied binding rejects before any
+// filesystem operation, and no new ledger, noop or fallback is created.
 
 import { promises as fsp } from "node:fs";
 import path from "node:path";
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import {
-  assertRecord,
   assertArtifactRef,
   assertProcessIdentity,
   assertCommonIdentity,
@@ -19,8 +22,13 @@ import {
 } from "./record-schema.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
 import { isCleanupProven } from "./record-finalization.mjs";
-import { phaseArtifactRefs } from "./artifact-store.mjs";
-import { confinedRead, loadRecord, verifyInputRefs } from "./receipt-files.mjs";
+import { issueActual, storeFail } from "./artifact-files.mjs";
+import {
+  verifyReceiptGraph,
+  selftestOutcome,
+  addClosure,
+} from "./receipt-verification.mjs";
+import { confinedRead, loadRecord } from "./receipt-files.mjs";
 
 const PHASES = ["check", "parity", "preflight", "compare"];
 
@@ -29,9 +37,6 @@ const fail = (code, detail) => {
   error.code = code;
   throw error;
 };
-
-const sameRef = (a, b) =>
-  a.path === b.path && a.byteLength === b.byteLength && a.sha256 === b.sha256;
 
 const probe = async (probeIdentity, identity) => {
   if (typeof probeIdentity !== "function") fail("PROBE_UNAVAILABLE", "probe missing");
@@ -45,201 +50,44 @@ const probe = async (probeIdentity, identity) => {
   fail("PROBE_UNAVAILABLE", "probe result");
 };
 
-// The exact internal selftest owner/outcome/cleanup binding shared by the
-// nested admission inside verifyReceipt and the public live-verification
-// API. Returns a failure detail or null.
-const selftestOutcome = (ev, parentRunId, parentSupervisor) => {
-  const owner = ev.manifest.owner;
-  if (
-    owner === null ||
-    owner.phase !== "preflight" ||
-    owner.runId !== parentRunId ||
-    !canonicalBytes(owner.supervisor).equals(canonicalBytes(parentSupervisor))
-  ) {
-    return "owner";
+// The optional private io binding is exactly {retainActual}: the same
+// owner registrar artifact-files threads through every raw effect and
+// real close. Absent keeps the legacy untimed read path; a malformed
+// supplied binding fails in the binding's own argument-error style
+// before any filesystem operation.
+const registrar = (io) => {
+  if (io === undefined) return null;
+  if (io === null || (typeof io !== "object" && typeof io !== "function")) {
+    storeFail("STORE_ARGS", "io");
   }
-  const f = ev.final;
-  if (
-    f.status !== "inconclusive" ||
-    f.exitCode !== 2 ||
-    f.stopReason !== "HEARTBEAT_TIMEOUT" ||
-    f.analysisEligible !== false ||
-    f.unplannedFaultCount !== 0 ||
-    f.summary.scoredGames !== 0 ||
-    !f.requiredChecks.every((x) => x.status === "passed")
-  ) {
-    return "outcome";
+  if (typeof io.retainActual !== "function") {
+    storeFail("STORE_ARGS", "io.retainActual");
   }
-  if (!isCleanupProven(f.cleanup, "selftest-workload", parentSupervisor)) {
-    return "cleanup";
-  }
-  return null;
+  return io.retainActual;
 };
 
-// Merges one verified child's transitive entries into the run closure,
-// rejecting two different receipts that claim the same phase.
-const addClosure = (byPhase, closure, entries) => {
-  for (const entry of entries) {
-    const prior = byPhase.get(entry.phase);
-    if (prior && !sameRef(prior.completionRef, entry.completionRef)) {
-      fail("EVIDENCE_MISMATCH", `conflicting ${entry.phase} parents`);
-    }
-    if (!prior) {
-      byPhase.set(entry.phase, entry);
-      closure.push(entry);
-    }
-  }
-};
+// Raw metadata effects pass the real registrar when io is bound; the
+// untimed path invokes the same thunk directly with identical guards.
+const track = (retain, thunk) =>
+  retain === null ? thunk() : issueActual(retain, thunk);
 
 // Canonical deep copy of a caller-supplied JSON value: the verifier works
 // from owned snapshots so later caller mutation cannot redirect reads,
 // weaken declared bindings or alias into frozen results.
 const copy = (value) => parseCanonicalBytes(canonicalBytes(value));
 
-export async function verifyReceipt({ workspaceRoot, completionRef, expectedIdentity }) {
+export async function verifyReceipt({ workspaceRoot, completionRef, expectedIdentity }, io) {
+  registrar(io);
   assertArtifactRef(completionRef);
   assertCommonIdentity(expectedIdentity);
   const ref = copy(completionRef);
   const identity = copy(expectedIdentity);
-  return verifyReceiptInner(
+  return verifyReceiptGraph(
     { workspaceRoot, completionRef: ref, expectedIdentity: identity },
     new Map(),
+    io,
   );
 }
-
-const verifyReceiptInner = async ({ workspaceRoot, completionRef, expectedIdentity }, memo) => {
-  const root = path.resolve(workspaceRoot);
-  const prior = memo.get(completionRef.path);
-  if (prior !== undefined) {
-    // A shared ancestor is verified once; a second reference must declare
-    // the exact same bytes, never a different receipt under the same path.
-    if (!sameRef(prior.completionRef, completionRef)) {
-      fail("EVIDENCE_MISMATCH", "shared receipt ref");
-    }
-    return prior;
-  }
-  const bytes = await confinedRead(root, completionRef.path, "completion");
-  if (bytes.length !== completionRef.byteLength || sha256Bytes(bytes) !== completionRef.sha256) {
-    fail("EVIDENCE_MISMATCH", "completion ref");
-  }
-  const completion = parseCanonicalBytes(bytes);
-  assertRecord("completion", completion);
-  const phaseDir = path.posix.dirname(completionRef.path);
-  const wantDir = completion.phase === "watchdog-selftest" ? "preflight/selftest" : completion.phase;
-  if (phaseDir !== wantDir) fail("EVIDENCE_MISMATCH", "phase directory");
-
-  const inventory = await phaseArtifactRefs({ workspaceRoot: root, phaseDirectory: phaseDir });
-  if (
-    inventory.length !== completion.artifacts.length ||
-    inventory.some((ref, i) => !sameRef(ref, completion.artifacts[i]))
-  ) {
-    fail("EVIDENCE_INCOMPLETE", "artifact inventory");
-  }
-  const byPath = new Map(inventory.map((r) => [r.path, r]));
-  const loadBound = (name, kind) => {
-    const declared = byPath.get(`${phaseDir}/${name}`);
-    if (declared === undefined) fail("EVIDENCE_INCOMPLETE", name);
-    return loadRecord(root, `${phaseDir}/${name}`, kind, declared);
-  };
-  const manifest = await loadBound("manifest.json", "manifest");
-  const running = await loadBound("running.json", "running");
-  const final = await loadBound("final.json", "final");
-  const workspace = await loadRecord(root, "workspace.json", "workspace");
-  await verifyInputRefs(root, manifest.value.inputs);
-  for (const check of final.value.requiredChecks) {
-    for (const r of check.evidence) {
-      const declared = byPath.get(r.path);
-      if (declared === undefined || !sameRef(declared, r)) {
-        fail("EVIDENCE_INCOMPLETE", `check evidence ${r.path}`);
-      }
-    }
-  }
-
-  const canonIdentity = canonicalBytes(expectedIdentity);
-  if (!canonIdentity.equals(canonicalBytes(workspace.value.commonIdentity))) {
-    fail("EVIDENCE_MISMATCH", "commonIdentity");
-  }
-  const identityHash = sha256Bytes(canonIdentity);
-  if (completion.commonIdentitySha256 !== identityHash) {
-    fail("EVIDENCE_MISMATCH", "identity hash");
-  }
-  if (workspace.value.workspaceId !== completion.workspaceId) {
-    fail("EVIDENCE_MISMATCH", "workspaceId");
-  }
-  for (const [rec, name] of [
-    [manifest.value, "manifest"],
-    [running.value, "running"],
-    [final.value, "final"],
-  ]) {
-    if (
-      rec.workspaceId !== completion.workspaceId ||
-      rec.runId !== completion.runId ||
-      rec.phase !== completion.phase ||
-      rec.commonIdentitySha256 !== identityHash
-    ) {
-      fail("EVIDENCE_MISMATCH", `${name} fields`);
-    }
-  }
-  if (
-    final.value.status !== completion.status ||
-    final.value.exitCode !== completion.exitCode ||
-    !canonicalBytes(manifest.value.prerequisites).equals(canonicalBytes(completion.prerequisites))
-  ) {
-    fail("EVIDENCE_MISMATCH", "final/prerequisite fields");
-  }
-
-  if (completion.phase === "preflight") {
-    const nestedRef = completion.expectedSelfTest.completion;
-    const fixedPath = `${phaseDir}/selftest/completion.json`;
-    if (nestedRef.path !== fixedPath) fail("SELFTEST_INVALID", "selftest path");
-    const declared = byPath.get(fixedPath);
-    if (declared === undefined || !sameRef(declared, nestedRef)) {
-      fail("EVIDENCE_INCOMPLETE", "selftest ref");
-    }
-    const nested = await verifyReceiptInner(
-      { workspaceRoot: root, completionRef: nestedRef, expectedIdentity },
-      memo,
-    );
-    const detail = selftestOutcome(nested, completion.runId, running.value.supervisor);
-    if (detail !== null) fail("SELFTEST_INVALID", detail);
-  }
-
-  const closure = [];
-  const byPhase = new Map();
-  for (const parent of completion.prerequisites) {
-    const child = await verifyReceiptInner(
-      {
-        workspaceRoot: root,
-        completionRef: parent.completion,
-        expectedIdentity: workspace.value.commonIdentity,
-      },
-      memo,
-    );
-    if (child.phase !== parent.phase || child.runId !== parent.runId) {
-      fail("EVIDENCE_MISMATCH", "prerequisite ref");
-    }
-    addClosure(byPhase, closure, [
-      ...child.closure,
-      { phase: child.phase, runId: child.runId, completionRef: child.completionRef },
-    ]);
-  }
-  closure.sort((a, b) => (a.phase < b.phase ? -1 : 1));
-
-  const evidence = freezeDeep({
-    workspaceId: completion.workspaceId,
-    runId: completion.runId,
-    phase: completion.phase,
-    commonIdentity: workspace.value.commonIdentity,
-    completionRef,
-    completion,
-    final: final.value,
-    manifest: manifest.value,
-    running: running.value,
-    closure,
-  });
-  memo.set(completionRef.path, evidence);
-  return evidence;
-};
 
 const requirePassedParent = async (ev, probeIdentity) => {
   const f = ev.final;
@@ -255,7 +103,8 @@ const requirePassedParent = async (ev, probeIdentity) => {
   }
 };
 
-export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents, probeIdentity }) {
+export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents, probeIdentity }, io) {
+  registrar(io);
   const root = path.resolve(workspaceRoot);
   if (!PHASES.includes(phase)) fail("PREREQUISITE_INVALID", "phase");
   if (!Array.isArray(parents)) fail("PREREQUISITE_INVALID", "parents");
@@ -278,9 +127,10 @@ export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents
   const verified = [];
   for (const ref of ownParents) {
     verified.push(
-      await verifyReceiptInner(
+      await verifyReceiptGraph(
         { workspaceRoot: root, completionRef: ref, expectedIdentity: ownIdentity },
         memo,
+        io,
       ),
     );
   }
@@ -318,7 +168,8 @@ export async function verifyInternalSelfTest({
   parentSupervisor,
   expectedIdentity,
   probeIdentity,
-}) {
+}, io) {
+  registrar(io);
   const root = path.resolve(workspaceRoot);
   if (typeof parentRunId !== "string" || parentRunId.length === 0) {
     fail("SELFTEST_INVALID", "parentRunId");
@@ -329,9 +180,10 @@ export async function verifyInternalSelfTest({
   const ref = copy(completionRef);
   const identity = copy(expectedIdentity);
   const supervisor = copy(parentSupervisor);
-  const ev = await verifyReceiptInner(
+  const ev = await verifyReceiptGraph(
     { workspaceRoot: root, completionRef: ref, expectedIdentity: identity },
     new Map(),
+    io,
   );
   const bad = (detail) => fail("SELFTEST_INVALID", detail);
   if (ev.phase !== "watchdog-selftest") bad("phase");
@@ -347,7 +199,8 @@ export async function verifyInternalSelfTest({
   });
 }
 
-export async function inspectIncompletePhase({ workspaceRoot, phaseDirectory, probeIdentity }) {
+export async function inspectIncompletePhase({ workspaceRoot, phaseDirectory, probeIdentity }, io) {
+  const retain = registrar(io);
   const root = path.resolve(workspaceRoot);
   if (typeof phaseDirectory !== "string" || phaseDirectory.length === 0) {
     fail("DISPOSITION_INVALID", "phaseDirectory");
@@ -355,15 +208,18 @@ export async function inspectIncompletePhase({ workspaceRoot, phaseDirectory, pr
   const completionPath = `${phaseDirectory}/completion.json`;
   let running = null;
   try {
-    running = (await loadRecord(root, `${phaseDirectory}/running.json`, "running")).value;
+    running = (await loadRecord(root, `${phaseDirectory}/running.json`, "running", undefined, io)).value;
   } catch {
     running = null;
   }
-  const completionExists = await fsp
-    .lstat(path.resolve(root, completionPath))
-    .then(() => true, () => false);
+  const completionExists = await track(retain, () =>
+    fsp.lstat(path.resolve(root, completionPath)),
+  ).then(
+    () => true,
+    () => false,
+  );
   if (completionExists) {
-    const bytes = await confinedRead(root, completionPath, "completion");
+    const bytes = await confinedRead(root, completionPath, "completion", io);
     return freezeDeep({
       state: "complete",
       running,

@@ -59,6 +59,11 @@ export function createProtocolValidator({ runId }) {
     activateId,
     signalAuth,
     ownedRoots,
+    // The monitor's declared cached owned union, refreshed by every s2c
+    // sample request. Signal authorization may reach a native-bound
+    // workload descendant from this union while protected accounting
+    // roots stay refused through ownedRoots below.
+    ownedMembers: new Set(),
     getTeardownAuth: () => teardownAuth,
     // One shared sticky ordinary-work failure: any invalid known-channel
     // traffic or a collector accounting fault sets it. It blocks new
@@ -100,7 +105,7 @@ export function createProtocolValidator({ runId }) {
   // The exec-gate channel carries exactly one pre-authorized gated query at
   // sequence 0, bound byte-identically to the authorizeExecGate declaration.
   const execGate = (st, message) => {
-    need(st, execAuth !== null && !st.consumed, "exec unauthorized");
+    need(st, execAuth !== null, "exec unauthorized");
     envelope(st, "s2c", message, [...base, "requestId", "identity", "query"], runId);
     need(
       st,
@@ -113,6 +118,9 @@ export function createProtocolValidator({ runId }) {
     );
     activateId(execAuth.queryId, "query");
     st.consumed = true;
+    // Consumption frees the slot: a later gate gets its own fresh
+    // authorization under the same run-global ID registry.
+    execAuth = null;
   };
 
   const accept = (channel, direction, message, encodedByteLength) => {
@@ -169,13 +177,21 @@ export function createProtocolValidator({ runId }) {
       signalAuth.set(requestId, { identity: copyDeep(identity), signal });
     },
 
-    // Pre-authorizes the single gated-exec query: requestId reservation plus
-    // the exact identity and query the frame must carry.
+    // Pre-authorizes one gated-exec query: requestId reservation plus the
+    // exact identity and query the frame must carry. A fresh gate is
+    // admitted only after the previous authorization was consumed; the
+    // run-global ID registry and sticky failure are never reset.
     authorizeExecGate({ queryId, identity, query }) {
       if (execAuth !== null) fail("exec gate in use");
       if (!isIdentity(identity) || !isQuery(query)) fail("exec authorize fields");
       reserveId(queryId, "query");
       execAuth = { queryId, identity: copyDeep(identity), query: copyDeep(query) };
+      // A fresh physical gate's stream restarts at sequence 0 after the
+      // prior gate's consumption; the run-global ID registry, channel
+      // poison and sticky failure are never reset.
+      const gate = states["exec-gate"];
+      gate.seq.s2c = 0;
+      gate.consumed = false;
     },
 
     // Authorizes a fresh teardown-only collector channel once the healthy

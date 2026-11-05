@@ -19,9 +19,12 @@ import {
   identity,
   makeRecorder,
   makeStore,
+  makeWorkspace,
   proof,
   verifyCallbacks,
+  writeFixtureInputs,
 } from "./test-fixtures.mjs";
+import { registerCleanup } from "./watchdog-records-test-fixtures.mjs";
 
 const code = async (promise, want) => {
   try {
@@ -41,7 +44,7 @@ const passChecks = (phase) =>
     .map((id) => ({ id, status: "passed", evidencePaths: [] }));
 
 const finalizePassed = (env, extra = {}) =>
-  env.recorder.finalize({
+  env.finalize({
     intent: {
       status: "passed",
       exitCode: 0,
@@ -57,43 +60,46 @@ const finalizePassed = (env, extra = {}) =>
     ...extra.rest,
   });
 
-test("manifest precedes running, running precedes ordinary work", async () => {
-  const { store, workspaceRoot, ctl, recorder, mf } = await makeRecorder();
-  const manifest = await readJson(workspaceRoot, "check/manifest.json");
-  const running = await readJson(workspaceRoot, "check/running.json");
+test("manifest precedes running, running precedes ordinary work", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
+  const manifest = await readJson(env.workspaceRoot, "check/manifest.json");
+  const running = await readJson(env.workspaceRoot, "check/running.json");
   assert.equal(manifest.phase, "check");
   assert.equal(running.supervisor.pid, 4242);
-  assert.ok(ctl);
-  const events = await fsp.readFile(path.join(workspaceRoot, "check/events.jsonl"), "utf8");
+  assert.ok(env.ctl);
+  const events = await fsp.readFile(path.join(env.workspaceRoot, "check/events.jsonl"), "utf8");
   assert.equal(events, "");
   // Drain the owned evidence sink deterministically.
-  await finalizePassed({ recorder, mf });
+  await finalizePassed(env);
 });
 
-test("write order rejects running before manifest and duplicates", async () => {
-  const { store } = await makeStore();
+test("write order rejects running before manifest and duplicates", async (t) => {
+  const env = registerCleanup(t, await makeStore());
   const ws = fixtureWorkspace();
-  const mf = fixtureManifest({ workspace: ws });
+  const inputs = await writeFixtureInputs({ store: env.store });
+  const mf = fixtureManifest({ workspace: ws, inputs });
   const cb = verifyCallbacks({ commonIdentity: ws.commonIdentity });
   const rec = createPhaseRecorder({
-    store,
+    store: env.store,
     workspace: ws,
     manifest: mf,
     verifyIdentity: cb.verifyIdentity.fn.bind(cb.verifyIdentity),
     verifyCleanup: cb.verifyCleanup.fn.bind(cb.verifyCleanup),
   });
-  await writeWorkspaceOnce({ store, workspace: ws });
+  env.recorder = rec;
+  env.mf = mf;
+  await writeWorkspaceOnce({ store: env.store, workspace: ws });
   await code(rec.writeRunning(fixtureRunning({ manifest: mf })), "RECORDER_STATE");
   await rec.writeManifest();
   await code(rec.writeManifest(), "RECORDER_STATE");
   await rec.writeRunning(fixtureRunning({ manifest: mf }));
   await code(rec.writeRunning(fixtureRunning({ manifest: mf })), "RECORDER_STATE");
   // Close the owned evidence sink through a real finalize.
-  await finalizePassed({ recorder: rec, mf });
+  await finalizePassed(env);
 });
 
-test("finalize writes final before completion and seals the phase", async () => {
-  const env = await makeRecorder();
+test("finalize writes final before completion and seals the phase", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   const out = await finalizePassed(env);
   assert.equal(out.path, "check/completion.json");
   const final = await readJson(env.workspaceRoot, "check/final.json");
@@ -111,8 +117,8 @@ test("finalize writes final before completion and seals the phase", async () => 
   await code(finalizePassed(env), "RECORDER_STATE");
 });
 
-test("check evidence resolves only against retained in-phase artifacts", async () => {
-  const env = await makeRecorder();
+test("check evidence resolves only against retained in-phase artifacts", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   const ref = await env.recorder.appendArtifactChunk({
     recordId: "r1",
     recordSeq: 0,
@@ -125,7 +131,7 @@ test("check evidence resolves only against retained in-phase artifacts", async (
   const checks = passChecks("check").map((c) =>
     c.id === "verified-delivery" ? { ...c, evidencePaths: [ref.path] } : c,
   );
-  await env.recorder.finalize({
+  await env.finalize({
     intent: { status: "passed", exitCode: 0, stopReason: null, summary: {}, unplannedFaultCount: 0, analysisEligible: false },
     checks,
     prerequisites: [],
@@ -137,12 +143,12 @@ test("check evidence resolves only against retained in-phase artifacts", async (
   assert.equal(check.evidence[0].path, "check/ev.bin");
 });
 
-test("out-of-phase or missing evidence degrades the check to failed", async () => {
-  const env = await makeRecorder();
+test("out-of-phase or missing evidence degrades the check to failed", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   const checks = passChecks("check").map((c) =>
     c.id === "verified-delivery" ? { ...c, evidencePaths: ["../outside", "check/missing"] } : c,
   );
-  await env.recorder.finalize({
+  await env.finalize({
     intent: { status: "passed", exitCode: 0, stopReason: null, summary: {}, unplannedFaultCount: 0, analysisEligible: false },
     checks,
     prerequisites: [],
@@ -156,15 +162,14 @@ test("out-of-phase or missing evidence degrades the check to failed", async () =
   );
 });
 
-test("unproven cleanup callback degrades outcome and never passes cleanup", async () => {
+test("unproven cleanup callback degrades outcome and never passes cleanup", async (t) => {
   const ws = fixtureWorkspace();
-  const mf = fixtureManifest({ workspace: ws });
   const cb = verifyCallbacks({ commonIdentity: ws.commonIdentity });
   cb.verifyCleanup.impl = async () => {
     throw new Error("native down");
   };
-  const env = await makeRecorder({ workspace: ws, manifest: mf, callbacks: cb });
-  await env.recorder.finalize({
+  const env = registerCleanup(t, await makeRecorder({ workspace: ws, callbacks: cb }));
+  await env.finalize({
     intent: { status: "passed", exitCode: 0, stopReason: null, summary: {}, unplannedFaultCount: 0, analysisEligible: true },
     checks: passChecks("check"),
     prerequisites: [],
@@ -177,25 +182,30 @@ test("unproven cleanup callback degrades outcome and never passes cleanup", asyn
   assert.equal(final.requiredChecks.find((c) => c.id === "cleanup").status, "failed");
 });
 
-test("mismatched cleanup proof fields degrade to unproven", async () => {
+test("mismatched cleanup proof fields degrade to unproven", async (t) => {
   const ws = fixtureWorkspace();
-  const mf = fixtureManifest({ workspace: ws });
   const cb = verifyCallbacks({ commonIdentity: ws.commonIdentity });
   cb.verifyCleanup.impl = async () => proof("phase-workload", identity(9999));
-  const env = await makeRecorder({ workspace: ws, manifest: mf, callbacks: cb });
+  const env = registerCleanup(t, await makeRecorder({ workspace: ws, callbacks: cb }));
   await finalizePassed(env);
   const final = await readJson(env.workspaceRoot, "check/final.json");
   assert.equal(final.status, "inconclusive");
   assert.equal(final.analysisEligible, false);
 });
 
-test("identity callback mismatch is a hard failure, throw is inconclusive", async () => {
+test("identity callback mismatch is a hard failure, throw is inconclusive", async (t) => {
   const ws = fixtureWorkspace();
-  const mf = fixtureManifest({ workspace: ws });
   const cb = verifyCallbacks({ commonIdentity: ws.commonIdentity });
-  cb.verifyIdentity.impl = async () => ({ ...copy(ws.commonIdentity), model: { ...copy(ws.commonIdentity).model, byteLength: 1 } });
+  // A schema-valid but unequal identity: only the candidate content
+  // digest differs — a real mismatch, never a schema-invalid probe.
+  cb.verifyIdentity.impl = async () => {
+    const observed = copy(ws.commonIdentity);
+    observed.candidate.contentSha256 =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+    return observed;
+  };
   cb.verifyCleanup.impl = async () => proof("phase-workload", identity(4242));
-  const env = await makeRecorder({ workspace: ws, manifest: mf, callbacks: cb });
+  const env = registerCleanup(t, await makeRecorder({ workspace: ws, callbacks: cb }));
   await finalizePassed(env);
   const final = await readJson(env.workspaceRoot, "check/final.json");
   assert.equal(final.status, "failed");
@@ -206,14 +216,14 @@ test("identity callback mismatch is a hard failure, throw is inconclusive", asyn
     throw new Error("probe down");
   };
   cb2.verifyCleanup.impl = async () => proof("phase-workload", identity(4242));
-  const env2 = await makeRecorder({ workspace: ws, manifest: mf, callbacks: cb2 });
+  const env2 = registerCleanup(t, await makeRecorder({ workspace: ws, callbacks: cb2 }));
   await finalizePassed(env2);
   const final2 = await readJson(env2.workspaceRoot, "check/final.json");
   assert.equal(final2.status, "inconclusive");
 });
 
-test("ordinary work after stopOrdinary is rejected; cleanup events allowed", async () => {
-  const env = await makeRecorder();
+test("ordinary work after stopOrdinary is rejected; cleanup events allowed", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   await env.recorder.stopOrdinary();
   await code(env.recorder.appendEvent({ kind: "operation", payload: {} }), "RECORDER_STATE");
   await env.recorder.appendEvent({ kind: "cleanup", payload: { detail: "x" } });
@@ -233,8 +243,8 @@ test("ordinary work after stopOrdinary is rejected; cleanup events allowed", asy
   await finalizePassed(env);
 });
 
-test("appendArtifactChunk enforces seq/id/stream binding", async () => {
-  const env = await makeRecorder();
+test("appendArtifactChunk enforces seq/id/stream binding", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   await code(
     env.recorder.appendArtifactChunk({
       recordId: "r1",
@@ -305,14 +315,16 @@ test("appendArtifactChunk enforces seq/id/stream binding", async () => {
   await finalizePassed(env);
 });
 
-test("selftest derives its four checks and requires owner supervisor", async () => {
-  const ws = fixtureWorkspace();
+test("selftest derives its four checks and requires owner supervisor", async (t) => {
+  const env = registerCleanup(t, await makeWorkspace());
+  const ws = env.ws;
   const owner = { phase: "preflight", runId: "run-preflight", supervisor: identity(7777) };
-  const mf = fixtureManifest({ workspace: ws, phase: "watchdog-selftest", owner });
+  const mf = fixtureManifest({ workspace: ws, phase: "watchdog-selftest", owner, inputs: env.inputs });
   const cb = verifyCallbacks({ commonIdentity: ws.commonIdentity });
   cb.verifyCleanup.impl = async () => proof("selftest-workload", owner.supervisor);
-  const env = await makeRecorder({ workspace: ws, manifest: mf, callbacks: cb });
-  await env.recorder.finalize({
+  const rec = await makeRecorder({ env, manifest: mf, callbacks: cb });
+  env.recorder = rec.recorder;
+  await env.finalize({
     intent: {
       status: "inconclusive",
       exitCode: 2,
@@ -330,11 +342,11 @@ test("selftest derives its four checks and requires owner supervisor", async () 
   assert.ok(final.requiredChecks.every((c) => c.status === "passed"));
 });
 
-test("caller input is snapshotted before first await", async () => {
-  const env = await makeRecorder();
+test("caller input is snapshotted before first await", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   const intent = { status: "passed", exitCode: 0, stopReason: null, summary: {}, unplannedFaultCount: 0, analysisEligible: false };
   const checks = passChecks("check");
-  const pending = env.recorder.finalize({ intent, checks, prerequisites: [], expectedSelfTest: null });
+  const pending = env.finalize({ intent, checks, prerequisites: [], expectedSelfTest: null });
   checks[0].status = "failed";
   checks[0].id = "bogus";
   await pending;
@@ -342,10 +354,10 @@ test("caller input is snapshotted before first await", async () => {
   assert.equal(final.status, "passed");
 });
 
-test("intent exitCode must match the declared status", async () => {
-  const env = await makeRecorder();
+test("intent exitCode must match the declared status", async (t) => {
+  const env = registerCleanup(t, await makeRecorder());
   await code(
-    env.recorder.finalize({
+    env.finalize({
       intent: { status: "passed", exitCode: 1, stopReason: null, summary: {}, unplannedFaultCount: 0, analysisEligible: false },
       checks: passChecks("check"),
       prerequisites: [],
@@ -357,12 +369,12 @@ test("intent exitCode must match the declared status", async () => {
   await finalizePassed(env);
 });
 
-test("mandatory callback types are required at construction", async () => {
-  const { store } = await makeStore();
+test("mandatory callback types are required at construction", async (t) => {
+  const env = registerCleanup(t, await makeStore());
   const ws = fixtureWorkspace();
   const mf = fixtureManifest({ workspace: ws });
   assert.throws(
-    () => createPhaseRecorder({ store, workspace: ws, manifest: mf, verifyCleanup: null, verifyIdentity: async () => {} }),
+    () => createPhaseRecorder({ store: env.store, workspace: ws, manifest: mf, verifyCleanup: null, verifyIdentity: async () => {} }),
     (e) => e.code === "RECORDER_CONFIG",
   );
 });

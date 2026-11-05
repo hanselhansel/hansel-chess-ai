@@ -2,25 +2,20 @@
 // Owns write order: workspace once, manifest before collector startup,
 // actual running before driver startup, bounded ordinary output, durable
 // deletion descriptions, mandatory cleanup/identity verification, final
-// before completion, completion written atomically last, then permanent
-// seal. Delegates bytes, schema, artifact IO and pure finalization
-// construction to the shared owners; this module remains the only writer.
+// before completion, completion published atomically last through the
+// Store's prepared transaction, then permanent seal. Delegates bytes,
+// schema, artifact IO and pure finalization construction to the shared
+// owners; this module remains the only writer.
 
-import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
 import { assertRecord } from "./record-schema.mjs";
-import { phaseArtifactRefs } from "./artifact-store.mjs";
+import { artifactStoreLifetime } from "./artifact-store.mjs";
+import { createRecorderFinalizer } from "./record-finalizer.mjs";
+import { createRecorderLifecycle } from "./record-lifecycle.mjs";
 import {
-  buildCompletion,
-  buildFinal,
-  deriveSelfTestChecks,
-  EXIT_CODES,
-  isCleanupProven,
-  resolveAnalysisEligible,
-  resolvePhaseChecks,
-  resolveStatus,
-  structurallyValidProof,
-  UNPROVEN_PROOF,
-} from "./record-finalization.mjs";
+  captureRecorderInputs,
+  validateRunningInput,
+} from "./record-inputs.mjs";
 
 const fail = (code, detail) => {
   const error = new Error(`records ${code}: ${detail}`);
@@ -29,7 +24,6 @@ const fail = (code, detail) => {
 };
 
 const copy = (value) => parseCanonicalBytes(canonicalBytes(value));
-const deepEqual = (a, b) => canonicalBytes(a).equals(canonicalBytes(b));
 
 const POST_STOP_KINDS = new Set(["fault", "cleanup", "resource", "artifact-deletion"]);
 
@@ -38,34 +32,46 @@ const POST_STOP_KINDS = new Set(["fault", "cleanup", "resource", "artifact-delet
 // operation/delivery/response/artifact work has no phase to bind to.
 const BOOTSTRAP_KINDS = new Set(["fault", "resource", "cleanup"]);
 
+// Identity-keyed association from each constructor-produced recorder to
+// its EXACT inherited store lifetime owner; WeakMap keys reject spread
+// copies, lookalikes and proxies by construction.
+const RECORDER_OWNERS = new WeakMap();
+
 export async function writeWorkspaceOnce({ store, workspace }) {
   const snapshot = copy(workspace);
   assertRecord("workspace", snapshot);
   return store.writeOnce("workspace.json", canonicalBytes(snapshot), "ordinary");
 }
 
-export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup, verifyIdentity }) {
-  if (typeof verifyCleanup !== "function" || typeof verifyIdentity !== "function") {
-    fail("RECORDER_CONFIG", "mandatory native callbacks");
-  }
-  const ws = copy(workspace);
-  const mf = copy(manifest);
-  assertRecord("workspace", ws);
-  assertRecord("manifest", mf);
-  if (ws.workspaceId !== mf.workspaceId) fail("RECORDER_CONFIG", "workspaceId mismatch");
-  if (sha256Bytes(canonicalBytes(ws.commonIdentity)) !== mf.commonIdentitySha256) {
-    fail("RECORDER_CONFIG", "commonIdentitySha256 mismatch");
-  }
+// Returns the genuine lifetime owner the recorder inherited from its
+// store at construction. The WeakMap key accepts only a real
+// createPhaseRecorder result: spread copies, lookalikes and proxies
+// carry no association.
+export function phaseRecorderLifetime(recorder) {
+  const owner = RECORDER_OWNERS.get(recorder);
+  if (owner === undefined) fail("RECORDER_INPUT", "unknown recorder");
+  return owner;
+}
 
-  const phaseDir = mf.phase === "watchdog-selftest" ? "preflight/selftest" : mf.phase;
-  const selftest = mf.phase === "watchdog-selftest";
+export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup, verifyIdentity }) {
+  const { workspace: ws, manifest: mf, phaseDirectory: phaseDir } =
+    captureRecorderInputs({ workspace, manifest, verifyIdentity, verifyCleanup });
+  // The genuine owner is inherited from the provided store — never a
+  // new default — and ONE private frozen io reuses its registrar
+  // unchanged for every Records-owned inventory read below.
+  const owner = artifactStoreLifetime(store);
+  const io = Object.freeze({ retainActual: owner.retainActual });
+
   const state = {
+    used: false,
     manifest: false,
     running: null,
     stopped: false,
     finalizing: false,
     finalized: false,
     sticky: null,
+    eventsRef: null,
+    sealedResult: null,
     eventSeq: 0,
     eventsSink: null,
     lanePromoted: false,
@@ -76,17 +82,65 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
   };
 
   // Caller-correctable rejections never poison the recorder; only store,
-  // schema, callback or IO failures latch the sticky state.
+  // schema, callback or IO failures latch the sticky state. The attempt
+  // wrapper, admission fences and unfinished-evidence closure delegate to
+  // the shared lifecycle owner; the trusted closures and the SAME
+  // inherited registrar stay recorder-owned.
   const CORRECTABLE = new Set(["RECORDER_STATE", "RECORDER_INPUT", "RECORDER_CLAIM"]);
-  const attempt = async (fn) => {
-    if (state.sticky !== null) fail("RECORDER_STICKY", state.sticky);
-    try {
-      return await fn();
-    } catch (error) {
-      if (!CORRECTABLE.has(error.code)) state.sticky = error.code ?? String(error);
-      throw error;
+  // Close every real sink observed now — including one acquired by an
+  // earlier pending open — even when an individual close rejects. A
+  // fulfilled events close retains its actual ref for the finalizer;
+  // the first arbitrary rejection propagates unchanged.
+  const closeWriters = async () => {
+    const sinks = [];
+    if (state.eventsSink !== null) sinks.push(state.eventsSink);
+    for (const stream of state.streams.values()) sinks.push(stream.sink);
+    const outcomes = await Promise.allSettled(sinks.map((sink) => sink.close()));
+    state.streams.clear();
+    const eventsOutcome = state.eventsSink === null ? undefined : outcomes[0];
+    if (eventsOutcome !== undefined && eventsOutcome.status === "fulfilled") {
+      state.eventsRef = eventsOutcome.value;
     }
+    const rejected = outcomes.find((outcome) => outcome.status === "rejected");
+    if (rejected) throw rejected.reason;
   };
+  const lifecycle = createRecorderLifecycle({
+    readState: () => {
+      // Ordinary attempt entry marks use synchronously: an admitted
+      // body ends the pre-use binding window before its own guards run.
+      state.used = true;
+      return {
+        sticky: state.sticky,
+        finalizing: state.finalizing,
+        finalized: state.finalized,
+      };
+    },
+    latchFailure: (error) => {
+      // Arbitrary thrown values — null, undefined or a throwing code
+      // accessor — still latch the sticky state instead of masking or
+      // quietly clearing the first operation fault.
+      if (state.sticky !== null) return;
+      let code;
+      try {
+        code = error?.code;
+      } catch {
+        code = undefined;
+      }
+      if (CORRECTABLE.has(code)) return;
+      try {
+        state.sticky = code ?? String(error);
+      } catch {
+        state.sticky = "unprintable thrown value";
+      }
+    },
+    closeAdmission: () => {
+      state.used = true;
+      state.stopped = true;
+    },
+    closeWriters,
+    retainActual: owner.retainActual,
+  });
+  const attempt = lifecycle.attempt;
 
   const need = (cond, detail) => {
     if (!cond) fail("RECORDER_STATE", detail);
@@ -109,6 +163,27 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
     }
     await state.eventsSink.append(canonicalBytes(record));
   };
+
+  // The private finalization owner is created once — after the real
+  // lifecycle and head fields exist — with trusted same-instance
+  // references only: the owned ws/mf snapshots, the original phaseDir,
+  // the actual state/lifecycle/closeWriters/headFields, the mandatory
+  // callbacks, the genuine inherited owner and the SAME frozen io. Its
+  // four returned methods land on the api by identical reference below.
+  const finalizer = createRecorderFinalizer({
+    store,
+    workspace: ws,
+    manifest: mf,
+    phaseDirectory: phaseDir,
+    state,
+    lifecycle,
+    closeWriters,
+    headFields,
+    verifyIdentity,
+    verifyCleanup,
+    owner,
+    io,
+  });
 
   const api = {
     phaseDirectory: phaseDir,
@@ -133,15 +208,12 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
         need(state.manifest, "manifest required first");
         need(state.running === null, "running already written");
         need(!state.stopped && !state.finalized, "phase ended");
-        assertRecord("running", record);
-        if (
-          record.workspaceId !== mf.workspaceId ||
-          record.runId !== mf.runId ||
-          record.phase !== mf.phase ||
-          record.commonIdentitySha256 !== mf.commonIdentitySha256
-        ) {
-          fail("RECORDER_CONFIG", "running does not match manifest");
-        }
+        validateRunningInput(record, {
+          workspaceId: mf.workspaceId,
+          runId: mf.runId,
+          phase: mf.phase,
+          commonIdentitySha256: mf.commonIdentitySha256,
+        });
         await store.writeOnce(`${phaseDir}/running.json`, canonicalBytes(record), "ordinary");
         state.running = record;
       });
@@ -225,147 +297,23 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
       });
     },
 
-    async finalize({ intent, checks, prerequisites, expectedSelfTest }) {
-      // Caller data is captured by canonical copy before the first await so
-      // later mutation cannot alter the recorded outcome.
-      const request = copy(intent);
-      const claims = copy(checks ?? []);
-      const parents = copy(prerequisites ?? []);
-      const nested = copy(expectedSelfTest ?? null);
-      return attempt(async () => {
-        need(state.manifest && state.running !== null, "manifest+running required");
-        need(!state.finalized && !state.finalizing, "finalize once");
-        if (
-          !["passed", "failed", "inconclusive", "abandoned"].includes(request.status) ||
-          request.exitCode !== EXIT_CODES[request.status]
-        ) {
-          fail("RECORDER_INPUT", "intent status/exitCode");
-        }
-        // Finalizing is distinct from finalized: ordinary work stops now,
-        // but trusted cleanup/fault/resource events remain writable until
-        // the evidence sinks close, and a second finalizer is rejected.
-        state.finalizing = true;
-        state.stopped = true;
+    // Private unfinished-evidence drain: fences all later admission,
+    // waits every admitted attempt body, then closes the real sinks.
+    // Direct delegation — the SAME cached closure promise, never a fresh
+    // async wrapper. Never admitted through `attempt` and never a
+    // finalized receipt.
+    closeIncompleteEvidence: lifecycle.closeIncompleteEvidence,
 
-        let identityMismatch = false;
-        let identityProven = false;
-        try {
-          const observed = await verifyIdentity({
-            workspaceId: mf.workspaceId,
-            runId: mf.runId,
-            phase: mf.phase,
-            expectedCommonIdentity: copy(ws.commonIdentity),
-            inputs: copy(mf.inputs),
-          });
-          identityProven = deepEqual(observed, ws.commonIdentity);
-          identityMismatch = !identityProven;
-        } catch {
-          identityProven = false;
-        }
-
-        const expectedFinalizer = selftest
-          ? copy(mf.owner.supervisor)
-          : copy(state.running.supervisor);
-        const scope = selftest ? "selftest-workload" : "phase-workload";
-        let proof = null;
-        try {
-          proof = await verifyCleanup({
-            phase: mf.phase,
-            runId: mf.runId,
-            supervisor: copy(state.running.supervisor),
-            claimedProof: { scope, expectedFinalizer: copy(expectedFinalizer) },
-          });
-        } catch {
-          proof = null;
-        }
-        const proofStructOk = structurallyValidProof(
-          proof,
-          headFields(),
-          mf.commonIdentitySha256,
-        );
-        const recordedProof = proofStructOk ? proof : UNPROVEN_PROOF(scope);
-        const cleanupOk = proofStructOk && isCleanupProven(proof, scope, expectedFinalizer);
-
-        for (const stream of state.streams.values()) await stream.sink.close();
-        state.streams.clear();
-        if (!state.lanePromoted && state.eventsSink) state.eventsSink.setLane("final");
-        const eventsRef = await state.eventsSink.close();
-
-        const refs = await phaseArtifactRefs({
-          workspaceRoot: store.root,
-          phaseDirectory: phaseDir,
-        });
-        const byPath = new Map(refs.map((r) => [r.path, r]));
-
-        let requiredChecks;
-        if (selftest) {
-          if (claims.length !== 0) fail("RECORDER_CLAIM", "selftest claims");
-          requiredChecks = deriveSelfTestChecks({ request, recordedProof, eventsRef });
-        } else {
-          requiredChecks = resolvePhaseChecks({
-            claims,
-            phase: mf.phase,
-            refs: byPath,
-            phaseDir,
-            cleanupOk,
-            eventsRef,
-          });
-        }
-
-        const faults = Number.isSafeInteger(request.unplannedFaultCount)
-          ? request.unplannedFaultCount
-          : 1;
-        const status = resolveStatus({
-          request,
-          identityProven,
-          identityMismatch,
-          cleanupOk,
-          faults,
-          requiredChecks,
-        });
-        const analysisEligible = resolveAnalysisEligible({
-          request,
-          status,
-          cleanupOk,
-          identityProven,
-          faults,
-        });
-
-        const final = buildFinal({
-          headFields: headFields(),
-          commonIdentitySha256: mf.commonIdentitySha256,
-          status,
-          requiredChecks,
-          faults,
-          analysisEligible,
-          cleanup: recordedProof,
-          request,
-        });
-        await store.writeOnce(`${phaseDir}/final.json`, canonicalBytes(final), "final");
-
-        const artifacts = await phaseArtifactRefs({
-          workspaceRoot: store.root,
-          phaseDirectory: phaseDir,
-        });
-        const completion = buildCompletion({
-          headFields: headFields(),
-          commonIdentitySha256: mf.commonIdentitySha256,
-          status,
-          prerequisites: parents,
-          artifacts,
-          expectedSelfTest: nested,
-        });
-        const ref = await store.writeOnce(
-          `${phaseDir}/completion.json`,
-          canonicalBytes(completion),
-          "final",
-        );
-        await store.sealPhase(phaseDir);
-        state.finalized = true;
-        return ref;
-      });
-    },
+    // Runtime binding, the timed capture/seal pair and the unbound
+    // legacy finalizer are owned by the private recorder finalizer —
+    // these are its IDENTICAL returned function references, never
+    // wrappers, aliases or rebound copies.
+    bindRuntime: finalizer.bindRuntime,
+    closeEvidenceBeforeCutoff: finalizer.closeEvidenceBeforeCutoff,
+    sealClosedEvidence: finalizer.sealClosedEvidence,
+    finalize: finalizer.finalize,
   };
 
+  RECORDER_OWNERS.set(api, owner);
   return Object.freeze(api);
 }

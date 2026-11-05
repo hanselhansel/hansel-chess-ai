@@ -10,21 +10,12 @@ import path from "node:path";
 import test from "node:test";
 import { sha256Bytes } from "./canonical-json.mjs";
 import {
+  artifactStoreLifetime,
   createArtifactStore,
   inspectArtifactRef,
   phaseArtifactRefs,
 } from "./artifact-store.mjs";
-import { makeStore, makeTmpDir, ref } from "./test-fixtures.mjs";
-
-const code = async (promise, want) => {
-  try {
-    await promise;
-  } catch (e) {
-    assert.equal(e.code, want);
-    return;
-  }
-  assert.fail(`expected ${want}`);
-};
+import { assertRejectCode as code, makeStore, makeTmpDir, ref } from "./test-fixtures.mjs";
 
 test("writeOnce publishes canonical bytes and a logical-byte ref", async () => {
   const { store, workspaceRoot } = await makeStore();
@@ -211,24 +202,21 @@ test("a path rejection stays correctable; required IO failure latches", async ()
   // latches a sticky fault and every later op rejects.
   const realOpen = fsp.open;
   try {
-    fsp.open = async (target, flags) => {
-      const handle = await realOpen(target, flags);
-      return {
-        ...handle,
-        write: handle.write.bind(handle),
-        sync: async () => {
-          const error = new Error("forced-sync");
-          error.code = "EIO";
-          throw error;
-        },
-        close: handle.close.bind(handle),
+    fsp.open = async function (...args) {
+      const handle = await realOpen.apply(this, args);
+      handle.sync = async () => {
+        const error = new Error("forced-sync");
+        error.code = "EIO";
+        throw error;
       };
+      return handle;
     };
     await assert.rejects(
       store.writeOnce("w", Buffer.alloc(1), "ordinary"),
       (e) => e.code === "EIO",
     );
   } finally {
+    await artifactStoreLifetime(store).whenSettled();
     fsp.open = realOpen;
   }
   await code(store.writeOnce("v", Buffer.alloc(1), "ordinary"), "STORE_IO");
@@ -238,23 +226,24 @@ test("a path rejection stays correctable; required IO failure latches", async ()
 test("a failed durable close rejects on every repeated close", async () => {
   const { store } = await makeStore();
   const realOpen = fsp.open;
+  let sink;
   try {
-    fsp.open = async (target, flags) => {
-      const handle = await realOpen(target, flags);
-      return {
-        ...handle,
-        write: handle.write.bind(handle),
-        sync: async () => {
-          throw new Error("forced-sync-failure");
-        },
-        close: handle.close.bind(handle),
+    fsp.open = async function (...args) {
+      const handle = await realOpen.apply(this, args);
+      handle.sync = async () => {
+        throw new Error("forced-sync-failure");
       };
+      return handle;
     };
-    const sink = await store.openArtifact({ artifactId: "c1", path: "c/f", mode: "append", lane: "ordinary" });
+    sink = await store.openArtifact({ artifactId: "c1", path: "c/f", mode: "append", lane: "ordinary" });
     await sink.append(Buffer.from("x"));
     await assert.rejects(sink.close(), /forced-sync-failure/);
     await assert.rejects(sink.close(), /forced-sync-failure/);
   } finally {
+    if (sink !== undefined) {
+      await sink.close().then(() => {}, () => {});
+    }
+    await artifactStoreLifetime(store).whenSettled();
     fsp.open = realOpen;
   }
 });
@@ -262,16 +251,14 @@ test("a failed durable close rejects on every repeated close", async () => {
 test("a zero-progress append latches and every later close rejects", async () => {
   const { store } = await makeStore();
   const realOpen = fsp.open;
+  let sink;
   try {
-    fsp.open = async (target, flags) => {
-      const handle = await realOpen(target, flags);
-      return {
-        write: async () => ({ bytesWritten: 0 }),
-        sync: handle.sync.bind(handle),
-        close: handle.close.bind(handle),
-      };
+    fsp.open = async function (...args) {
+      const handle = await realOpen.apply(this, args);
+      handle.write = async () => ({ bytesWritten: 0 });
+      return handle;
     };
-    const sink = await store.openArtifact({ artifactId: "z1", path: "z/f", mode: "append", lane: "ordinary" });
+    sink = await store.openArtifact({ artifactId: "z1", path: "z/f", mode: "append", lane: "ordinary" });
     // The first terminal failure is preserved verbatim.
     await code(sink.append(Buffer.from("x")), "STORE_IO");
     await code(sink.append(Buffer.from("y")), "STORE_IO");
@@ -279,6 +266,10 @@ test("a zero-progress append latches and every later close rejects", async () =>
     await code(sink.close(), "STORE_IO");
     await code(sink.close(), "STORE_IO");
   } finally {
+    if (sink !== undefined) {
+      await sink.close().then(() => {}, () => {});
+    }
+    await artifactStoreLifetime(store).whenSettled();
     fsp.open = realOpen;
   }
 });

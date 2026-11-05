@@ -234,7 +234,10 @@ const ownRoots = (ctx, st, teardown, message) => {
         isIdentity(r.identity) &&
         rootKinds.includes(r.kind) &&
         isAbs(r.expectedExecutable) &&
-        r.scopeRunId === ctx.runId,
+        // A native-authorized selftest subrun keeps its own scope value
+        // namespaced under the run; it is never coerced to the parent.
+        (r.scopeRunId === ctx.runId ||
+          r.scopeRunId.startsWith(`${ctx.runId}:`)),
       "root fields",
     );
     const key = identityKey(r.identity);
@@ -268,6 +271,10 @@ const sampleRequest = (ctx, st, message) => {
     "sample request fields",
   );
   ctx.claimId(message.requestId, "request");
+  // The monitor's declared cached owned union is the private
+  // native-authorized membership a descendant signal may target; union
+  // membership is additive because tuples are retained.
+  for (const i of message.owned) ctx.ownedMembers.add(identityKey(i));
   st.pending.set(message.requestId, {
     type: "sample",
     owned: copyDeep(message.owned),
@@ -279,9 +286,18 @@ const sampleRequest = (ctx, st, message) => {
 const signalRequest = (ctx, st, message) => {
   envelope(st, "s2c", message, [...base, "requestId", "identity", "signal"], ctx.runId);
   const binding = ctx.signalAuth.get(message.requestId);
+  const key = isObj(message.identity) ? identityKey(message.identity) : "";
   const root = isObj(message.identity)
-    ? ctx.ownedRoots.get(identityKey(message.identity))
+    ? ctx.ownedRoots.get(key)
     : undefined;
+  // A registered workload root is signalable; so is a cached workload
+  // descendant from the monitor's declared union (a reparented member
+  // need not be an explicit root). A known supervisor/collector or any
+  // other accounting root stays refused either way.
+  const target =
+    root !== undefined
+      ? workloadKinds.includes(root.kind)
+      : ctx.ownedMembers.has(key);
   need(
     st,
     binding !== undefined &&
@@ -289,8 +305,7 @@ const signalRequest = (ctx, st, message) => {
       binding.signal === message.signal &&
       isIdentity(message.identity) &&
       ["TERM", "KILL"].includes(message.signal) &&
-      root !== undefined &&
-      workloadKinds.includes(root.kind),
+      target,
     "signal authorization",
   );
   ctx.signalAuth.delete(message.requestId);

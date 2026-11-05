@@ -1,24 +1,33 @@
 // Confined async artifact IO under one workspace root. Owns the serialized
 // operation queue, pending reservation accounting, lane budgets, immutable
-// and seal registries, and atomic write/replace publication. Confined-path,
-// durable-file and bounded hashing primitives are delegated to
-// artifact-files.mjs; the public read APIs are re-exported unchanged.
-// No process, model or browser operation here.
+// and seal registries, and atomic write/replace publication. Streaming
+// append/replace sink opens are delegated to artifact-sinks.mjs through ONE
+// frozen storeContext sharing this same queue; confined-path, durable-file
+// and bounded hashing primitives are delegated to artifact-files.mjs; the
+// public read APIs are re-exported unchanged. The optional lifetime is the
+// genuine watchdog owner: omitted creates a real createWatchdogLifetime
+// owner (never a noop), a supplied brand is validated before any debt can
+// be armed, and its retainActual registrar — threaded as io here and via
+// storeContext.retainActual into the sink — is the ONE ledger for every
+// raw effect and real close. No process, model or browser operation here.
 
 import { promises as fsp } from "node:fs";
 import path from "node:path";
 import { sha256Bytes } from "./canonical-json.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
+import { openStoreArtifact } from "./artifact-sinks.mjs";
 import {
   confined,
-  dirSync,
-  hashFileRef,
+  issueActual,
   normRel,
   storeFail as fail,
-  tempIn,
-  writeAll,
   writeAtomic,
 } from "./artifact-files.mjs";
+import {
+  assertWatchdogLifetime,
+  createWatchdogLifetime,
+} from "./watchdog-lifetime.mjs";
+import { createStoreCompletionMethods } from "./artifact-completion.mjs";
 
 const ORDINARY = FIXED_LIMITS.resources.ordinaryBytes;
 const TOTAL = FIXED_LIMITS.resources.workspaceBytes;
@@ -26,15 +35,26 @@ const RESERVE = FIXED_LIMITS.resources.finalReserveBytes;
 const STALE_MS = 1000;
 const LANES = ["ordinary", "final"];
 
+// Identity-keyed association from each constructor-produced store to its
+// EXACT captured owner; WeakMap keys reject spread copies and lookalikes.
+const STORE_OWNERS = new WeakMap();
+
 export { inspectArtifactRef, phaseArtifactRefs } from "./artifact-files.mjs";
 
-export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow }) {
+export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow, lifetime }) {
   if (typeof workspaceRoot !== "string" || workspaceRoot.length === 0) {
     fail("STORE_ARGS", "workspaceRoot");
   }
   if (typeof readFootprint !== "function" || typeof monotonicNow !== "function") {
     fail("STORE_ARGS", "mandatory callbacks");
   }
+  // A supplied lifetime must carry the genuine watchdog brand and is
+  // validated before this store can arm any hold or debt; omitted gets a
+  // real referenced owner, never a noop or a second ledger.
+  if (lifetime !== undefined) assertWatchdogLifetime(lifetime);
+  const owner = lifetime === undefined ? createWatchdogLifetime() : lifetime;
+  const retainActual = owner.retainActual;
+  const io = Object.freeze({ retainActual });
   const root = path.resolve(workspaceRoot);
   const state = {
     queue: Promise.resolve(),
@@ -192,6 +212,82 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
 
   const release = (res) => state.pending.delete(res);
 
+  const markIoFault = () => {
+    state.ioFault = true;
+  };
+
+  // Frozen once per store and handed to the extracted sink: the same
+  // queue, accounting hooks, registry Sets and bound registrar — never
+  // the whole mutable state, a second ledger or a leaf-local owner.
+  const storeContext = Object.freeze({
+    root,
+    lanes: LANES,
+    enqueue,
+    usable,
+    checkSeal,
+    reserve,
+    release,
+    reconcile,
+    postAccounting,
+    immutable: state.immutable,
+    activePaths: state.activePaths,
+    activeArtifactIds: state.activeArtifactIds,
+    closedArtifactIds: state.closedArtifactIds,
+    markIoFault,
+    retainActual,
+  });
+
+  // ONE unforgeable owner token authorizes every completion-capability
+  // mutation at the parent; ONE strong phase Map keeps every transaction
+  // entry — including its terminal tombstone — recoverable, and ONE
+  // prepared WeakMap binds each genuine capability to its entry.
+  const storeOwner = Object.freeze({});
+  const completionByPhase = new Map();
+  const completionByPrepared = new WeakMap();
+
+  // The WHOLE previous sealPhase body factored into a synchronous
+  // lexical core: public sealPhase only enqueues it, while a successful
+  // prepared publication invokes it DIRECTLY under the already-owned
+  // queue — never awaiting its own enqueued public method.
+  const sealPhaseCore = (phaseDirectory) => {
+    const clean = normRel(phaseDirectory, "phaseDirectory");
+    const prefix = `${clean}/`;
+    for (const p of state.activePaths) {
+      if (p === clean || p.startsWith(prefix)) {
+        fail("STORE_STATE", `${clean} still active`);
+      }
+    }
+    if (!state.sealedDirs.includes(clean)) state.sealedDirs.push(clean);
+  };
+
+  // Frozen once per store: the EXACT 18-field completion context. The
+  // first twelve borrow this store's closures/Sets/function identities;
+  // the last six are Store-owned private bindings — the minted owner
+  // token, the EXACT same frozen io, the same owner finalizer registrar,
+  // the strong phase map, the prepared WeakMap and the synchronous seal
+  // core. Never the whole mutable state, a second queue or a new owner.
+  const completionContext = Object.freeze({
+    root,
+    enqueue,
+    usable,
+    checkSeal,
+    reserve,
+    release,
+    reconcile,
+    postAccounting,
+    immutable: state.immutable,
+    activePaths: state.activePaths,
+    markIoFault,
+    retainActual,
+    storeOwner,
+    io,
+    retainFinalizerUntil: owner.retainFinalizerUntil,
+    completionByPhase,
+    completionByPrepared,
+    sealPhaseCore,
+  });
+  const completionMethods = createStoreCompletionMethods(completionContext);
+
   const store = {
     root,
 
@@ -202,11 +298,11 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
       if (!LANES.includes(lane)) fail("STORE_ARGS", "lane");
       return enqueue(async () => {
         usable();
-        const { abs, clean } = await confined(root, rel, "path");
+        const { abs, clean } = await confined(root, rel, "path", io);
         checkSeal(clean);
         if (state.activePaths.has(clean)) fail("STORE_STATE", `${clean} sink active`);
         if (state.immutable.has(clean)) fail("STORE_STATE", `${clean} immutable`);
-        const exists = await fsp.lstat(abs).then(
+        const exists = await issueActual(retainActual, () => fsp.lstat(abs)).then(
           () => true,
           (e) => {
             if (e.code === "ENOENT") return false;
@@ -216,7 +312,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
         if (exists) fail("STORE_EXISTS", clean);
         const res = await reserve(buffer.length, lane);
         try {
-          await writeAtomic(abs, buffer);
+          await writeAtomic(abs, buffer, io);
         } catch (error) {
           // A write/sync/rename durability failure is a sticky IO fault;
           // path/setup rejections stay caller-correctable.
@@ -235,143 +331,23 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
     },
 
     async openArtifact({ artifactId, path: rel, mode, lane }) {
-      if (typeof artifactId !== "string" || artifactId.length === 0) {
-        fail("STORE_ARGS", "artifactId");
-      }
-      if (!["append", "replace"].includes(mode)) fail("STORE_ARGS", "mode");
-      if (!LANES.includes(lane)) fail("STORE_ARGS", "lane");
-      return enqueue(async () => {
-        usable();
-        const { abs, clean } = await confined(root, rel, "path");
-        checkSeal(clean);
-        if (state.activePaths.has(clean)) fail("STORE_STATE", `${clean} sink active`);
-        if (state.immutable.has(clean)) fail("STORE_STATE", `${clean} immutable`);
-        if (
-          state.activeArtifactIds.has(artifactId) ||
-          state.closedArtifactIds.has(artifactId)
-        ) {
-          fail("STORE_STATE", `${artifactId} reused`);
-        }
-        let handle;
-        let tmp = null;
-        if (mode === "append") {
-          await fsp.mkdir(path.dirname(abs), { recursive: true });
-          handle = await fsp.open(abs, "a");
-        } else {
-          const stat = await fsp.lstat(abs).catch((e) => {
-            if (e.code === "ENOENT") fail("STORE_STATE", `${clean} no replace target`);
-            throw e;
-          });
-          if (!stat.isFile() || stat.isSymbolicLink()) fail("STORE_PATH", clean);
-          await fsp.mkdir(path.dirname(abs), { recursive: true });
-          tmp = await tempIn(path.dirname(abs), path.basename(abs));
-          handle = await fsp.open(tmp, "wx");
-        }
-        state.activePaths.add(clean);
-        state.activeArtifactIds.add(artifactId);
-        let sinkLane = lane;
-        let closed = false;
-        let terminalError = null;
-        let result = null;
-        // The sink's first terminal append/write/close/reconcile/hash
-        // failure is retained: every later close or retry rejects with it
-        // instead of resolving null or a success-shaped ref.
-        const sink = {
-          async append(bytes) {
-            const buffer = Buffer.from(bytes ?? []);
-            return enqueue(async () => {
-              usable();
-              if (closed) fail("STORE_STATE", "closed sink");
-              if (terminalError !== null) throw terminalError;
-              checkSeal(clean);
-              const res = await reserve(buffer.length, sinkLane);
-              try {
-                await writeAll(handle, buffer);
-              } catch (error) {
-                state.ioFault = true;
-                terminalError ??= error;
-                release(res);
-                throw error;
-              }
-              // The stored chunk's reservation becomes a commit-bound
-              // unobserved delta before the append is acknowledged, so
-              // a fresh whole scan counting these bytes retires the
-              // delta instead of charging the chunk twice; in-flight
-              // reservations on any stream stay in pending.
-              try {
-                await reconcile(res);
-              } catch (error) {
-                terminalError ??= error;
-                throw error;
-              }
-            });
-          },
-          setLane(next) {
-            if (!LANES.includes(next)) fail("STORE_ARGS", "lane");
-            sinkLane = next;
-          },
-          async close() {
-            return enqueue(async () => {
-              if (closed) {
-                if (terminalError !== null) throw terminalError;
-                return result;
-              }
-              closed = true;
-              if (terminalError === null) {
-                try {
-                  checkSeal(clean);
-                  await handle.sync();
-                  await handle.close();
-                  if (tmp !== null) {
-                    await fsp.rename(tmp, abs);
-                    await dirSync(path.dirname(abs));
-                  }
-                } catch (error) {
-                  // Required durable IO failed: the fault is latched and
-                  // the failure becomes this sink's terminal result.
-                  state.ioFault = true;
-                  terminalError = error;
-                }
-              }
-              // The owned handle is always drained, whatever happened.
-              await handle.close().catch(() => {});
-              state.activePaths.delete(clean);
-              state.activeArtifactIds.delete(artifactId);
-              state.closedArtifactIds.add(artifactId);
-              // Required final accounting still runs after the durable
-              // close; a breach keeps the stream failure-terminal.
-              try {
-                await postAccounting();
-              } catch (error) {
-                terminalError ??= error;
-              }
-              if (terminalError === null) {
-                try {
-                  result = Object.freeze(await hashFileRef(abs, clean));
-                } catch (error) {
-                  terminalError = error;
-                }
-              }
-              if (terminalError !== null) throw terminalError;
-              return result;
-            });
-          },
-        };
-        return sink;
-      });
+      // One queue end to end: the extracted sink enqueues its
+      // open/append/close operations on this same queue through
+      // storeContext.enqueue; no leaf enqueues and awaits itself.
+      return openStoreArtifact({ artifactId, path: rel, mode, lane }, storeContext);
     },
 
     async deleteEphemeral(rel) {
       return enqueue(async () => {
         usable();
-        const { abs, clean } = await confined(root, rel, "path");
+        const { abs, clean } = await confined(root, rel, "path", io);
         checkSeal(clean);
         if (state.immutable.has(clean)) fail("STORE_STATE", `${clean} immutable`);
         if (state.activePaths.has(clean)) fail("STORE_STATE", `${clean} sink active`);
-        const stat = await fsp.lstat(abs);
+        const stat = await issueActual(retainActual, () => fsp.lstat(abs));
         if (!stat.isFile() || stat.isSymbolicLink()) fail("STORE_PATH", clean);
         try {
-          await fsp.unlink(abs);
+          await issueActual(retainActual, () => fsp.unlink(abs));
         } catch (error) {
           state.ioFault = true;
           throw error;
@@ -380,18 +356,29 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
     },
 
     async sealPhase(phaseDirectory) {
-      return enqueue(async () => {
-        const clean = normRel(phaseDirectory, "phaseDirectory");
-        const prefix = `${clean}/`;
-        for (const p of state.activePaths) {
-          if (p === clean || p.startsWith(prefix)) {
-            fail("STORE_STATE", `${clean} still active`);
-          }
-        }
-        if (!state.sealedDirs.includes(clean)) state.sealedDirs.push(clean);
+      // The whole body lives in the synchronous sealPhaseCore above;
+      // this method only queues it on the same store queue.
+      return enqueue(() => {
+        sealPhaseCore(phaseDirectory);
       });
     },
+
+    // The three prepared-transaction methods produced by the ONE
+    // completion factory attach to this SAME store result.
+    prepareCompletion: completionMethods.prepareCompletion,
+    publishPreparedCompletion: completionMethods.publishPreparedCompletion,
+    containPreparedCompletion: completionMethods.containPreparedCompletion,
   };
 
+  STORE_OWNERS.set(store, owner);
   return Object.freeze(store);
+}
+
+// Returns the genuine lifetime owner captured at construction. The
+// WeakMap key accepts only a real createArtifactStore result: spread
+// copies, lookalikes and proxies carry no association.
+export function artifactStoreLifetime(store) {
+  const owner = STORE_OWNERS.get(store);
+  if (owner === undefined) fail("STORE_ARGS", "unknown store");
+  return owner;
 }

@@ -4,7 +4,7 @@
 // and the close -> evidence-path hash -> final -> completion order. Nothing
 // in this module is a second writer.
 
-import { canonicalBytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
 import { assertRecord, REQUIRED_CHECK_IDS } from "./record-schema.mjs";
 
 const fail = (code, detail) => {
@@ -14,6 +14,19 @@ const fail = (code, detail) => {
 };
 
 const deepEqual = (a, b) => canonicalBytes(a).equals(canonicalBytes(b));
+
+const copy = (value) => parseCanonicalBytes(canonicalBytes(value));
+
+// Freeze only copies this module produced, never caller objects. The
+// copies are plain JSON, so enumerable own keys cover the whole graph,
+// including an own "__proto__" data key the parser carries through.
+const deepFreeze = (value) => {
+  if (value !== null && typeof value === "object") {
+    for (const key of Object.keys(value)) deepFreeze(value[key]);
+    Object.freeze(value);
+  }
+  return value;
+};
 
 export const EXIT_CODES = { passed: 0, failed: 1, inconclusive: 2, abandoned: 2 };
 
@@ -202,4 +215,77 @@ export function buildCompletion({ headFields, commonIdentitySha256, status, prer
   };
   assertRecord("completion", completion);
   return completion;
+}
+
+// Pure aggregation of the closed-facts tail of records.mjs finalize().
+// The whole caller input bundle is canonical-copied before any field is
+// selected, so a function, handle or Map smuggled inside cannot bypass
+// the whole-JSON guard. The byPath lookup stays local and is never
+// exposed; the returned record is independently owned and deep-frozen.
+// Status, eligibility and the final record still come from the helpers
+// above in the same order, and buildFinal keeps the assertRecord call.
+export function buildFinalFromClosedFacts(input) {
+  const facts = copy(input);
+  const {
+    headFields,
+    commonIdentitySha256,
+    request,
+    phaseDirectory,
+    artifactRefs,
+    eventsRef,
+    recordedProof,
+    identityProven,
+    identityMismatch,
+    cleanupOk,
+  } = facts;
+  const claims = facts.claims ?? [];
+
+  const byPath = new Map(artifactRefs.map((ref) => [ref.path, ref]));
+
+  let requiredChecks;
+  if (headFields.phase === "watchdog-selftest") {
+    if (claims.length !== 0) fail("RECORDER_CLAIM", "selftest claims");
+    requiredChecks = deriveSelfTestChecks({ request, recordedProof, eventsRef });
+  } else {
+    requiredChecks = resolvePhaseChecks({
+      claims,
+      phase: headFields.phase,
+      refs: byPath,
+      phaseDir: phaseDirectory,
+      cleanupOk,
+      eventsRef,
+    });
+  }
+
+  const faults = Number.isSafeInteger(request.unplannedFaultCount)
+    ? request.unplannedFaultCount
+    : 1;
+  const status = resolveStatus({
+    request,
+    identityProven,
+    identityMismatch,
+    cleanupOk,
+    faults,
+    requiredChecks,
+  });
+  const analysisEligible = resolveAnalysisEligible({
+    request,
+    status,
+    cleanupOk,
+    identityProven,
+    faults,
+  });
+
+  return deepFreeze(
+    buildFinal({
+      headFields,
+      commonIdentitySha256,
+      status,
+      requiredChecks,
+      faults,
+      analysisEligible,
+      cleanup: recordedProof,
+      request,
+    }),
+  );
 }

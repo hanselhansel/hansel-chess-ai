@@ -29,16 +29,22 @@ const FILE_SPEC = { invocationPath: "abs", realPath: "abs", sha256: "hash" };
 const EXEC_SPEC = { ...FILE_SPEC, version: "strNE" };
 const PY_EXEC_SPEC = {
   ...EXEC_SPEC,
+  processImage: "obj",
   executable: "abs",
   prefix: "abs",
   basePrefix: "abs",
 };
+const PY_IMAGE_SPEC = { realPath: "abs", sha256: "hash" };
 
 // The selected Python identity is pinned to the project venv executable and
 // CPython 3.11.14 exactly; the resolved real path and base prefix remain
-// absolute strings so an actual resolved binary differs per install.
+// absolute strings so an actual resolved binary differs per install. The
+// mandatory processImage descriptor records the REAL exec image — the
+// framework payload under a launcher, or the resolved invocation itself —
+// while the original launcher fields keep their own path/hash.
 const vPyExec = (v, n) => {
   shape(v, PY_EXEC_SPEC, n);
+  shape(v.processImage, PY_IMAGE_SPEC, `${n}.processImage`);
   if (
     v.invocationPath !== PYTHON_EXECUTABLE ||
     v.executable !== PYTHON_EXECUTABLE ||
