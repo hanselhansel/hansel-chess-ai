@@ -2,7 +2,8 @@
 
 Owners for the canonical bytes, record envelopes, bounded artifact IO,
 sole-writer recording, prerequisite admission, supervisor IPC validation,
-paired-cohort statistics and the Darwin native-supervision boundary used by
+paired-cohort statistics, persisted PGN selection, rules-owned match control
+and the Darwin native-supervision boundary used by
 the verified-M browser evaluation. The C4a1 evidence libraries contain no
 browser, native, model, child-process, network or application imports; the
 C4a2 native modules below add real process supervision on macOS arm64 only,
@@ -127,8 +128,15 @@ included); the three Python sources stay exactly
 | `snapshot-io.mjs` | gate-enforced | `createSnapshotIO` |
 | `snapshot-identity.mjs` | gate-enforced | `validateModelBytes`, `inventoryDigest`, `assembleSnapshotIdentity` |
 | `snapshots.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `match.mjs` | gate-enforced | `playGame`, `createGameCheckpoint` |
+| `match.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `pgn-evidence.mjs` | gate-enforced | `createPgnEvidence` |
+| `pgn-format.mjs` | gate-enforced | `checkpointResult`, `serializeCheckpointPgn`, `replayCheckpointPgn` |
+| `pgn-summary.mjs` | gate-enforced | `deriveFinalGameEvidence` |
+| `pgn-evidence.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `pgn-summary.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `snapshot-reopen.mjs` | gate-enforced | `inspectReopenedInputs` |
-| `phase-fixtures.mjs` | gate-enforced | `validateProtocolFixture`, `validateOpeningFixture`, `buildGameSchedule` |
+| `phase-fixtures.mjs` | gate-enforced | `validateProtocolFixture`, `validateOpeningFixture`, `buildGameSchedule`, `validateGameSchedule` |
 | `phase-fixtures.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `stats.mjs` | 262 | `signProbability`, `clopperPearson95`, `summarizePairs` |
 | `supervision-test-fixtures.mjs` | 399 | `identity`, `identityKeyOf`, `bsdRow`, `frame`, `sampleReply`, `fakeClock`, `fakeFile`, `fakeFileSystem`, `fakeBinStream`, `fakePipe`, `fakeChild`, `fakeFailedSpawnChild`, `collectorFixture` |
@@ -6996,7 +7004,7 @@ excluded from frozen-file enumeration. No other links are accepted.
 `snapshot-io.mjs` is declared before creation, runtime-only. Sole export
 `createSnapshotIO({workspaceRoot,repoRoot,budget,lifetime})` returns frozen
 `{call,readAt,writeFrozen,listAt,linkDependencies}`. `call(tag,thunk)` owns
-raw metadata settlement before issue; `readAt(root,rel,readonly?)` returns
+raw metadata settlement before issue; `readAt(root,rel,readonly?,cap?)` returns
 stable owned bytes; `listAt(root,prefixes)` returns original regular-file
 paths. Explicit write/link operations exclusively create and seal inputs.
 Actual open/read/write/close and Git child debt use existing genuine owners
@@ -7068,6 +7076,8 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/identity-schema.mjs",
   "train/scripts/browser_eval/match.mjs",
   "train/scripts/browser_eval/pgn-evidence.mjs",
+  "train/scripts/browser_eval/pgn-format.mjs",
+  "train/scripts/browser_eval/pgn-summary.mjs",
   "train/scripts/browser_eval/phase-fixtures.mjs",
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",
@@ -7206,6 +7216,114 @@ existing pure schema/constants. It never imports a parent or TEST source.
 It checks literal protocol bindings, exact locked opening prefixes/legal
 rules, disjoint fixtures and schedule/color/accounting. Rules-only fixture
 validation is not a played game or inference result.
+
+## C4b-16 persisted PGN checkpoints
+
+`pgn-evidence.mjs` is declared before creation. Sole export
+`createPgnEvidence({workspaceRoot,runId,phase,gameSchedule}, {budget,lifetime})`
+returns exactly `{observePersisted,freeze,snapshot}`. Construction copies the
+verified fixed schedule and borrows the same original budget and genuine
+lifetime. It owns no writer, Native handle, cleanup/status setter or clock.
+Only actual Recorder-close metadata followed by a persisted response event
+can promote a checkpoint. Existing Watchdog persistence/observer/ACK order,
+first-stop freeze, private artifact ordinal and reserved gameEvidence remain
+unchanged. First freeze copies the selected games synchronously; later
+physical close facts remain diagnostics and never promote or score.
+
+`pgn-format.mjs` is declared before creation, runtime-only. Exports
+`checkpointResult(board)`, `serializeCheckpointPgn({phase,game,movesUci,
+result})`, and async `replayCheckpointPgn({phase,game,bytes,budget})`.
+Actual chess.js rules derive checkmate-first results. The canonical full
+PGN carries initial FEN, full mainline, game/opening/pair/color headers and
+consistent Result. No comments, variants, omitted prefix, invented terminal
+or post-stop PGN patch is accepted. Reads/replay use the existing IPC frame
+byte ceiling, without truncation, and yield during replay while retaining
+the original bound so independent watchdog timers remain live.
+
+The existing IO `readAt` gains optional fourth `cap`, defaulting to the
+unchanged ordinary ceiling and rejecting values beyond it. PGN inspection
+passes the fixed frame ceiling, including counted mid-read growth checks.
+The existing phase fixture owner additionally exports
+`validateGameSchedule({phase,gameSchedule})`, binding the exact preflight or
+locked compare schedule before any PGN IO.
+
+`pgn-evidence.test.mjs` is declared before creation, TEST-only, no exports.
+Actual temporary PGNs/owned reads cover closed-ref/event promotion,
+alternating slots, bad history/result/metadata, and held persistence followed
+by synchronous stop and late release. No model, browser or Native runs.
+DAG: PGN evidence -> format + fixed schedules + existing bounded snapshot IO;
+format -> chess.js and pure constants. No backedge or additional queue.
+
+## C4b-16 rules-owned match controller
+
+`match.mjs` exports `playGame({game,arms,checkpoint,signal})` and
+`createGameCheckpoint({game,capabilities})`. The controller copies the full
+initial FEN/history, checks actual chess.js rules before every move, and
+returns only a genuine terminal checkpoint. Abort/fault rejects without a
+winner. There is no whole-game command timer, material/ply adjudication,
+randomness, tree reuse or retry. Each recorded arm transport owns one actual
+readiness operation and one command operation per move through existing
+capabilities; phase resources supply the actual public fixture results.
+
+`RecordedArmTransport` has `kind`, `initialize()` and `think(request)`.
+Initialize returns `{ready,delivery,worker}` with untouched public Ready,
+actual delivered path/byteLength/SHA and separate actual Worker observation
+`{instanceId,raw}`. Think returns `{response,worker}` with untouched public
+response and the actual Worker result message. Baseline fields are never
+expanded with invented identity/context. Candidate session/model/context/
+worker epoch and all 64 completed visits are checked every turn; baseline
+legacy result is cross-checked against its actual worker message and pinned
+external M delivery. These are driver-side observations, not Native proof.
+
+The checkpoint factory uses exactly two alternating PGN slots, fresh bridge
+artifact IDs, actual final-close ref followed by persisted response-event
+ACK, and original recordSeq behavior. No local write or post-stop PGN patch
+exists. Operational arm adapters are fixed private producers, not CLI-supplied
+verification callbacks. Match tests use raw stub transports only and never
+claim actual engine/worker/phase execution.
+
+## C4b-16 final paired inference
+
+`pgn-summary.mjs` is declared before creation, runtime-only. Sole export
+`deriveFinalGameEvidence({request,status,artifactRefs,cleanupOk,
+identityProven,faults})` returns `{request,status,pairedCheckPassed}` from
+owned JSON data. The existing Finalizer closed-facts compiler invokes it
+for compare with supervisor gameEvidence, after genuine cleanup and final
+identity verification and before final publication. No closed-evidence
+field or caller proof is added. Every selected checkpoint ref must equal
+the actual closed artifact inventory. Changed/missing refs make bookkeeping
+unproven and ineligible, without substituting a result.
+
+Only complete frozen twenty-pair/forty-game zero-fault data with proven
+cleanup/identity and passed method produces inference. Driver inference
+namespaces are discarded. Paired-analysis check and analysisEligible follow
+the derived actual result; partial/faulted evidence is descriptive and
+inconclusive with null inferential fields. No Elo or repeated cohort exists.
+DAG: finalization -> pgn-summary -> existing stats/schema helpers, without
+IO, callbacks, Native or cleanup/status setters.
+
+`pgn-summary.test.mjs` is declared before creation, TEST-only, no exports.
+It covers actual-facts eligibility, incomplete/fault/cleanup/identity gates,
+selected-ref mismatch, and driver inference replacement using synthetic
+closed data only. These unit results are not played games or proof.
+
+The existing record adapter also discards driver inference namespaces for
+compare before snapshot work, including when observer snapshot fails. Only
+the actual closed-facts compiler creates pairedAnalysis. This leaves the
+ordinary record chain, wire sequence, private artifact ordinal, stop clocks
+and cleanup ordering unchanged. Its derived paired-analysis check replaces
+the driver's early claim and selected refs must match final closed bytes.
+
+Before an append in the reserved preflight/compare games namespace, the
+record adapter snapshots selected PGN refs and rejects writes to selected
+paths. Unrelated artifacts retain their original behavior without a snapshot. This guard
+runs before both mutation and private artifact-call ordinal consumption.
+The observer remains three methods. Its later closed-ref/event check still
+revalidates actual bytes and never supplies write authority. A real Recorder
+replacement regression proves current bytes and their selected ref survive.
+The nested checkpoint DTO omits private result; outer game.result owns it.
+Zero-move PGNs receive the same strict blank header/mainline separator as
+all later checkpoints, without weakening parsing or result validation.
 
 ## Test suites
 

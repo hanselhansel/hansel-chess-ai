@@ -65,13 +65,16 @@ export function createSnapshotIO(options) {
     statFile: (p) => fsp.lstat(p),
     createStream: (p) => createReadStream(p, { flags: constants.O_RDONLY | constants.O_NOFOLLOW }),
   });
-  const readAt = async (root, rel, readonly = false) => {
+  const readAt = async (root, rel, readonly = false, cap = FIXED_LIMITS.resources.ordinaryBytes) => {
+    if (!Number.isSafeInteger(cap) || cap <= 0 || cap > FIXED_LIMITS.resources.ordinaryBytes) {
+      throw fail("read byte ceiling");
+    }
     const target = await confined(root, rel);
     const st = await call("snapshot file mode", () => fsp.lstat(target));
     if (!st.isFile() || readonly && (st.mode & 0o222) !== 0) {
       throw fail("regular readonly file");
     }
-    const fact = await reader.readFact(target, FIXED_LIMITS.resources.ordinaryBytes, "snapshot read");
+    const fact = await reader.readFact(target, cap, "snapshot read");
     await confined(root, rel);
     const after = await call("snapshot file mode recheck", () => fsp.lstat(target));
     if (readonly && (after.mode & 0o222) !== 0) {

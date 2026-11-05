@@ -4,6 +4,7 @@
 // and the close -> evidence-path hash -> final -> completion order. Nothing
 // in this module is a second writer.
 
+import { deriveFinalGameEvidence } from "./pgn-summary.mjs";
 import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
 import { assertRecord, REQUIRED_CHECK_IDS } from "./record-schema.mjs";
 
@@ -229,7 +230,7 @@ export function buildFinalFromClosedFacts(input) {
   const {
     headFields,
     commonIdentitySha256,
-    request,
+    request: initialRequest,
     phaseDirectory,
     artifactRefs,
     eventsRef,
@@ -238,6 +239,7 @@ export function buildFinalFromClosedFacts(input) {
     identityMismatch,
     cleanupOk,
   } = facts;
+  let request = initialRequest;
   const claims = facts.claims ?? [];
 
   const byPath = new Map(artifactRefs.map((ref) => [ref.path, ref]));
@@ -260,7 +262,7 @@ export function buildFinalFromClosedFacts(input) {
   const faults = Number.isSafeInteger(request.unplannedFaultCount)
     ? request.unplannedFaultCount
     : 1;
-  const status = resolveStatus({
+  let status = resolveStatus({
     request,
     identityProven,
     identityMismatch,
@@ -268,6 +270,16 @@ export function buildFinalFromClosedFacts(input) {
     faults,
     requiredChecks,
   });
+  if (headFields.phase === "compare" && request.summary?.gameEvidence !== undefined) {
+    const derived = deriveFinalGameEvidence({
+      request, status, artifactRefs, cleanupOk, identityProven, faults,
+    });
+    request = derived.request;
+    status = derived.status;
+    requiredChecks = requiredChecks.map((check) => check.id === "paired-analysis" ? {
+      ...check, status: derived.pairedCheckPassed ? "passed" : "failed",
+    } : check);
+  }
   const analysisEligible = resolveAnalysisEligible({
     request,
     status,

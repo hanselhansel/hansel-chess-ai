@@ -106,3 +106,22 @@ export function buildGameSchedule(options) {
     initialFen: opening.initialFen, movesUci: [...opening.movesUci],
   }))));
 }
+
+export function validateGameSchedule({ phase, gameSchedule }) {
+  let expected;
+  if (phase === "preflight") {
+    expected = buildGameSchedule({ phase });
+  } else if (phase === "compare" && Array.isArray(gameSchedule)) {
+    const openings = gameSchedule.filter((game) => game.gameNumber === 1).map((game) => ({
+      id: game.openingId, label: game.openingId,
+      initialFen: game.initialFen, movesUci: game.movesUci,
+    }));
+    expected = buildGameSchedule({ phase, openings: { schemaVersion: 1, openings } });
+  } else {
+    throw fail("PGN phase schedule");
+  }
+  if (!deepEqual(gameSchedule, expected)) {
+    throw fail("game schedule binding");
+  }
+  return expected;
+}

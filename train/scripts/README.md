@@ -28,6 +28,16 @@ Historical small-model entrypoints retain their own defaults.
 | [fetch_stockfish.sh](./fetch_stockfish.sh) | Ubuntu x86-64 binary fetch helper; destination is `train/bin/stockfish`. `[fetch_stockfish.sh:DEST]` `[fetch_stockfish.sh:curl]` |
 | [uci_child_test_support.py](./uci_child_test_support.py) | Test-only support imported by `test_engine_uci.py`: `SITECUSTOMIZE` identity hook, `build_child_env`, `select_python3`, `parent_identity`/`validate_parent`, `validate_child`, `run_help_child`, and `run_help`. Owns the pinned project-venv child environment, `python3` resolution against the actual child `PATH`, bounded identity sidecar comparison, and the help-only subprocess boundary. Never imported by production code. `[uci_child_test_support.py:run_help]` `[uci_child_test_support.py:select_python3]` `[uci_child_test_support.py:validate_child]` |
 
+## Browser evaluation PGNs and match control
+
+The [browser harness](./browser_eval/README.md) includes persisted two-slot
+PGN selection and a rules-owned match controller. Actual Recorder-close and
+checkpoint-event acknowledgments precede the next move. First stop protects
+the selected PGN and leaves later bytes diagnostic. Only final closed
+artifact, identity and cleanup facts can produce paired inference.
+These internal APIs add no training, publication or automatic comparison
+command. Pure unit evidence is separate from browser phase execution.
+
 ## Invariants
 
 - Both `climb.py` and `climb_m.py` default generation to `TRAIN_VISITS=256`, with `CLIMB_VISITS` override. Small-model `climb.py` gates snapshots at 1 visit; `climb_m.py` gates them at `PLAY_VISITS=64`. The medium flow defaults to four training epochs. `[climb.py:main]` `[climb_m.py:main]` `[climb_m.py:one_loop]` `[../src/tinyaz/constants.py:TRAIN_VISITS]` `[../src/tinyaz/constants.py:PLAY_VISITS]`

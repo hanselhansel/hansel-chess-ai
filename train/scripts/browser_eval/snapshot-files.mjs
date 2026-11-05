@@ -42,6 +42,8 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/identity-schema.mjs",
   "train/scripts/browser_eval/match.mjs",
   "train/scripts/browser_eval/pgn-evidence.mjs",
+  "train/scripts/browser_eval/pgn-format.mjs",
+  "train/scripts/browser_eval/pgn-summary.mjs",
   "train/scripts/browser_eval/phase-fixtures.mjs",
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",

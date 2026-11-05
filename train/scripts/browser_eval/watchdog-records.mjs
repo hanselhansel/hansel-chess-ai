@@ -91,29 +91,45 @@ export function createWatchdogRecordAdapter({
 
   const persistArtifact = (msg) => {
     const bytes = Buffer.from(msg.data, "base64");
-    const ordinal = artifactOrdinal;
-    artifactOrdinal += 1;
+    const metadata = copyDeep({
+      recordId: msg.recordId, recordSeq: msg.recordSeq, artifactId: msg.artifactId,
+      path: msg.path, mode: msg.mode, last: msg.last === true,
+    });
     return Promise.resolve()
-      .then(() =>
-        recorder.appendArtifactChunk({
-          recordId: msg.recordId,
-          recordSeq: ordinal,
-          artifactId: msg.artifactId,
-          path: msg.path,
-          mode: msg.mode,
-          bytes,
-          last: msg.last === true,
-        }),
-      )
+      .then(() => {
+        if (pgnEvidence && ["preflight", "compare"].includes(phase) &&
+          typeof metadata.path === "string" && metadata.path.toLowerCase().startsWith(`${phase}/games/`)) {
+          try {
+            const canonicalPath = phase === "compare" ? /^compare\/games\/p(?:0[1-9]|1[0-9]|20)-g[12]\.[ab]\.pgn$/ :
+              /^preflight\/games\/aa-g[12]\.[ab]\.pgn$/;
+            if (!canonicalPath.test(metadata.path)) {
+              throw fail("PGN_EVIDENCE_INVALID", "noncanonical PGN path");
+            }
+            const body = copyDeep(pgnEvidence.snapshot());
+            if (!isObj(body) || !Array.isArray(body.games)) {
+              throw fail("PGN_EVIDENCE_INVALID", "selected checkpoint snapshot");
+            }
+            if (body.games.some((game) => game?.checkpoint?.pgn?.path === metadata.path)) {
+              throw fail("PGN_CURRENT_SLOT", "write targets selected checkpoint");
+            }
+          } catch (error) {
+            onObserverFault(error);
+            throw error;
+          }
+        }
+        // Only an actual Recorder artifact call consumes this ordinal.
+        // A prewrite selection rejection leaves both bytes and ordinal
+        // untouched; wire recordSeq remains the copied original value.
+        const ordinal = artifactOrdinal;
+        artifactOrdinal += 1;
+        return recorder.appendArtifactChunk({
+          recordId: metadata.recordId, recordSeq: ordinal, artifactId: metadata.artifactId,
+          path: metadata.path, mode: metadata.mode, bytes, last: metadata.last,
+        });
+      })
       .then((ref) =>
         observe({
-          type: "artifact",
-          recordId: msg.recordId,
-          recordSeq: msg.recordSeq,
-          artifactId: msg.artifactId,
-          path: msg.path,
-          mode: msg.mode,
-          last: msg.last === true,
+          type: "artifact", ...metadata,
           ref: ref === undefined || ref === null ? null : copyDeep(ref),
         }).then(() => ref),
       );
@@ -208,6 +224,11 @@ export function createWatchdogRecordAdapter({
         ? copyDeep(finishReq.summary)
         : {};
     delete summary.gameEvidence;
+    if (phase === "compare") {
+      for (const key of ["pairedAnalysis", "pValue", "interval95", "conditionalEstimate", "classification", "analysisEligible", "elo", "Elo"]) {
+        delete summary[key];
+      }
+    }
     const ge = summaryEvidence();
     if (ge !== undefined) summary.gameEvidence = ge;
     if (phase === "watchdog-selftest") summary.scoredGames = 0;

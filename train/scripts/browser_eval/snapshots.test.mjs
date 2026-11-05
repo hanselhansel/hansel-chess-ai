@@ -118,7 +118,7 @@ async function manifestFor(t, f, result) {
 }
 
 test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 93);
+  assert.equal(RUNTIME_PATHS.length, 95);
   assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
