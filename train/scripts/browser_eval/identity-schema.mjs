@@ -228,6 +228,10 @@ const vEnvironment = (v, n) => {
   }
 };
 
+export function assertEnvironment(value) {
+  vEnvironment(value, "Environment");
+}
+
 export function assertCommonIdentity(value) {
   const n = "CommonIdentity";
   shape(

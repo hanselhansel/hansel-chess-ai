@@ -50,8 +50,8 @@ phase, parity or strength result.
 
 ### Actual implementation/export inventory (AST-derived roster)
 
-The 76 JS owners and their actual named exports today (identical
-re-exports included); the three Python sources stay exactly
+The JS owners and their actual named exports (identical re-exports
+included); the three Python sources stay exactly
 `BackendIdentity.helpers` and are outside this JS roster:
 
 | Module | Lines | Actual named exports |
@@ -73,7 +73,7 @@ re-exports included); the three Python sources stay exactly
 | `connected-resource-test-fixtures.mjs` | gate-enforced | `BROWSER_ENV`, `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`, `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`, `makeServerTree`, `makeServerCaps`, `fakeVite`, `makeServerDeps`, `hitFixture`, `ownResourceStart` |
 | `driver-protocol.mjs` | 381 | `driverD2S`, `driverS2D`, `bridgeError`, `defer`, `createDriverBridgeActual` |
 | `fixture.mjs` | gate-enforced | (browser-side fixture module — `window.__tinyazEval` side effect, no exports) |
-| `identity-schema.mjs` | 299 | `assertBackendIdentity`, `assertCommonIdentity` |
+| `identity-schema.mjs` | gate-enforced | `assertBackendIdentity`, `assertCommonIdentity`, `assertEnvironment` |
 | `native-fixture-admission.mjs` | 375 | `createNativeFixtureAdmission` |
 | `native-fixture-io.mjs` | 388 | `createNativeFixtureIO` |
 | `native-fixture-protocol.mjs` | 395 | `parseNativeFixtureArgv`, `nativeFixtureFieldsExact`, `runNativeListenerFixture`, `runBlockedHeartbeatFixture`, `createNativeFixtureWaits` |
@@ -81,7 +81,7 @@ re-exports included); the three Python sources stay exactly
 | `native-normal-test-cases.mjs` | 399 | `runNativeNormalCases` |
 | `native-test-fixtures.mjs` | 388 | `createNativeTestHarness` |
 | `prerequisites.mjs` | 244 | `verifyReceipt`, `admitPhase`, `verifyInternalSelfTest`, `inspectIncompletePhase` |
-| `process-backend-reader.mjs` | 339 | `createBackendReader`, `resolvePythonProcessImage`, `parsePythonVenvConfiguration`, `createBackendIdentityExpectation`, `capturePythonSetupMetadata`, `defaultReadOsBuild` |
+| `process-backend-reader.mjs` | gate-enforced | `createBackendReader`, `resolvePythonProcessImage`, `parsePythonVenvConfiguration`, `createBackendIdentityExpectation`, `capturePythonSetupMetadata`, `defaultReadOsBuild` |
 | `process-backend.mjs` | 398 | `captureBackendIdentity`, `captureSetupBackendIdentity`, `createMonitorBackendCapture` |
 | `process-budget.mjs` | 398 | `captureDeadlineMs`, `createBudgetHandle`, `waitHandle`, `sleepHandle`, `pollHandle`, `createBoundedQueue` |
 | `process-framing.mjs` | 89 | `createCollectorFramer` |
@@ -113,6 +113,15 @@ re-exports included); the three Python sources stay exactly
 | `schema-primitives.mjs` | 133 | `schemaFail`, `freezeDeep`, `isPlainObject`, `isRelPath`, `CHECK`, `arr`, `oneOf`, `shape`, `exactOnly`, `deepEqual`, `eqLiteral`, `sortedUnique`, `assertArtifactRef`, `assertProcessIdentity`, `sortedRefs` |
 | `server.mjs` | gate-enforced | `startFixtureServer` |
 | `server.test.mjs` | gate-enforced | (TEST entry — no exports) |
+| `environment.mjs` | gate-enforced | `captureEnvironment`, `verifyEnvironment` |
+| `environment-files.mjs` | gate-enforced | `createEnvironmentFiles` |
+| `environment-python.mjs` | gate-enforced | `capturePythonEnvironment` |
+| `environment-python-evidence.mjs` | gate-enforced | `readPythonEnvironmentEvidence` |
+| `environment-python-program.mjs` | gate-enforced | `AUDIT_SCRIPT`, `PIP_RUNNER` |
+| `environment-test-fixtures.mjs` | gate-enforced | `makeEnvironmentFixture` (TEST-only) |
+| `environment.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `setup-process-actual.mjs` | gate-enforced | `armSetupReceipt`, `adoptSetupHandle` |
+| `setup-process.mjs` | gate-enforced | `runSetupCommand` |
 | `stats.mjs` | 262 | `signProbability`, `clopperPearson95`, `summarizePairs` |
 | `supervision-test-fixtures.mjs` | 399 | `identity`, `identityKeyOf`, `bsdRow`, `frame`, `sampleReply`, `fakeClock`, `fakeFile`, `fakeFileSystem`, `fakeBinStream`, `fakePipe`, `fakeChild`, `fakeFailedSpawnChild`, `collectorFixture` |
 | `supervisor-protocol.mjs` | 210 | `IPC_LIMITS`, `TIMING_LIMITS`, `RESOURCE_LIMITS`, `createProtocolValidator` |
@@ -295,7 +304,7 @@ platform fakes isolated, no pass/Native/phase claim.
 | [record-schema.mjs](./record-schema.mjs) | `REQUIRED_CHECK_IDS`, `REQUIRED_PARENT_PHASES`, `PROTOCOL_IDS`, `MODEL_IDENTITY`, `BASELINE_COMMIT`, `FIXED_LIMITS`, `assertRecord`, `assertArtifactRef`, `assertProcessIdentity`, `assertCommonIdentity`, `assertBackendIdentity` | Single closed-envelope schema/constant owner (re-exports its private helper owners). |
 | [schema-primitives.mjs](./schema-primitives.mjs) | private helpers only | Strict primitive/closed-shape/path/ref/identity checks and bounded schema failures. No schema/constants back-import. |
 | [schema-constants.mjs](./schema-constants.mjs) | private helpers only | Frozen pin/check/phase/limit/protocol declarations; storage only, re-exported by record-schema.mjs. |
-| [identity-schema.mjs](./identity-schema.mjs) | private helpers only | Executable/Python/backend/environment/CommonIdentity validation over primitives/constants. |
+| [identity-schema.mjs](./identity-schema.mjs) | `assertBackendIdentity`, `assertCommonIdentity`, `assertEnvironment` | Executable/Python/backend/environment/CommonIdentity validation over primitives/constants. |
 | [artifact-files.mjs](./artifact-files.mjs) | private helpers only | Confined paths, durable atomic file primitives, bounded streaming artifact hashing/inventory. The unsupported-directory directory-sync compatibility covers only the open/sync issuance — every adopted handle owes a genuinely observed real close whose rejection propagates with its retained debt. R4 corrective (declared before use): private `ownedFileCloseReceipt(ownedFile) -> Promise<void>` returns only the SAME already-existing close-debt promise bound by module-private WeakMap to a genuine constructor-produced OwnedFile — forged/spread/proxy aliases reject, no new receipt/queue/clock/ledger/status/resolver is created or resolved, the OwnedFile method roster stays exactly `stat`/`read`/`write`/`sync`/`close`, actual close success alone fulfills and the first error stays retained; raw-open registration/issuance state is held internally so only an internally observed pre-issuance/no-resource path retires never-opened debt — a generic raw-open rejection or missing returned handle is never no-creation proof, with no caller flag, error-code certificate or fake close. Corrective 55 (declared before use — not yet implemented or verified green): ONE module-private strong Set of raw-resource entries `{handle, owned}` — each raw returned resource is added IMMEDIATELY after open resolves BEFORE shape validation, the minted OwnedFile is pinned on the same entry, and the entry is removed ONLY after the actual raw close succeeds just before/with the SAME `settleClose`/`closeDebt`; unknown/unadoptable/failed-close stays strongly owned, and the WHOLE `normRel` path predicate delegates to existing `schema-primitives.isRelPath` preserving the FIRST empty/type `STORE_PATH` error priority/message plus every later path check — no exported registry/drain/resolver/status/caller flag/second ledger, no OwnedFile method or getter change, no new IO path, and the Parent strong capability/resource associations remain required, not replaced. Corrective 57 (declared before use — not yet implemented or verified green): the WHOLE OwnedFile owner — `isFileHandle`, the genuine-OwnedFile identity/receipt WeakMap, the strong raw-resource `{handle, owned}` Set, `openActual` and `ownedFileCloseReceipt` plus their full comments — moves to [artifact-owned-file.mjs](#artifact-owned-filemjs-exists--r4-declaration-dated) `createOwnedFileOperations({issueActual, storeFail})`, instantiated ONCE here with the returned functions re-exported as IDENTICAL references under the same names; `OwnedFile.close` owns ONE cached flow of at most TWO total raw-close attempts per handle joined by every repeated/concurrent/outer-retry call to the SAME prearmed closeDebt — superseding the earlier instant-reject-then-outer-retry wording, which stays preserved history. |
 | [artifact-owned-file.mjs](./artifact-owned-file.mjs) | `createOwnedFileOperations` (SOLE private export) | created — the corrective-57 before-creation declaration is dated history. Whole OwnedFile owner extracted from artifact-files.mjs: the pure factory `createOwnedFileOperations({issueActual, storeFail}) -> frozen {openActual, ownedFileCloseReceipt}` captures TWO trusted ArtifactFiles bindings and invokes nothing; ArtifactFiles instantiates it ONCE and re-exports the IDENTICAL returned references under the same names — signatures `openActual(retainActual, issueOpenThunk)`/`ownedFileCloseReceipt(genuineOwnedFile)` and the `stat`/`read`/`write`/`sync`/`close` roster unchanged. `OwnedFile.close` owns ONE cached flow of at most TWO total raw-close attempts per handle joined by every repeated/concurrent/outer-retry call to the SAME prearmed closeDebt; an issued-open rejection or unadoptable return awaits its OWN closeDebt before error — never a completed-leaf failure. See [artifact-owned-file.mjs](#artifact-owned-filemjs-exists--r4-declaration-dated). Functional runtime input. |
 | [record-finalization.mjs](./record-finalization.mjs) | private helpers only | Pure canonical final/check-evidence/completion construction and eligibility helpers. Corrective 56 (declared before use — not yet implemented or verified green): adds the pure synchronous `buildFinalFromClosedFacts` aggregation over the EXACT 11-fact closed bundle (the nine `finalInputs` facts plus the Records-obtained `artifactRefs`/`eventsRef`) with the WHOLE canonical copy, own byPath Map and WHOLE existing pure claims/checks/fault/status/analysis/buildFinal/assertRecord logic preserved — the planned record-inputs.mjs leaf imports only the pure `EXIT_CODES` here, no backedge. |
@@ -6679,6 +6688,258 @@ corrections:
   proof; the shared `pyMeta` slot carries genuine
   verified-ready facts on the monitor entry and that
   isolated setup data on the static entry.
+
+## C4b-13 actual environment capture declared APIs (declared
+before creation)
+
+Under `c4b-scope-13a-setup-provider.json` on
+`feat/tinyaz-browser-harness` at committed base
+`f78ed5e75e1f76be68102196f514527358f3a3b2` — global 133 /
+active 3 / map 222 -> 226 (exactly FOUR Create rows appended
+at the map tail, every prior action/path/order and the locked
+Runtime `070fbf` slice preserved). Declared APIs only; the
+13a packet creates `setup-process.mjs` alone and the
+remaining three owners are created under their own packets:
+
+- `setup-process.mjs` — functional-runtime leaf, SOLE export
+  `runSetupCommand({executable,args,cwd,env,maxBytes},
+  context, adapters?) -> Promise<{stdout,stderr,exitCode}>`:
+  bounded one-shot setup command through the lowlevel spawn
+  (default Node `child_process.spawn`, `shell:false`, stdio
+  `ignore/pipe/pipe`); argv/cwd/env validated and copied
+  before the first await, executable/cwd absolute, `maxBytes`
+  positive and bounded by `FIXED_LIMITS.ipc.frameBytes`;
+  context EXACT `{budget,lifetime}` — the SAME borrowed
+  BudgetHandle plus a genuine `assertWatchdogLifetime` owner;
+  adapters is the isolated lowlevel spawn ONLY. Two neutral
+  receipts (raw issuance, physical child) arm and
+  strong-index BEFORE the first `retainActual` callout;
+  adoption precedes any shape/pid read; actual exit plus BOTH
+  real pipe closes alone retire the physical debt; each pipe
+  counts its byte total before append (a bound crossing is a
+  recorded failure, never silent truncation); nonzero exits
+  and stderr are DATA for the parent; the first raw spawn/
+  stdio failure value throws verbatim behind a presence flag
+  (null/undefined retained); `waitHandle` on the same handle
+  bounds the public wait with the original absolute end. Runs
+  fixed setup commands before manifest only — never claims
+  phase/readiness/cleanup/Native proof, never kills/polls.
+  Imports `process-budget`, `watchdog-lifetime`,
+  `protocol-values`, `record-schema` limits and Node
+  `child_process` only — never a parent, Native or TEST edge.
+- `environment-python.mjs` — declared functional-runtime
+  leaf, SOLE export `capturePythonEnvironment(
+  {pythonExecutable,torchWheelPath},context,adapters?) ->
+  {metadata,packages,setupFiles}`: the ACTUAL isolated
+  selected-Python software audit executed independently
+  BEFORE manifest/Native, never monitor-verified or
+  ready-shaped. Imports this setup provider plus pure
+  metadata helpers only.
+- `environment.mjs` — declared functional-runtime owner,
+  exports `captureEnvironment({recordRoot,pythonExecutable,
+  chromiumExecutable},context,adapters?) -> {environment,
+  setupFiles}` (premanifest actual audit) and
+  `verifyEnvironment({expectedEnvironment,recordRoot},
+  context,adapters?) -> Environment` (post-stop same-process
+  file/OS/inventory verification — NEVER spawn or Native calls);
+  genuine Backend8 unchanged. Imports Python + Setup +
+  Backend.
+- `environment.test.mjs` — declared TEST entry (no exports):
+  faithful lowlevel adapters, no actual Native/browser/
+  model; excluded from the functional-runtime union.
+- DAG one-way: environment -> python + setup + Backend8;
+  python -> setup + pure helpers; setup -> budget/lifetime/
+  protocol values only — never parent/Native/TEST. The three
+  runtime leaves join the functional-runtime input union; the
+  TEST owner does not. Source-only declaration — no test
+  result, phase, Native/browser/model or green claim.
+
+## C4b-13c python program/evidence and setup-actual split
+(declared before creation)
+
+Under `c4b-scope-13c-program-split.json` on
+`feat/tinyaz-browser-harness` at committed base
+`f78ed5e75e1f76be68102196f514527358f3a3b2` — global 136 /
+active 3 / map 226 -> 229 (exactly THREE Create rows appended
+at the map tail, every prior action/path/order and the locked
+Runtime `070fbf` slice preserved). Same-change capacity repair
+on the frozen provider source plus two actual audit false-pass
+corrections — concrete repair, never new architecture or
+approval. This packet creates `environment-python-program.mjs`
+alone; `environment-python-evidence.mjs` and
+`setup-process-actual.mjs` are created under their own later
+packets:
+
+- `environment-python-program.mjs` — functional-runtime leaf,
+  SOLE TWO named exports `AUDIT_SCRIPT` and `PIP_RUNNER` as
+  the SAME fixed string bindings: the WHOLE deadline
+  bootstrap/pip-runner/audit program group moved verbatim out
+  of `environment-python.mjs` with every comment/literal byte
+  (`DEADLINE_BOUND` stays private), no project imports and no
+  IO at import — pure program data. The moved audit keeps all
+  RECORD/wheel checks and closes two actual false-pass gaps:
+  each row's real installed digest is preserved as private
+  audited data (no new report field) and EVERY ordinary
+  archive file member is compared to it byte-for-byte even
+  when the RECORD hash field is empty — only the exact known
+  regenerated `<dist>.dist-info/RECORD` member is exempt,
+  generated/install-only stay honest separate classes,
+  unmapped members and all other mismatches fail closed — and
+  duplicate archive file-member names reject before any
+  insert/hash comparison instead of silently overwriting.
+  DAG `python facade -> program`, no backedge. Runtime union.
+- `environment-python-evidence.mjs` — declared
+  functional-runtime leaf, SOLE export
+  `readPythonEnvironmentEvidence({audit,freeze,check,
+  wheelPath,context,adapters?}) -> Promise<{metadata,packages,
+  setupFiles}>`: the WHOLE parse/report/schema/prefix/
+  RECORD/wheel-reader/evidence tail moves later from the same
+  facade over the SAME borrowed budget/lifetime and the
+  genuine backend reader — fixed Node fs/path/crypto plus
+  pure schema/protocol helpers only, no injected
+  verifier/status/phase authority and no subprocess; the
+  helper owns `PIP_VERSION`, `RECORD_CAP`, `WHEEL_CAP` and
+  the identical `acct` factory while the caller keeps the
+  three-child ordering and captured arguments. DAG `python
+  facade -> evidence -> reader/pure`, no reverse. Runtime
+  union.
+- `setup-process-actual.mjs` — declared functional-runtime
+  leaf, SOLE exports `armSetupReceipt` and
+  `adoptSetupHandle`: direct stable aliases of the WHOLE
+  existing arm/adopt pair plus ONE private strong pending set
+  and complete comments — the same receipt object/settler, no
+  new counter/ledger/clock/owner/resolver copy; the whole
+  actual-resource group moves out of `setup-process.mjs`
+  under its own packet while the provider imports the aliases
+  and retains the exit/pipe facts — no imports, no
+  import-side IO, leaving room for the actual async-no-child/
+  BOTH-pipe-close repair later without premature debt
+  retirement. DAG `setup -> actual`, never reverse. Runtime
+  union.
+- DAG one-way: python facade -> program/evidence -> pure
+  helpers/reader; setup -> actual; never a reverse edge. The
+  three leaves join the functional-runtime input union.
+  Source-only declaration — no test result, phase,
+  Native/browser/model or green claim.
+
+## C4b-13 environment assembly and static inventory contract
+
+`environment.mjs` exports exactly `captureEnvironment(options, context,
+adapters?)` and `verifyEnvironment(options, context, adapters?)`. Capture
+options are `{recordRoot, pythonExecutable?, chromiumExecutable?}`; verify
+options are `{expectedEnvironment, recordRoot}`. Both borrow the identical
+`{budget, lifetime}`. Options are copied before any await or callout.
+
+`environment-files.mjs` is declared before creation. Its sole export is
+`createEnvironmentFiles(context, adapters)`, the shared same-process owned
+reader, directory inventory, installed Python RECORD measurement and
+canonical-path owner. It imports Node fs/path and existing bounded reader,
+budget, canonical and protocol helpers. DAG: environment -> files ->
+reader/pure helpers. It never imports environment, spawns, creates another
+budget/lifetime, or waits on its own lifetime zero. Complete original
+relative file paths, lengths and digests form sorted inventory evidence.
+Unexpected links, escapes, duplicate paths and unknown file kinds reject.
+
+`environment-test-fixtures.mjs` is declared before creation. It exports
+`makeEnvironmentFixture(t)` only: a confined temporary filesystem with
+lowlevel path/stream/stat/directory adapters, faithful fake child events,
+class-shaped public Playwright BrowserType, and genuine watchdog lifetime.
+The sole teardown owner releases controls, joins actual bodies and both
+pipe closes, observes fresh same-owner zero, then removes the owned root.
+DAG: environment tests -> fixture -> Node/teardown/schema helpers. This
+TEST-only leaf is excluded from functional runtime inputs.
+
+`identity-schema.mjs` additionally exports `assertEnvironment(value)` as a
+direct call of its existing closed Environment validator. Capture and
+reverification use the same schema as CommonIdentity, including mandatory
+monitoring Python/runtime equality. No duplicate shape validator is added.
+
+Python capture/evidence accept optional isolated lowlevel `spawn`,
+`statFile`, `createStream`, and `resolvePath` adapters; operational callers
+omit them. The parent additionally accepts lowlevel directory, OS and
+public Playwright-loader adapters. No identity, capture, verification,
+ready-envelope or phase-result callback is injectable.
+
+Capture measures the selected Python audit first, then genuine static
+BackendIdentity. Node binary, package-lock, installed Node package builds,
+Chromium executable and full application builds are measured. Chromium
+selection uses public `chromium.executablePath()` on real class instances;
+its version comes from the actual Info.plist. Launch security is SHA256 of
+canonical `{headless:true, chromiumSandbox:true,
+ignoreDefaultArgs:false, args:[]}`. There is no browser launch here.
+
+Post-stop verification performs file, OS and inventory remeasurement only.
+It never spawns Python, sysctl, Native or a browser after shutdown. Initial
+isolated Python metadata and hardware-model provenance stay bound to the
+same capture context; they are not relabeled as fresh subprocess facts.
+Current executable, cfg, helper, library, import, RECORD, wheel, dependency,
+OS and application bytes must still match. Setup buffers are deterministic
+owned data, without PIDs, timestamps, deadlines or workspace identifiers.
+
+`setup-process.mjs` accepts root `/` as an absolute working directory,
+snapshots all five fields before retention callouts, enforces one combined
+stdout/stderr byte ceiling and rejects signal-only exits. A trusted Node
+asynchronous creation failure establishes no OS child only. Physical debt
+still waits for BOTH allocated pipe close events. Synchronous unissued
+Node failures retain the immediate no-resource path.
+
+Pure verification command: `node --test --test-concurrency=1
+train/scripts/browser_eval/environment.test.mjs`. Its controlled Python
+bridge AST-selects the actual validator definitions and uses only stdlib
+ZIP/tempfile fixtures. It does not import Torch, models or Native modules.
+
+The files factory returns exactly frozen `{read, resolve, call, inventory,
+pythonInstalled}`. `read(path, cap, tag, binary?)` is the same owned backend
+reader result (`{buf,sha256}` or `{byteLength,sha256}`); `resolve(path)` is
+synchronously guarded canonicalization; `call(tag, thunk)` retains a neutral
+actual receipt before issuing bounded metadata IO.
+`inventory(root, links = "none")` returns
+`{files,links,sha256}`. Regular files retain complete sorted
+`{path,byteLength,sha256}` facts. Link facts are sorted `{path,target}`;
+the digest binds both arrays. Only confined relative framework links in
+`"framework"` mode and Node `.bin` links in `"node-bin"` mode are accepted;
+other links reject. Links are recorded without traversing them, so build
+contents are not charged twice. `pythonInstalled(prefix)` returns
+`{distributions,records,inventory}` with measured name/version/build digest,
+original RECORD descriptors, and the complete site-packages inventory.
+The full site inventory catches added unrecorded files such as `.pth`.
+Construction has
+no IO and captures only the same borrowed context and lowlevel adapters.
+The fixture factory returns `{root, context, adapters, audit, write,
+spawnCalls, finish, expire}`; write maps a fixture identity path into its
+owned physical temporary root. `finish()` releases fake child exit and BOTH
+pipe-close controls; the shared teardown owner subsequently joins actual
+bodies and fresh lifetime zero before removal. `expire()` advances the
+fixture's original clock beyond its original deadline.
+
+Current implementation roles are Sol High implementation, Sol Max
+orchestration/review, and Devin review. Earlier SWE provenance is preserved
+as dated history. Verification in this milestone requires initial capture in
+the same process, genuine lifetime and recorded root; it does not provide a
+cross-process provenance admission API. Actual Native startup must still
+independently match the complete backend identity before driver admission.
+
+Current lowlevel environment adapter keys are exactly `spawn`, `statFile`,
+`createStream`, `resolvePath`, `readdir`, `readlink`, `osPlatform`, `osArch`,
+`osRelease`, `osVersion`, `cpus`, `totalmem`, and `loadPlaywright`. Supplied
+bindings must be functions and are snapshotted before callouts. Python's
+four-function subset is snapshotted independently. Public operations also
+snapshot the identical original budget/lifetime references, so mutation of
+the caller's context object cannot switch admitted resources mid-operation.
+The runtime union adds `environment-files.mjs`; the TEST fixture is excluded.
+The two appended map rows preserve all previous row actions and ordering.
+The current environment test command includes one bounded real stdlib-only
+Python bridge per wheel case. No selected-venv, Torch, model, Native or
+browser child executes in that bridge. Historical no-real-spawn wording
+applies to the earlier fake-child declaration, not this explicit exception.
+
+Setup and finalizer verification are separate bounded operations. Each
+invocation snapshots and uses its supplied original BudgetHandle throughout
+that call. Provenance binds the original genuine lifetime, recorded root,
+identity and captured data, not the earlier setup handle object. A later
+live finalizer handle is accepted after the setup handle is disposed; a
+spent current handle still rejects before new IO. Conflicting initial
+inventories for the same captured environment cannot overwrite provenance.
 
 ## Test suites
 
