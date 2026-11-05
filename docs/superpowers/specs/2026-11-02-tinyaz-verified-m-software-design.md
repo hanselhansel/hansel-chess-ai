@@ -1163,6 +1163,8 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/pgn-evidence.test.mjs` | C4b-16 TEST-only real PGN/read/stop-race regressions, declared before creation. No browser/model/Native. |
 | Create | `./train/scripts/browser_eval/pgn-summary.mjs` | C4b-16 pure runtime final-facts paired inference, declared before creation. Selected refs bound to actual closed inventory and genuine final cleanup/identity facts. |
 | Create | `./train/scripts/browser_eval/pgn-summary.test.mjs` | C4b-16 TEST-only final-facts eligibility/ref/inference regressions, declared before creation. |
+| Create | `./train/scripts/browser_eval/page-arm.mjs` | C4b-17 recorded public Page arm, exact API/DAG in owning contract, declared before creation. |
+| Create | `./train/scripts/browser_eval/page-arm.test.mjs` | C4b-17 TEST-only public Page/Worker transport regressions, declared before creation. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -1390,6 +1392,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/fixture.mjs",
   "train/scripts/browser_eval/identity-schema.mjs",
   "train/scripts/browser_eval/match.mjs",
+  "train/scripts/browser_eval/page-arm.mjs",
   "train/scripts/browser_eval/pgn-evidence.mjs",
   "train/scripts/browser_eval/pgn-format.mjs",
   "train/scripts/browser_eval/pgn-summary.mjs",
@@ -1639,6 +1642,28 @@ replacement regression proves current bytes and their selected ref survive.
 The nested checkpoint DTO omits private result; outer game.result owns it.
 Zero-move PGNs receive the same strict blank header/mainline separator as
 all later checkpoints, without weakening parsing or result validation.
+
+## C4b-17 recorded public Page arm
+
+`page-arm.mjs` is declared before creation, runtime-only. Sole export
+`createPageArm({kind,id,page,context,capabilities})` is a pure constructor
+returning exactly `{kind,initialize,think}` for the match controller.
+Initialize owns one recorded readiness operation. Each think owns a separate
+recorded command operation. No local deadline, second admission queue,
+Native proof, cleanup setter or changed engine response is introduced.
+The operation body installs a transparent public Worker constructor tap
+before actual fixture initialization, retaining only the current ready and
+result messages with their actual Worker instance ID. It observes the
+actual context response body for the arm's model route and hashes all bytes.
+Raw Ready/ThinkResponse and separate observations remain distinct.
+Per-operation evidence is persisted before completion. Stops fence records
+and model/Worker replacement rejects, preserving actual failures.
+DAG: phase runners -> page-arm -> canonical/schema helpers; Page fixture
+calls continue through the existing window.__tinyazEval API.
+`page-arm.test.mjs` is TEST-only, no exports. Scripted public Page/Context/
+Worker interfaces execute the actual injected observer script. Tests prove
+begun-before-work, per-move operation scope, raw messages/delivery hashing,
+held body closure, wrong bytes/worker and stop fences without an engine run.
 
 ### 3. Exact runtime contracts and source migration
 

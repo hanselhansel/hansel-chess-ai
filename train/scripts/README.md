@@ -38,6 +38,11 @@ artifact, identity and cleanup facts can produce paired inference.
 These internal APIs add no training, publication or automatic comparison
 command. Pure unit evidence is separate from browser phase execution.
 
+The private `browser_eval/page-arm.mjs` producer now binds recorded readiness
+and per-move commands to actual public Page fixture calls, Worker messages
+and hashed model-response bytes. Scripted SDK tests do not establish an
+actual browser phase result.
+
 ## Invariants
 
 - Both `climb.py` and `climb_m.py` default generation to `TRAIN_VISITS=256`, with `CLIMB_VISITS` override. Small-model `climb.py` gates snapshots at 1 visit; `climb_m.py` gates them at `PLAY_VISITS=64`. The medium flow defaults to four training epochs. `[climb.py:main]` `[climb_m.py:main]` `[climb_m.py:one_loop]` `[../src/tinyaz/constants.py:TRAIN_VISITS]` `[../src/tinyaz/constants.py:PLAY_VISITS]`

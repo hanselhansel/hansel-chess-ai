@@ -128,6 +128,8 @@ included); the three Python sources stay exactly
 | `snapshot-io.mjs` | gate-enforced | `createSnapshotIO` |
 | `snapshot-identity.mjs` | gate-enforced | `validateModelBytes`, `inventoryDigest`, `assembleSnapshotIdentity` |
 | `snapshots.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `page-arm.mjs` | gate-enforced | `createPageArm` |
+| `page-arm.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `match.mjs` | gate-enforced | `playGame`, `createGameCheckpoint` |
 | `match.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `pgn-evidence.mjs` | gate-enforced | `createPgnEvidence` |
@@ -7075,6 +7077,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/fixture.mjs",
   "train/scripts/browser_eval/identity-schema.mjs",
   "train/scripts/browser_eval/match.mjs",
+  "train/scripts/browser_eval/page-arm.mjs",
   "train/scripts/browser_eval/pgn-evidence.mjs",
   "train/scripts/browser_eval/pgn-format.mjs",
   "train/scripts/browser_eval/pgn-summary.mjs",
@@ -7324,6 +7327,28 @@ replacement regression proves current bytes and their selected ref survive.
 The nested checkpoint DTO omits private result; outer game.result owns it.
 Zero-move PGNs receive the same strict blank header/mainline separator as
 all later checkpoints, without weakening parsing or result validation.
+
+## C4b-17 recorded public Page arm
+
+`page-arm.mjs` is declared before creation, runtime-only. Sole export
+`createPageArm({kind,id,page,context,capabilities})` is a pure constructor
+returning exactly `{kind,initialize,think}` for the match controller.
+Initialize owns one recorded readiness operation. Each think owns a separate
+recorded command operation. No local deadline, second admission queue,
+Native proof, cleanup setter or changed engine response is introduced.
+The operation body installs a transparent public Worker constructor tap
+before actual fixture initialization, retaining only the current ready and
+result messages with their actual Worker instance ID. It observes the
+actual context response body for the arm's model route and hashes all bytes.
+Raw Ready/ThinkResponse and separate observations remain distinct.
+Per-operation evidence is persisted before completion. Stops fence records
+and model/Worker replacement rejects, preserving actual failures.
+DAG: phase runners -> page-arm -> canonical/schema helpers; Page fixture
+calls continue through the existing window.__tinyazEval API.
+`page-arm.test.mjs` is TEST-only, no exports. Scripted public Page/Context/
+Worker interfaces execute the actual injected observer script. Tests prove
+begun-before-work, per-move operation scope, raw messages/delivery hashing,
+held body closure, wrong bytes/worker and stop fences without an engine run.
 
 ## Test suites
 
