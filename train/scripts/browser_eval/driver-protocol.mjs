@@ -310,3 +310,72 @@ export const driverS2D = (ctx, st, message) => {
   }
   poison(st, `s2d type ${t}`);
 };
+
+// Shared IPC_INVALID failure constructor for both leaves — the
+// detail names the violated wire invariant; arbitrary caller values
+// stay on their own promise/error channels, never this type.
+export const bridgeError = (detail) => {
+  const error = new Error(`driver-bridge ${detail}`);
+  error.code = "IPC_INVALID";
+  return error;
+};
+
+// Shared deferred; every created promise carries an immediate real
+// rejection handler so an abandoned waiter can never surface as an
+// unhandled rejection — every caller still observes the exact
+// settled value through its own await.
+export const defer = () => {
+  let resolve;
+  let reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  promise.then(
+    () => {},
+    () => {},
+  );
+  return { promise, resolve, reject };
+};
+
+// Private actual-receipt pair for the bridge wire leaf (C4b-04):
+// captures the SAME facade-owned mutable state and the trusted
+// transport over the SAME st.actual receipt Set — pure
+// construction returning the frozen EXACT2 {retainBody,joinActual},
+// invoking no retainActual/IO/clock/body itself. The protocol
+// never imports any bridge module.
+export function createDriverBridgeActual({ state: st, transport }) {
+  // Neutral actual receipt for a real body invocation: armed BEFORE
+  // the callback runs and fulfilled on ANY actual settlement — a
+  // rejected domain value is not unclosed physical debt. The run
+  // resolves with the original {threw,value} outcome so callers
+  // preserve arbitrary results and errors by explicit presence.
+  const retainBody = (fn) => {
+    const actual = defer();
+    st.actual.add(actual.promise);
+    transport.retainActual(actual.promise);
+    const run = (async () => {
+      try {
+        const value = await fn();
+        st.actual.delete(actual.promise);
+        actual.resolve();
+        return { threw: false, value };
+      } catch (e) {
+        st.actual.delete(actual.promise);
+        actual.resolve();
+        return { threw: true, value: e };
+      }
+    })();
+    return run;
+  };
+
+  // Passive local join over the SAME strong receipt Set: resolves
+  // only when every armed neutral receipt has truly settled — never
+  // a global owner whenSettled, never a self-wait, and an
+  // unknown-submission receipt honestly keeps it pending.
+  const joinActual = async () => {
+    while (st.actual.size !== 0) await Promise.all([...st.actual]);
+  };
+
+  return Object.freeze({ retainBody, joinActual });
+}

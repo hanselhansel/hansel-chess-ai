@@ -67,7 +67,7 @@ re-exports included); the three Python sources stay exactly
 | `completion-file-observation.mjs` | 337 | `observeFailedCompletionFile`, `readPreparedCompletionFile` |
 | `completion-prepared-read.mjs` | 248 | `createPreparedCompletionReader` |
 | `completion-publication.mjs` | 389 | `prepareCompletionFile`, `publishCompletionFile`, `retainFailedCompletion`, `markPublicationSealed`, `recoverPreparedCompletion`, `readPreparedCompletion` |
-| `driver-protocol.mjs` | 312 | `driverD2S`, `driverS2D` |
+| `driver-protocol.mjs` | 381 | `driverD2S`, `driverS2D`, `bridgeError`, `defer`, `createDriverBridgeActual` |
 | `identity-schema.mjs` | 299 | `assertBackendIdentity`, `assertCommonIdentity` |
 | `native-fixture-admission.mjs` | 375 | `createNativeFixtureAdmission` |
 | `native-fixture-io.mjs` | 388 | `createNativeFixtureIO` |
@@ -133,7 +133,123 @@ re-exports included); the three Python sources stay exactly
 | `watchdog.mjs` | 376 | `createWatchdog` |
 | `workspace-footprint.mjs` | 180 | `createFootprintObserver` |
 
-## Module inventory
+The roster above is the C4a2-era AST-derived roster, historical to the
+accepted C4b base `41d5bf36bae8bfd1759a664953b45ce9ac389c5c`. C4b-01
+(declared before creation on NEW branch `feat/tinyaz-browser-harness`
+under scope `c4b-scope-01-driver-bridge.json`, global 113 / active 4,
+canonical map 210 -> 212) adds exactly one functional-runtime source and
+one TEST-only suite: `driver-bridge.mjs` (sole export
+`createDriverCapabilities`, contract below) and `driver-bridge.test.mjs`
+(no exports; excluded from the functional-runtime input union). C4b-02
+(scope `c4b-scope-02-readable-bridge.json`, global 115 / active 6 / map
+212 -> 214) is Root's approved concrete three-owner capacity correction:
+actual01's expanded-740 facade was interrupted mid-compression (manager
+SIGINT, exit 1/677.484 — NOT complete; the condensed 654/669 is NOT
+accepted), so the facade is restored to the full expanded 740 and stays
+KnownOversize/NOT_PREPARED until the immediate facade+test integration
+pass, while two new private leaves `driver-bridge-wire.mjs` and
+`driver-bridge-methods.mjs` (both functional-runtime input) carry the
+WHOLE wire/dispatch and ordinary-method bodies under the C4b-02
+sections below — and `driver-bridge.test.mjs` remains ABSENT (declared
+before creation). All are UNEXECUTED — a foundation only, never a
+browser-evaluation phase pass, parity or strength result. C4b-03 (scope
+`c4b-scope-03-bridge-integrated.json`, global 116 / active 7 / map 214
+unchanged — `driver-protocol.mjs` activated, no new row) is the
+integrated current state: `driver-protocol.mjs` gained the identical
+`bridgeError`/`defer` helpers (exports4, protocol never imports any
+bridge), `driver-bridge-wire.mjs` re-exports them identically while
+keeping EXACT3, the facade `driver-bridge.mjs` is integrated over the
+SAME ctx6 with the declared start/finish/close/AbortSignal corrections,
+and `driver-bridge.test.mjs` is created TEST-only pure-fake coverage —
+all still UNEXECUTED, no green claim. C4b-04 (scope
+`c4b-scope-04-whole-bridge-capacity.json`, global 118 / active 9 /
+map 214 -> 216) is the whole-bridge capacity correction: prior03
+authored the partial facade289/methods371/protocol339/wire429
+sources and the expanded original thirteen-test source571 —
+actual03 then ended on manager SIGINT (exit 1/400.053) during the
+rejected 536/477 compression after comma-expression unsubscribers
+and repeated tight test rewrites, zero author target execution
+calls — so the FULL original thirteen-test source571 is restored
+first and the rejected 536/477 compressions are never the base.
+`driver-protocol.mjs` gains the
+pure private `createDriverBridgeActual({state:st,transport}) ->
+frozen {retainBody,joinActual}` factory (exports5 — the WHOLE
+31-line block moved byte-exact from the wire leaf including
+comments), the wire instantiates it once over the same refs and
+keeps EXACT3 plus its frozen EXACT15, and the suite splits WHOLE —
+`driver-bridge.test.mjs` keeps the first ten original cases while
+new TEST-only `driver-bridge-test-fixtures.mjs` (EXACT9 shared
+fixture exports with explicit TestContext teardown) and
+`driver-bridge-lifecycle.test.mjs` (the whole final three cases)
+are declared before creation — all still UNEXECUTED, no green
+claim. C4b-05 (scope
+`c4b-scope-05-final-bridge-causality.json`, same 118 / active 9 /
+map 216, no new path/API/owner/authority) completes the green
+bridge foundation: the dated actual04 receipt ran
+`driver-bridge.test.mjs` 10/10,
+`driver-bridge-lifecycle.test.mjs` 3/3,
+`supervisor-protocol.test.mjs` 16/16 and
+`supervisor-protocol-lifecycle.test.mjs` 12/12, all exit0 with
+zero warnings/stderr/timeout and exact 37-file hash closure — the
+352-case C4a2 Native fullglob stays earlier pre-C4b evidence. The
+test-only strengthening proves the held-body case's real gate
+entry before stop and close waiting on the held body
+independently of the closed callback, every original
+assertion/order/literal preserved, plus a fixture header comment
+clarity fix only — now COMPLETED: Main ran the affected whole
+owner `node --test
+train/scripts/browser_eval/driver-bridge-lifecycle.test.mjs` on
+the fresh immutable 37-file static-cleared source closure —
+exit0/0.1130 s, tests 3 / pass 3 / fail 0 / cancel 0 / skip 0,
+warnings [], stderr 0, timeout false, hashes exact after; the
+05 source closed exit0/107.337 with marker-triggered owned
+SIGINT (never a natural exit). Dated actual04 receipts and the
+pre-C4b Native 352 stay dated history — no fresh
+fullglob/Native/phase/run/cohort validation; the remaining C4b
+CLI/server/browser/snapshot/check/parity/preflight/comparison
+stay unimplemented and unexecuted. C4b-07 (scope
+`c4b-scope-07-bridge-pull-fence.json`, same 118 / active 9 /
+map 216 — no new path/API/owner/authority/clock/budget) closes
+the ONE production gap the final code-doc comparison found:
+`driver-bridge-methods.mjs` (371 -> 375) gains exactly two
+`wire.admissible()` guards inside `pull` — immediately BEFORE
+the retained `iterator.next` and immediately AFTER the awaited
+successful raw outcome before returning its value — so a stop
+arriving while a next is pending can never let its late value
+initiate a second pull or a late frame (`out.threw` still
+rethrows the exact `out.value`; the neutral actual receipt and
+lifetime retainer are unchanged). The lifecycle owner (180 ->
+218) appends the meaningful causal regression `stop during the
+first iterator pull admits no second pull or artifact frame` —
+fourteen driver cases total (main 10 / lifecycle 4), all
+thirteen original names/assertions preserved. Bundled
+descriptive clarification only: fresh artifact/record IDs
+reject concurrently-active path reuse and closed-ID reuse — a
+completed path may bind a fresh artifactId (implementation and
+canonical validator unchanged; needed for the already-approved
+alternating PGN slots). COMPLETED actual07 gate: Main ran the
+two changed whole owners — `node --test --test-concurrency=1
+train/scripts/browser_eval/driver-bridge.test.mjs` -> 10/10
+pass, exit0/0.0805 s, and `node --test --test-concurrency=1
+train/scripts/browser_eval/driver-bridge-lifecycle.test.mjs`
+-> 4/4 pass, exit0/0.0801 s, zero fail/cancel/skip, warnings
+[], stderr 0, timeout false, current 37-file hash closure
+exact after; the meaningful old-body RED proof ran the
+immutable controlled prior methods371 against the current
+lifecycle218 — 4 cases, 3 pass / 1 fail, only the new case
+failing actual 2 != expected 1, 0 cancel/skip/warnings/stderr/
+timeout — expected old-body red, never Native/phase/green
+evidence. The 07 source closed exit0/213.021 with
+marker-triggered owned SIGINT (never a natural exit). The
+final bridge foundation is implemented and unit-validated —
+READY for Main green commit, not yet committed or published;
+the remaining C4b
+static-identity/snapshot/CLI/server/browser/check/parity/
+preflight and the ONE approved comparison stay unimplemented
+and unrun, the earlier 352-case C4a2 Native fullglob stays
+pre-C4b dated evidence, the dated actual04/actual05 receipts
+stay dated history, and no fresh fullglob/Native/phase/
+browser/Elo/cohort claim is made.
 
 | Module | Exports | Boundary |
 | ------ | ------- | -------- |
@@ -146,7 +262,7 @@ re-exports included); the three Python sources stay exactly
 | [artifact-owned-file.mjs](./artifact-owned-file.mjs) | `createOwnedFileOperations` (SOLE private export) | created — the corrective-57 before-creation declaration is dated history. Whole OwnedFile owner extracted from artifact-files.mjs: the pure factory `createOwnedFileOperations({issueActual, storeFail}) -> frozen {openActual, ownedFileCloseReceipt}` captures TWO trusted ArtifactFiles bindings and invokes nothing; ArtifactFiles instantiates it ONCE and re-exports the IDENTICAL returned references under the same names — signatures `openActual(retainActual, issueOpenThunk)`/`ownedFileCloseReceipt(genuineOwnedFile)` and the `stat`/`read`/`write`/`sync`/`close` roster unchanged. `OwnedFile.close` owns ONE cached flow of at most TWO total raw-close attempts per handle joined by every repeated/concurrent/outer-retry call to the SAME prearmed closeDebt; an issued-open rejection or unadoptable return awaits its OWN closeDebt before error — never a completed-leaf failure. See [artifact-owned-file.mjs](#artifact-owned-filemjs-exists--r4-declaration-dated). Functional runtime input. |
 | [record-finalization.mjs](./record-finalization.mjs) | private helpers only | Pure canonical final/check-evidence/completion construction and eligibility helpers. Corrective 56 (declared before use — not yet implemented or verified green): adds the pure synchronous `buildFinalFromClosedFacts` aggregation over the EXACT 11-fact closed bundle (the nine `finalInputs` facts plus the Records-obtained `artifactRefs`/`eventsRef`) with the WHOLE canonical copy, own byPath Map and WHOLE existing pure claims/checks/fault/status/analysis/buildFinal/assertRecord logic preserved — the planned record-inputs.mjs leaf imports only the pure `EXIT_CODES` here, no backedge. |
 | [protocol-values.mjs](./protocol-values.mjs) | private helpers only | Stateless closed driver/collector/native field validators and shared predicates/constants. |
-| [driver-protocol.mjs](./driver-protocol.mjs) | private helpers only | Driver message transitions over the supervisor-owned run state/ID authority. |
+| [driver-protocol.mjs](./driver-protocol.mjs) | private helpers only | Driver message transitions over the supervisor-owned run state/ID authority. C4b-03: gains the shared `bridgeError`/`defer` helpers moved WHOLE byte-exact from the wire leaf (exports4; wire imports and re-exports the IDENTICAL functions); protocol never imports any bridge module. C4b-04: gains the pure private `createDriverBridgeActual({state:st,transport}) -> frozen {retainBody,joinActual}` factory — the WHOLE 31-line retainBody/joinActual block moved byte-exact from the wire leaf including all comments over the SAME `st.actual` receipt Set and trusted transport (exports5); the wire instantiates it once and exposes the identical refs inside its unchanged frozen EXACT15; protocol still never imports any bridge module. |
 | [collector-protocol.mjs](./collector-protocol.mjs) | private helpers only | Collector/teardown message transitions over the same supervisor-owned authority. |
 | [artifact-store.mjs](./artifact-store.mjs) | `createArtifactStore`, `inspectArtifactRef`, `phaseArtifactRefs` | Confined async artifact IO under one workspace root. R4 (declared before use): optional trusted `lifetime` binds the EXACT owner (or an owned default), `artifactStoreLifetime` returns only that association, and `prepareCompletion`/`publishPreparedCompletion`/`containPreparedCompletion` own the prepared-temp publication transaction. Corrective 55 (declared before use — not yet implemented or verified green): those three methods are attached ONCE to the SAME frozen store from the pure `createStoreCompletionMethods(completionContext)` factory in [artifact-completion.mjs](#artifact-completionmjs-exists--r4-declaration-dated) over the EXACT 18-field borrowed/Store-owned context; the genuine facade/getter stays sole owner and the exact signatures/returns are unchanged. Corrective 57 (declared before use — not yet implemented or verified green): inside that attached trio the WHOLE first-primary/containment/failure-recovery/held-safe flow delegates further to [artifact-completion-failure.mjs](#artifact-completion-failuremjs-exists--r4-declaration-dated) `createCompletionFailureMethods`, and the universal OwnedFile physical-close boundary lives in [artifact-owned-file.mjs](#artifact-owned-filemjs-exists--r4-declaration-dated); this Store keeps the same facade/getter sole identity. |
 | [artifact-sinks.mjs](./artifact-sinks.mjs) | `openStoreArtifact` | created (before-creation declaration dated). Whole `openArtifact`/sink lifecycle over the store's ONE frozen `storeContext`; no sink-local queue/budget/clock. Functional runtime input. |
@@ -5603,9 +5719,297 @@ The FS read gate retains a separate failure-presence flag so original null or un
 
 The teardown leaf gains a fifth private TEST export, `observeDriverBegun(t, driverFixture)`, returning the handled original begun-observation Promise under the same preregistered restore owner with node-only imports and no physical authority; the earlier four-export wording is dated history this supersedes. The genuine lifetime owner now comes from the SAME Store (`artifactStoreLifetime(evidence.env.store)`), and actual `monitor.start` entry, the outgoing begun admission and the fault gate's first-true assignment replace fixed-turn readiness checks. This records source behavior only.
 
+## driver-bridge.mjs (C4b-01 — declared before creation)
+
+Declared before creation under scope `c4b-scope-01-driver-bridge.json`
+on `feat/tinyaz-browser-harness` at base
+`41d5bf36bae8bfd1759a664953b45ce9ac389c5c`; the canonical Create row and
+this contract were recorded BEFORE the file existed (the companion
+`driver-bridge.test.mjs` is TEST-only and excluded from the
+functional-runtime input union). The module is the driver-side bridge
+owner running inside the supervisor-forked driver process over the
+trusted child `process.send`/`message` transport supplied by later
+`run.mjs` assembly — NEVER `createDriverChannel`, which the supervisor
+forks and owns separately. Sole export
+`createDriverCapabilities({runId,manifest,transport,signal}) ->
+Object.freeze({capabilities,start,finish,close})`; `capabilities` is
+frozen EXACT7 `{runId,manifest,signal,register,operation,event,artifact}`
+and `start`/`finish`/`close` are private session controls invoked only
+by later run assembly — no proof/status setters and no
+Native/Store/Recorder/fork/filesystem/model/browser/network authority.
+
+**Trusted transport.** Exact shape
+`{pid,send(frame,callback)->boolean,onMessage(fn)->unsubscribe,onClose(fn)->unsubscribe,clock:{setInterval,clearInterval},retainActual(promise)}`:
+a `false` send return means the frame was submitted ONCE, never replayed;
+`retainActual` is the SAME genuine local driver-lifetime registrar the
+later run assembly supplies (tests use a real `createWatchdogLifetime`).
+The constructor validates and canonical-copies/freezes the serializable
+manifest/run fields (`manifest.runId === runId`, `manifest.phase` inside
+the five wire phases, `manifest.commonIdentitySha256` hex-64), validates
+the transport and external signal shapes, retains both by reference, and
+creates a local genuine AbortController exposing the read-only derived
+`capabilities.signal` — external abort, an actual stop frame and
+transport disconnect each propagate into it. The constructor performs NO
+sends and NO timers; it subscribes `onMessage`/`onClose` ONCE before any
+hello can reenter, and a construction/subscription failure unwinds its
+own listeners without IO.
+
+**Wire ownership.** ONE `seqOut` covers
+hello/heartbeat/register/begin/end/event/artifact/finish/closed and ONE
+expected `seqIn` must match every parent frame exactly once with the
+closed field set, ipcVersion 1 and runId — wrong ids/recordSeq/
+operationId/tuple/listener/ref, duplicates and late ACKs fault the
+bridge (error code `IPC_INVALID`). The parent's `createProtocolValidator`
+stays the sole run-global ID/protocol authority; the bridge adds no
+second validator, allocator or canonical registry. Local fresh IDs
+namespace `runId:driver:request|record|artifact:<counter>` rejecting
+reuse and counter overflow; `operationId` is supplied exact by the
+caller and is never rewritten or re-exposed. Pending ACKs are installed
+BEFORE each send. BEFORE every raw send, canonical serialization and
+actual work callback a neutral completion promise is prearmed+retained
+through `transport.retainActual`: a real callback error is a failure even
+after a public ACK already arrived, a synchronous send throw preserves
+the exact arbitrary value, and an unknown actual submission stays held
+until the real callback — never a fake no-issue. A serialization failure
+before `transport.send` is the definite no-issue boundary. Stop or a
+public rejection never retires callback/work debt, and no global
+`whenSettled` is awaited inside any body — per-flow receipts only, all
+with real rejection handlers. Outbound frames are canonical-serialized
+and bounded by `IPC_LIMITS.driverBytes`; inbound frames keep
+`IPC_LIMITS.frameBytes`.
+
+**start.** `start({manifestPath})` runs once: it reserves the actual
+start waiter BEFORE sending `hello{pid,phase,commonIdentitySha256}`,
+awaits both its real send callback and the matching
+`start{manifestPath,commonIdentitySha256}` exactly, and starts the 500 ms
+heartbeat through `transport.clock` only after hello is issued — the
+heartbeat carries the current pending/live `operationId` (null before
+any begin), including while a `begun` ACK is still pending, and is
+cleared synchronously on stop/fault/close/finish with no late ordinary
+frames. The bridge owns no phase/deadline/timeout clock; the parent's
+frame bounds and the external signal bound the public waits.
+
+**register.** `register({kind,rootPid,expectedExecutable,listener}) ->
+Promise<{identity,listener}>` allocates a fresh namespaced requestId,
+sends the exact `{requestId,kind,rootPid,expectedExecutable,listener}`
+wire and resolves only on the `registered` ACK matching requestId, the
+identity/rootPid tuple and the listener exactly (a null rootPid admits a
+null identity). Acknowledged `{kind,requestId}` pairs stay privately
+cached for `closed.expectedShutdowns` — there is no public ID getter.
+
+**operation.** `operation(kind,operationId,work) ->
+Promise<OperationResult>` permits one pending/live operation (readiness
+or command), sends `begin{operationId,kind}`, and invokes no work before
+the matching `begun` whose `remainingMs` is positive and no greater than
+the original kind ceiling. The actual work body is preregistered with
+the SAME retainer BEFORE the callback is invoked and receives
+`{remainingMs,signal}`; the snapshot actual result sends
+`end{operationId,result:{status,evidencePaths,detail}}` only while the
+operation is still eligible, a failed/throwing work body (arbitrary
+values including null/undefined, carried by explicit presence) resolves
+to a truthful `failed` end while eligible, and an independent
+stop/abort/fault rejects the public wait while the genuine work receipt
+stays held until actual settlement — no late `end`/`begun` effect and no
+post-stop write ever follows. Caller operation IDs are claimed once and
+never reused.
+
+**event/artifact.** `event(kind,payload) -> Promise<void>` and
+`artifact(path,mode,chunksAsyncIterable) -> Promise<ArtifactRef>`
+serialize ordinary record delivery and artifact chunks through ONE
+shared `recordSeq` with at most 256 pending public/record submissions.
+`event` resolves only on the actual `recorded` ACK whose `ref` is null.
+`artifact` allocates a fresh artifactId plus a fresh recordId per <=64
+KiB base64 chunk (bytes snapshotted before any await), awaits each
+chunk's `recorded` ACK before sending the next, sends exactly one final
+`last:true` frame — an empty stream still sends one empty final chunk —
+requires null nonfinal refs and a valid final ref bound to the exact
+path, and reuses no concurrently-active path or closed
+artifact/record ID (a completed path may bind a fresh artifactId).
+Chunk and frame metadata stay
+under the fixed 256 KiB / `IPC_LIMITS` ceilings.
+
+**finish/close.** `finish(PhaseResult)` is private once after ordinary
+record/operation work completes, sends the unchanged six-field finish
+frame and awaits the real send callback — it synthesizes no status,
+proof or evidence. `close({gracefulCloseAttempted})` is private once
+after stop or finish, sends `closed{gracefulCloseAttempted,
+expectedShutdowns}` with every acknowledged registered `{kind,id}`
+derived privately, awaits the real send callback, and clears owned
+timers/listeners only after genuine settlement — it never raw-kills,
+disconnects, exits or claims cleanup proof; the caller closes real
+resources outside the bridge.
+
+**Errors.** Public validation/eligibility failures reject with
+`IPC_INVALID`; a sticky session fault from a malformed/duplicate/late
+parent frame, a real send-callback error or a transport disconnect
+aborts the derived signal, clears the heartbeat, rejects every pending
+public wait and admits no further ordinary work. Arbitrary thrown values
+including null/undefined are carried by explicit presence, never
+truthiness. Every source stays under 400 readable lines or is honestly
+reported KnownOversize. Source-only foundation — UNEXECUTED, no green,
+phase, parity, strength or publication claim. Under C4b-02 the
+restored expanded-740 facade stood as interim KnownOversize (dated);
+under C4b-03 the current source is the integrated facade over the SAME
+ctx6 — still UNEXECUTED, no green claim.
+
+## driver-bridge-wire.mjs (C4b-02 — exists; declaration dated)
+
+C4b-02 Root-approved readable-bridge correction (scope `c4b-scope-02-readable-bridge.json`; dated ABSENT-before-creation declaration — now created source-only, UNEXECUTED; functional-runtime input): the private wire/dispatch leaf of the three-owner driver-bridge split — EXACT3 exports `bridgeError`, `defer`, `createDriverBridgeWire(ctx)`. The pure factory takes the SAME private ctx6 `{runId,manifest,transport,signal,state,endLatch}` (ctx is created only by the facade; `state` is the ONE original mutable closure over flags/maps/counters, never caller status or proof) and returns frozen EXACT15 `{sendFrame,onFrame,onTransportClose,onExternalAbort,startHeartbeat,clearHeartbeat,terminate,sessionFault,admissible,raced,freshId,claimId,retainBody,joinActual,unwind}` owning the WHOLE original raw-send/ACK-dispatch/parent-envelope/subscription-callback/heartbeat/fault/admission/ID blocks. Concrete repairs carried into the moved bodies (not scope expansion): the transport receives the validated PLAIN frame object exactly as Node `process.send` and the parent `driver-protocol` expect — `canonicalBytes` only bounds the 262144 driverBytes ceiling; every raw send arms a neutral actual receipt BEFORE serialization/send (held strong in the SAME private `state.actual` receipt Set — actual lifetime stays the sole debt/hold authority, no second ledger), which resolves ONLY at the real callback with any error or at a definite pre-issue serialization/ceiling failure, while a separate public promise carries the domain outcome — an uncertain sync `send` throw rejects the public with the exact arbitrary value yet never marks the actual receipt settled (no fired-flag ignoring a late callback, no fake completion), and a real callback error faults the session even after a public ACK or `closed`; `retainBody(fn)` preregisters the neutral actual before any real body invocation and resolves with the original `{threw,value}` outcome (a rejected domain value is not unclosed physical debt); `joinActual()` is a PASSIVE local join over `state.actual` after closed admission — never a global owner `whenSettled` or self-wait — and the real close callback plus local actual join finish before listeners unwind (facade integration next pass); every public defer's rejections are handled immediately and `endLatch`'s rejection is handled at the factory while ordinary `raced` keeps public waits prompt. The factory invokes NO transport/timer/callback and does no IO; imports only existing pure primitives/constants/canonical JSON — DAG `facade -> methods -> wire -> pure primitives`, no cycles or prodNative/filesystem.
+
+## driver-bridge-methods.mjs (C4b-02 — exists; declaration dated)
+
+C4b-02 readable-bridge correction (dated ABSENT-before-creation declaration — now created source-only, UNEXECUTED; functional-runtime input): the private ordinary-methods leaf — sole export `createDriverBridgeMethods(ctx,wire) -> frozen {register,operation,event,artifact}` over the SAME ctx6 plus the SAME wire instance. Owns the WHOLE `register`/`operation`/`event`/`artifact` public bodies, the exact `{status,evidencePaths,detail}` OperationResult validation, the ordinary 256 pending bound and the ONE serialized recordChain over the wire's single seq/state.recordSeq/ID counters/ACK maps — no second queue, validator or clock. Every queued ordinary body checks `wire.admissible()` before issue and after each await (no queued record, late iterator or end after stop); each actual record body/work/`iterator.next` is retained before effect through `wire.retainBody`; the event payload and registration metadata are snapshotted before queue awaits, chunk bytes before the lookahead await, and ACK-returned refs/identity/listener arrive fresh copied/frozen; the genuine checkSerialized intent holds — a serialization/byte failure consumes no recordSeq or pending ACK slot while the actual send still validates the exact frame and the 262144 driverBytes/64 KiB chunk/256 ceilings; fresh artifact/record IDs never reuse a concurrently-active path or a closed artifact/record ID (a completed path may bind a fresh artifactId — canonical `driver-protocol` semantics unchanged), the final REAL chunk carries `last:true` (empty stream one empty final), nonfinal refs are null and the final ref must match the exact path. May import shared `bridgeError`/`defer` from the wire leaf, never the facade.
+
+## C4b-04 whole bridge capacity correction (declared before creation)
+
+C4b-04 Root-approved whole-capacity correction (scope
+`c4b-scope-04-whole-bridge-capacity.json`, global 118 / active 9 /
+map 214 -> 216; prior03 authored the partial
+facade289/methods371/protocol339/wire429 sources and the expanded
+original thirteen-test source571 — actual03 then ended on
+manager SIGINT, exit 1/400.053, during the rejected 536/477
+compression after comma-expression unsubscribers and repeated
+tight test rewrites with zero author target execution calls —
+so the FULL original thirteen-test source571 is restored FIRST
+and the rejected 536/477 compressions are never the
+base): `driver-protocol.mjs` gains the pure PRIVATE
+`createDriverBridgeActual({state:st,transport}) -> frozen
+{retainBody,joinActual}` — the WHOLE 31-line block moved byte-exact
+from the wire leaf's lines 380-410 including all comments, over the
+SAME `st.actual` strong receipt Set and the SAME trusted
+`transport.retainActual` authority; pure construction defines
+closures only, invoking no retainActual/IO/clock/body itself and
+adding no second queue/debt/ledger/proof/status/clock/globaljoin.
+Protocol exports become EXACT5 while the original two validators
+and shared helpers stay byte-identical and the protocol never
+imports any bridge module; `driver-bridge-wire.mjs` instantiates
+the pair ONCE and exposes the IDENTICAL two refs inside its
+unchanged frozen EXACT15 (EXACT3 exports and public wire surface
+unchanged, ordinary one-expression object reflow only) — DAG
+wire -> protocol, no backedge. The suite splits WHOLE across three
+owners: `driver-bridge-test-fixtures.mjs` (TEST-only, EXACT9
+exports `RUN`, `SHA`, `MANIFEST`, `MANIFEST_PATH`, `LISTENER`,
+`flush`, `deferred`, `makeEnv`, `driveStart`) owns the lifted
+fixture block over the REAL validator oracle and a real
+`createWatchdogLifetime` — the default lifetime keepalive is a real
+lazy hold and the fake clock controls heartbeat only — with
+`makeEnv(t,opts)` arming real TestContext teardown BEFORE effects,
+a per-env private tracker wrapping each send's original raw
+callback once (custom `sendImpl` receives the tracked callback),
+`deferred(env)` binding each controlled release, and teardown
+closing ordinary admission through the original signal abort,
+resolving still-pending controlled gates/work with a harmless valid
+OperationResult, delivering unreturned real fake send callbacks,
+then awaiting a genuine fresh `owner.whenSettled` before dropping
+transport/unsubscribe; `driver-bridge-lifecycle.test.mjs`
+(TEST-only) owns the WHOLE final three original cases;
+`driver-bridge.test.mjs` keeps the first ten — all thirteen
+original names/order/assertions/purposes preserved with no TEST
+back-import. All new paths are excluded from the functional-runtime
+union; no production behavior changes.
+
+C4b-05 final causality completion (scope
+`c4b-scope-05-final-bridge-causality.json`, same 118 / active 9 /
+map 216 — no new path, API, owner or authority; all production and
+runtime bytes read-only/exact): the bridge foundation is created
+and green — the dated actual04 receipt ran the affected whole
+owners `driver-bridge.test.mjs` 10/10,
+`driver-bridge-lifecycle.test.mjs` 3/3,
+`supervisor-protocol.test.mjs` 16/16 and
+`supervisor-protocol-lifecycle.test.mjs` 12/12, all exit0 with zero
+warnings/stderr/timeout and exact 37-file hash closure after (the
+352-case C4a2 Native fullglob stays earlier pre-C4b evidence, never
+fresh against the new protocol bytes; no Native/browser/phase
+validation). The test-only strengthening: the lifecycle held-body
+case now proves the real lookahead body entered its gate — a
+controlled `deferred(env)` entry resolved inside the same generator
+immediately before `await pull.promise` and awaited after the first
+recorded ACK + `sent0.cb` BEFORE the injected stop — then proves
+close waits on the held body independently of the closed callback:
+first `done===false` with both facts held, the real `csent.cb(null)`
+delivered, the second `done===false` while only the body remains
+held, then `pull.resolve()` before `await cl`; every original
+assertion/order/literal preserved and the shared unconditional
+teardown still covers early failure. The fixture header only drops
+the conflicting generic timers wording (heartbeat-control fake and
+genuine lazy hold unchanged). COMPLETED actual gate: Main ran the
+affected whole owner `node --test
+train/scripts/browser_eval/driver-bridge-lifecycle.test.mjs` on
+the fresh immutable 37-file static-cleared source closure —
+exit0/0.1130 s, tests 3 / pass 3 / fail 0 / cancel 0 / skip 0,
+warnings [], stderr 0, timeout false, hashes exact after; the 05
+source closed exit0/107.337 with marker-triggered owned SIGINT
+(never a natural exit). No fresh fullglob/Native/phase/run/cohort
+validation — the dated actual04 receipts and pre-C4b Native 352
+stay dated history; the green bridge foundation is ready for
+Main commit only, and the remaining C4b
+CLI/server/browser/snapshot/check/parity/preflight/comparison
+stay unimplemented and unexecuted.
+
+C4b-07 first-pull admission fence (scope
+`c4b-scope-07-bridge-pull-fence.json`, same 118 / active 9 /
+map 216 — no new path, API, owner, authority, clock or budget;
+every other production/runtime byte read-only/exact): the ONE
+production gap the final code-doc comparison found —
+`pull` in `driver-bridge-methods.mjs` awaited the retained
+`iterator.next` without an ordinary-admission check, so a stop
+arriving while the FIRST next was pending let its late value
+reach the loop and initiate a SECOND next before the
+post-await fence. `driver-bridge-methods.mjs` (371 -> 375)
+now calls `wire.admissible()` immediately BEFORE the retained
+`iterator.next` and immediately AFTER the awaited successful
+raw outcome before returning its value — `out.threw` still
+rethrows the exact `out.value`, the neutral actual receipt
+and the genuine lifetime retainer are unchanged, and no
+late pull/lookahead/frame can follow a stop. The lifecycle
+owner (180 -> 218) appends the meaningful causal regression
+`stop during the first iterator pull admits no second pull
+or artifact frame`: a controlled iterator whose `next()`
+increments `pulls`, resolves a controlled `deferred(env)`
+actual entry and returns the same held `first.promise`;
+after the real first entry a well-formed stop is injected,
+the public artifact reject is awaited, a real close is
+started, the real closed callback is delivered, and only
+then is `first` released `{done:false,value:[1]}` — the
+asserted `pulls === 1` and zero emitted artifact frames are
+a concrete red without the fence (the same iterator's
+now-fulfilled second `next()` makes `pulls === 2`) and
+cannot hang. All thirteen original names/assertions/order
+preserved — fourteen driver cases total (main 10 /
+lifecycle 4). Bundled descriptive clarification only: the
+methods header and owning descriptions now say fresh
+artifact/record IDs reject concurrently-active path reuse
+and closed-ID reuse — a completed path may bind a fresh
+artifactId (implementation and canonical `driver-protocol`
+validator unchanged; needed for the already-approved
+alternating PGN slots). COMPLETED actual07 gate: Main ran
+the two changed whole owners — `node --test
+--test-concurrency=1
+train/scripts/browser_eval/driver-bridge.test.mjs` -> 10/10
+pass, exit0/0.0805 s, and `node --test --test-concurrency=1
+train/scripts/browser_eval/driver-bridge-lifecycle.test.mjs`
+-> 4/4 pass, exit0/0.0801 s, zero fail/cancel/skip, warnings
+[], stderr 0, timeout false, current 37-file hash closure
+exact after; the meaningful old-body RED proof ran the
+immutable controlled prior methods371 against the current
+lifecycle218 — 4 cases, 3 pass / 1 fail, only the new case
+failing actual 2 != expected 1, 0 cancel/skip/warnings/
+stderr/timeout — expected old-body red, never Native/phase/
+green evidence. The 07 source closed exit0/213.021 with
+marker-triggered owned SIGINT (never a natural exit). The
+final bridge foundation is implemented and unit-validated —
+READY for Main green commit, not yet committed or
+published; the remaining C4b
+static-identity/snapshot/CLI/server/browser/check/parity/
+preflight and the ONE approved comparison stay unimplemented
+and unrun, the earlier 352-case C4a2 Native fullglob stays
+pre-C4b dated evidence, the dated actual04/actual05
+receipts stay dated history, and no fresh fullglob/Native/
+phase/browser/Elo/cohort claim is made.
+
 ## Test suites
 
-Thirty-five `*.test.mjs` files plus two stdlib `*.test.py` suites —
+Thirty-seven `*.test.mjs` files plus two stdlib `*.test.py` suites —
 all created (the actual-native group included), all test-only. `watchdog-test-fixtures.mjs` and
 `watchdog-records.test.mjs` are created test-only owners, as are
 `watchdog-run-test-fixtures.mjs`, `watchdog-cleanup-test-fixtures.mjs`
@@ -5735,6 +6139,9 @@ verified with the whole harness):
 | receipt-publication.test.mjs | Created pure TEST suite under the existing Root48 declaration: prepared-temp/full-inventory verification and post-gone closure admission races — `verifyPreparedReceiptGraph` full-graph coverage, single-use token consumption/forgery/mismatch, declared-inventory-before-temp ordering, ordinary `verifyReceiptGraph` exact-byte cases over genuine owners and real temporary workspaces. |
 | record-evidence.test.mjs | Created pure TEST suite under the existing Root48 declaration: mandatory verifier/cutoff/frozen-eligibility regressions over the genuine recorder/record-evidence/record-lifecycle owners — retained-before-invocation callbacks, clock checked after actual settlement, no post-cutoff Native start, the v2 LATE fence after mandatory verifier handling, capture-A before single-use continuation-B, bound-legacy `finalize` rejection and the unbound same-pipeline compatibility path. |
 | native-supervision.test.mjs | Serial actual-native suite: real collector spawn/sampling/gated lsof listener query/TERM-reparent/cleanup/collector order/failure facts/leak proof. Bounded whole-group 60 s, each fixture 10 s, 4 MiB combined output, all cleanup in `finally`. |
+| driver-bridge.test.mjs | C4b-01 TEST-only suite (created; dated actual04 whole-owner receipt 10/10 exit0): pure fake transport/fake clock only — no real child/kernel/browser/model/filesystem — driving `createDriverCapabilities` against the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` through the shared `driver-bridge-test-fixtures.mjs` leaf. Keeps the FIRST TEN of the original thirteen cases under the C4b-04 whole split (the finish/close lifecycle trio moved whole to `driver-bridge-lifecycle.test.mjs`): hello/start ordering and subscriber-before-reentrant-reply, send-false submitted once, real callbacks versus public ACK order, exact registered/begun/recorded binding, pending 500 ms heartbeat with a pending operation and no work before begun, independent stop while callback/work held with released controlled facts before genuine join, contiguous event/artifact recordSeq across multichunk artifacts and final/nonfinal refs, malformed/duplicate/wrong ACKs, reused operation IDs, and nil throws held truthfully — no fabricated proof. |
+| driver-bridge-test-fixtures.mjs | C4b-04 TEST-only shared fixture leaf (declared before creation — now created; C4b-05 drops only the conflicting generic timers wording in its header, no body change): EXACT9 exports `RUN`, `SHA`, `MANIFEST`, `MANIFEST_PATH`, `LISTENER`, `flush`, `deferred`, `makeEnv`, `driveStart` — the WHOLE original fixture block over the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` (the default lifetime keepalive is a real lazy hold; the fake clock controls heartbeat only). `makeEnv(t,opts)` arms real TestContext teardown before any bridge effect; the per-env send-callback tracker and controlled `deferred(env)` gates retire every held fact — including a deliberately unknown sync-throw submission — before a genuine fresh `owner.whenSettled` join and only then drop the transport/unsubscribe lane. Excluded from the functional-runtime union. |
+| driver-bridge-lifecycle.test.mjs | C4b-04 TEST-only lifecycle owner (declared before creation — now created; dated actual04 whole-owner receipt 3/3 exit0; C4b-05 strengthened the held-body causality with a controlled entry proof and body-independent close ordering — the strengthened whole owner then gated 3/3 pass, exit0/0.1130 s, warnings [], stderr 0, hashes exact after): the WHOLE final THREE original cases — `finish` exact six fields plus close join/unwind, close-after-stop held-body/closed-callback ordering (two real chunks before the held gate so the first nonfinal send genuinely exists), and the real callback-error/unknown-sync-throw fault pair (the actual queued step awaited before the send lookup) — every original assertion/name/purpose preserved over the same shared fixture bindings, PLUS the appended C4b-07 first-pull admission-fence regression `stop during the first iterator pull admits no second pull or artifact frame` (four cases; a controlled iterator proves pulls===1 and zero artifact frames after a stop during a pending pull — a concrete red without the fence; the four-case owner then gated 4/4 pass, exit0/0.0801 s, warnings [], stderr 0, hashes exact after). Excluded from the functional-runtime union. |
 
 ### CURRENT71 native-fixture declaration (TEST-ONLY — declared before creation; now created and verified)
 
