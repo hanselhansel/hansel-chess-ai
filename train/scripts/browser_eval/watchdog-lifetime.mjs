@@ -23,10 +23,10 @@ const AWAIT_LABELS = new Set([
   "shutdown.ordinary", "shutdown.admission", "shutdown.resource",
   "shutdown.driver-reap", "shutdown.driver-scope", "shutdown.lifetime",
   "records.finalize", "records.containment", "run-supervisor.lifetime",
-  "shutdown.stop-send", "records.stop-ordinary", "records.game-stop", "ordinary.fault",
+  "shutdown.stop-send", "records.stop-ordinary", "records.game-stop", "ordinary.fault", "records.cleanup",
 ]);
 
-function emitMarker(state, scope, label, call, phase, cause) {
+function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineMonoMs) {
   if (!state?.reportAwaitStage || state.reporting || state.markerCount >= 64 ||
     !AWAIT_LABELS.has(label) || !["phase", "selftest"].includes(scope)) {
     return;
@@ -35,8 +35,14 @@ function emitMarker(state, scope, label, call, phase, cause) {
   state.reporting = true;
   try {
     const record = { seq: state.markerCount, call, scope, stage: label, state: phase };
+    if (Number.isFinite(atMonoMs)) {
+      record.at = atMonoMs;
+    }
+    if (Number.isFinite(deadlineMonoMs)) {
+      record.end = deadlineMonoMs;
+    }
     const serialize = (value) => `TINYAZ_AWAIT ${JSON.stringify(value)}\n`;
-    if (phase === "rejected" && cause !== null &&
+    if (["rejected", "callback-rejected", "copy-invalid"].includes(phase) && cause !== null &&
       ["object", "function"].includes(typeof cause)) {
       const read = (source, key) => {
         try {
@@ -151,6 +157,18 @@ export function reportStoppedFault(owner, scope, error) {
     return;
   }
   emitMarker(state, scope, "ordinary.fault", state.observationCount++, "rejected", error);
+}
+
+// Private Recorder classification only. The SAME marker budget/guard is used;
+// no clock read, extra verifier invocation, error replacement or required debt.
+export function reportCleanupVerification(owner, scope, classification, cause, atMonoMs, deadlineMonoMs) {
+  const state = OWNERS.get(owner);
+  if (!state || state.reporting || !state.reportAwaitStage || state.markerCount >= 64 ||
+    !["pre-bound-spent", "callback-rejected", "post-bound-spent", "copy-invalid", "shape-invalid", "accepted"].includes(classification)) {
+    return;
+  }
+  emitMarker(state, scope, "records.cleanup", state.observationCount++, classification,
+    cause, atMonoMs, deadlineMonoMs);
 }
 
 // A large interval keeps the process referenced indefinitely; the tick

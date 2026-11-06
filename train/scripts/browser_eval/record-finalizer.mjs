@@ -86,6 +86,7 @@ export function createRecorderFinalizer({
         verifyCleanup,
         nowMonoMs: bound === null ? null : bound.nowMonoMs,
         retainActual: owner.retainActual,
+        diagnosticOwner: owner,
       });
       try {
         await capture.capture({

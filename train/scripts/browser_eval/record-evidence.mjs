@@ -9,6 +9,7 @@
 
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertCommonIdentity, assertRecord } from "./record-schema.mjs";
+import { reportCleanupVerification } from "./watchdog-lifetime.mjs";
 import {
   isCleanupProven,
   structurallyValidProof,
@@ -42,6 +43,7 @@ export function createEvidenceCapture({
   verifyCleanup,
   nowMonoMs,
   retainActual,
+  diagnosticOwner,
 }) {
   if (
     typeof verifyIdentity !== "function" ||
@@ -106,10 +108,19 @@ export function createEvidenceCapture({
     // real callback settles — a still-pending callback is awaited,
     // never raced away or granted new grace, and its error stays
     // unproven rather than promoted.
-    const invokeVerifier = async (fn, arg) => {
+    const describe = (classification, cause, at) => reportCleanupVerification(
+      diagnosticOwner, selftest ? "selftest" : "phase", classification, cause, at, deadlineMonoMs);
+    const invokeVerifier = async (fn, arg, cleanupVerifier = false) => {
+      let observedAt;
       if (timed) {
         const now = nowMonoMs();
-        if (!Number.isFinite(now) || now >= deadlineMonoMs) return { ok: false };
+        observedAt = now;
+        if (!Number.isFinite(now) || now >= deadlineMonoMs) {
+          if (cleanupVerifier) {
+            describe("pre-bound-spent", undefined, now);
+          }
+          return { ok: false };
+        }
       }
       let markSettled;
       const receipt = new Promise((resolve) => {
@@ -120,13 +131,22 @@ export function createEvidenceCapture({
         const value = timed ? await fn(arg, { deadlineMonoMs }) : await fn(arg);
         if (timed) {
           const after = nowMonoMs();
-          if (!Number.isFinite(after) || after >= deadlineMonoMs) return { ok: false };
+          observedAt = after;
+          if (!Number.isFinite(after) || after >= deadlineMonoMs) {
+            if (cleanupVerifier) {
+              describe("post-bound-spent", undefined, after);
+            }
+            return { ok: false };
+          }
         }
-        return { ok: true, value };
+        return { ok: true, value, observedAt };
       } catch (error) {
         if (!verifierErrorPresent) {
           verifierErrorPresent = true;
           verifierError = error;
+        }
+        if (cleanupVerifier) {
+          describe("callback-rejected", error, observedAt);
         }
         return { ok: false };
       } finally {
@@ -165,13 +185,16 @@ export function createEvidenceCapture({
       runId: mf.runId,
       supervisor: copy(runningSnapshot.supervisor),
       claimedProof: { scope, expectedFinalizer: copy(expectedFinalizer) },
-    });
+    }, true);
     let proof = null;
+    let proofCopied = false;
     if (cleanup.ok) {
       try {
         proof = copy(cleanup.value);
-      } catch {
+        proofCopied = true;
+      } catch (error) {
         proof = null;
+        describe("copy-invalid", error, cleanup.observedAt);
       }
     }
     const proofStructOk = structurallyValidProof(
@@ -179,6 +202,9 @@ export function createEvidenceCapture({
       headFields,
       mf.commonIdentitySha256,
     );
+    if (cleanup.ok && proofCopied) {
+      describe(proofStructOk ? "accepted" : "shape-invalid", undefined, cleanup.observedAt);
+    }
     const recordedProof = proofStructOk ? proof : UNPROVEN_PROOF(scope);
     const cleanupOk =
       proofStructOk && isCleanupProven(proof, scope, expectedFinalizer);

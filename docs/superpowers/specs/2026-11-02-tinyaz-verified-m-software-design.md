@@ -1194,6 +1194,7 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/process-observation.test.mjs` | TEST-only genuine observation timing/fault controls plus whole moved first-sticky collector lifecycle case; no exports/runtime input. |
 | Create | `./train/scripts/browser_eval/reference-child.test.mjs` | TEST-only genuine monitor/proof interpreter-entry ordering, strict-image and original-bound controls; no exports/runtime input. |
 | Create | `./train/scripts/browser_eval/environment-files-test-fixtures.mjs` | TEST-only whole bounded file fixture moved from environment-files.test.mjs, sole makeEnvironmentFilesFixture export, no runtime input. |
+| Create | `./train/scripts/browser_eval/record-cleanup-diagnostics.test.mjs` | TEST-only genuine Recorder/Store cleanup-verifier classification, original-bound and passive reporter controls; no exports/runtime input. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -3467,3 +3468,31 @@ negative becomes an exact remaining-tree/zero accounting positive, while
 all unsafe cases stay negative, including final-proof reappearance and
 ancestor replacement. The failed check's second confirmation and full
 historical path remain unknown; this is a separately reproduced correction.
+
+
+### Cleanup-verifier classification markers
+
+Existing lifetime owner adds private `reportCleanupVerification(owner, scope,
+classification, cause, atMonoMs, deadlineMonoMs) -> undefined`. It uses the SAME passive
+64-record, 256-byte FULL UTF8 marker sink and guard, with fixed stage
+`records.cleanup` and classifications `pre-bound-spent`, `callback-rejected`,
+`post-bound-spent`, `copy-invalid`, `shape-invalid`, `accepted`. Optional `at`
+and `end` use ONLY the already-read before/after time and original end.
+Accepted describes a copied structurally valid proof; the original independent
+cleanup coherence/eligibility check still applies.
+Callback cause stays the exact retained raw value, including falsey values;
+formatting reads only bounded safe one-level code/message/detail under the
+existing reentry guard. Diagnostic failure has no result or control effect.
+
+The existing finalizer passes its SAME genuine owner as private
+`diagnosticOwner` to `createEvidenceCapture`; Evidence imports the lifetime
+reporter and uses the manifest's phase scope. No caller supplies a proof,
+status or callback. The public Recorder API, verifier invocation/results,
+original cutoff, fallback proof and actual callback receipts are unchanged.
+This distinguishes future fallback reasons without recovering the historical
+check's discarded branch or promoting its unproven cleanup.
+
+TEST-only `record-cleanup-diagnostics.test.mjs` has no exports. It imports
+actual Recorder/Store/lifetime plus existing fixture data and owns real-FS
+capture/classification, original-end/held-body, safe-cause/reentry and marker
+byte-bound controls. It is excluded from functional runtime inputs.
