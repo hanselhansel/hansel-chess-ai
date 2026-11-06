@@ -1,14 +1,71 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State (2026-11-06):** C4b operational harness implementation is complete at the WORKTREE verification boundary. Current check and thirteen-case browser/Python numeric parity are verified with required checks, zero faults and verified cleanup/accounting. Fresh committed-input check/parity/preflight and the single locked comparison remain pending.
+- **State (2026-11-06):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result, replacement cohort or further experiment is authorized.
 - **Historical state before C4b execution (preserved):** Runtime implementation exists and every earlier stage below is accepted: C1 and C2a on their fix branches, the C3a/C3b/C3c runtime (latest known runtime base `87d3c5b410bf07fdfc4f324a0a0b50f6813d073f`) and the C2b Python verification at `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`. C4a1's pure-JS browser-evaluation evidence libraries are accepted tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`: Sol's prepared-5 `npm run test:browser-harness` gate exited 0 with 138/138 cases, zero fail/skip/cancel and no warnings, `git diff --check` exited 0, all 33 frozen hashes stayed unchanged, both independent Sol 6.1-Max reviews returned ACCEPTABLE, and the final verdict is `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`. The final functional-input union and comparison candidate are not yet frozen: real native cleanup/identity bindings, C4a2 capture/supervisor wiring, harness integration and the final candidate freeze remain pending. The source-feature commit and its ref proof are recorded externally after Sol performs them; no SHA is invented here. Source-feature Git publication is distinct from prohibited new model/weight publication. C4a2's native supervision and watchdog stack on `feat/tinyaz-native-supervision` is verified at the whole-JS boundary by the 2026-11-05 actual 352/352 serial receipt (current-verification paragraph in the C4a2 section); C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison remain open. No comparison, training, model publication, deployment, bot or strength result exists.
 - **Historical C0/C1/C2a checkpoint (2026-11-02, preserved verbatim):** C0 documentation baseline committed at `8e23a787771fd74a723a52aa8941aaa38de9adf8`; fresh baseline captured. C1 is implemented and verified in this change on `fix/tinyaz-test-fixtures` (verification base `0f5c5f72e1bbd0d760f7176a5308a205715aba5b`): Sol's full `npm test` passed 191/191 application script cases then 39/39 core cases and `npm run typecheck` exited 0 on that snapshot. The coordinator accepted the executable change, both documentation corrections and the static doc review, with the eight frozen executable hashes verified unchanged. The four upstream authoring checks remain unavailable without real `GROK_TEMPLATE_ROOT` input. C1 is committed at `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` on `fix/tinyaz-test-fixtures`. Earlier push attempts hit GitHub TCP timeouts and a read-only connector then found no remote branch; the coordinator pushed the same commit at about 2026-11-02T01:02Z, and `git ls-remote` plus the GitHub connector now confirm `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` at `refs/heads/fix/tinyaz-test-fixtures`, so C1 is local verified and remote published. C2a's comment/inventory packet passed Sol's static gates with verdict `ACCEPTED_FOR_METADATA_FINALIZATION` and is implemented and verified in this change on `fix/tinyaz-contract-inventories`, built on that unchanged base; the containing commit supplies its closure.
 - **Requirements:** [Canonical design](../superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md).
 - **Review:** [Five-stage report](../superpowers/reviews/2026-11-02-tinyaz-verified-m/consolidated_review_report.md) and [resolved text actions](../superpowers/reviews/2026-11-02-tinyaz-verified-m/resolution/goldfish_review_report.md).
 - **Functional control source:** `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`.
 - **Integration branch:** `feat/tinyaz-browser-harness` (initial documentation branch: `chore/egm-bootstrap-tinyaz`). Never commit to main.
-- **Candidate:** the operational C4b harness is implemented on the integration branch; the final comparison candidate remains unfrozen until its green commit. WORKTREE receipts cannot become committed evidence. Source-feature Git publication is distinct from model/weight publication. No strength comparison, training, model publication, deployment, live-bot action or strength result.
+- **Candidate:** the comparison used committed `583b317d458d361dc218ac3f704fe1f4ec158055` against fixed baseline `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Later documentation or any exit-only repair cannot replace those experimental inputs. WORKTREE receipts remain separate. No retraining, model publication, deployment, live-bot action or eligible strength result.
+
+## Locked comparison result (2026-11-06)
+
+The approved single cohort ran in
+`/private/var/folders/48/mn49jb697djfv2xv2t03nbn40000gn/T/tinyaz-committed-20261106T082705Z`.
+Fresh committed gates for this candidate are retained at
+`/tmp/tinyaz-c4a2-sol-review/c4b-committed-check-9/`,
+`c4b-committed-parity-6/` and `c4b-committed-preflight-6/` under that same
+artifact parent. The comparison's manager evidence is
+`/tmp/tinyaz-c4a2-sol-review/c4b-committed-comparison-1/`.
+
+The sealed final is inconclusive/2, stop reason PHASE_TIMEOUT,
+analysisEligible=false. The final unplannedFaultCount is 2; primary
+PHASE_TIMEOUT and persisted IPC_DISCONNECT are retained. Five games completed
+in total: four form two complete pairs, and the fifth belongs to the partial
+third pair whose sixth game is incomplete. 34 games and 17 pairs never started. The
+completed-game 2W/2D/1L is descriptive only. No partial-cohort p-value,
+confidence interval, significance, rating or Elo inference is permitted.
+There is no restart, resumed cohort or new comparison authorization.
+
+`compare/final.json` SHA256 is
+`8f4361d6a44e72c9b64b38266bc2f3441bc8eb348d9d063bf5ddeefc16ec6d46`.
+`main-final-result-handoff-v2.json` SHA256 is
+`13b1b0788e86cdc08513321cbbfbe807435aed2371a5a5858dfa697d00364407`.
+Its sealed readback verifies all six selected PGNs' canonical replay, mainline,
+FEN, ply count, result and hashes, plus previous-slot hashes. The archived
+receipt graph includes all three prerequisite phases. Native cleanup and
+accounting are verified with empty survivor/listener lists. These facts do
+not establish natural exit of the protected supervisor itself.
+
+The supervisor printed the sealed outcome and every instrumented shutdown
+join fulfilled, but it remained alive after final/completion publication.
+The manager ended only the freshly identified protected Node with SIGTERM;
+the command result is -15, distinct from the sealed experimental exit 2.
+`infrastructure-inspect-receipt.json`, `infrastructure-term-receipt.json` and
+`infrastructure-post-closure.json` retain that separate intervention.
+The original phase ceiling was 3600000 ms with a 5000 ms cleanup reserve.
+The frozen evidence timestamp is 1930384163000000 ns. Actual records.cleanup
+accepted at 1930388504 ms before the same original end, 1930389161 ms,
+with 657 ms remaining. Exact cleanupStart was not retained; 4341 ms measures
+only time after freeze. The first wrapper observation of records.finalize
+fulfilled was 09:39:25.514406Z, a coarse upper bound. Exact rename/fsync
+sealing duration is unavailable; file mtimes cannot prove it. The separate
+protected-Node-only SIGTERM produced total CLI wall time 3870.6488 s, not
+extra experimental time or natural exit. The complete historical actor
+registry was not recovered. Post-closure probes found the target, npm and
+manager gone and no unique-workspace rows; all 312 sealed files and 327
+execution inputs remained unchanged. The known-set limitation remains.
+
+The specific post-run active handle was not captured and remains UNKNOWN.
+A finite unchanged-source real-IPC control exercised normal finish and
+PHASE_TIMEOUT STOP through actual channel/bridge/close owners. Both exited
+naturally after exit, both pipes, scope and lifetime joins. This lower-owner
+NONREPRODUCTION is not a full-phase status-2 natural-exit proof and justifies
+no runtime repair. Its receipt is
+`/tmp/tinyaz-c4a2-sol-review/sol-high-postcap-exit-control/receipt.json`.
+All experiment files stay external. No failed or partial receipt is promoted.
 
 ## Operational browser entrypoints
 
@@ -21,6 +78,7 @@ Sol High authors source/tests/docs; Sol Max owns orchestration/review and
 actual safety/execution/publication. Devin remains review-only. Historical
 SWE/earlier stage receipts below retain their original provenance.
 
+Earlier development history (before committed execution):
 Current WORKTREE check and same-workspace parity are verified. The actual
 Python reference comparison passed all thirteen fixed cases across complete
 planes/logits/value, with stable frozen/installed imports, CPU Float32 inference
@@ -307,12 +365,12 @@ Prepared on `fix/tinyaz-python-verification` at the verified C3c base `87d3c5b41
 
 | Finding         | Status | Required evidence                                                                                                      |
 | --------------- | ------ | ---------------------------------------------------------------------------------------------------------------------- |
-| F1              | OPEN   | Verified M delivery, identity/lifecycle/search/UI behavior and corresponding contracts/checks.                         |
+| F1 | Committed software boundary verified; provenance limits retained | Candidate `583b317d` committed check verifies M delivery, identity/lifecycle/search/UI contracts. The comparison is inconclusive and post-cap natural exit is unresolved; historical checkpoint raw-EP training/live provenance is not established. |
 | F2/F3           | CLOSED | Comment corrections accepted by Sol's static review (`ACCEPTED_FOR_METADATA_FINALIZATION`); the containing commit supplies closure. |
 | F4-F9           | CLOSED | 47 original owner/name inventory entries accepted by Sol's static review; the containing commit supplies closure.      |
 | F10             | CLOSED | Existing valid-prefix/no-response contract proven by the designated C2b regressions (`test_position_invalid_later_move_keeps_prefix`, `test_position_fen_invalid_later_move_keeps_prefix`, `test_position_only_stdio_emits_no_response`) including raw `ep_square` retention, in the 19-case review-2 UCI run exit 0; the containing commit supplies closure. |
 | K1              | CLOSED | Sol's formal pre-fix baseline reproduced exactly the two restoration failures on frozen test `9ae610a4`; the narrow per-visit `finally` repair passed the review-1 9-case `test_mcts.py` run and the rebound `normal_control()` payload `2cc106d3886b8882a92c9d20115f8d80f164ae061f483aec443290868696e0c9` equals the untouched baseline; the containing commit supplies closure.                                       |
-| K2              | OPEN   | Browser raw-target path, restoration, thirteen exact-input/numeric cases. Training/live convention limitation remains. |
+| K2 | Browser numeric boundary verified; training/live provenance OPEN | Candidate `583b317d` committed thirteen-case parity verifies actual browser/Python inputs, planes, policy mapping, logits and value within the locked tolerance. This does not establish historical training/live conventions. |
 | R-M08-S/R-M08-A | CLOSED | Fifteen supplementary script exports and the public JwksFetch contract accepted by Sol's static review; the containing commit supplies closure. |
 
 The 21 EGM document actions are resolved as text. That status closes none of the implementation rows above. Record closure commit, exact command/evidence and remaining limitations per row when proved.
@@ -325,7 +383,7 @@ The 21 EGM document actions are resolved as text. That status closes none of the
 | Required controlled generation dispatch/JSONL fixture         | Passed in C2b (`test_controlled_generate_rows_are_legal_and_written`): same review-2 run exit 0. |
 | Original eight-game identical-S snapshot regression           | Deferred in `test_climb_real_regressions.py`; not run, not passed.                   |
 | Original one-game real S generated-policy legality regression | Deferred in `test_climb_real_regressions.py`; not run, not passed. No equivalence claim from controlled fixtures. |
-| Actual M identity and thirteen-case numeric parity            | M identity and thirteen shared Python fixture cases exercised green in PREPARED1 `test_encode.py` (7 cases, exit 0) on bytes unchanged since; browser numeric parity remains open pending C4. Controlled results cannot satisfy the browser gate. |
+| Actual M identity and thirteen-case numeric parity | Candidate `583b317d` committed browser/Python parity is verified in `c4b-committed-parity-6`, including all thirteen actual numeric cases and stable imports. Historical training/live convention provenance remains unproven; earlier controlled results remain separate evidence. |
 
 ## C4a1 browser-evaluation evidence libraries (authored 2026-11-02, uncommitted, no tests run by the writer)
 
@@ -395,11 +453,11 @@ Current verification (2026-11-05, actual receipt): the whole-JS closure is now v
 | C1     | Implemented and verified in this change; doc corrections and static review accepted | 106/106 targeted cases; Sol `npm test` 191/191 + 39/39, `typecheck` exit 0; both authoring probes fail closed. Evidence above. |
 | C2     | C2a implemented and verified (closure commit `133122c88bfa105807ac01c28299c59ea315e4e2`); C2b source implemented and verified in this change at base `87d3c5b`; C2b `7abb94cd` is accepted/published and supplies C2b completion | Sol static gates passed (`ACCEPTED_FOR_METADATA_FINALIZATION`); PREPARED1 gate 78/78 exit 0 plus rebound `normal_control` payload equal to baseline `2cc106d3` carried as pre-test-proof-repair receipts; review-2 targeted `test_climb_loop.py` 17 and `test_engine_uci.py` 19 exit 0 with validated parent/direct/wrapper interpreter identity. C2b evidence section above. |
 | C3     | C3a implemented and verified in this change; local commit `0b7355a` remote published at `refs/heads/feat/tinyaz-checkpoint-foundations`; C3b implemented and verified in this change on the fixed twelve-path snapshot (the containing commit supplies C3b completion); C3c source implemented and verified in this change on the exact 50-path rescope-5 scope, on `fix/tinyaz-verified-m-runtime` at base `a12a3b2e` (the containing scoped commit supplies its source completion) | C3a/C3b accepted by Sol's fresh full gates as detailed in the preserved history above. C3c: after four preserved REQUIRES_CHANGES reviews and rejected/interrupted command history above, the prepared-6 snapshot's final narrow checks exit 0: two-suite direct run 20/20 tests across 6 suites and `npm run typecheck` with no diagnostics; review-4's full npm 191/191 scripts + 184/184 core across 51 suites, original after-control equality and all 24 probes carry over as a pre-final-test-fix receipt on unchanged production bytes; integrity 250 files/50 freeze/17 protected/16 public/max 396/map 102. Historical: the F10, K1 and C2b boundaries this row left open are now closed — C2b `7abb94cd` is accepted/published. F1 native, K2, C4, C5, parity, cohort and strength remain open. |
-| C4 | Operational harness implemented; current WORKTREE check and thirteen-case numeric parity verified. | Required checks, stable reference imports, zero faults and verified cleanup/accounting; committed-input gates remain separate. |
+| C4 | Operational harness implemented; fresh committed check, thirteen-case numeric parity and preflight verified on `583b317d`. | Required actual checks, stable reference imports and verified cleanup/accounting. Historical failures remain retained; the post-comparison command ref is unresolved. |
 | C4 (historical authoring/library boundary)     | C4a1 pure-JS evidence libraries ACCEPTED as tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd`: review-1 `REQUIRES_CHANGES` (55/86), review-2 `REQUIRES_CHANGES` (118/128) and review-3 `REQUIRES_CHANGES` (133/136) preserved; prepared-4 gate 137/137 followed by the qualified conservative stream-gap assessment (false capacity, not a measured overrun); prepared-5 final gate 138/138 across ten suites, zero fail/skip/cancel/warnings, `git diff --check` exit 0, 33-path/124-row/17-protected/16-public exact, both Sol 6.1-Max reviews ACCEPTABLE, verdict `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`; same-source commit/ref proof recorded externally by Sol. C4a2 native supervision authored source-only on `feat/tinyaz-native-supervision` at base `9e82390b` (21-path scope, 135-row map, delegated `process-macos-native.py` split); Sol frozen-diff review and all gates pending, no verdict; a later bounded pass repaired NF-R01-06 and staged four pure-unit owners on the authorized 24-path scope (canonical map 159) at status `NATIVE_AND_PURE_UNIT_SOURCE_PREPARED_NOT_STAGE_PREPARED`; a further structural pass extracted the whole owned reader into `process-backend-reader.mjs` after the 407-line cap failure (45 paths, canonical map 160); the latest 26-path diagnostic-repair pass moved `readProcessInspections` into `process-observation.mjs`, extracted the whole gated child-I/O lifecycle into `process-lsof-io.mjs` and implemented S01–S04/T01–T06 with Sol's failed pure-suite counts preserved (46 paths, canonical map 161, still NOT_PREPARED pending Sol's freeze/review/affected pure groups); a following 21-path observing pass under decisions 25/26 fixed the three remaining lsof defects (closed fd-3 issuance decision, error-discharge of the issued no-frame end, isolated-only pre-child dispose) and staged seven delegated test-only owners with real fixture literal fixes (53 paths, canonical map 168, 56 planned, still NOT_PREPARED pending Sol's freeze/safety/affected pure groups); a following 15-path bounded pass under decision 27 applied the strict-UTF8 `pid_path` repair (the only production change) and completed all current fixture/observing obligations plus the test-only pid-path companion (54 paths, canonical map 169, 57 planned, still NOT_PREPARED with Sol's actual 42/43, 63/67 and the transport 35 s timeout preserved); a 12-path production-readonly pass under decision 28 then repaired Sol's prepared-4 actuals (fresh Python 63/63, six Node groups 62/64 with the io/lifecycle fixture failures and 68 carried = 130/132 covered): the late write refused at the permanently closed issuance, a legal `fixture` workload kind for the scoped signal, the after-receipt registrar expiry with undisposed borrowed handle, the whole-moved entry release and independent `finishFlow` closure observations plus doc truthfulness — still NOT_PREPARED pending Sol's freeze/review/affected runs | Accepted 33-path scope: canonical JSON, closed record schema/identity with exact pins, artifact store, sole-writer records/finalization, receipt-file bound admission, run-global supervisor protocol, paired statistics, test-only fixtures, ten unit suites and the `test:browser-harness` alias. No browser/native/parity/strength result. C4a2 capture/supervisor wiring and native bindings pending. |
-| C5 | Pending committed-input gates and one locked comparison. | Freeze the green commit, then fresh committed check/parity/preflight before the ONE 20-pair/40-game comparison; no strength or Elo result. |
+| C5 | ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT. | Five complete games, two complete pairs and one partial game; 2W/2D/1L descriptive only. Native cleanup/accounting and archived graph verified, but natural supervisor exit failed. No eligible statistical/Elo result or replacement cohort. |
 
-Current WORKTREE check and thirteen-case browser/Python numeric parity are verified, including resource accounting and cleanup proof. No strength cohort, W/D/L, pair counts or statistical strength result exists. Fresh committed check/parity/preflight remain required before the one locked strength comparison. An agent session or a passing subset is not a phase completion receipt.
+Fresh committed check, thirteen-case browser/Python numeric parity and preflight are verified for comparison candidate `583b317d`. The single cohort sealed inconclusive at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Its 2W/2D/1L is descriptive only; no statistical strength or Elo result is eligible. Native cleanup/accounting and the receipt graph are verified, while the post-run retained supervisor handle remains unresolved. No replacement cohort is authorized. An agent session or a passing subset is not a phase completion receipt.
 
 Historical native-fixture status (dated source-only note, UNEXECUTED at authoring — superseded by the current-verification paragraph above): all five Native TEST helpers now exist on `feat/tinyaz-native-supervision` — `native-test-fixtures.mjs` 388 (sole `createNativeTestHarness` 7-input -> frozen public 12), `native-fixture.mjs` 384 entry (0 exports; header states D as a finite safety guard — actual events decide compliance, late overrun fails, no kernel scheduling guarantee), `native-fixture-protocol.mjs` 348 (4 exports), `native-fixture-io.mjs` 388 (EXACT8) and `native-fixture-admission.mjs` 375 (EXACT8, correcting the prior author-claimed 374). `native-supervision.test.mjs` is authored as ONE serial real Native group over the frozen N01-N15 matrix with the original 60 s group / 10 s fixture / 4 MiB bounds, real Darwin/arm64 libproc/lsof observation and an explicit platform failure (no skip); it has NOT executed — no test, import, Native, green or pass claim. The three-leaf architecture and TEST runtime exclusion stay exact; `BackendIdentity.helpers` remains the three Python owners, map-209 actions/paths/order and the Section-3 `070fbf` slice are unchanged, and the planned serial command stays `node --test --test-concurrency=1 'train/scripts/browser_eval/*.test.mjs'` over the unchanged glob.
 

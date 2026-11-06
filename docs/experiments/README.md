@@ -7,25 +7,29 @@ execution gates. Raw numeric/PGN evidence and actual cleanup decide passage;
 a source change or scripted requested result is not an experiment receipt.
 No comparison is started automatically and no output updates public ratings.
 
-Current operational status (2026-11-06): the runnable capture, CLI, checks,
-phase runners, match/PGN and Python reference bodies are implemented. The
-current WORKTREE check and same-workspace thirteen-case numeric parity are
-verified, including required checks, stable reference imports and verified
-cleanup/accounting. Evidence is retained under
-`/tmp/tinyaz-c4a2-sol-review/c4b-worktree-check-17/` and
-`/tmp/tinyaz-c4a2-sol-review/c4b-worktree-parity-4/numeric-readback.json`.
+Current operational result (2026-11-06): candidate
+`583b317d458d361dc218ac3f704fe1f4ec158055` passed fresh committed check,
+thirteen-case browser/Python numeric parity and preflight. Its ONE locked
+comparison against `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec` sealed
+`inconclusive`/2 with `PHASE_TIMEOUT`: five complete games, two complete
+pairs and one partial game. The completed-game 2W/2D/1L is descriptive only.
+There is no eligible statistical strength result, significance or Elo estimate.
+No replacement cohort is authorized.
 
-The comparison candidate is not final until the green harness commit. Fresh
-COMMITTED check, parity and preflight must still precede the ONE locked
-20-pair/40-game comparison. No comparison, strength or Elo result exists.
-The earlier paragraphs below retain their historical checkpoint statements;
-current implementation and execution status is recorded here and in the ledger.
+The sealed receipt graph and all six selected PGNs were verified, including
+replay, hashes and verified Native cleanup/accounting. After printing the
+sealed outcome and completing its reported lifetime joins, the supervisor
+remained alive and required a separately guarded Node-only SIGTERM. The
+post-run retained handle is unresolved; this intervention is not natural
+command completion or a promotion of the experimental result. Exact external
+evidence and limitations are in the [ledger](./tinyaz-software-plan.md#locked-comparison-result-2026-11-06).
+The earlier paragraphs below retain their historical checkpoint statements.
 
 The [canonical design](../superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md) owns requirements, the file map, protocol and experiment limits. The [implementation evidence ledger](./tinyaz-software-plan.md) records actual commands, finding status and the bounded attempt. It is not an alternative requirements document.
 
 The first milestone uses existing M weights. Browser delivery, same-weight software behavior, learning changes and measured ratings remain separate. Historical Stockfish and Lichess instruments remain in their existing files and are not replaced by this ledger.
 
-No comparison has run. Runtime artifacts will remain in the explicit external evaluation workspace with hashes and paths recorded here. Do not put generated weights, datasets, credentials or inferred ratings in this directory.
+The single comparison attempt and its runtime artifacts remain in the explicit external evaluation workspace, with hashes and paths recorded in the ledger. Do not put generated weights, datasets, credentials or inferred ratings in this directory.
 
 The C4a1 browser-evaluation evidence libraries under [train/scripts/browser_eval/](../../train/scripts/browser_eval/README.md) on `feat/tinyaz-browser-evidence` are accepted at the pure-JS library boundary: Sol's prepared-5 `test:browser-harness` gate passed 138/138 cases across the ten suites with zero fail/skip/cancel and no warnings, `git diff --check` exited 0, both independent Sol 6.1-Max reviewers returned ACCEPTABLE, and the final verdict is ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA. Three earlier failed reviews (55/86, 118/128, 133/136) and the qualified conservative stream-reservation assessment remain preserved in the ledger. Native cleanup/identity bindings, capture/browser wiring, numeric parity, preflight, the bounded cohort and any strength result remain pending C4a2/C4b/C5.
 
@@ -49,6 +53,6 @@ Corrective 38 then restored the literal37 factory APIs and created the two decla
 
 Historical native-fixture status (dated source-only note, UNEXECUTED at authoring — superseded by the verified receipt below): all five Native TEST helpers now exist on `feat/tinyaz-native-supervision` — `native-test-fixtures.mjs` 388 (sole `createNativeTestHarness` 7-input -> frozen public 12), `native-fixture.mjs` 384 entry (0 exports; header states D as a finite safety guard — actual events decide compliance, late overrun fails, no kernel scheduling guarantee), `native-fixture-protocol.mjs` 348 (4 exports), `native-fixture-io.mjs` 388 (EXACT8) and `native-fixture-admission.mjs` 375 (EXACT8, correcting the prior author-claimed 374). The three-leaf architecture and TEST runtime exclusion stay exact; `BackendIdentity.helpers` remains the three Python owners, map-209 actions/paths/order and the Section-3 `070fbf` slice are unchanged. `native-supervision.test.mjs` is authored as ONE serial real Native group over the frozen N01-N15 matrix with the original 60 s / 10 s / 4 MiB bounds and an explicit platform failure (no skip); it has NOT executed — the earlier "fixtures still uncreated" wording above is dated history, and the planned serial command stays `node --test --test-concurrency=1 'train/scripts/browser_eval/*.test.mjs'`, all Sol-owned.
 
-Historical C4a2 verified status (2026-11-05, before C4b execution): the actual owned serial command — `node --test --test-concurrency=1` plus the 35 explicit `train/scripts/browser_eval/*.test.mjs` suite paths — naturally exited 0 in 38.9228 s with 352/352 pass, 0 fail/cancel/skip, stderr 0, no signals, and exactly the two deliberate `TINYAZ_BOOKKEEPING_OBSERVER`/`TinyazBookkeepingObserverWarning` null/undefined warning cases (receipt `/tmp/tinyaz-c4a2-sol-review/wd-child-term-ignore-89a-source-1/fullglob-gate/result.json`, stdout SHA `89a729f8804f94fcbcba84f693515d61b796f1b59b2e2fd1dd0407266ae09465`). The real-Native group passed: all 14 created direct handles settled real exit plus BOTH pipe closes, the three collectors exited 0/0/2 (the last the deliberate EOF), the watchdog lane ran, errors are empty, listener->TERM->reap order held, the collector input EOF was consumed, and combined evidence is 1,748,598 < 4 MiB under the unchanged 60 s/10 s/9.5 s bounds (summary SHA `13bb0d53e1cab0ee90326ca1b395a52d16ea2fba4e05b3d4bfe1591fc2e07f56`). The dated 344/343/1, 349/348/1, 350/349/1 and 352/351/1 receipts and every source-only/UNEXECUTED declaration above stay preserved history; the owning [browser_eval README](../../train/scripts/browser_eval/README.md) holds the current verified status and the actual implementation/export inventory. At that historical checkpoint, C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison had not run; no browser-evaluation phase pass, strength or Elo result existed then. The current WORKTREE check/parity passage above supersedes that execution status. Containing-commit publication is owned separately; no Git/remote state is claimed here.
+Historical C4a2 verified status (2026-11-05, before C4b execution): the actual owned serial command — `node --test --test-concurrency=1` plus the 35 explicit `train/scripts/browser_eval/*.test.mjs` suite paths — naturally exited 0 in 38.9228 s with 352/352 pass, 0 fail/cancel/skip, stderr 0, no signals, and exactly the two deliberate `TINYAZ_BOOKKEEPING_OBSERVER`/`TinyazBookkeepingObserverWarning` null/undefined warning cases (receipt `/tmp/tinyaz-c4a2-sol-review/wd-child-term-ignore-89a-source-1/fullglob-gate/result.json`, stdout SHA `89a729f8804f94fcbcba84f693515d61b796f1b59b2e2fd1dd0407266ae09465`). The real-Native group passed: all 14 created direct handles settled real exit plus BOTH pipe closes, the three collectors exited 0/0/2 (the last the deliberate EOF), the watchdog lane ran, errors are empty, listener->TERM->reap order held, the collector input EOF was consumed, and combined evidence is 1,748,598 < 4 MiB under the unchanged 60 s/10 s/9.5 s bounds (summary SHA `13bb0d53e1cab0ee90326ca1b395a52d16ea2fba4e05b3d4bfe1591fc2e07f56`). The dated 344/343/1, 349/348/1, 350/349/1 and 352/351/1 receipts and every source-only/UNEXECUTED declaration above stay preserved history; the owning [browser_eval README](../../train/scripts/browser_eval/README.md) holds the current verified status and the actual implementation/export inventory. At that historical checkpoint, C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison had not run; no browser-evaluation phase pass, strength or Elo result existed then. Earlier development history: The current WORKTREE check/parity passage above supersedes that execution status. Containing-commit publication is owned separately; no Git/remote state is claimed here.
 
 Update this index and the ledger with meaningful implementation changes. Compare final code and owning contracts before each green commit and final handoff.
