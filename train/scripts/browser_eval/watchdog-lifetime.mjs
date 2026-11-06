@@ -23,7 +23,7 @@ const AWAIT_LABELS = new Set([
   "shutdown.ordinary", "shutdown.admission", "shutdown.resource",
   "shutdown.driver-reap", "shutdown.driver-scope", "shutdown.lifetime",
   "records.finalize", "records.containment", "run-supervisor.lifetime",
-  "shutdown.stop-send", "records.stop-ordinary", "records.game-stop", "ordinary.fault", "records.cleanup",
+  "shutdown.stop-send", "records.stop-ordinary", "records.game-stop", "ordinary.fault", "records.cleanup", "driver.fault", "driver.requestfailed",
 ]);
 
 function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineMonoMs) {
@@ -57,7 +57,14 @@ function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineM
           for (const key of ["code", "message", "detail"]) {
             const value = read(source, key);
             if (typeof value === "string") {
-              result[key] = value.slice(0, key === "message" ? 4096 : 96);
+              let text = value.slice(0, key === "message" ? 4096 : 96);
+              if (label.startsWith("driver.")) {
+                text = text.split(/[\r\n]/, 1)[0]
+                  .replace(/[A-Za-z][A-Za-z0-9+.-]*:\/\/[^\s"'<>]+/g, "[url]")
+                  .replace(/\b(?:token|password|authorization|secret)\s*[:=]\s*\S+/gi, "[redacted]")
+                  .replace(/\bBearer\s+\S+/gi, "[redacted]");
+              }
+              result[key] = text;
             }
           }
         }
@@ -68,7 +75,7 @@ function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineM
       // Monitor wrappers already retain a bounded informational detail. Compact
       // ONLY known supplied sample scalars, never infer queue or scheduling time.
       let nativeDetail;
-      const faultDetail = read(read(cause, "fault"), "detail");
+      const faultDetail = label.startsWith("driver.") ? undefined : read(read(cause, "fault"), "detail");
       const retained = typeof faultDetail === "string" ? faultDetail : top.message;
       if (typeof retained === "string") {
         const bounded = retained.slice(0, 4096);
@@ -169,6 +176,61 @@ export function reportCleanupVerification(owner, scope, classification, cause, a
   }
   emitMarker(state, scope, "records.cleanup", state.observationCount++, classification,
     cause, atMonoMs, deadlineMonoMs);
+}
+
+// Existing child diagnostic sink only. No issue, wait, clock or control.
+export function reportDriverDiagnostic(owner, scope, label, cause) {
+  const state = OWNERS.get(owner);
+  if (!state || state.reporting || !state.reportAwaitStage || state.markerCount >= 64 ||
+    !["driver.fault", "driver.requestfailed"].includes(label)) {
+    return;
+  }
+  emitMarker(state, scope, label, state.observationCount++, "rejected", cause);
+}
+
+// Read only approved bounded lines from the existing stderr drain. Original
+// pipe close/exit receipts remain the sole physical-settlement authority.
+export function createDriverDiagnosticReader(owner, scope) {
+  let pending = [];
+  let dropping = false;
+  const accept = (bytes) => {
+    try {
+      const text = new TextDecoder("utf-8", { fatal: true }).decode(Buffer.from(bytes));
+      if (!text.startsWith("TINYAZ_AWAIT ") || Buffer.byteLength(text) + 1 > 256) return;
+      const row = JSON.parse(text.slice("TINYAZ_AWAIT ".length));
+      const fields = ["seq", "call", "scope", "stage", "state", "code", "message", "detail", "causeCode", "causeMessage"];
+      if (row === null || typeof row !== "object" || Array.isArray(row) ||
+        Object.keys(row).some((key) => !fields.includes(key)) ||
+        !Number.isSafeInteger(row.seq) || row.seq < 0 || row.seq >= 64 ||
+        !Number.isSafeInteger(row.call) || row.call < 0 || row.scope !== scope ||
+        !["driver.fault", "driver.requestfailed"].includes(row.stage) || row.state !== "rejected") return;
+      for (const key of ["code", "message", "detail", "causeCode", "causeMessage"]) {
+        if (Object.hasOwn(row, key) && (typeof row[key] !== "string" || row[key].length > 96)) return;
+      }
+      reportDriverDiagnostic(owner, scope, row.stage, { code: row.code, message: row.message,
+        detail: row.detail, cause: { code: row.causeCode, message: row.causeMessage } });
+    } catch {} // Unapproved/raw transcript bytes never become diagnostic data.
+  };
+  return (chunk) => {
+    if (!Buffer.isBuffer(chunk) || !OWNERS.has(owner)) return;
+    for (const byte of chunk) {
+      if (OWNERS.get(owner).markerCount >= 64) return;
+      if (byte === 10) {
+        const complete = pending;
+        const valid = !dropping;
+        pending = [];
+        dropping = false;
+        if (valid) accept(complete);
+      } else if (!dropping) {
+        if (pending.length >= 255) {
+          pending = [];
+          dropping = true;
+        } else {
+          pending.push(byte);
+        }
+      }
+    }
+  };
 }
 
 // A large interval keeps the process referenced indefinitely; the tick

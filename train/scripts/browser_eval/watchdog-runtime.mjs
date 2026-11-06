@@ -207,6 +207,8 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
         onMessage: control.onMessage,
         onError: control.onError,
         onExit: control.onExit,
+        diagnosticOwner: capabilities.lifetime,
+        diagnosticScope: config.selftestPhase ? "selftest" : "phase",
         // SAME owner registrar and the ONE derived actual scope,
         // forwarded for the NEXT driver consumer.
         retainActual: io.retainActual,

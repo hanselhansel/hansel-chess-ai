@@ -1195,6 +1195,7 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/reference-child.test.mjs` | TEST-only genuine monitor/proof interpreter-entry ordering, strict-image and original-bound controls; no exports/runtime input. |
 | Create | `./train/scripts/browser_eval/environment-files-test-fixtures.mjs` | TEST-only whole bounded file fixture moved from environment-files.test.mjs, sole makeEnvironmentFilesFixture export, no runtime input. |
 | Create | `./train/scripts/browser_eval/record-cleanup-diagnostics.test.mjs` | TEST-only genuine Recorder/Store cleanup-verifier classification, original-bound and passive reporter controls; no exports/runtime input. |
+| Create | `./train/scripts/browser_eval/driver-diagnostics.test.mjs` | TEST-only selected actual catch/real IPC bounded first-error and late-stderr physical closure controls; no exports/runtime input. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -3496,3 +3497,39 @@ TEST-only `record-cleanup-diagnostics.test.mjs` has no exports. It imports
 actual Recorder/Store/lifetime plus existing fixture data and owns real-FS
 capture/classification, original-end/held-body, safe-cause/reentry and marker
 byte-bound controls. It is excluded from functional runtime inputs.
+
+
+### Bounded driver failure retention
+
+Existing lifetime owner adds private `reportDriverDiagnostic(owner, scope,
+label, cause) -> undefined` for ONLY `driver.fault` and
+`driver.requestfailed`, plus `createDriverDiagnosticReader(owner, scope) ->
+(chunk) => undefined`. Both use the SAME lifetime 64-record, 256-byte FULL
+UTF8 marker budget/reentry guard. Driver descriptions retain bounded safe
+first-line code/message/detail, remove URL-bearing text from arbitrary
+errors, and never render raw objects, stacks or transcripts. The reader
+accepts only complete bounded approved marker lines/primitive fields from
+stderr, keeps at most 255 pending line bytes, and re-emits through the parent's
+SAME budget (at most 16 KiB emitted). Raw noise does not consume diagnostic
+slots; the original drain continues without retaining a transcript.
+Invalid/unapproved text is discarded. No callback is awaited.
+
+The channel privately borrows `diagnosticOwner` and `diagnosticScope` from
+its runtime composition; it changes only the existing stderr drain callback.
+Physical exit and both real pipe closes still join before final capture.
+The driver's existing first-error presence/value, disconnect and abort run
+BEFORE optional description. Its lifetime's existing descriptive sink writes
+to stderr; no wire/version/ACK, status, proof, clock, debt or deadline changes.
+
+Browser privately borrows the driver's diagnostic owner and binds a trusted
+`reportRequestFailure` callback into BrowserContexts. The existing parsed
+URL is read once; its pathname (without auth/query/fragment) and the actual
+SDK failure.errorText are bounded snapshots. Existing noteFault/sticky
+policy runs before optional failure access/reporting; missing/throwing SDK
+facts stay honest unavailable descriptions, never a failure-policy change.
+
+TEST-only `driver-diagnostics.test.mjs` has no exports. It owns selected
+actual-driver-catch/real Node IPC late-stderr and physical-close controls,
+safe cause/falsey/reentry and approved framing controls. Existing browser
+transition tests own the actual requestfailed SDK data/policy controls.
+Neither TEST owner is a functional runtime input.

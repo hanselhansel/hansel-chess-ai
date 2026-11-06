@@ -6,7 +6,7 @@ import { promises as fsp } from "node:fs";
 import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
 import { assertRecord } from "./record-schema.mjs";
-import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
+import { createWatchdogLifetime, reportDriverDiagnostic } from "./watchdog-lifetime.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
 import { createSnapshotIO } from "./snapshot-io.mjs";
 import { createDriverCapabilities } from "./driver-bridge.mjs";
@@ -119,7 +119,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
     typeof process.send !== "function") {
     throw new Error("RUN_INVALID archived driver arguments/IPC");
   }
-  const lifetime = createWatchdogLifetime();
+  const lifetime = createWatchdogLifetime({ reportAwaitStage: (line) => process.stderr.write(line) });
   const budget = createBudgetHandle({ deadlineMonoMs: now() + 30000,
     clock: { setTimeout, clearTimeout }, nowMonoMs: now });
   const reader = createSnapshotIO({ workspaceRoot, repoRoot, budget, lifetime });
@@ -128,6 +128,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
   const servers = [];
   const controller = new AbortController();
   let syntheticSilent = false;
+  let diagnosticScope = "phase";
   let hasPrimary = false;
   let primary;
   const retainPrimary = (error) => {
@@ -140,6 +141,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
     const manifestRel = path.relative(workspaceRoot, manifestPath);
     const manifest = parseCanonicalBytes(await reader.readAt(workspaceRoot, manifestRel));
     assertRecord("manifest", manifest);
+    diagnosticScope = manifest.phase === "watchdog-selftest" ? "selftest" : "phase";
     const expectedRel = manifest.phase === "watchdog-selftest"
       ? "preflight/selftest/manifest.json" : `${manifest.phase}/manifest.json`;
     if (manifestRel !== expectedRel) {
@@ -248,7 +250,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
         servers.push(server);
         byArm[arm] = server;
       }
-      browser = await openBrowser({ environment: workspace.commonIdentity.environment, workspaceRoot, capabilities });
+      browser = await openBrowser({ environment: workspace.commonIdentity.environment, workspaceRoot, capabilities, diagnosticOwner: lifetime });
         return { status: "completed", evidencePaths: [], detail: { registeredFixtureCount: servers.length } };
       });
       const outcome = await runPhase({ manifest, capabilities,
@@ -267,6 +269,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
     // close/body remains held. This cannot turn into a successful finish.
     if (process.connected) process.disconnect();
     controller.abort(error);
+    reportDriverDiagnostic(lifetime, diagnosticScope, "driver.fault", primary);
   } finally {
     budget.dispose();
     for (const resource of [browser, ...servers.reverse()]) {

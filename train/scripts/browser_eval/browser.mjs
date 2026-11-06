@@ -15,6 +15,7 @@ import { canonicalBytes } from "./canonical-json.mjs";
 import { freezeDeep, isPlainObject } from "./schema-primitives.mjs";
 import { copyDeep, isAbs, isH, isObj, isPid, isPort, strNE } from "./protocol-values.mjs";
 import { createBrowserContexts } from "./browser-contexts.mjs";
+import { reportDriverDiagnostic } from "./watchdog-lifetime.mjs";
 
 const LOOPBACK = "127.0.0.1";
 const DEPENDENCY_KEYS = ["importModule", "mkdir"];
@@ -117,7 +118,7 @@ const checkEnvironment = (environment) => {
   );
 };
 
-export async function openBrowser({ environment, workspaceRoot, capabilities }, dependencies = {}) {
+export async function openBrowser({ environment, workspaceRoot, capabilities, diagnosticOwner }, dependencies = {}) {
   if (!isPlainObject(dependencies)) throw bad("dependencies");
   const cap = capabilities;
   if (!isObj(cap) || typeof cap.register !== "function" || !isSignal(cap.signal)) {
@@ -324,6 +325,8 @@ export async function openBrowser({ environment, workspaceRoot, capabilities }, 
     launch: env.launch,
     assertLive,
     noteFault,
+    reportRequestFailure: (cause) => reportDriverDiagnostic(diagnosticOwner,
+      phase === "watchdog-selftest" ? "selftest" : "phase", "driver.requestfailed", cause),
   });
 
   // External abort rejects ordinary waits through fence() and starts

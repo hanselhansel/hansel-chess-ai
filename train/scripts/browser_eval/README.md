@@ -170,16 +170,16 @@ included); the three Python sources stay exactly
 | `watchdog-drain-test-fixtures.mjs` | 379 | `yieldTurn`, `heldGate`, `createRunDrainBinding`, `drain`, `advanceBy`, `issueFixtureBody`, `drive`, `watchdogTestClock`, `liveStart`, `closeFacts`, `FINISH` |
 | `watchdog-driver-actual.mjs` | 296 | `driverError`, `createDriverActualScope`, `finishDriverActualScope`, `beginDriverActualAttempt`, `observeDriverPhysicalChild` |
 | `watchdog-driver-test-fixtures.mjs` | 264 | `forkDriverFixture`, `createObservedDriver`, `drivers`, `watchdogTestClock` |
-| `watchdog-driver.mjs` | 392 | `createDriverActualScope`, `finishDriverActualScope`, `createDriverChannel` |
+| `watchdog-driver.mjs` | gate-enforced | `createDriverActualScope`, `finishDriverActualScope`, `createDriverChannel` |
 | `watchdog-evidence-test-fixtures.mjs` | 397 | `gateFs`, `verifyReceipt`, `makeEvidenceWorkspace`, `makePreflightRun` |
 | `watchdog-fs-test-fixtures.mjs` | 326 | `disposeFixture`, `ownFixtureAttempt`, `registerFixtureTeardown`, `gateFs` |
-| `watchdog-lifetime.mjs` | gate-enforced | `assertWatchdogLifetime`, `createWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault`, `reportCleanupVerification` |
+| `watchdog-lifetime.mjs` | gate-enforced | `assertWatchdogLifetime`, `createWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault`, `reportCleanupVerification`, `reportDriverDiagnostic`, `createDriverDiagnosticReader` |
 | `watchdog-operations.mjs` | 382 | `createWatchdogOperationContext`, `createWatchdogOperations` |
 | `watchdog-ordinary.mjs` | 89 | `createWatchdogOrdinaryQueue` |
 | `watchdog-records-test-fixtures.mjs` | 397 | `observeRecorderFixtureClosure`, `settleRecordCleanup`, `setupRecordAdapter`, `registerCleanup` |
 | `watchdog-records.mjs` | 314 | `createWatchdogRecordAdapter` |
 | `watchdog-run-test-fixtures.mjs` | 361 | `createRunDrainBinding`, `drain`, `heldGate`, `yieldTurn`, `row`, `OBS`, `closeFacts`, `FINISH`, `liveStart`, `setupRun` |
-| `watchdog-runtime.mjs` | 380 | `captureWatchdogRuntimeConfig`, `runWatchdogLifecycle` |
+| `watchdog-runtime.mjs` | gate-enforced | `captureWatchdogRuntimeConfig`, `runWatchdogLifecycle` |
 | `watchdog-shutdown.mjs` | 368 | `createWatchdogShutdown`, `createWatchdogCleanupArgs` |
 | `watchdog-teardown-test-fixtures.mjs` | 353 | `registerFixtureTeardown`, `disposeFixture`, `ownFixtureAttempt`, `observeSelectedReceiptMetadata`, `observeDriverBegun`, `observeFixturePromise`, `captureFixtureThrow` |
 | `watchdog-test-fixtures.mjs` | 339 | `forkDriverFixture`, `watchdogTestClock`, `cleanupMonitorFixture`, `instrumentRecorderFs`, `watchdogRecordWorkspace`, `assembleOwnedWatchdogCheckWorkspace`, `closeOwnedWatchdogWorkspace`, `removeOwnedWatchdogWorkspace`, `row`, `OBS`, `observeRecorderFixtureClosure` |
@@ -391,7 +391,7 @@ platform fakes isolated, no pass/Native/phase claim.
 | [process-observation.mjs](./process-observation.mjs) | `createProcessObservation`, `readProcessInspections` | Complete bounded RSS coverage cycle, native/supervisor timing checks, safe aggregate admission with private peak-RSS/limit flags, current-observation projection, and the shared inspectPids wire wrapper (diagnostic move 22). |
 | [watchdog-cleanup.mjs](./watchdog-cleanup.mjs) | `createCleanupController` | Staged 0/2/4/5-second identity-safe cleanup and private settled proof. R4 (declared before use): outside-cleanup `settleWorkloadHandles` joins the actual admitted ordinary chain plus driver exit/BOTH-close settlement before collector-last reap, observing only the original armed horizon. Corrective 64 (declared before use — not yet implemented): that `settleWorkloadHandles` join order now covers the actual ordinary chain plus driver exit/BOTH-close settlement through `finishDriverActualScope` and required liveEvidence before collector-last, while the fixed Native 0/+2/+4 s stages start independently of that actual chain/FS on the ORIGINAL captured start/end — a null channel never skips the other debts. |
 | [watchdog.mjs](./watchdog.mjs) | `createWatchdog` | External supervisor lifecycle, driver IPC, independent deadlines, self-test. R4 (declared before use): OPERATIONAL ASSEMBLY creates ONE genuine `createWatchdogLifetime()` before Store/Recorder/monitor/WD and binds the `createNativeHorizon` owner — WD validates/reuses the EXACT associated owner with the same-owner identity passed to Store/Recorder/monitor (an omitted isolated WD lifetime derives the existing genuine recorder owner, never creates a replacement fallback), phase end before any acquisition/IO, min-only narrow, public API stays exactly `{run, requestStop}`. Corrective 64 (declared before use — not yet implemented): the WHOLE existing `cleanupArgs` declaration (all comments/guards/defaults/body) moves to watchdog-shutdown.mjs under pure `createWatchdogCleanupArgs({config, capabilities, state, timing})`; the facade calls the ONE factory and assigns the SAME returned function to `control.cleanupArgs` — no new path/state/control authority or second cleanup controller. |
-| [watchdog-lifetime.mjs](./watchdog-lifetime.mjs) | `createWatchdogLifetime`, `assertWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault`, `reportCleanupVerification` | created (before-creation declaration dated). Actual referenced-lifetime/deferred physical-debt owner: `retainActual`/`retainFinalizerUntil`/`whenSettled` over real debt, never public outcomes. Functional runtime input. |
+| [watchdog-lifetime.mjs](./watchdog-lifetime.mjs) | `createWatchdogLifetime`, `assertWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault`, `reportCleanupVerification`, `reportDriverDiagnostic`, `createDriverDiagnosticReader` | created (before-creation declaration dated). Actual referenced-lifetime/deferred physical-debt owner: `retainActual`/`retainFinalizerUntil`/`whenSettled` over real debt, never public outcomes. Functional runtime input. |
 | [process-macos.py](./process-macos.py) | script entrypoints only | Entry/wire owner: isolated core loader, argument parsing, bounded collector JSON-lines dispatch, private lsof exec gate. |
 | [process-macos-native.py](./process-macos-native.py) | private helpers only | Lazy ctypes libproc primitives: PID/read/path/RSS/identity/probe/signal/discovery plus ABI re-exports. Loaded only by process-macos.py from the frozen sibling path. |
 | [process-macos-abi.py](./process-macos-abi.py) | private helpers only | Shared ABI owner: constants, BackendError/fault taxonomy, field-by-field BsdInfo/TaskInfo declarations, lazy fixed libproc binding. Loaded only by process-macos-native.py. |
@@ -7855,6 +7855,7 @@ verified with the whole harness):
 | receipt-publication.test.mjs | Created pure TEST suite under the existing Root48 declaration: prepared-temp/full-inventory verification and post-gone closure admission races — `verifyPreparedReceiptGraph` full-graph coverage, single-use token consumption/forgery/mismatch, declared-inventory-before-temp ordering, ordinary `verifyReceiptGraph` exact-byte cases over genuine owners and real temporary workspaces. |
 | record-evidence.test.mjs | Created pure TEST suite under the existing Root48 declaration: mandatory verifier/cutoff/frozen-eligibility regressions over the genuine recorder/record-evidence/record-lifecycle owners — retained-before-invocation callbacks, clock checked after actual settlement, no post-cutoff Native start, the v2 LATE fence after mandatory verifier handling, capture-A before single-use continuation-B, bound-legacy `finalize` rejection and the unbound same-pipeline compatibility path. |
 | record-cleanup-diagnostics.test.mjs | TEST-only genuine Recorder/Store cleanup-verifier classification and retained callback controls; no exports/runtime input. |
+| driver-diagnostics.test.mjs | TEST-only selected-catch real IPC bounded error retention/late physical stderr controls; no exports/runtime input. |
 | native-supervision.test.mjs | Serial actual-native suite: real collector spawn/sampling/gated lsof listener query/TERM-reparent/cleanup/collector order/failure facts/leak proof. Bounded whole-group 60 s, each fixture 10 s, 4 MiB combined output, all cleanup in `finally`. |
 | driver-bridge.test.mjs | C4b-01 TEST-only suite (created; dated actual04 whole-owner receipt 10/10 exit0): pure fake transport/fake clock only — no real child/kernel/browser/model/filesystem — driving `createDriverCapabilities` against the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` through the shared `driver-bridge-test-fixtures.mjs` leaf. Keeps the FIRST TEN of the original thirteen cases under the C4b-04 whole split (the finish/close lifecycle trio moved whole to `driver-bridge-lifecycle.test.mjs`): hello/start ordering and subscriber-before-reentrant-reply, send-false submitted once, real callbacks versus public ACK order, exact registered/begun/recorded binding, pending 500 ms heartbeat with a pending operation and no work before begun, independent stop while callback/work held with released controlled facts before genuine join, contiguous event/artifact recordSeq across multichunk artifacts and final/nonfinal refs, malformed/duplicate/wrong ACKs, reused operation IDs, and nil throws held truthfully — no fabricated proof. |
 | driver-bridge-test-fixtures.mjs | C4b-04 TEST-only shared fixture leaf (declared before creation — now created; C4b-05 drops only the conflicting generic timers wording in its header, no body change): EXACT9 exports `RUN`, `SHA`, `MANIFEST`, `MANIFEST_PATH`, `LISTENER`, `flush`, `deferred`, `makeEnv`, `driveStart` — the WHOLE original fixture block over the REAL `createProtocolValidator` oracle and a real `createWatchdogLifetime` (the default lifetime keepalive is a real lazy hold; the fake clock controls heartbeat only). `makeEnv(t,opts)` arms real TestContext teardown before any bridge effect; the per-env send-callback tracker and controlled `deferred(env)` gates retire every held fact — including a deliberately unknown sync-throw submission — before a genuine fresh `owner.whenSettled` join and only then drop the transport/unsubscribe lane. Excluded from the functional-runtime union. |
@@ -9174,3 +9175,39 @@ TEST-only `record-cleanup-diagnostics.test.mjs` has no exports. It imports
 actual Recorder/Store/lifetime plus existing fixture data and owns real-FS
 capture/classification, original-end/held-body, safe-cause/reentry and marker
 byte-bound controls. It is excluded from functional runtime inputs.
+
+
+### Bounded driver failure retention
+
+Existing lifetime owner adds private `reportDriverDiagnostic(owner, scope,
+label, cause) -> undefined` for ONLY `driver.fault` and
+`driver.requestfailed`, plus `createDriverDiagnosticReader(owner, scope) ->
+(chunk) => undefined`. Both use the SAME lifetime 64-record, 256-byte FULL
+UTF8 marker budget/reentry guard. Driver descriptions retain bounded safe
+first-line code/message/detail, remove URL-bearing text from arbitrary
+errors, and never render raw objects, stacks or transcripts. The reader
+accepts only complete bounded approved marker lines/primitive fields from
+stderr, keeps at most 255 pending line bytes, and re-emits through the parent's
+SAME budget (at most 16 KiB emitted). Raw noise does not consume diagnostic
+slots; the original drain continues without retaining a transcript.
+Invalid/unapproved text is discarded. No callback is awaited.
+
+The channel privately borrows `diagnosticOwner` and `diagnosticScope` from
+its runtime composition; it changes only the existing stderr drain callback.
+Physical exit and both real pipe closes still join before final capture.
+The driver's existing first-error presence/value, disconnect and abort run
+BEFORE optional description. Its lifetime's existing descriptive sink writes
+to stderr; no wire/version/ACK, status, proof, clock, debt or deadline changes.
+
+Browser privately borrows the driver's diagnostic owner and binds a trusted
+`reportRequestFailure` callback into BrowserContexts. The existing parsed
+URL is read once; its pathname (without auth/query/fragment) and the actual
+SDK failure.errorText are bounded snapshots. Existing noteFault/sticky
+policy runs before optional failure access/reporting; missing/throwing SDK
+facts stay honest unavailable descriptions, never a failure-policy change.
+
+TEST-only `driver-diagnostics.test.mjs` has no exports. It owns selected
+actual-driver-catch/real Node IPC late-stderr and physical-close controls,
+safe cause/falsey/reentry and approved framing controls. Existing browser
+transition tests own the actual requestfailed SDK data/policy controls.
+Neither TEST owner is a functional runtime input.

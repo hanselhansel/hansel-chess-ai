@@ -31,7 +31,7 @@ const parseHttpUrl = (url, what) => {
   return parsed;
 };
 
-export function createBrowserContexts({ browser, launch, assertLive, noteFault }) {
+export function createBrowserContexts({ browser, launch, assertLive, noteFault, reportRequestFailure }) {
   if (
     browser === null ||
     typeof browser !== "object" ||
@@ -92,14 +92,31 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
     page.on?.("requestfailed", (request) => {
       let detail = "unparseable";
       let kind = "requestfailed";
+      let pathname = "unavailable";
       try {
         const url = new URL(request.url());
         detail = url.origin;
+        pathname = url.pathname;
         if (url.pathname === MODEL_PATH) kind = "model";
       } catch {
         // detail stays "unparseable" — the raw URL never enters evidence
       }
       noteFault(kind, detail);
+      // Existing failure policy runs first. SDK facts are read once, and
+      // optional description cannot turn an unavailable failure into success.
+      let failure = "unavailable";
+      try {
+        const method = request.failure;
+        const result = typeof method === "function" ? Reflect.apply(method, request, []) : null;
+        const text = result?.errorText;
+        if (typeof text === "string") failure = text.slice(0, 44);
+      } catch {}
+      try {
+        if (typeof reportRequestFailure === "function") {
+          reportRequestFailure({ code: "REQUEST_FAILED", message: `${kind} ${detail}`,
+            detail: `p=${pathname.slice(0, 40)} e=${failure}` });
+        }
+      } catch {} // Diagnostic callback failure never changes browser behavior.
     });
     page.on?.("pageerror", () => noteFault("pageerror", "page"));
     page.on?.("crash", () => noteFault("crash", "page"));

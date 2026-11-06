@@ -20,6 +20,7 @@
 // passively joins exactly those registered receipts, one cached promise.
 import path from "node:path";
 import { fork } from "node:child_process";
+import { createDriverDiagnosticReader } from "./watchdog-lifetime.mjs";
 import {
   beginDriverActualAttempt,
   driverError as fail,
@@ -53,6 +54,8 @@ export function createDriverChannel({
   onExit = () => {},
   retainActual,
   actualScope,
+  diagnosticOwner,
+  diagnosticScope,
 }) {
   if (!isAbs(entry)) throw fail("IPC_INVALID", "entry absolute");
   if (!isAbs(cwd) || cwd !== path.dirname(entry)) throw fail("IPC_INVALID", "cwd frozen dir");
@@ -215,7 +218,7 @@ export function createDriverChannel({
     }
   });
   if (childErr) {
-    childErr.on("data", () => {});
+    childErr.on("data", createDriverDiagnosticReader(diagnosticOwner, diagnosticScope));
     childErr.on("error", () => {});
   }
   if (childOut) {
