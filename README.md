@@ -69,6 +69,18 @@ The published medium checkpoint is **tinyaz-m** (8×128, 2.43M). s is the same s
 
 See [docs/LATER.md](./docs/LATER.md) and [the tinyaz-m ladder spec](./docs/superpowers/specs/2026-08-29-tinyaz-m-ladder-design.md). The recorded published net is m. GATE vs SF2000. SF2500 is 0–8. Self-play of the GATE net is later. Not 2500.
 
+## Local browser verification commands
+
+The browser harness now has explicit `test:chess-browser`,
+`eval:browser:preflight` and `eval:browser` command aliases. The Python
+parity entry is `train/scripts/check_browser_parity.py`. Each command runs
+one phase through an immutable archived CLI. It never starts the next phase.
+See [browser harness usage](train/scripts/browser_eval/README.md#operational-command-usage)
+for arguments, workspace retention, prerequisite admission and fixed limits.
+Development check/parity accept `WORKTREE`; preflight/comparison require a
+committed candidate and verified parents in the same workspace. Source and
+scripted tests do not establish actual browser/parity or comparison results.
+
 ## Develop
 
 ```
@@ -154,3 +166,11 @@ These are dated verification observations. They do not establish deployment heal
 ## Contract maintenance
 
 Update affected README contracts and usage/API/configuration docs with each meaningful code change. Compare the final diff against actual behavior, interfaces, invariants, side effects, paths, and commands. Carry that comparison into implementation plans and handoffs. Preserve approved requirements and record unresolved drift until the code is fixed or a design change is approved.
+
+The accepted [final integrity ordering amendment](docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md#accepted-final-integrity-ordering-amendment-2026-11-06)
+places the fresh complete supervisor scan after experimental work and SDK close,
+before normal finish, under the existing original command/work end. Capture A
+consumes that privately bound same-run observation. Stop and Native cleanup
+remain immediate and retain their original five-second limit. Internal watchdog
+selftests perform their own scan after their durable manifest and before
+synthetic-driver admission under the original paused parent command bound.

@@ -292,7 +292,7 @@ test("a stopped run never preserves a requested pass", async (t) => {
   assert.equal(res.stopReason, "REQUESTED");
 });
 
-test("the genuine selftest handshake produces a real verified completionRef", async (t) => {
+test("the genuine selftest handshake produces a real verified completionRef", { timeout: 10000 }, async (t) => {
   const clk = watchdogTestClock();
   const evidence = await makeEvidenceWorkspace(t, { clock: clk });
   const { driver, monitorCalls, run, dispose } = await makePreflightRun(t, {
@@ -337,16 +337,16 @@ test("the genuine selftest handshake produces a real verified completionRef", as
     return admitted;
   };
   const p = run();
-  await liveStart(clk, driver);
+  const earlyEnd = p.then((res) => {
+    throw new Error(`run ended before begun admission: ${res.stopReason}`);
+  });
+  earlyEnd.catch(() => {}); // the race loser never floats unhandled
+  await Promise.race([liveStart(clk, driver), earlyEnd]);
   driver.emit({ type: "begin", operationId: opId, kind: "command" });
   // The REAL callback returns the genuine pre-produced ref and the real
   // verifyInternalSelfTest admits it — the begun receipt resolves on
   // the actual admitted send; racing the original run outcome reports
   // an impossible early run end instead of hanging.
-  const earlyEnd = p.then((res) => {
-    throw new Error(`run ended before begun admission: ${res.stopReason}`);
-  });
-  earlyEnd.catch(() => {}); // the race loser never floats unhandled
   await Promise.race([begunReceipt, earlyEnd]);
   assert.ok(
     monitorCalls.includes(`probe:${evidence.parentSupervisor.pid}:1000:0`),

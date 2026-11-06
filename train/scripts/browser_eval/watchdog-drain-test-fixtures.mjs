@@ -77,7 +77,7 @@ const runBindings = new WeakMap();
 // controller/required-settlement/event-callback bodies AFTER the caller
 // closed issuance — independently of the bounded public run outcome,
 // with no nested global dispose and no self-wait.
-export function createRunDrainBinding({ monitor, clock, runId, recordEvent = null } = {}) {
+export function createRunDrainBinding({ monitor, clock, runId, recordEvent = null, lifetime = undefined } = {}) {
   const meta = {
     entered: false,
     term: false,
@@ -133,6 +133,7 @@ export function createRunDrainBinding({ monitor, clock, runId, recordEvent = nul
     monitor,
     clock,
     runId,
+    lifetime,
     recordEvent: observe,
   });
   const run = (q) => {

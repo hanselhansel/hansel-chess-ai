@@ -225,9 +225,12 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     const flow = (async () => {
       wire.clearHeartbeat();
       st.finished = true;
-      await wire.raced(wire.sendFrame("finish", fields));
+      // The real parent may stop after receiving finish but before its
+      // raw send callback returns. Lifecycle finish owns that callback;
+      // normal STOP cannot replace its actual success or first send error.
+      await wire.sendFrame("finish", fields);
     })();
-    return wire.raced(flow);
+    return flow;
   };
 
   const close = async (args = {}) => {

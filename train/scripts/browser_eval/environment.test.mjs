@@ -355,3 +355,45 @@ test("environment binds setup buffers to genuine capture provenance", async (t) 
   }
   assert.equal(f.spawnCalls.length, 4);
 });
+
+
+test("actual Python timer bootstrap subtracts the Node raw epoch without renewing its bound", async () => {
+  const { PIP_RUNNER } = await import("./environment-python-program.mjs");
+  const script = `
+import ast, json, sys
+from types import SimpleNamespace
+program = ast.parse(json.loads(sys.stdin.read()))
+body = []
+for node in program.body:
+    if isinstance(node, ast.Import) and any(item.name == "runpy" for item in node.names):
+        break
+    if not isinstance(node, (ast.Import, ast.ImportFrom)):
+        body.append(node)
+code = compile(ast.Module(body=body, type_ignores=[]), "actual-deadline-bootstrap", "exec")
+for deadline, expected in [(5090000, 90.0), (5000000, None), (4999999, None)]:
+    armed = []
+    raw_calls = []
+    def raw(clock):
+        raw_calls.append(clock)
+        return 5000.0
+    namespace = {"os":SimpleNamespace(environ={"SETUP_AUDIT_DEADLINE_MONO_MS":str(deadline)}),
+        "sys":SimpleNamespace(platform="darwin", exit=sys.exit),
+        "time":SimpleNamespace(monotonic=lambda: 1.0, clock_gettime=raw, CLOCK_MONOTONIC_RAW=4),
+        "signal":SimpleNamespace(ITIMER_REAL=0, setitimer=lambda clock, delay: armed.append([clock, delay]))}
+    try:
+        exec(code, namespace)
+        assert expected is not None and armed == [[0, expected]], armed
+    except SystemExit as error:
+        assert expected is None and not armed and "deadline" in str(error)
+    assert raw_calls == [4]
+print(json.dumps({"remainingSeconds":90,"spentCases":2}))
+`;
+  const result = childProcess.spawnSync("/usr/bin/python3", ["-I", "-B", "-c", script], {
+    input: JSON.stringify(PIP_RUNNER), encoding: "utf8", timeout: 10000, maxBuffer: 4096,
+  });
+  assert.equal(result.error, undefined);
+  assert.equal(result.signal, null);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stderr, "");
+  assert.deepEqual(JSON.parse(result.stdout), { remainingSeconds: 90, spentCases: 2 });
+});

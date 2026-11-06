@@ -28,6 +28,7 @@ import {
   createWatchdogLifetime,
 } from "./watchdog-lifetime.mjs";
 import { createStoreCompletionMethods } from "./artifact-completion.mjs";
+import { describeFootprintFailure } from "./workspace-footprint.mjs";
 
 const ORDINARY = FIXED_LIMITS.resources.ordinaryBytes;
 const TOTAL = FIXED_LIMITS.resources.workspaceBytes;
@@ -113,7 +114,12 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
       Number.isFinite(sample.observedAtMs);
     if (!ok) {
       state.accountingFault = true;
-      fail("STORE_ACCOUNTING", "invalid sample");
+      const error = new Error("artifact-store STORE_ACCOUNTING: invalid sample");
+      error.code = "STORE_ACCOUNTING";
+      try {
+        error.detail = describeFootprintFailure(sample, root);
+      } catch {} // Descriptive access can never replace the primary.
+      throw error;
     }
     const now = monotonicNow();
     if (

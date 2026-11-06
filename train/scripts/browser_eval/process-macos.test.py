@@ -2,7 +2,8 @@
 (matching the production frozen-sibling loader) so it runs under
 `python -I -B` with fake Backend callables; no libproc is loaded.
 Collector/exec-gate wire cases live in process-macos-wire.test.py.
-Scaffolding moved whole to process_macos_test_support.py.
+Scaffolding lives in process_macos_test_support.py; path/discovery case
+classes bind from process_macos_path_test_cases.py.
 """
 import ctypes
 import errno
@@ -306,6 +307,7 @@ class ListBoundaryTests(unittest.TestCase):
 _P = load_sibling("process_macos_path_test_cases",
                   "process_macos_path_test_cases.py")
 PidPathTests = _P.make_pid_path_cases(N, fake_be)
+DiscoverStabilityTests = _P.make_discover_stability_cases(N, fake_be, bsd_struct)
 
 
 class StartSecBoundaryTests(unittest.TestCase):
@@ -323,31 +325,6 @@ class StartSecBoundaryTests(unittest.TestCase):
         self.assertEqual(row["identity"]["startUsec"], 999999)
 
 
-class DiscoverStabilityTests(unittest.TestCase):
-    def test_unaligned_byte_count_rejected(self):
-        be = fake_be(listpids=lambda *a: 6)
-        with self.assertRaises(N.BackendError) as ctx:
-            N.list_process_pids(be)
-        self.assertEqual(ctx.exception.reason, "unstable-list")
-
-    def test_zero_result_with_errno_rejected(self):
-        def lp(flavor, uid, arr, nbytes):
-            ctypes.set_errno(errno.EIO)
-            return 0
-
-        be = fake_be(listpids=lp)
-        with self.assertRaises(N.BackendError):
-            N.list_process_pids(be)
-
-    def test_duplicate_pids_rejected(self):
-        def lp(flavor, uid, arr, nbytes):
-            arr[0] = 7
-            arr[1] = 7
-            return 8
-
-        be = fake_be(listpids=lp)
-        with self.assertRaises(N.BackendError):
-            N.list_process_pids(be)
 
 
 if __name__ == "__main__":

@@ -6,8 +6,8 @@
 // IO, queue, clock, Native work, wire field, schema, status ladder or
 // second debt ledger.
 
-const makeError = (code, detail) => {
-  const error = new Error(`records ${code}: ${detail}`);
+const makeError = (code, detail, options = undefined) => {
+  const error = new Error(`records ${code}: ${detail}`, options);
   error.code = code;
   return error;
 };
@@ -89,7 +89,10 @@ export function createRecorderLifecycle({
     if (incompleteFence) fail("RECORDER_STATE", "incomplete evidence closed");
     if (finalFence) fail("RECORDER_STATE", "final evidence fenced");
     const observed = readState();
-    if (observed.sticky !== null) fail("RECORDER_STICKY", observed.sticky);
+    if (observed.sticky !== null) {
+      throw makeError("RECORDER_STICKY", observed.sticky,
+        observed.stickyCausePresent === true ? { cause: observed.stickyCause } : undefined);
+    }
     // Existing ordinary callbacks ignore the extra private token
     // argument; the receipt still proves only actual body settlement,
     // never sink/child closure.

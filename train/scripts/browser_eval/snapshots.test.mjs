@@ -6,11 +6,14 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
+import ts from "typescript";
 import { createArtifactStore } from "./artifact-store.mjs";
 import { createFootprintObserver } from "./workspace-footprint.mjs";
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
-import { BASELINE_COMMIT, FIXTURE_PATHS, MODEL_IDENTITY, PYTHON_MODULES } from "./schema-constants.mjs";
+import { BASELINE_COMMIT, FIXTURE_PATHS, FIXED_LIMITS, PHASES, MODEL_IDENTITY, PYTHON_MODULES } from "./schema-constants.mjs";
+import { createSnapshotIO } from "./snapshot-io.mjs";
+import { isObj, exactFields } from "./protocol-values.mjs";
 import { createSnapshotFiles, RUNTIME_PATHS } from "./snapshot-files.mjs";
 import { inventoryDigest, validateModelBytes } from "./snapshot-identity.mjs";
 import { captureInputs, verifyIdentity, reopenInputs } from "./snapshots.mjs";
@@ -118,14 +121,18 @@ async function manifestFor(t, f, result) {
 }
 
 test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 96);
+  assert.equal(RUNTIME_PATHS.length, 106);
   assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
   for (const name of ["snapshot-files", "snapshot-io", "snapshot-identity", "environment-files"]) {
     assert.equal(RUNTIME_PATHS.includes(`train/scripts/browser_eval/${name}.mjs`), true);
   }
-  assert.equal(RUNTIME_PATHS.some((p) => /test|README/.test(p)), false);
+  const isTestPath = (name) => /\.test\.mjs$|(?:^|[/-])test-|README/.test(name);
+  assert.equal(RUNTIME_PATHS.some(isTestPath), false);
+  assert.equal(isTestPath("train/scripts/browser_eval/native-test-harness.mjs"), true);
+  assert.equal(isTestPath("train/scripts/browser_eval/native-test-io.mjs"), true);
+  assert.equal(isTestPath("train/scripts/browser_eval/watchdog-selftest-operation.mjs"), false);
 });
 
 test("file owner captures real Git blobs and complete original active paths", async (t) => {
@@ -292,4 +299,57 @@ test("a spent current handle initiates no snapshot file or Git work", async (t) 
   await assert.rejects(own(t, () => f.files.writeFrozen("inputs/setup/spent", Buffer.from("data"))),
     (error) => error.code === "ACCOUNTING_UNAVAILABLE");
   await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+});
+
+// Only environment acquisition is controlled here. The exact bootstrap body
+// executes real captureInputs, SnapshotIO, Git data and pinned byte reads.
+test("bootstrap leaves exclusive workspace creation to the actual snapshot owner", async (t) => {
+  const f = await fixture(t, { complete: true });
+  const source = await own(t, () => fsp.readFile(new URL("./run.mjs", import.meta.url), "utf8"));
+  const parsed = ts.createSourceFile("run.mjs", source, ts.ScriptTarget.Latest, true);
+  const names = ["now", "fail", "selection", "setup", "bootstrapWorkspace"];
+  const selected = parsed.statements.filter((node) =>
+    (ts.isFunctionDeclaration(node) && names.includes(node.name?.text)) ||
+    (ts.isVariableStatement(node) && node.declarationList.declarations.some((item) => names.includes(item.name.getText()))));
+  assert.equal(selected.length, names.length);
+  const code = selected.map((node) => node.getText(parsed).replace(/^export /, "")).join("\n");
+  let environmentCalls = 0;
+  let captures = 0;
+  let capturedOwner;
+  const bindings = {
+    path, process, Object, Math, Number, BigInt, Error,
+    PHASES, FIXTURE_PATHS, FIXED_LIMITS, isObj, exactFields,
+    createWatchdogLifetime, createBudgetHandle, createSnapshotIO,
+    parseCanonicalBytes, assertRecord: () => { throw new Error("unexpected existing-workspace branch"); },
+    captureEnvironment: async (options, context) => {
+      environmentCalls += 1;
+      assert.equal(options.recordRoot, f.repoRoot);
+      context.budget.assertLive("controlled environment acquisition");
+      if (environmentCalls === 1) {
+        await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+      }
+      return { environment: f.args.environment, setupFiles: f.args.setupFiles };
+    },
+    captureInputs: async (options, context) => {
+      captures += 1;
+      capturedOwner = context.lifetime;
+      if (captures === 1) {
+        await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+      }
+      return captureInputs(options, context);
+    },
+  };
+  const bootstrap = new Function(...Object.keys(bindings), `${code}\nreturn bootstrapWorkspace`)(...Object.values(bindings));
+  const options = { phase: "check", candidate: "WORKTREE", protocolPath: FIXTURE_PATHS.protocol,
+    workspaceRoot: f.workspaceRoot, repoRoot: f.repoRoot };
+  const result = await own(t, () => bootstrap(options));
+  await capturedOwner.whenSettled();
+  assert.equal(environmentCalls, 1);
+  assert.equal(captures, 1);
+  assert.equal(result.frozenCliPath, path.join(f.workspaceRoot, "inputs/harness/train/scripts/browser_eval/cli.mjs"));
+  const workspace = await own(t, () => fsp.readFile(path.join(f.workspaceRoot, "workspace.json")));
+  assert.equal((await fsp.stat(path.join(f.workspaceRoot, "workspace.json"))).mode & 0o222, 0);
+  await assert.rejects(own(t, () => bootstrap(options)), (error) => error.code === "EEXIST");
+  await capturedOwner.whenSettled();
+  assert.equal((await own(t, () => fsp.readFile(path.join(f.workspaceRoot, "workspace.json")))).equals(workspace), true);
 });

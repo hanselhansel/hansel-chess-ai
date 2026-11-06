@@ -29,13 +29,17 @@ export function createSnapshotIO(options) {
       throw fail("budget handle");
     }
   }
-  const call = (tag, thunk) => {
+  const call = async (tag, thunk) => {
     budget.assertLive(tag);
     const actual = issueActual(lifetime.retainActual, () => {
       budget.assertLive(tag);
       return thunk();
     });
-    return waitHandle(budget, actual, tag);
+    try {
+      return await waitHandle(budget, actual, tag);
+    } finally {
+      await Promise.allSettled([actual]);
+    }
   };
   const absolute = async (target) => {
     let cursor = "/";
@@ -60,27 +64,38 @@ export function createSnapshotIO(options) {
     await absolute(target);
     return target;
   };
-  const reader = createBackendReader({
-    handle: budget, retainActual: lifetime.retainActual,
-    statFile: (p) => fsp.lstat(p),
-    createStream: (p) => createReadStream(p, { flags: constants.O_RDONLY | constants.O_NOFOLLOW }),
-  });
   const readAt = async (root, rel, readonly = false, cap = FIXED_LIMITS.resources.ordinaryBytes) => {
-    if (!Number.isSafeInteger(cap) || cap <= 0 || cap > FIXED_LIMITS.resources.ordinaryBytes) {
-      throw fail("read byte ceiling");
+    const actual = [];
+    const reader = createBackendReader({
+      handle: budget,
+      retainActual: (receipt) => {
+        lifetime.retainActual(receipt);
+        actual.push(receipt);
+      },
+      statFile: (p) => fsp.lstat(p),
+      createStream: (p) => createReadStream(p, { flags: constants.O_RDONLY | constants.O_NOFOLLOW }),
+    });
+    try {
+      if (!Number.isSafeInteger(cap) || cap <= 0 || cap > FIXED_LIMITS.resources.ordinaryBytes) {
+        throw fail("read byte ceiling");
+      }
+      const target = await confined(root, rel);
+      const st = await call("snapshot file mode", () => fsp.lstat(target));
+      if (!st.isFile() || readonly && (st.mode & 0o222) !== 0) {
+        throw fail("regular readonly file");
+      }
+      const fact = await reader.readFact(target, cap, "snapshot read");
+      await confined(root, rel);
+      const after = await call("snapshot file mode recheck", () => fsp.lstat(target));
+      if (readonly && (after.mode & 0o222) !== 0) {
+        throw fail("readonly file changed");
+      }
+      return Buffer.from(fact.buf);
+    } finally {
+      // Join only this read's raw effects. Global lifetime zero includes
+      // the caller/finalizer itself and is never a nested read barrier.
+      await Promise.allSettled(actual);
     }
-    const target = await confined(root, rel);
-    const st = await call("snapshot file mode", () => fsp.lstat(target));
-    if (!st.isFile() || readonly && (st.mode & 0o222) !== 0) {
-      throw fail("regular readonly file");
-    }
-    const fact = await reader.readFact(target, cap, "snapshot read");
-    await confined(root, rel);
-    const after = await call("snapshot file mode recheck", () => fsp.lstat(target));
-    if (readonly && (after.mode & 0o222) !== 0) {
-      throw fail("readonly file changed");
-    }
-    return Buffer.from(fact.buf);
   };
   let creation;
   const ensureWorkspace = () => {

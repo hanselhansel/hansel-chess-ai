@@ -327,58 +327,41 @@ test("a latched overage stays after lower samples and never blocks cleanup", asy
   }
 });
 
-test("a faulted physically-settled collector still stops and clears its sampler", async () => {
-  const script = bootScript();
-  const env = setup({ script });
-  const { clock, fixture, monitor, cleanup } = env;
-  const count = () =>
-    fixture.written.filter((f) => f.type === "sample").length;
-  // The ORIGINAL test bound is captured once BEFORE start — neither
-  // the later stop nor the unconditional finally stop gets a fresh
-  // budget after the failure.
-  const bound = clock.nowMs() + 30000;
-  try {
-    await start(env);
-    assert.equal(clock.liveIntervals(), 1); // the live sampling tick
-    // A valid collector accounting-fault latches the sticky fault.
-    fixture.emit({
-      type: "accounting-fault",
-      code: "ACCOUNTING_UNAVAILABLE",
-      reason: "unstable-list",
-      diagnostic: "pid list never stable",
+test("strict root-image rejection retains both distinctive suffixes in the full marker", async (t) => {
+  const { reportStoppedFault } = await import("./watchdog-lifetime.mjs");
+  const prefix = "/long-shared-prefix/" + "p".repeat(180);
+  const expected = prefix + "/Resources/Python.app/Contents/MacOS/Python";
+  for (const actual of [prefix + "/Versions/3.11/bin/python3.11", prefix + "/wrong-image/Contents/MacOS/OtherPython"]) {
+    const lines = [];
+    const owner = createWatchdogLifetime({ reportAwaitStage: (line) => lines.push(line) });
+    const script = bootScript();
+    const env = setup({ lifetime: owner, script });
+    t.after(async () => {
+      await env.monitor.stopAndReap();
+      await owner.whenSettled();
+      env.cleanup();
     });
-    await flush();
-    const fault = monitor.fault();
-    assert.notEqual(fault, null);
-    // Physical settlement alone leaves the referenced sampler live —
-    // settled is never shutdown proof.
-    fixture.exit(2);
-    await processMonitorLifetime(monitor).whenSettled();
-    assert.equal(clock.liveIntervals(), 1);
-    // The genuine stop under the captured bound still runs: the real
-    // exit-2 result returns, the sampler clears, the primary fault's
-    // facts are preserved and the receipt is the ONE cached promise.
-    const stop = monitor.stopAndReap({ deadlineMonoMs: bound });
-    const r = await stop;
-    assert.equal(r.exitCode, 2);
-    assert.equal(clock.liveIntervals(), 0);
-    // fault() returns a fresh copy per call; the facts are unchanged.
-    assert.deepEqual(monitor.fault(), fault); // SAME primary fault facts
-    assert.equal(monitor.stopAndReap(), stop); // SAME cached receipt
-    const sent = count();
-    clock.advance(TIMING_LIMITS.sampleMs);
-    await flush();
-    assert.equal(count(), sent); // sampling never resumes
-  } finally {
-    // Controlled physical facts are released BEFORE the genuine stop
-    // and owner join so a failed assertion can never strand retained
-    // debt; a stop rejection is retained and rethrown, never discarded.
-    fixture.exit(0);
-    const stopErr = await monitor
-      .stopAndReap({ deadlineMonoMs: bound })
-      .then(() => null, (e) => e);
-    await processMonitorLifetime(monitor).whenSettled();
-    cleanup();
-    if (stopErr) throw stopErr;
+    await start(env);
+    script.inspected[4242] = { pid: 4242, state: "live",
+      process: bsdRow(4242, process.pid, 4242, 501), executable: actual };
+    const ownBefore = env.fixture.written.filter((frame) => frame.type === "own-roots").length;
+    let primary;
+    const registration = env.monitor.registerRoot({ pid: 4242, kind: "python",
+      expectedExecutable: expected, scopeRunId: "R1" });
+    await assert.rejects(registration, (error) => {
+      primary = error;
+      assert.equal(error.code, "ACCOUNTING_UNAVAILABLE");
+      assert.equal(error.message, `ACCOUNTING_UNAVAILABLE root executable expected ${expected} actual ${actual}`);
+      return true;
+    });
+    reportStoppedFault(owner, "phase", primary);
+    const raw = lines.at(-1);
+    const marker = JSON.parse(raw.slice("TINYAZ_AWAIT ".length));
+    assert.ok(Buffer.byteLength(raw) <= 256);
+    assert.equal(marker.code, "ACCOUNTING_UNAVAILABLE");
+    assert.equal(marker.detail, `expected=${expected.slice(-36)} actual=${actual.slice(-36)}`);
+    assert.equal(env.fixture.written.filter((frame) => frame.type === "own-roots").length, ownBefore);
+    await env.monitor.stopAndReap();
+    await owner.whenSettled();
   }
 });

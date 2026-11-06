@@ -70,6 +70,8 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
     finalizing: false,
     finalized: false,
     sticky: null,
+    stickyCausePresent: false,
+    stickyCause: undefined,
     eventsRef: null,
     sealedResult: null,
     eventSeq: 0,
@@ -111,6 +113,8 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
       state.used = true;
       return {
         sticky: state.sticky,
+        stickyCausePresent: state.stickyCausePresent,
+        stickyCause: state.stickyCause,
         finalizing: state.finalizing,
         finalized: state.finalized,
       };
@@ -127,6 +131,10 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
         code = undefined;
       }
       if (CORRECTABLE.has(code)) return;
+      if (!state.stickyCausePresent) {
+        state.stickyCausePresent = true;
+        state.stickyCause = error;
+      }
       try {
         state.sticky = code ?? String(error);
       } catch {

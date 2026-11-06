@@ -14,9 +14,10 @@
 import path from "node:path";
 import { copyDeep, isObj, isIdentity } from "./protocol-values.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
-import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
+import { assertWatchdogLifetime, reportStoppedFault } from "./watchdog-lifetime.mjs";
 import { processMonitorLifetime } from "./processes.mjs";
 import { assertNativeHorizon } from "./process-horizon.mjs";
+import { issueActual } from "./artifact-files.mjs";
 import { createDriverActualScope } from "./watchdog-driver.mjs";
 
 const fail = (code, detail) => {
@@ -50,9 +51,11 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
     runInternalSelfTest = null,
     pgnEvidence = null,
     internalContext = null,
+    phaseDeadlineMonoMs = null,
     lifetime,
     nativeHorizon,
     onBookkeepingSettlement = null,
+    finalIntegrity = null,
   } = o;
   let clock;
   if (defaultClock === undefined) {
@@ -97,7 +100,19 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
   if (!Array.isArray(prerequisites)) throw fail("IPC_INVALID", "prerequisites");
   if (runInternalSelfTest !== null && typeof runInternalSelfTest !== "function")
     throw fail("IPC_INVALID", "runInternalSelfTest");
+  const integrityKeys = ["collect", "consume", "interrupt", "isComplete"];
+  if (finalIntegrity !== null && (!isObj(finalIntegrity) || Object.keys(finalIntegrity).length !== 4 ||
+    integrityKeys.some((key) => typeof finalIntegrity[key] !== "function"))) {
+    throw fail("IPC_INVALID", "private finalIntegrity");
+  }
+  const ownedIntegrity = finalIntegrity === null ? null : Object.freeze(Object.fromEntries(
+    integrityKeys.map((key) => [key, finalIntegrity[key]]),
+  ));
 
+  if (phaseDeadlineMonoMs !== null &&
+    (!Number.isSafeInteger(phaseDeadlineMonoMs) || phaseDeadlineMonoMs <= 0)) {
+    throw fail("IPC_INVALID", "phaseDeadlineMonoMs");
+  }
   const selftestPhase = phase === "watchdog-selftest";
   // Trusted narrowing/cancel capability: selftest phase only. An absolute
   // hrtime-origin bound plus a genuine AbortSignal; invalid/missing selftest
@@ -234,6 +249,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
       : null,
     selftestPhase,
     ctxDeadlineMs,
+    phaseDeadlineMonoMs,
     ctxSignal,
     workspaceRoot,
     manifestRel,
@@ -247,6 +263,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
     clock,
     spawnImpl,
     runInternalSelfTest,
+    finalIntegrity: ownedIntegrity,
     pgnEvidence,
     // Derived internal fields: the ONE genuine inherited owner, the
     // brand-asserted horizon (null only when truly omitted), the ONE
@@ -281,6 +298,7 @@ export function createWatchdogOperationContext({
     workspaceRoot: config.workspaceRoot,
     manifestRel: config.manifestRel,
     commonIdentity: config.workspace.commonIdentity,
+    workspaceId: config.workspace.workspaceId,
     monitor,
     clock,
     // The SAME owner registrar, the EXACT derived io object and the ONE
@@ -299,6 +317,7 @@ export function createWatchdogOperationContext({
     cleanupRemainingMs: timing.cleanupRemainingMs,
     recordFault: control.recordFault,
     requestStop: control.requestStop,
+    reportOrdinaryFault: (error) => reportStoppedFault(lifetime, config.phase === "watchdog-selftest" ? "selftest" : "phase", error),
     stopped: control.stopped,
     stopReason: () => (state.stopReq ? state.stopReq.reason : null),
     admissionOpen: control.admissionOpen,
@@ -325,6 +344,13 @@ export function createWatchdogOperationContext({
       state.driverIdentity ? copyDeep(state.driverIdentity) : null,
     manifestInputs: () => state.records.manifestInputs(),
     selftest: state.selftest,
+    finalIntegrity: capabilities.finalIntegrity,
+    startFinalIntegrity: (body) => {
+      if (state.admissionTask !== null) throw fail("IPC_INVALID", "integrity task overlap");
+      const actual = issueActual(lifetime.retainActual, body);
+      state.admissionTask = actual.finally(() => { state.admissionTask = null; });
+      return state.admissionTask;
+    },
   });
 }
 

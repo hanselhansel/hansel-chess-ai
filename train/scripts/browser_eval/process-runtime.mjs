@@ -303,7 +303,7 @@ export function createProcessRuntime({ config, state, authority }) {
         onFault: authority.markFault,
         onInbound: (msg) => {
           if (msg.type === "accounting-fault") {
-            authority.markFault(acct(`collector ${msg.reason}`));
+            authority.markFault(acct(`collector ${msg.reason}: ${msg.diagnostic}`));
           }
         },
       });

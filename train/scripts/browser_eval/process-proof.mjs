@@ -158,9 +158,10 @@ export function createProcessProofs({
     );
     if (!ins || ins.state !== "live") throw acct("root live");
     if (ins.executable !== expectedExecutable) {
-      throw acct(
-        `root executable expected ${expectedExecutable} actual ${ins.executable}`,
-      );
+      const error = acct(`root executable expected ${expectedExecutable} actual ${ins.executable}`);
+      // Validated path tails survive the existing bounded passive frame.
+      error.detail = `expected=${expectedExecutable.slice(-36)} actual=${ins.executable.slice(-36)}`;
+      throw error;
     }
     const row = ins.process;
     const uid = ownUid();

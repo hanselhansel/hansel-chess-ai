@@ -3,9 +3,11 @@
 import { Chess } from "chess.js";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { checkpointResult, serializeCheckpointPgn } from "./pgn-format.mjs";
-import { deepEqual, freezeDeep } from "./schema-primitives.mjs";
+import { freezeDeep } from "./schema-primitives.mjs";
 import { exactFields, isObj, isRef, nat, strNE } from "./protocol-values.mjs";
-import { FIXED_LIMITS, MODEL_IDENTITY } from "./schema-constants.mjs";
+import { FIXED_LIMITS } from "./schema-constants.mjs";
+
+import { validateArmReady, validateArmTurn } from "./match-observations.mjs";
 
 const fail = (detail) => {
   const error = new Error(`MATCH_INVALID ${detail}`);
@@ -13,11 +15,6 @@ const fail = (detail) => {
   return error;
 };
 const copy = (value) => JSON.parse(canonicalBytes(value).toString("utf8"));
-const model = Object.freeze({
-  mode: "trained", modelName: "tinyaz-m", sha256: MODEL_IDENTITY.sha256,
-  packedVersion: MODEL_IDENTITY.packedVersion, parameterCount: MODEL_IDENTITY.parameterCount,
-  byteLength: MODEL_IDENTITY.byteLength, channels: 128, sourceId: MODEL_IDENTITY.source,
-});
 const ownGame = (game) => {
   if (!isObj(game) || !exactFields(game, ["gameId", "pairNumber", "gameNumber", "openingId", "candidateColor", "initialFen", "movesUci"]) ||
     !/^(?:p[0-9]{2}|aa)-g[12]$/.test(game.gameId) || !nat(game.pairNumber) || game.pairNumber < 1 || game.pairNumber > 20 ||
@@ -40,63 +37,6 @@ const signalFence = (signal) => {
       throw signal.reason;
     }
   };
-};
-const validateReady = (arm, observation) => {
-  if (!isObj(observation) || !exactFields(observation, ["ready", "delivery", "worker"]) ||
-    !isObj(observation.ready) || !isObj(observation.delivery) || !isObj(observation.worker) ||
-    !strNE(observation.worker.instanceId) || observation.worker.raw?.type !== "ready") {
-    throw fail("actual readiness observations");
-  }
-  const { ready, delivery, worker } = observation;
-  if (delivery.path !== (arm.kind === "baseline" ? "/weights/tinyaz-s.bin" : "/weights/tinyaz-m.bin") ||
-    delivery.sha256 !== MODEL_IDENTITY.sha256 || delivery.byteLength !== MODEL_IDENTITY.byteLength) {
-    throw fail("actual M delivery");
-  }
-  if (arm.kind === "candidate") {
-    if (!deepEqual(ready.modelIdentity, model) || !strNE(ready.engineSessionId) ||
-      ready.initialBackend !== "worker" || !nat(ready.initialBackendEpoch) ||
-      worker.raw.protocolVersion !== 1 || worker.raw.engineSessionId !== ready.engineSessionId || worker.raw.backendEpoch !== ready.initialBackendEpoch ||
-      !deepEqual(worker.raw.modelIdentity, model)) {
-      throw fail("candidate worker readiness");
-    }
-  } else if (ready.paramCount !== MODEL_IDENTITY.parameterCount || ready.seed !== 0 || ready.source !== "lichess-2013-01" ||
-    worker.raw.paramCount !== ready.paramCount || worker.raw.seed !== ready.seed || worker.raw.source !== ready.source) {
-    throw fail("baseline raw readiness");
-  }
-  return freezeDeep(copy(observation));
-};
-const validateTurn = (arm, ready, observation, request) => {
-  if (!isObj(observation) || !exactFields(observation, ["response", "worker"]) ||
-    !isObj(observation.response) || !isObj(observation.worker) || observation.worker.instanceId !== ready.worker.instanceId ||
-    observation.worker.raw?.type !== "result") {
-    throw fail("actual turn observations");
-  }
-  const response = observation.response;
-  const raw = observation.worker.raw;
-  let result;
-  if (arm.kind === "candidate") {
-    const expectedContext = { engineSessionId: ready.ready.engineSessionId, ...request };
-    if (response.kind !== "move" || response.backend !== "worker" ||
-      response.backendEpoch !== ready.ready.initialBackendEpoch || response.completedVisits !== 64 ||
-      !deepEqual(response.context, expectedContext) || !deepEqual(response.modelIdentity, model) ||
-      !Array.isArray(response.attempts) || response.attempts.length !== 1 ||
-      response.attempts.some((attempt) => attempt.backend !== "worker" || attempt.disposition !== "complete" || attempt.completedVisits !== 64) ||
-      raw.protocolVersion !== 1 || raw.engineSessionId !== ready.ready.engineSessionId || raw.backendEpoch !== response.backendEpoch ||
-      !deepEqual(raw.context, expectedContext) || !deepEqual(raw.modelIdentity, model) ||
-      !deepEqual(raw.outcome, { kind: response.kind, result: response.result, completedVisits: response.completedVisits, searchMs: response.searchMs })) {
-      throw fail("candidate identity/context/worker/visits");
-    }
-    result = response.result;
-  } else {
-    if (raw.id !== request.requestId || !deepEqual(raw.result, response)) {
-      throw fail("baseline actual worker result");
-    }
-    result = response;
-  }
-  if (!isObj(result) || result.visits !== 64 || !/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(result.uci)) {
-    throw fail("move/64 visits");
-  }
-  return result;
 };
 
 export async function playGame({ game, arms, checkpoint, signal }) {
@@ -144,7 +84,7 @@ export async function playGame({ game, arms, checkpoint, signal }) {
   const ids = { candidate: 0, baseline: 0 };
   for (const role of ["candidate", "baseline"]) {
     fence();
-    ready[role] = validateReady(transports[role], await transports[role].initialize());
+    ready[role] = validateArmReady(transports[role], await transports[role].initialize());
     fence();
   }
   for (;;) {
@@ -154,7 +94,7 @@ export async function playGame({ game, arms, checkpoint, signal }) {
       position: { initialFen: game.initialFen, movesUci: [...movesUci], expectedFen: board.fen() }, requestedVisits: 64 };
     const observation = await transports[role].think(copy(request));
     fence();
-    const result = validateTurn(transports[role], ready[role], observation, request);
+    const result = validateArmTurn(transports[role], ready[role], observation, request);
     const move = board.move({ from: result.uci.slice(0, 2), to: result.uci.slice(2, 4), promotion: result.uci[4] });
     if (move === null) {
       throw fail("illegal engine move");

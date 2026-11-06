@@ -84,7 +84,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
   }
   const statFile = adapters.statFile ?? ((p) => fsp.lstat(p));
   const createStream = adapters.createStream ?? ((p) => createReadStream(p));
-  const resolvePath = adapters.resolvePath ?? realpathSync;
+  const resolvePath = adapters.resolvePath ?? realpathSync.native;
   const readdir = adapters.readdir ?? ((p) => fsp.readdir(p));
   const readlink = adapters.readlink ?? ((p) => fsp.readlink(p));
   for (const binding of [statFile, createStream, resolvePath, readdir, readlink]) {
@@ -92,12 +92,50 @@ export function createEnvironmentFiles(context, adapters = {}) {
       throw fail("filesystem adapter");
     }
   }
-  const read = createBackendReader({
-    handle: budget,
-    retainActual: lifetime.retainActual,
-    statFile,
-    createStream,
-  }).readFact;
+  // These local join lists carry the SAME owner's actual raw receipts.
+  // They never observe global owner zero or turn a deadline into closure.
+  const read = async (...args) => {
+    const actual = [];
+    const reader = createBackendReader({
+      handle: budget, statFile, createStream,
+      retainActual: (receipt) => {
+        lifetime.retainActual(receipt);
+        actual.push(receipt);
+      },
+    });
+    try {
+      return await reader.readFact(...args);
+    } finally {
+      await Promise.allSettled(actual);
+    }
+  };
+  const parallel = async (items, work) => {
+    const results = new Array(items.length);
+    let next = 0;
+    let failed = false;
+    let first;
+    const worker = async () => {
+      while (!failed && next < items.length) {
+        const index = next;
+        next += 1;
+        try {
+          budget.assertLive("environment concurrent file");
+          results[index] = await work(items[index]);
+        } catch (error) {
+          if (!failed) {
+            failed = true;
+            first = error;
+          }
+        }
+      }
+    };
+    await Promise.allSettled(Array.from({ length: Math.min(16, items.length) }, worker));
+    if (failed) {
+      throw first;
+    }
+    budget.assertLive("environment concurrent files complete");
+    return results;
+  };
   const resolve = (literal) => {
     budget.assertLive("environment resolve");
     const real = resolvePath(literal);
@@ -107,7 +145,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
     }
     return real;
   };
-  const call = (tag, thunk) => {
+  const call = async (tag, thunk) => {
     budget.assertLive(tag);
     let settle;
     const receipt = new Promise((res) => { settle = res; });
@@ -123,7 +161,11 @@ export function createEnvironmentFiles(context, adapters = {}) {
       return thunk();
     });
     body.then(() => settle(), () => settle());
-    return waitHandle(budget, body, tag);
+    try {
+      return await waitHandle(budget, body, tag);
+    } finally {
+      await Promise.allSettled([body]);
+    }
   };
   const list = async (dir) => {
     const names = await call("environment directory", () => readdir(dir));
@@ -137,36 +179,50 @@ export function createEnvironmentFiles(context, adapters = {}) {
   };
   const inventory = async (root, links = "none") => {
     const base = resolve(root);
-    const files = [];
+    const paths = [];
+    const directories = [];
+    const pending = [base];
     const linkFacts = [];
-    const walk = async (dir) => {
-      const before = await call("inventory stat", () => statFile(dir));
-      if (!before.isDirectory() || resolve(dir) !== dir) {
-        throw fail("inventory directory");
-      }
-      const names = await list(dir);
-      for (const name of names) {
-        const abs = path.join(dir, name);
-        const rel = path.relative(base, abs).split(path.sep).join("/");
-        const st = await call("inventory entry", () => statFile(abs));
-        if (st.isSymbolicLink()) {
-          const allowed = links === "framework" && rel.includes(".framework/") ||
-            links === "node-bin" && /(^|\/)\.bin\//.test(rel);
-          const target = await call("inventory link", () => readlink(abs));
-          if (!allowed || typeof target !== "string" || path.isAbsolute(target) ||
-            !resolve(abs).startsWith(`${base}${path.sep}`)) {
-            throw fail("inventory symlink");
-          }
-          linkFacts.push({ path: rel, target });
-        } else if (st.isDirectory()) {
-          await walk(abs);
-        } else if (st.isFile() && resolve(abs) === abs) {
-          const fact = await read(abs, BIN_CAP, "inventory file", true);
-          files.push({ path: rel, ...fact });
-        } else {
-          throw fail("inventory file kind");
+    let cursor = 0;
+    while (cursor < pending.length) {
+      const batch = pending.slice(cursor, cursor + 16);
+      cursor += batch.length;
+      await parallel(batch, async (dir) => {
+        const before = await call("inventory stat", () => statFile(dir));
+        if (!before.isDirectory() || resolve(dir) !== dir) {
+          throw fail("inventory directory");
         }
-      }
+        const names = await list(dir);
+        directories.push({ dir, before, names });
+        for (const name of names) {
+          const abs = path.join(dir, name);
+          const rel = path.relative(base, abs).split(path.sep).join("/");
+          const st = await call("inventory entry", () => statFile(abs));
+          if (st.isSymbolicLink()) {
+            const allowed = links === "framework" && rel.includes(".framework/") ||
+              links === "node-bin" && /(^|\/)\.bin\//.test(rel);
+            const target = await call("inventory link", () => readlink(abs));
+            if (!allowed || typeof target !== "string" || path.isAbsolute(target) ||
+              !resolve(abs).startsWith(`${base}${path.sep}`)) {
+              throw fail("inventory symlink");
+            }
+            linkFacts.push({ path: rel, target });
+          } else if (st.isDirectory()) {
+            pending.push(abs);
+          } else if (st.isFile() && resolve(abs) === abs) {
+            paths.push({ abs, rel });
+          } else {
+            throw fail("inventory file kind");
+          }
+        }
+      });
+    }
+    const files = await parallel(paths, async ({ abs, rel }) => ({
+      path: rel, ...await read(abs, BIN_CAP, "inventory file", true),
+    }));
+    // Every directory spans the full content-read pass, so concurrent
+    // additions/removals cannot escape a completed child-directory check.
+    await parallel(directories, async ({ dir, before, names }) => {
       const after = await call("inventory restat", () => statFile(dir));
       if (!after.isDirectory() || before.dev !== after.dev || before.ino !== after.ino ||
         before.mtimeMs !== after.mtimeMs) {
@@ -176,8 +232,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
       if (names.length !== afterNames.length || names.some((n, i) => n !== afterNames[i])) {
         throw fail("inventory changed entries");
       }
-    };
-    await walk(base);
+    });
     files.sort((a, b) => compare(a.path, b.path));
     budget.assertLive("environment inventory");
     linkFacts.sort((a, b) => compare(a.path, b.path));
@@ -187,8 +242,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
   const pythonInstalled = async (prefix) => {
     const base = resolve(prefix);
     const site = path.join(base, "lib/python3.11/site-packages");
-    const records = [];
-    const distributions = [];
+    const descriptions = [];
     const names = await list(site);
     if (names.some((n) => /^tinyaz(?:[.\-]|$)/i.test(n))) {
       throw fail("shadow tinyaz");
@@ -198,7 +252,8 @@ export function createEnvironmentFiles(context, adapters = {}) {
       if (resolve(info) !== info) {
         throw fail("distribution link");
       }
-      const metadata = await read(path.join(info, "METADATA"), TEXT_CAP, "distribution metadata");
+      const metadataPath = path.join(info, "METADATA");
+      const metadata = await read(metadataPath, TEXT_CAP, "distribution metadata");
       const text = new TextDecoder("utf-8", { fatal: true }).decode(metadata.buf);
       const field = (key) => {
         const matches = [...text.matchAll(new RegExp(`^${key}: (.+)\\r?$`, "gm"))];
@@ -210,9 +265,8 @@ export function createEnvironmentFiles(context, adapters = {}) {
       const recordPath = path.join(info, "RECORD");
       const record = await read(recordPath, TEXT_CAP, "distribution RECORD");
       const rows = csvRows(new TextDecoder("utf-8", { fatal: true }).decode(record.buf));
-      const entries = [];
       const seen = new Set();
-      for (const row of rows) {
+      const payloads = await parallel(rows, async (row) => {
         if (row.length !== 3 || row[0] === "" || row[0].includes("\\") ||
           row[0].includes("\0") || path.isAbsolute(row[0])) {
           throw fail("RECORD row");
@@ -222,30 +276,51 @@ export function createEnvironmentFiles(context, adapters = {}) {
         if (real !== literal || !real.startsWith(`${base}${path.sep}`)) {
           throw fail("RECORD confinement");
         }
-        const fact = await read(literal, BIN_CAP, "installed file", true);
+        const rel = path.relative(base, real).split(path.sep).join("/");
+        if (seen.has(rel)) {
+          throw fail("RECORD duplicate");
+        }
+        seen.add(rel);
+        const inSite = real.startsWith(`${site}${path.sep}`);
+        return { path: rel, row, sitePath: inSite ? path.relative(site, real).split(path.sep).join("/") : null,
+          outside: inSite ? null : await read(literal, BIN_CAP, "installed file", true) };
+      });
+      descriptions.push({ name: field("Name").toLowerCase().replace(/[-_.]+/g, "-"), version: field("Version"),
+        metadataPath, metadata, recordPath, record, payloads });
+    }
+    // One complete fresh content pass supplies both roles. This map is
+    // invocation-local measured data, never initial/expected/cross-call facts.
+    const installedInventory = await inventory(site);
+    const current = new Map(installedInventory.files.map((file) => [file.path, file]));
+    const records = [];
+    const distributions = [];
+    for (const description of descriptions) {
+      const { name, version, metadataPath, metadata, recordPath, record, payloads } = description;
+      for (const [filename, textFact] of [[metadataPath, metadata], [recordPath, record]]) {
+        const fact = current.get(path.relative(site, filename).split(path.sep).join("/"));
+        if (fact === undefined || fact.sha256 !== textFact.sha256 || fact.byteLength !== textFact.buf.length) {
+          throw fail("distribution text changed during inventory");
+        }
+      }
+      const entries = payloads.map(({ path: rel, row, sitePath, outside }) => {
+        const fact = sitePath === null ? outside : current.get(sitePath);
+        if (fact === undefined) {
+          throw fail("RECORD file absent from inventory");
+        }
         if (row[1] !== "") {
           const want = `sha256=${Buffer.from(fact.sha256, "hex").toString("base64url")}`;
           if (row[1] !== want || row[2] !== "" && Number(row[2]) !== fact.byteLength) {
             throw fail("RECORD digest");
           }
         }
-        const rel = path.relative(base, real).split(path.sep).join("/");
-        if (seen.has(rel)) {
-          throw fail("RECORD duplicate");
-        }
-        seen.add(rel);
-        entries.push({ path: rel, ...fact });
-      }
+        return { path: rel, sha256: fact.sha256, byteLength: fact.byteLength };
+      });
       entries.sort((a, b) => compare(a.path, b.path));
       // Python's canonical build codec uses ensure_ascii=True. Preserve
       // that exact byte encoding, including UTF-16 surrogate pairs.
       const encoded = canonicalBytes(entries).toString("utf8")
         .replace(/[\u0080-\uffff]/g, (ch) => `\\u${ch.charCodeAt(0).toString(16).padStart(4, "0")}`);
-      distributions.push({
-        name: field("Name").toLowerCase().replace(/[-_.]+/g, "-"),
-        version: field("Version"),
-        buildSha256: sha256Bytes(Buffer.from(encoded)),
-      });
+      distributions.push({ name, version, buildSha256: sha256Bytes(Buffer.from(encoded)) });
       records.push({ path: recordPath, byteLength: record.buf.length, sha256: record.sha256 });
     }
     distributions.sort((a, b) => compare(a.name, b.name));
@@ -255,7 +330,6 @@ export function createEnvironmentFiles(context, adapters = {}) {
       throw fail("distribution names");
     }
     budget.assertLive("installed Python");
-    const installedInventory = await inventory(site);
     return { distributions, records, inventory: installedInventory };
   };
   return Object.freeze({ read, resolve, call, inventory, pythonInstalled });

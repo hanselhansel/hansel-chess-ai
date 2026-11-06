@@ -127,6 +127,8 @@ test("a first stop during the trusted callback cancels post-callback admission",
       await yield2();
     }
     assert.equal(callbackEntered, true);
+    const probesBeforeStop = monitorCalls.filter((call) => call.startsWith("probe:")).length;
+    assert.equal(probesBeforeStop, evidence.prerequisites.length);
     w.requestStop("REQUESTED");
     // The held real dependency is released; the callback settles with the
     // genuine ref — it meets the post-callback recheck and the run
@@ -140,7 +142,7 @@ test("a first stop during the trusted callback cancels post-callback admission",
     // path, no fresh Native probe dispatched and no late begun ack
     // exists.
     assert.equal(seen.admissions, baseline);
-    assert.ok(!monitorCalls.some((c) => c.startsWith("probe:")));
+    assert.equal(monitorCalls.filter((call) => call.startsWith("probe:")).length, probesBeforeStop);
     assert.equal(res.stopReason, "REQUESTED");
     assert.equal(res.status, "inconclusive");
     assert.equal(res.exitCode, 2);
@@ -182,6 +184,8 @@ test("a stop while selftest receipt IO is held leaves the post-IO probe undispat
     // verifyInternalSelfTest call — actual entry through the truthful
     // entry channel.
     await awaitEntered(gate);
+    const probesBeforeStop = monitorCalls.filter((call) => call.startsWith("probe:")).length;
+    assert.equal(probesBeforeStop, evidence.prerequisites.length);
     w.requestStop("REQUESTED");
     // Release the REAL bytes: the post-IO probe guard sees the latched
     // stop and rejects before ANY fresh Native probe may dispatch.
@@ -190,8 +194,9 @@ test("a stop while selftest receipt IO is held leaves the post-IO probe undispat
     const res = await drainRun(clk, p);
     assert.equal(res.stopReason, "REQUESTED");
     assert.ok(!driver.written.some((m) => m.type === "begun"));
-    // No Native probe call for the parent supervisor ever dispatched.
-    assert.ok(!monitorCalls.some((c) => c.startsWith("probe:")));
+    // The legitimate prior-finalizer probes preceded the held read.
+    // No additional post-IO probe for the parent supervisor dispatched.
+    assert.equal(monitorCalls.filter((call) => call.startsWith("probe:")).length, probesBeforeStop);
   } finally {
     gate.release();
     closeAll(driver);

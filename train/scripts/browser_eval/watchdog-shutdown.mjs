@@ -13,6 +13,7 @@
 import { copyDeep, isObj } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { finishDriverActualScope } from "./watchdog-driver.mjs";
+import { observeAwaitStage } from "./watchdog-lifetime.mjs";
 
 const fail = (code, detail) => {
   const e = new Error(`watchdog-shutdown ${code}: ${detail}`);
@@ -22,6 +23,8 @@ const fail = (code, detail) => {
 
 export function createWatchdogShutdown({ config, capabilities, state, timing, control }) {
   const { monitor, cleanup } = capabilities;
+  const stage = (label, issue) => observeAwaitStage(capabilities.lifetime,
+    config.selftestPhase ? "selftest" : "phase", label, issue);
 
   // The coherent real result for a missing/failed receipt readback: never a
   // retained zero exit or requested pass. Only the coherent pairs survive —
@@ -41,8 +44,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       : state.finishReq
         ? copyDeep(state.finishReq.checks)
         : [];
-    const res = await state.records
-      .finalizeAndRead(
+    const res = await stage("records.finalize", () => state.records.finalizeAndRead(
         {
           intent: control.intentOutcome(),
           checks,
@@ -52,9 +54,11 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
         // The ORIGINAL absolute cleanup end — the adapter awaits its
         // actual capture/seal against this bound, never a fresh window.
         { deadlineMonoMs: state.cleanupEnd },
-      )
-      .catch((e) => {
+      ))
+      .catch(async (e) => {
         control.recordFault(e);
+        await stage("records.containment", () => state.records.closeIncompleteEvidence())
+          .catch((closeError) => control.recordFault(closeError));
         return null;
       });
     if (res !== null && isObj(res.final)) {
@@ -119,14 +123,14 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     let teardown = null;
     if (state.running !== null) {
       teardown = boundedCleanup(
-        cleanup.run(
+        stage("cleanup.run", () => cleanup.run(
           control.cleanupArgs({
             settleRequiredLiveEvidence:
               liveEvidence === null
                 ? null
                 : () => liveEvidence.then(() => undefined),
           }),
-        ),
+        )),
         "cleanup",
       ).catch((e) => control.recordFault(e));
     } else if (state.monitorStartAttempted === true) {
@@ -137,7 +141,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       // call and no fabricated tuple or cancellation.
       if (timing.cleanupRemainingMs() > 0) {
         teardown = boundedCleanup(
-          monitor.stopAndReap({ deadlineMonoMs: state.cleanupEnd }),
+          stage("cleanup.monitor", () => monitor.stopAndReap({ deadlineMonoMs: state.cleanupEnd })),
           "monitor-reap",
         ).catch((e) => control.recordFault(e));
       } else {
@@ -157,7 +161,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       // passive scope/reap joins below carry it, never a fake closure.
       if (timing.cleanupRemainingMs() > 0) {
         await boundedCleanup(
-          state.channel.send(
+          stage("shutdown.stop-send", () => state.channel.send(
             "stop",
             {
               stopReason:
@@ -165,20 +169,26 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
               cleanupRemainingMs: Math.floor(timing.cleanupRemainingMs()),
             },
             Math.max(1, timing.cleanupRemainingMs()),
-          ),
+          )),
           "stop-send",
         ).catch((e) => control.recordFault(e));
       } else {
         control.recordFault(fail("CLEANUP_DEADLINE", "spent stop bound"));
       }
     }
+    // Native stages already run independently. A normal finish must drain
+    // its admitted final end before Recorder closes ordinary evidence.
+    if (state.finishReq !== null && state.stopReq === null && state.ops !== null) {
+      await boundedCleanup(stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled()), "finish-operation-tail")
+        .catch((error) => control.recordFault(error));
+    }
     if (state.records !== null) {
-      await boundedCleanup(state.records.stopOrdinary(), "stop-ordinary").catch(
+      await boundedCleanup(stage("records.stop-ordinary", () => state.records.stopOrdinary()), "stop-ordinary").catch(
         (e) => control.recordFault(e),
       );
       if (state.stopReq !== null) {
         await boundedCleanup(
-          state.records.gameStopAssociation(),
+          stage("records.game-stop", () => state.records.gameStopAssociation()),
           "game-stop",
         ).catch((e) => control.recordFault(e));
       }
@@ -212,17 +222,20 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // failures stay ineligible and retained; a public timeout never
     // clears the SAME resourceTask reference — its own finally does.
     if (state.ops !== null) {
-      await state.ops
-        .whenOrdinarySettled()
+      await stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled())
         .catch((e) => control.recordFault(e));
+    }
+    const admissionJoin = state.admissionTask;
+    if (admissionJoin !== null) {
+      await stage("shutdown.admission", () => admissionJoin).catch((e) => control.recordFault(e));
     }
     const resourceJoin = state.resourceTask;
     if (resourceJoin !== null) {
-      await resourceJoin.catch((e) => control.recordFault(e));
+      await stage("shutdown.resource", () => resourceJoin).catch((e) => control.recordFault(e));
     }
     if (state.channel !== null) {
       await boundedCleanup(
-        state.channel.reap(Math.max(1, timing.cleanupRemainingMs())),
+        stage("shutdown.driver-reap", () => state.channel.reap(Math.max(1, timing.cleanupRemainingMs()))),
         "driver-reap",
       ).catch((e) => control.recordFault(e));
     }
@@ -230,7 +243,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // initiations above: it fences the ENTIRE enrolled subtree and
     // passively joins every enrolled receipt — nested and partial-ctor
     // attempts included — never a healthy-parent global zero.
-    await finishDriverActualScope(capabilities.driverActualScope).catch(
+    await stage("shutdown.driver-scope", () => finishDriverActualScope(capabilities.driverActualScope)).catch(
       (e) => control.recordFault(e),
     );
     // Post-cleanup sticky check: an overage -> lower -> rapid finish
@@ -283,7 +296,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       // scope/transaction, never a parent global zero, and a barrier
       // timeout/rejection stays a retained fault, never a zero.
       if (config.selftestPhase !== true) {
-        await capabilities.lifetime.whenSettled().catch((e) =>
+        await stage("shutdown.lifetime", () => capabilities.lifetime.whenSettled()).catch((e) =>
           control.recordFault(e),
         );
       }
@@ -296,7 +309,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // finish after the original Native cutoff under the approved timing
     // boundary; a close error or unresolved body stays failed/owned.
     if (state.records !== null) {
-      await state.records.closeIncompleteEvidence().catch((e) => control.recordFault(e));
+      await stage("records.containment", () => state.records.closeIncompleteEvidence()).catch((e) => control.recordFault(e));
     }
     // TOP phase only — every issuance is fenced and the own safe
     // transaction/incomplete drain above is real — so a FRESH owner
@@ -305,7 +318,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // global zero; the barrier never runs inside a publication,
     // ordinary, capture, continuation or collector body.
     if (config.selftestPhase !== true) {
-      await capabilities.lifetime.whenSettled().catch((e) =>
+      await stage("shutdown.lifetime", () => capabilities.lifetime.whenSettled()).catch((e) =>
         control.recordFault(e),
       );
     }
@@ -325,6 +338,8 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
 export function createWatchdogCleanupArgs({ config, capabilities, state, timing }) {
   const now = timing.now;
   const T = FIXED_LIMITS.timing;
+  const stage = (label, issue) => observeAwaitStage(capabilities.lifetime,
+    config.selftestPhase ? "selftest" : "phase", label, issue);
   const cleanupArgs = ({ settleRequiredLiveEvidence = null } = {}) => ({
     phase: config.phase,
     scope: config.selftestPhase ? "selftest-workload" : "phase-workload",
@@ -347,14 +362,14 @@ export function createWatchdogCleanupArgs({ config, capabilities, state, timing 
     // is a failure, never a permissive skip. No proof boolean, identity
     // or signal authority.
     settleWorkloadHandles: async ({ deadlineMonoMs }) => {
-      if (state.ops !== null) await state.ops.whenOrdinarySettled();
+      if (state.ops !== null) await stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled());
       if (state.channel !== null) {
-        await state.channel.reap(Math.max(1, deadlineMonoMs - now()));
+        await stage("shutdown.driver-reap", () => state.channel.reap(Math.max(1, deadlineMonoMs - now())));
       }
       // Own scope finish fences ctor/send/enrollment across the ENTIRE
       // enrolled subtree and passively joins its real receipts — nested
       // and partial-ctor attempts included, never a parent global zero.
-      await finishDriverActualScope(capabilities.driverActualScope);
+      await stage("shutdown.driver-scope", () => finishDriverActualScope(capabilities.driverActualScope));
       if (typeof settleRequiredLiveEvidence === "function") {
         await Promise.resolve().then(settleRequiredLiveEvidence);
       }

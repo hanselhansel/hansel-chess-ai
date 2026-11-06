@@ -219,6 +219,8 @@ export function createProcessObservation({
       nextRid("sample"),
       handle,
     );
+    let nativeDurationNs = 0n;
+    let coverageRounds = 0;
     for (let round = 0; ; round += 1) {
       const nativeNs =
         BigInt(res.finishedAtMonoNs) - BigInt(res.startedAtMonoNs);
@@ -228,6 +230,8 @@ export function createProcessObservation({
       ) {
         throw acct("native interval");
       }
+      nativeDurationNs += nativeNs;
+      coverageRounds += 1;
       ownership.observeDiscovery(res.discovered);
       for (const s of res.samples) found.set(identityKey(s.identity), s);
       for (const g of res.gone) found.set(identityKey(g), "gone");
@@ -258,12 +262,22 @@ export function createProcessObservation({
       }
     }
     const { lastValidNs, stickyFault } = state();
+    const previousNs = lastValidNs === null ? null : BigInt(lastValidNs);
     const intervalMs =
-      lastValidNs === null
+      previousNs === null
         ? Number(finishedNs - startedNs) / 1e6
-        : Number(finishedNs - BigInt(lastValidNs)) / 1e6;
+        : Number(finishedNs - previousNs) / 1e6;
     if (intervalMs > TIMING_LIMITS.sampleGapMs || stickyFault !== null) {
-      throw acct("sample interval");
+      const diagnostic = {
+        startedNs: startedNs.toString(), finishedNs: finishedNs.toString(),
+        lastValidNs: previousNs === null ? null : previousNs.toString(),
+        gapMs: intervalMs,
+        preCycleGapMs: previousNs === null ? null : Number(startedNs - previousNs) / 1e6,
+        cycleDurationMs: Number(finishedNs - startedNs) / 1e6,
+        nativeDurationMs: Number(nativeDurationNs) / 1e6,
+        coverageRounds, stickyPresent: stickyFault !== null,
+      };
+      throw acct(`sample interval ${JSON.stringify(diagnostic)}`);
     }
     // The commit is the success point: a late callback can never beat
     // the shared horizon because assertLive rechecks the actual clock.

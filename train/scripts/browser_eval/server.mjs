@@ -232,7 +232,7 @@ export async function startFixtureServer({ snapshotRoot, harnessRoot, dependenci
   // to ONE workspace: harness at <workspace>/inputs/harness, the
   // selected arm snapshot at <workspace>/inputs/<arm>, the pinned model
   // at <workspace>/inputs/model/tinyaz-m.bin and its retained metadata
-  // at <workspace>/inputs/setup/tinyaz-m-metadata.json so the manifest
+  // at <workspace>/inputs/setup/tinyaz-m.meta.json so the manifest
   // inputs.setup refs bind it. Any other or mixed root binding rejects
   // AFTER real confinement — a triplet assembled across workspaces is
   // never trusted.
@@ -250,7 +250,7 @@ export async function startFixtureServer({ snapshotRoot, harnessRoot, dependenci
   if (modelPath !== path.join(modelDir, "tinyaz-m.bin")) {
     throw bad("model path layout");
   }
-  if (metadataPath !== path.join(inputsDir, "setup", "tinyaz-m-metadata.json")) {
+  if (metadataPath !== path.join(inputsDir, "setup", "tinyaz-m.meta.json")) {
     throw bad("metadata path layout");
   }
   const cacheDir = path.join(workspaceRoot, "cache", arm);
@@ -333,7 +333,9 @@ export async function startFixtureServer({ snapshotRoot, harnessRoot, dependenci
       appType: "custom",
       logLevel: "warn",
       plugins: [
-        { name: "tinyaz-fixture-routes", configureServer: (s) => s.middlewares.use(routes) },
+        { name: "tinyaz-fixture-routes", configureServer: (s) => {
+          s.middlewares.use(routes);
+        } },
         react(),
         tailwind(),
       ],

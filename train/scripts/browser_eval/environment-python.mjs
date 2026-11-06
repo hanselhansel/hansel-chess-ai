@@ -8,7 +8,8 @@
 // nonzero exit or any stderr byte fails closed before any parsing.
 // Every Python child arms a stdlib signal.setitimer against the ORIGINAL
 // absolute monotonic budget deadline (deadlineMonoMs/1000 minus
-// time.monotonic()) before any third-party import, so no audit child
+// the same Node epoch, CLOCK_MONOTONIC_RAW on macOS) before any third-party
+// import, so no audit child
 // can outlive the borrowed horizon and no new clock, deadline, kill,
 // grace or retry is invented here.
 //

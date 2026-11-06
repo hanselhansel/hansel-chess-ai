@@ -83,6 +83,12 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
   };
 
   const trackPage = (page, entry) => {
+    const workers = new Set();
+    const retiring = new WeakSet();
+    const expectWorkerRetirement = () => {
+      // Existing-resource intent is also legal during actual cleanup.
+      for (const worker of workers) retiring.add(worker);
+    };
     page.on?.("requestfailed", (request) => {
       let detail = "unparseable";
       let kind = "requestfailed";
@@ -103,10 +109,13 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
     // The public event is "worker" (Page.on('worker', worker)) and the
     // public Worker API exposes "close" — no invented workercreated.
     page.on?.("worker", (worker) => {
+      workers.add(worker);
       worker.on?.("close", () => {
-        if (!entry.expected) noteFault("worker", "unexpected close");
+        workers.delete(worker);
+        if (!entry.expected && !retiring.has(worker)) noteFault("worker", "unexpected close");
       });
     });
+    return Object.freeze({ expectWorkerRetirement });
   };
 
   const newIsolatedContext = async () => {
@@ -166,7 +175,7 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
       assertLive();
       const candidatePage = await candidateContext.newPage();
       assertLive();
-      trackPage(candidatePage, candidateEntry);
+      const candidateControls = trackPage(candidatePage, candidateEntry);
       assertLive();
       const baselineContext = await newIsolatedContext();
       const baselineEntry = makeEntry(baselineContext);
@@ -177,14 +186,14 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
       assertLive();
       const baselinePage = await baselineContext.newPage();
       assertLive();
-      trackPage(baselinePage, baselineEntry);
+      const baselineControls = trackPage(baselinePage, baselineEntry);
       await candidatePage.goto(candidate.href);
       assertLive();
       await baselinePage.goto(baseline.href);
       assertLive();
       return Object.freeze({
-        candidate: Object.freeze({ context: candidateContext, page: candidatePage }),
-        baseline: Object.freeze({ context: baselineContext, page: baselinePage }),
+        candidate: Object.freeze({ context: candidateContext, page: candidatePage, ...candidateControls }),
+        baseline: Object.freeze({ context: baselineContext, page: baselinePage, ...baselineControls }),
         close: closeOnce([baselineEntry, candidateEntry]),
       });
     } catch (error) {
@@ -212,10 +221,10 @@ export function createBrowserContexts({ browser, launch, assertLive, noteFault }
       assertLive();
       const page = await context.newPage();
       assertLive();
-      trackPage(page, entry);
+      const controls = trackPage(page, entry);
       await page.goto(target.href);
       assertLive();
-      return Object.freeze({ context, page, close: closeOnce([entry]) });
+      return Object.freeze({ context, page, ...controls, close: closeOnce([entry]) });
     } catch (error) {
       await closeEntries(created.reverse()).catch(() => {});
       throw error;

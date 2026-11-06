@@ -279,23 +279,17 @@ def list_process_pids(be, capacity=4096):
 
 
 def discover(be):
-    """Complete stable current-UID BSD row list.
+    """One complete current-UID BSD row snapshot.
 
-    The PID list is taken until two consecutive complete reads agree
-    (bounded); every row then requires the caller's UID. One-read ESRCH
-    entries are normal disappearance and skipped.
+    list_process_pids owns bounded capacity retries and all vector guards.
+    Its nonfull validated vector is complete at capture; later process
+    membership changes do not require rereading it. Keep its unsorted order.
+    Every live BSD row requires the caller's UID; ESRCH rows are skipped.
     """
     uid = os.getuid()
-    last = None
-    for _ in range(3):
-        pids = list_process_pids(be)
-        if last == pids:
-            break
-        last = pids
-    else:
-        raise BackendError("unstable-list", "pid list never stable")
+    pids = list_process_pids(be)
     rows = []
-    for pid in last:
+    for pid in pids:
         row = bsd_row(be, pid)
         if row is not None:
             if row["uid"] != uid:

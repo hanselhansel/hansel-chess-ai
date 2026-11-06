@@ -62,11 +62,11 @@ included); the three Python sources stay exactly
 | `artifact-files.mjs` | 312 | `storeFail`, `normRel`, `issueActual`, `openActual`, `ownedFileCloseReceipt`, `confined`, `dirSync`, `tempIn`, `writeAll`, `writeAtomic`, `hashFileRef`, `inspectArtifactRef`, `phaseArtifactRefs` |
 | `artifact-owned-file.mjs` | 226 | `createOwnedFileOperations` |
 | `artifact-sinks.mjs` | 184 | `openStoreArtifact` |
-| `artifact-store.mjs` | 384 | `inspectArtifactRef`, `phaseArtifactRefs`, `createArtifactStore`, `artifactStoreLifetime` |
+| `artifact-store.mjs` | gate-enforced | `inspectArtifactRef`, `phaseArtifactRefs`, `createArtifactStore`, `artifactStoreLifetime` |
 | `browser-contexts.mjs` | gate-enforced | `createBrowserContexts` |
 | `browser.mjs` | gate-enforced | `openBrowser` |
 | `browser.test.mjs` | gate-enforced | (TEST entry — no exports) |
-| `canonical-json.mjs` | 258 | `canonicalBytes`, `parseCanonicalBytes`, `sha256Bytes` |
+| `canonical-json.mjs` | gate-enforced | `canonicalBytes`, `parseCanonicalBytes`, `parseJSONBytes`, `sha256Bytes` |
 | `collector-protocol.mjs` | 347 | `collectC2S`, `collectS2C` |
 | `completion-file-observation.mjs` | 337 | `observeFailedCompletionFile`, `readPreparedCompletionFile` |
 | `completion-prepared-read.mjs` | 248 | `createPreparedCompletionReader` |
@@ -92,7 +92,7 @@ included); the three Python sources stay exactly
 | `process-lsof-test-fixtures.mjs` | 160 | `lsofFixtureOut`, `createLsofGateFixture`, `finishLsofFixture`, `createListenerProofFixture` |
 | `process-lsof.mjs` | 342 | `parseLsofResult`, `createLsofQueries` |
 | `process-monitor-test-fixtures.mjs` | 142 | `monitorReadyOptions`, `monitorBootstrapScript`, `createMonitorFixture`, `startMonitorFixture` |
-| `process-observation.mjs` | 311 | `readProcessInspections`, `readHelperReadyInspection`, `readLiveWorkloadPids`, `createProcessObservation` |
+| `process-observation.mjs` | gate-enforced | `readProcessInspections`, `readHelperReadyInspection`, `readLiveWorkloadPids`, `createProcessObservation` |
 | `process-ownership.mjs` | 310 | `createOwnership` |
 | `process-proof.mjs` | 398 | `createProcessProofs` |
 | `process-runtime.mjs` | 398 | `realProcessClock`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `createProcessRuntime` |
@@ -107,9 +107,9 @@ included); the three Python sources stay exactly
 | `record-finalization.mjs` | 291 | `EXIT_CODES`, `UNPROVEN_PROOF`, `structurallyValidProof`, `isCleanupProven`, `validateCheckClaims`, `resolvePhaseChecks`, `deriveSelfTestChecks`, `resolveStatus`, `resolveAnalysisEligible`, `buildFinal`, `buildCompletion`, `buildFinalFromClosedFacts` |
 | `record-finalizer.mjs` | 306 | `createRecorderFinalizer` |
 | `record-inputs.mjs` | 95 | `captureRecorderInputs`, `captureFinalizationRequest`, `validateFinalizationIntent`, `validateRunningInput` |
-| `record-lifecycle.mjs` | 215 | `createRecorderLifecycle` |
+| `record-lifecycle.mjs` | gate-enforced | `createRecorderLifecycle` |
 | `record-schema.mjs` | 302 | `BASELINE_COMMIT`, `FIXED_LIMITS`, `MODEL_IDENTITY`, `PROTOCOL_IDS`, `REQUIRED_CHECK_IDS`, `REQUIRED_PARENT_PHASES`, `assertArtifactRef`, `assertProcessIdentity`, `assertBackendIdentity`, `assertCommonIdentity`, `assertRecord` |
-| `records.mjs` | 319 | `writeWorkspaceOnce`, `phaseRecorderLifetime`, `createPhaseRecorder` |
+| `records.mjs` | gate-enforced | `writeWorkspaceOnce`, `phaseRecorderLifetime`, `createPhaseRecorder` |
 | `schema-constants.mjs` | 144 | `PHASES`, `RECORDED_PHASES`, `EVENT_KINDS`, `BASELINE_COMMIT`, `REQUIRED_CHECK_IDS`, `REQUIRED_PARENT_PHASES`, `PROTOCOL_IDS`, `MODEL_IDENTITY`, `FIXED_LIMITS`, `PYTHON_MODULES`, `FIXTURE_PATHS`, `PYTHON_IMPORTS`, `PYTHON_EXECUTABLE`, `PYTHON_PREFIX`, `PYTHON_VERSION` |
 | `schema-primitives.mjs` | 133 | `schemaFail`, `freezeDeep`, `isPlainObject`, `isRelPath`, `CHECK`, `arr`, `oneOf`, `shape`, `exactOnly`, `deepEqual`, `eqLiteral`, `sortedUnique`, `assertArtifactRef`, `assertProcessIdentity`, `sortedRefs` |
 | `server.mjs` | gate-enforced | `startFixtureServer` |
@@ -128,6 +128,25 @@ included); the three Python sources stay exactly
 | `snapshot-io.mjs` | gate-enforced | `createSnapshotIO` |
 | `snapshot-identity.mjs` | gate-enforced | `validateModelBytes`, `inventoryDigest`, `assembleSnapshotIdentity` |
 | `snapshots.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `run.mjs` | gate-enforced | `bootstrapWorkspace`, `runSupervisor`, `runDriver` |
+| `cli.mjs` | gate-enforced | (CLI entry, no exports) |
+| `run-supervisor.mjs` | gate-enforced | `executeSupervisor` |
+| `run-driver.mjs` | gate-enforced | `executeDriver` |
+| `phase-runners.mjs` | gate-enforced | `runPhase` |
+| `checks.mjs` | gate-enforced | `runChecks` |
+| `check-engine.mjs` | gate-enforced | `checkEngine` |
+| `check-workbench.mjs` | gate-enforced | `checkWorkbench` |
+| `match-observations.mjs` | gate-enforced | `validateArmReady`, `validateArmTurn` |
+| `reference-child.mjs` | gate-enforced | `runPythonReference` |
+| `parity-reference.py` | gate-enforced | (private Python entry) |
+| `phase-runners.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `checks.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `run.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `watchdog-prior-evidence.test.mjs` | gate-enforced | (TEST entry, no exports) |
+| `watchdog-parent-admission-test-fixtures.mjs` | gate-enforced | `capturePriorReceiptProbes`, `awaitEvidenceEntry` (TEST-only) |
+| `operational-test-fixtures.mjs` | gate-enforced | `makeOperationalFixture` (TEST-only) |
+| `vite-test-fixtures.mjs` | gate-enforced | `fakeVite` (TEST-only) |
+| `environment-files.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `page-arm.mjs` | gate-enforced | `createPageArm` |
 | `page-arm.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `match.mjs` | gate-enforced | `playGame`, `createGameCheckpoint` |
@@ -154,7 +173,7 @@ included); the three Python sources stay exactly
 | `watchdog-driver.mjs` | 392 | `createDriverActualScope`, `finishDriverActualScope`, `createDriverChannel` |
 | `watchdog-evidence-test-fixtures.mjs` | 397 | `gateFs`, `verifyReceipt`, `makeEvidenceWorkspace`, `makePreflightRun` |
 | `watchdog-fs-test-fixtures.mjs` | 326 | `disposeFixture`, `ownFixtureAttempt`, `registerFixtureTeardown`, `gateFs` |
-| `watchdog-lifetime.mjs` | 132 | `assertWatchdogLifetime`, `createWatchdogLifetime` |
+| `watchdog-lifetime.mjs` | gate-enforced | `assertWatchdogLifetime`, `createWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault` |
 | `watchdog-operations.mjs` | 382 | `createWatchdogOperationContext`, `createWatchdogOperations` |
 | `watchdog-ordinary.mjs` | 89 | `createWatchdogOrdinaryQueue` |
 | `watchdog-records-test-fixtures.mjs` | 397 | `observeRecorderFixtureClosure`, `settleRecordCleanup`, `setupRecordAdapter`, `registerCleanup` |
@@ -165,7 +184,7 @@ included); the three Python sources stay exactly
 | `watchdog-teardown-test-fixtures.mjs` | 353 | `registerFixtureTeardown`, `disposeFixture`, `ownFixtureAttempt`, `observeSelectedReceiptMetadata`, `observeDriverBegun`, `observeFixturePromise`, `captureFixtureThrow` |
 | `watchdog-test-fixtures.mjs` | 339 | `forkDriverFixture`, `watchdogTestClock`, `cleanupMonitorFixture`, `instrumentRecorderFs`, `watchdogRecordWorkspace`, `assembleOwnedWatchdogCheckWorkspace`, `closeOwnedWatchdogWorkspace`, `removeOwnedWatchdogWorkspace`, `row`, `OBS`, `observeRecorderFixtureClosure` |
 | `watchdog.mjs` | 376 | `createWatchdog` |
-| `workspace-footprint.mjs` | 180 | `createFootprintObserver` |
+| `workspace-footprint.mjs` | gate-enforced | `createFootprintObserver`, `describeFootprintFailure` |
 | `workbench-fixture.mjs` | 17 | (browser-side fixture module — mounts `Workbench`, no exports) |
 
 The roster above is the C4a2-era AST-derived roster, historical to the
@@ -318,7 +337,7 @@ platform fakes isolated, no pass/Native/phase claim.
 
 | Module | Exports | Boundary |
 | ------ | ------- | -------- |
-| [canonical-json.mjs](./canonical-json.mjs) | `canonicalBytes`, `parseCanonicalBytes`, `sha256Bytes` | One canonical byte codec and hash utility. No IO. |
+| [canonical-json.mjs](./canonical-json.mjs) | `canonicalBytes`, `parseCanonicalBytes`, `parseJSONBytes`, `sha256Bytes` | One canonical byte codec and hash utility. No IO. |
 | [record-schema.mjs](./record-schema.mjs) | `REQUIRED_CHECK_IDS`, `REQUIRED_PARENT_PHASES`, `PROTOCOL_IDS`, `MODEL_IDENTITY`, `BASELINE_COMMIT`, `FIXED_LIMITS`, `assertRecord`, `assertArtifactRef`, `assertProcessIdentity`, `assertCommonIdentity`, `assertBackendIdentity` | Single closed-envelope schema/constant owner (re-exports its private helper owners). |
 | [schema-primitives.mjs](./schema-primitives.mjs) | private helpers only | Strict primitive/closed-shape/path/ref/identity checks and bounded schema failures. No schema/constants back-import. |
 | [schema-constants.mjs](./schema-constants.mjs) | private helpers only | Frozen pin/check/phase/limit/protocol declarations; storage only, re-exported by record-schema.mjs. |
@@ -367,12 +386,12 @@ platform fakes isolated, no pass/Native/phase claim.
 | [process-horizon.mjs](./process-horizon.mjs) | `createNativeHorizon`, `bindProcessHorizon`, `assertNativeHorizon` | Module exists — earlier PLANNED wording and its line counts are dated declarations. Pure branded one-shot/min-only reader+writer and synchronous `queue.narrowAll` subscription — ALL live listeners run, then the FIRST thrown value (null/undefined included) is rethrown. Corrective 62 (dated before-implementation declaration): EXACT3 roster adds pure private `assertNativeHorizon(owner) -> void` over the SAME OWNERS WeakMap — genuine owner returns void; primitive/null/forged/spread/proxy reject with PROCESS_HORIZON owner-brand detail BEFORE any owner property read/effect. Identity checker only, never clock/pairing/cleanup proof. No timer/clock/process/IO. Functional runtime input. |
 | [process-stop.mjs](./process-stop.mjs) | `createProcessStop` | created (before-creation declaration dated). Whole Native stop flow `{stopAndReap, teardownCollector}` over the same runtime state/clock/authority; collector-last ordering preserved. Functional runtime input. |
 | [process-proof.mjs](./process-proof.mjs) | `createProcessProofs` | Native bootstrap/root/probe/signal/listener IO proof over the monitor's ownership/protocol/transport state through explicit callbacks. |
-| [workspace-footprint.mjs](./workspace-footprint.mjs) | `createFootprintObserver` | Async whole-workspace allocated-charge observer for the store callback. |
+| [workspace-footprint.mjs](./workspace-footprint.mjs) | `createFootprintObserver`, `describeFootprintFailure` | Async whole-workspace allocated-charge observer for the store callback. |
 | [process-budget.mjs](./process-budget.mjs) | `createBudgetHandle`, `captureDeadlineMs`, `waitHandle`, `sleepHandle`, `pollHandle`, `createBoundedQueue` | Sole handle/wait/queue leaf: one narrow-only mutable BudgetHandle authority, captured horizons and bounded waits/queue; pure leaf, no IO. |
 | [process-observation.mjs](./process-observation.mjs) | `createProcessObservation`, `readProcessInspections` | Complete bounded RSS coverage cycle, native/supervisor timing checks, safe aggregate admission with private peak-RSS/limit flags, current-observation projection, and the shared inspectPids wire wrapper (diagnostic move 22). |
 | [watchdog-cleanup.mjs](./watchdog-cleanup.mjs) | `createCleanupController` | Staged 0/2/4/5-second identity-safe cleanup and private settled proof. R4 (declared before use): outside-cleanup `settleWorkloadHandles` joins the actual admitted ordinary chain plus driver exit/BOTH-close settlement before collector-last reap, observing only the original armed horizon. Corrective 64 (declared before use — not yet implemented): that `settleWorkloadHandles` join order now covers the actual ordinary chain plus driver exit/BOTH-close settlement through `finishDriverActualScope` and required liveEvidence before collector-last, while the fixed Native 0/+2/+4 s stages start independently of that actual chain/FS on the ORIGINAL captured start/end — a null channel never skips the other debts. |
 | [watchdog.mjs](./watchdog.mjs) | `createWatchdog` | External supervisor lifecycle, driver IPC, independent deadlines, self-test. R4 (declared before use): OPERATIONAL ASSEMBLY creates ONE genuine `createWatchdogLifetime()` before Store/Recorder/monitor/WD and binds the `createNativeHorizon` owner — WD validates/reuses the EXACT associated owner with the same-owner identity passed to Store/Recorder/monitor (an omitted isolated WD lifetime derives the existing genuine recorder owner, never creates a replacement fallback), phase end before any acquisition/IO, min-only narrow, public API stays exactly `{run, requestStop}`. Corrective 64 (declared before use — not yet implemented): the WHOLE existing `cleanupArgs` declaration (all comments/guards/defaults/body) moves to watchdog-shutdown.mjs under pure `createWatchdogCleanupArgs({config, capabilities, state, timing})`; the facade calls the ONE factory and assigns the SAME returned function to `control.cleanupArgs` — no new path/state/control authority or second cleanup controller. |
-| [watchdog-lifetime.mjs](./watchdog-lifetime.mjs) | `createWatchdogLifetime`, `assertWatchdogLifetime` | created (before-creation declaration dated). Actual referenced-lifetime/deferred physical-debt owner: `retainActual`/`retainFinalizerUntil`/`whenSettled` over real debt, never public outcomes. Functional runtime input. |
+| [watchdog-lifetime.mjs](./watchdog-lifetime.mjs) | `createWatchdogLifetime`, `assertWatchdogLifetime`, `observeAwaitStage`, `reportStoppedFault` | created (before-creation declaration dated). Actual referenced-lifetime/deferred physical-debt owner: `retainActual`/`retainFinalizerUntil`/`whenSettled` over real debt, never public outcomes. Functional runtime input. |
 | [process-macos.py](./process-macos.py) | script entrypoints only | Entry/wire owner: isolated core loader, argument parsing, bounded collector JSON-lines dispatch, private lsof exec gate. |
 | [process-macos-native.py](./process-macos-native.py) | private helpers only | Lazy ctypes libproc primitives: PID/read/path/RSS/identity/probe/signal/discovery plus ABI re-exports. Loaded only by process-macos.py from the frozen sibling path. |
 | [process-macos-abi.py](./process-macos-abi.py) | private helpers only | Shared ABI owner: constants, BackendError/fault taxonomy, field-by-field BsdInfo/TaskInfo declarations, lazy fixed libproc binding. Loaded only by process-macos-native.py. |
@@ -381,15 +400,15 @@ platform fakes isolated, no pass/Native/phase claim.
 | [process-monitor-test-fixtures.mjs](./process-monitor-test-fixtures.mjs) | fixture builders only | TEST-ONLY monitor setup/bootstrap/start builders over fake spawn/collector children and the REAL validator; realpath-normalized temp record root, frozen selected-Python constants, separate supervisor image; never imported by production modules and excluded from the functional-runtime input union and `BackendIdentity.helpers`. |
 | [process_macos_test_support.py](./process_macos_test_support.py) | fixture builders only | TEST-ONLY fake ABI/library/ctypes-buffer/backend scaffolding for `process-macos.test.py`; no assert/test discovery/real CDLL/libproc/os.kill and excluded from the runtime union and `BackendIdentity.helpers`. |
 | [process-lsof-test-fixtures.mjs](./process-lsof-test-fixtures.mjs) | fixture builders only | TEST-ONLY `createLsofGateFixture`/`finishLsofFixture`/`lsofFixtureOut` gate environment for `process-lsof.test.mjs`; fake clock/spawn/ordered spies over the REAL validator; excluded from the functional-runtime input union and `BackendIdentity.helpers`. |
-| [process_macos_path_test_cases.py](./process_macos_path_test_cases.py) | test cases only | TEST-ONLY `make_pid_path_cases(N, fake_be)` pid-path `unittest` companion bound into `process-macos.test.py`; strict UTF-8/denied path cases over synthetic callables; excluded from the runtime union and `BackendIdentity.helpers`. |
-| [server.mjs](./server.mjs) | `startFixtureServer` | C4b-11 (declared before creation): evaluation-only Vite fixture server over confined immutable snapshot/harness/dependencies roots, pinned `MODEL_IDENTITY` verification after the awaited `capabilities.register` listener ACK, baseline-only S->M normalization, evaluation-only `/engine` + candidate `/workbench` routes and `delivery` event facts. Private trusted test-dependency keys exactly `lstat`/`stat`/`readFile`/`realpath`/`sha256`/`importModule`. No Native/proof/status authority. C4b-11c (declared before creation): real `AbortSignal` brand validation; Vite `root` = canonical SELECTED `snapshotRoot`, `cacheDir` `<workspace>/cache/<arm>` under the derived `<workspace>/inputs/{harness,<arm>,model/}` layout, `watch:null` + `hmr:false`, pages rewrite to `/@fs/<fixtureDir>/<module>`; baseline normalization EXACTLY `/weights/tinyaz-s.bin`; delivery facts record actual served `byteLength`/`sha256` with the `delivery` record awaited before response (`next(error)` on rejection); admission fenced by `!signal.aborted && !closing` with synchronous close-fencing. C4b-11e: `cap.event` is required pre-IO; `fence()` wraps EACH module import and confinement await; route admission/signal/closing rechecks run after the awaited `delivery` record and `transformIndexHtml` before `res.end`; the injected config installs as a deep-frozen non-writable `window.__tinyazArm` data property; retained metadata binds `<workspace>/inputs/setup/tinyaz-m-metadata.json`; the memoized `close()` promise arms via `Promise.resolve().then` BEFORE the real `vite.close()` effect so reentrant callers share the one attempt. |
+| [process_macos_path_test_cases.py](./process_macos_path_test_cases.py) | test cases only | TEST-ONLY path/discovery `unittest` companion with `make_pid_path_cases(N, fake_be)` and `make_discover_stability_cases(N, fake_be, bsd_struct)` bound into `process-macos.test.py`; synthetic path and complete-membership guards; excluded from the runtime union and `BackendIdentity.helpers`. |
+| [server.mjs](./server.mjs) | `startFixtureServer` | C4b-11 (declared before creation): evaluation-only Vite fixture server over confined immutable snapshot/harness/dependencies roots, pinned `MODEL_IDENTITY` verification after the awaited `capabilities.register` listener ACK, baseline-only S->M normalization, evaluation-only `/engine` + candidate `/workbench` routes and `delivery` event facts. Private trusted test-dependency keys exactly `lstat`/`stat`/`readFile`/`realpath`/`sha256`/`importModule`. No Native/proof/status authority. C4b-11c (declared before creation): real `AbortSignal` brand validation; Vite `root` = canonical SELECTED `snapshotRoot`, `cacheDir` `<workspace>/cache/<arm>` under the derived `<workspace>/inputs/{harness,<arm>,model/}` layout, `watch:null` + `hmr:false`, pages rewrite to `/@fs/<fixtureDir>/<module>`; baseline normalization EXACTLY `/weights/tinyaz-s.bin`; delivery facts record actual served `byteLength`/`sha256` with the `delivery` record awaited before response (`next(error)` on rejection); admission fenced by `!signal.aborted && !closing` with synchronous close-fencing. C4b-11e: `cap.event` is required pre-IO; `fence()` wraps EACH module import and confinement await; route admission/signal/closing rechecks run after the awaited `delivery` record and `transformIndexHtml` before `res.end`; the injected config installs as a deep-frozen non-writable `window.__tinyazArm` data property; retained metadata binds `<workspace>/inputs/setup/tinyaz-m.meta.json`; the memoized `close()` promise arms via `Promise.resolve().then` BEFORE the real `vite.close()` effect so reentrant callers share the one attempt. |
 | [browser.mjs](./browser.mjs) | `openBrowser` | C4b-11 (declared before creation): one recorded headless Chromium through public `launchServer`/`wsEndpoint`/`connect` only — browser-root plus fixture-RPC registrations (both real ACKs) strictly before connect/context/page work, strict loopback endpoint parsing, isolated per-game contexts gated to recorded loopback origins, sticky unexpected-closure fault, expected-close marking and graceful `close()` — never a Native physical proof. Private trusted test-dependency keys exactly `importModule`/`mkdir`. C4b-11d corrections: real `AbortSignal` brand validation; class-instance `BrowserType` accepted by public methods; `launchServer` binds `chromiumSandbox:true`/`ignoreDefaultArgs:false` with `securityOptionsSha256` recomputed exactly over `canonicalBytes({headless,chromiumSandbox,ignoreDefaultArgs,args})` and explicit security-disabling args rejected; per-context lifecycle delegated to `browser-contexts.mjs`; `cap.manifest.phase` makes worker/model faults sticky only in `compare`/`preflight` cohorts; `close()` runs contexts -> browser -> server all-attempted with first arbitrary thrown value retained, and the abort-driven close rejection is handled into the sticky slot. C4b-11e: the memoized `close()` promise arms via `Promise.resolve().then` BEFORE any SDK close effect — a reentrant `close()` (disconnect firing mid-close) shares the one attempt — and the startup catch routes through the SAME memoized `close()` so an abort-driven close can neither double-close nor orphan the server. |
 | [fixture.html](./fixture.html) | evaluation-only page | C4b-11 (declared before creation): the transformed engine page — `#root` plus the `/fixture.mjs` module script, served only at `/engine`; the server injects the frozen `window.__tinyazArm` arm/config as DATA and rewrites the module to `/workbench-fixture.mjs` for the candidate-only `/workbench`. |
 | [fixture.mjs](./fixture.mjs) | browser-side fixture module | C4b-11 (declared before creation): `window.__tinyazEval = {initialize,think,numeric,dispose}` — no model/context work at import; candidate uses the actual snapshot `createThinker`/`ready`/`think(RequestContext)`/`terminate`, baseline the recorded old `createThinker`/`ready`/`think(fen,visits)`; numeric runs the actual `createPositionState`/`encodeBoard`/`unpackWeights`/`forward`/`encodeMovePlane` pipeline over verified delivered bytes — no alternate engine or random fallback. C4b-11d corrections: the delivered bytes verify `crypto.subtle` SHA-256 against the injected pin before `unpackWeights`/numeric — byteLength alone is not a check; each raw parity case `{id,initialFen,movesUci,expectedRawEpTarget}` replays `createPositionState(initialFen)` plus one `pushPositionMove` per move with the actual `rawEpTarget` compared to the recorded expectation; `dispose` binds the literal `terminate()` on both arms. |
 | [workbench-fixture.mjs](./workbench-fixture.mjs) | browser-side fixture module | C4b-11 (declared before creation): mounts the actual `@/components/chess/workbench.tsx` `Workbench` with actual `@/styles.css` through `react`/`react-dom/client` `createRoot` as-is — no production route or test props. |
 | [server.test.mjs](./server.test.mjs) | test cases only | TEST-ONLY C4b-11 owner (declared before creation): fake Vite/fs adapters, real confined temporary roots; excluded from the functional-runtime input union. C4b-11c (declared before creation): helpers move whole into connected-resource-test-fixtures.mjs under identical local aliases — original seven test names/assertions preserved. C4b-11e: every `startFixtureServer` issue wraps `ownResourceStart` with controlled gates in the owner's release stage (no independent `t.after` rm); the injected config is proven deep-frozen/non-writable by executing the emitted script in `node:vm` and inspecting the real descriptor; added coverage — missing `cap.event` rejected pre-IO, retained metadata outside `inputs/setup/` rejected after confinement, and a `delivery` ACK released after `close()` answering 503 through the post-await recheck. |
 | [browser.test.mjs](./browser.test.mjs) | test cases only | TEST-ONLY C4b-11 owner (declared before creation): fake Playwright adapter, real confined workspace; excluded from the functional-runtime input union. C4b-11d: helpers imported whole from connected-resource-test-fixtures.mjs under identical local aliases — original nine test names/assertions preserved plus added causal coverage (genuine vs duck signal, exact security-digest and unsafe-arg rejection before work, class `BrowserType`, `Request.url()` function, held-abort mkdir, nil first close value, handled abort-close, quiet expected teardown vs cohort-sticky vs check-recorded worker close). C4b-11e: every `openBrowser` issue wraps `ownResourceStart`; the actual `worker` event drives the fake page handlers; inside the close case, `handle.close()` identity equality proves the memoized promise arms before the SDK effect and the nil first-value case loops BOTH `null` and `undefined`. |
-| [connected-resource-test-fixtures.mjs](./connected-resource-test-fixtures.mjs) | fixture builders only | TEST-ONLY C4b-11c shared leaf (declared before creation): EXACT11 exports `BROWSER_ENV`, `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`, `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`, `makeServerTree`, `makeServerCaps`, `fakeVite`, `makeServerDeps`, `hitFixture` — complete helper bodies moved whole from both connected-resource owners; real canonical `securityOptionsSha256` binding, class-instance `chromium`, function `Request.url`; imports Node plus pure `canonical-json`/`schema-constants`/`test-fixtures` only; never imported by production modules and excluded from the functional-runtime input union. C4b-11e: EXACT12 exports adding `ownResourceStart(t, issueThunk, {release})` — controlled gates prearm in the owner's release stage before issue, `ownFixtureAttempt` returns the IDENTICAL original start promise, and the settle stage awaits the actual start body then closes the produced fake-SDK resource (expected close rejections stay on the caller channel — neutral settlement, never a Native/FD proof). `fakeVite` returns the faithful `{calls, createServer}` shape over the SAME recorded calls object; `makeServerTree`/`makeBrowserArgs` register root removal on the ONE `watchdog-teardown-test-fixtures` owner (`registerFixtureTeardown`/`ownFixtureAttempt` imported directly — TEST-leaf-to-teardown-DAG edge, no project backedge) and the tree carries the `inputs/setup/tinyaz-m-metadata.json` retained-metadata path. |
+| [connected-resource-test-fixtures.mjs](./connected-resource-test-fixtures.mjs) | fixture builders only | TEST-ONLY C4b-11c shared leaf (declared before creation): EXACT11 exports `BROWSER_ENV`, `makeBrowserCaps`, `fakePlaywright`, `makeBrowserArgs`, `SERVER_MODEL_BYTES`, `SERVER_META_BYTES`, `makeServerTree`, `makeServerCaps`, `fakeVite`, `makeServerDeps`, `hitFixture` — complete helper bodies moved whole from both connected-resource owners; real canonical `securityOptionsSha256` binding, class-instance `chromium`, function `Request.url`; imports Node plus pure `canonical-json`/`schema-constants`/`test-fixtures` only; never imported by production modules and excluded from the functional-runtime input union. C4b-11e: EXACT12 exports adding `ownResourceStart(t, issueThunk, {release})` — controlled gates prearm in the owner's release stage before issue, `ownFixtureAttempt` returns the IDENTICAL original start promise, and the settle stage awaits the actual start body then closes the produced fake-SDK resource (expected close rejections stay on the caller channel — neutral settlement, never a Native/FD proof). `fakeVite` returns the faithful `{calls, createServer}` shape over the SAME recorded calls object; `makeServerTree`/`makeBrowserArgs` register root removal on the ONE `watchdog-teardown-test-fixtures` owner (`registerFixtureTeardown`/`ownFixtureAttempt` imported directly — TEST-leaf-to-teardown-DAG edge, no project backedge) and the tree carries the `inputs/setup/tinyaz-m.meta.json` retained-metadata path. |
 | [browser-contexts.mjs](./browser-contexts.mjs) | `createBrowserContexts` | C4b-11c (declared before creation; created in C4b-11d): sole export `createBrowserContexts({browser,launch,assertLive,noteFault}) -> frozen {openGame,openWorkbench,closeAll}` — pure constructor over the ONE connected public `Browser`; the whole per-context/page/origin-gate/close methods move out of `browser.mjs` over the same public functions, no clock/timer/queue/debt-ledger/proof/owner, per-context expected-close before actual close, actual resource pointers retained until true close; DAG `browser -> contexts -> existing pure protocol/values` — contexts never imports its parent. Included in the functional-runtime input union. C4b-11e: the actual public `Page.on('worker')`/`Worker.on('close')` events replace the invented `workercreated`; each admitted entry OWNS its memoized close promise — `expected` marks synchronously and `Promise.resolve().then` arms the real `context.close()` BEFORE the SDK callout — so `game.close`, `closeAll` and the partial-start finally share the ONE attempt through the same `closeEntries`, entries leaving `owned` only on actual close fulfillment. |
 
 ## Native supervision boundary (C4a2)
@@ -7058,6 +7077,8 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/browser-contexts.mjs",
   "train/scripts/browser_eval/browser.mjs",
   "train/scripts/browser_eval/canonical-json.mjs",
+  "train/scripts/browser_eval/check-engine.mjs",
+  "train/scripts/browser_eval/check-workbench.mjs",
   "train/scripts/browser_eval/checks.mjs",
   "train/scripts/browser_eval/cli.mjs",
   "train/scripts/browser_eval/collector-protocol.mjs",
@@ -7073,11 +7094,14 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/environment-python-program.mjs",
   "train/scripts/browser_eval/environment-python.mjs",
   "train/scripts/browser_eval/environment.mjs",
+  "train/scripts/browser_eval/final-integrity.mjs",
   "train/scripts/browser_eval/fixture.html",
   "train/scripts/browser_eval/fixture.mjs",
   "train/scripts/browser_eval/identity-schema.mjs",
+  "train/scripts/browser_eval/match-observations.mjs",
   "train/scripts/browser_eval/match.mjs",
   "train/scripts/browser_eval/page-arm.mjs",
+  "train/scripts/browser_eval/parity-reference.py",
   "train/scripts/browser_eval/pgn-evidence.mjs",
   "train/scripts/browser_eval/pgn-format.mjs",
   "train/scripts/browser_eval/pgn-summary.mjs",
@@ -7113,6 +7137,9 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/record-lifecycle.mjs",
   "train/scripts/browser_eval/record-schema.mjs",
   "train/scripts/browser_eval/records.mjs",
+  "train/scripts/browser_eval/reference-child.mjs",
+  "train/scripts/browser_eval/run-driver.mjs",
+  "train/scripts/browser_eval/run-supervisor.mjs",
   "train/scripts/browser_eval/run.mjs",
   "train/scripts/browser_eval/schema-constants.mjs",
   "train/scripts/browser_eval/schema-primitives.mjs",
@@ -7126,6 +7153,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/snapshots.mjs",
   "train/scripts/browser_eval/stats.mjs",
   "train/scripts/browser_eval/supervisor-protocol.mjs",
+  "train/scripts/browser_eval/watchdog-admission.mjs",
   "train/scripts/browser_eval/watchdog-cleanup.mjs",
   "train/scripts/browser_eval/watchdog-config.mjs",
   "train/scripts/browser_eval/watchdog-driver-actual.mjs",
@@ -7135,6 +7163,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/watchdog-ordinary.mjs",
   "train/scripts/browser_eval/watchdog-records.mjs",
   "train/scripts/browser_eval/watchdog-runtime.mjs",
+  "train/scripts/browser_eval/watchdog-selftest-operation.mjs",
   "train/scripts/browser_eval/watchdog-shutdown.mjs",
   "train/scripts/browser_eval/watchdog.mjs",
   "train/scripts/browser_eval/workbench-fixture.mjs",
@@ -7349,6 +7378,349 @@ calls continue through the existing window.__tinyazEval API.
 Worker interfaces execute the actual injected observer script. Tests prove
 begun-before-work, per-move operation scope, raw messages/delivery hashing,
 held body closure, wrong bytes/worker and stop fences without an engine run.
+
+The existing canonical codec additionally exports `parseJSONBytes(bytes)`
+for strict finite UTF-8 subprocess JSON. It uses the same duplicate-key
+parser and canonical owned-copy validation, while permitting Python's
+numeric spelling. `parseCanonicalBytes` retains exact-byte record rules.
+Raw Python stdout remains unmodified evidence. The existing Watchdog
+lifecycle calls fixed genuine `admitPhase` after actual running and before
+any driver fork, using existing parent completion refs, same monitor bound
+and same IO registrar. Its public wait uses the existing original-bound
+bootstrap waiter. The separately retained actual admission body stays
+strongly referenced until genuine settlement; shutdown starts Native
+teardown independently, then joins that body before finalization. No proof
+callback or admission-disable switch exists.
+
+The connected server now consumes the capture/reopen metadata path
+`inputs/setup/tinyaz-m.meta.json` through the unchanged modelRef API.
+The older `tinyaz-m-metadata.json` name in dated C4b-11 notes is superseded;
+there is one retained metadata copy, with no alternate filename accepted.
+
+## C4b-18 operational composition
+
+The mapped `run.mjs` exports `bootstrapWorkspace(options)`,
+`runSupervisor(options)` and `runDriver(options)`. The mapped `cli.mjs`
+is the executable dispatcher, with no exported API. Public phase commands
+select only the fixed phase, protocol, candidate and absolute workspace.
+Bootstrap captures once, drains its genuine owner and replaces the process
+with the archived CLI. Every archived invocation freshly reopens complete
+frozen inputs and actual environment under its own genuine owner before
+phase admission. `run-supervisor.mjs` privately exports
+`executeSupervisor({phase,workspaceRoot,repoRoot,captured,lifetime,budget,phaseDeadlineMonoMs})`.
+The existing Watchdog gains private `phaseDeadlineMonoMs`, a finite min-only
+original bound captured before Store/startup and shared by PGN IO and Native
+horizon. It is never a CLI option or clock extension.
+It assembles the one horizon/protocol/monitor/footprint/Store/Recorder and
+Watchdog, retaining fixed file-only identity and actual cleanup callbacks.
+`run-driver.mjs` privately exports
+`executeDriver({manifestPath,workspaceRoot,repoRoot})`; it owns process IPC,
+public server/browser resources and true teardown before closed ACK.
+The private fork creates a counted phase-local `driver-tmp` root and binds
+its SDK HOME/temp/XDG paths before any public Vite/Playwright call, keeping
+launchServer's Node-created temporary profiles inside the workspace.
+The nested selftest borrows the existing parent monitor, owner and driver
+scope; it never creates a second collector or waits on parent zero. Only
+the top lifecycle stops the shared whole-workspace footprint observer.
+
+The mapped `phase-runners.mjs` exports only
+`runPhase({manifest,capabilities,resources})`. Resources are fixed run-owned
+browser/server handles, frozen common identity, workspace path, genuine
+local lifetime, frozen fixtures and actual `selftestEvidence` read through
+fixed receipt verification during the first preflight command. The driver
+performs that command before the recorded runtime readiness operation;
+phase runners validate its actual zero-game timeout final, while the
+supervisor independently owns admission and final re-verification. Actual parity uses the frozen fixture and candidate Page
+numeric exports. Actual preflight performs the first-begin selftest, ten
+fresh-root commands and two rules-only A/A draws. Compare performs the
+fixed forty-game schedule and returns raw completed results only. Final
+inference stays in the supervisor's closed-facts compiler.
+
+The mapped `checks.mjs` exports only
+`runChecks({manifest,capabilities,resources})`. Private `check-engine.mjs`
+and `check-workbench.mjs` export `checkEngine(context)` and
+`checkWorkbench(context)`, respectively. They execute real fixture/API and
+actual Workbench assertions. Trained, loading, failure and demo states retain the full
+board, header, ThinkPanel, CardPanel, reset action and unrated Roadmap. Board
+squares cover the measured CSS content box within one pixel on every edge.
+The recoverable Worker fault owns its complete RequestContext before queuing delivery.
+Each actual initializer has its own readiness
+operation; functional commands follow sequentially without nesting or
+relabelling a whole scenario as readiness. exceptions produce failed check evidence,
+never an omitted or successful placeholder group.
+
+`match-observations.mjs` is a private runtime owner of the whole existing
+readiness/turn validators, exported as `validateArmReady(arm,observation)`
+and `validateArmTurn(arm,ready,observation,request)`. Match and preflight
+share these same checks without changing raw engine interfaces.
+
+`reference-child.mjs` privately exports
+`runPythonReference({manifest,capabilities,workspaceRoot,lifetime,commonIdentity},adapters?)`.
+An isolated optional adapters object accepts only lowlevel `spawn`; its
+validated function is snapshotted before any callout. Operational callers
+omit adapters. It starts only the archived selected Python with isolated/no-bytecode flags
+and private FD3. A genuine registration ACK precedes the run/PID/manifest
+bound gate and all Torch/model loading. The gate carries the actual captured four
+installed-import descriptors as expected data; the child freshly checks
+actual package versions/origins/source hashes before and after inference.
+It never imports expected descriptors as evidence of observed bytes.
+The original command creates/confines one
+counted `parity/tmp` scratch root before spawn. HOME/temp/XDG/Torch cache
+paths point there, and the stdlib child verifies actual tempfile selection
+before ML imports. Issued stream writes, child exit
+and every allocated pipe close remain real owned debt through teardown.
+`parity-reference.py` is runtime-only, no public Python API. It validates
+the gate and complete frozen six-module inventory before importing Torch,
+then checks all thirteen fixtures on CPU float32 in inference mode with
+one intra/inter-op thread, every 1216 plane and 4672 logit, value, raw EP
+and legal UCI/index mapping. It retains exact failing indices/max errors
+at the fixed tolerance and rechecks hashes/origins/extra imports afterward.
+The mapped public `check_browser_parity.py` uses stdlib only to validate
+requested/frozen launch bindings and process-replaces into archived CLI.
+The public macOS wrapper measures preparation with `CLOCK_MONOTONIC_RAW`,
+the same epoch as Node `hrtime`, so its one original setup90 deadline crosses
+exec unchanged. Capture, checks, Git remaining time and elapsed reporting
+use that same clock; the gated reference-child branch stays separate.
+The shared environment-child timer bootstrap also subtracts that raw epoch
+from its borrowed absolute Node deadline before arming `ITIMER_REAL`; it
+never treats the different Python default epoch as remaining time.
+
+All new private helpers above belong to the explicit runtime union.
+DAG: CLI -> run -> supervisor/driver; driver -> phase runners -> checks,
+Page/match and reference child; check owners -> public fixture/Workbench;
+reference child -> archived Python entry. No TEST/support source executes.
+`run.test.mjs` also imports the existing evidence/FS/drain TEST owners for
+a held real parent-read regression, preserving release/join/restore order.
+`phase-runners.test.mjs`, `checks.test.mjs` and `run.test.mjs` are TEST-only,
+no exports. They use scripted public interfaces and genuine temporary
+files/process-data only, without actual browser/Native/Torch execution.
+
+`operational-test-fixtures.mjs` is declared before creation, TEST-only.
+Sole export `makeOperationalFixture(t,{phase,fault,holdThink}?)` returns
+`{manifest,capabilities,resources,controller,calls,artifacts,events,own,
+releaseThink,thinkEntered}`. Its class-shaped public Page/Context/Worker
+interfaces execute the actual Page-arm observer script in a VM, with raw
+scripted responses and actual pinned-byte hashing. `own(promise)` retains
+test bodies; teardown releases gates, joins bodies, closes all contexts and
+observes fresh genuine local owner zero before removing controls. It never
+imports a runtime consumer into the fixture or admits a real phase.
+
+
+`vite-test-fixtures.mjs` is declared before creation, TEST-only, with sole
+export `fakeVite({address,closeError}?) -> {calls,createServer}`. The whole
+fake moves from the connected-resource TEST owner, which reexports the
+same name and keeps every existing alias valid. `calls` retains the same
+middleware/server/options/createServer observations and adds `postHooks`.
+The Connect-shaped middleware app returns itself from `use`. `createServer`
+awaits each configure hook, then invokes every truthy returned posthook
+with no arguments, matching Vite's request-free post-configuration call.
+The production route plugin installs middleware and explicitly returns
+void. DAG: connected TEST fixture -> Vite TEST leaf (no imports); existing
+server/browser/lifecycle TEST owners -> connected TEST fixture. This leaf
+is excluded from the runtime union and adds no production API or resource.
+
+
+Independent environment content reads use at most sixteen workers under the
+same original budget and genuine lifetime. Every issued reader joins its
+own raw stat/stream-close receipts on success or failure. Worker joins retain
+the first arbitrary failure, including nil, and stop further admission.
+Directory inventories enumerate every path, read every file's current bytes,
+then recheck every original directory identity and sorted entry set. RECORD
+payload and whole installed inventories derive both outputs from one fresh,
+complete site content pass within that invocation. The METADATA and RECORD
+text read for parsing must match that pass's exact byte length and SHA256.
+Legitimate RECORD payloads outside site-packages are separately read under
+the same original bound. No initial digest, cross-call cache or mtime
+substitutes for a current read.
+Default filesystem canonicalization uses pinned Node `realpathSync.native`.
+Every resolution, confinement and equality check still executes; explicit
+`resolvePath` adapters keep their snapshotted function. No path cache is used. Snapshot final
+identity checks likewise read fixed batches of at most sixteen frozen refs,
+join each batch's issued work and retain its first exact failure. Snapshot
+IO joins only its own raw effects, never nested global lifetime zero.
+`environment-files.test.mjs` is declared before creation, TEST-only, no exports.
+It imports the existing files owner, budget/lifetime and fake clock helpers;
+class-shaped controlled streams prove width, stable full hashes, common-end
+expiry, first nil failure and all-issued true-close joins. No new runtime
+API, owner, deadline, clock, authority or cache is introduced.
+
+
+Private `final-integrity.mjs` is declared before creation. Sole export
+`createFinalIntegrity({workspaceRoot,manifest,expectedCommonIdentity,workEndMonoMs,lifetime},
+{clock,nowMonoMs}?) -> frozen {collect,consume,interrupt,isComplete}`. Construction
+copies the complete association before callouts. The collection association is exactly `{workspaceId,runId,phase,expectedCommonIdentity,inputs}` and must match all five captured fields before any scan IO. `collect(association, {deadlineMonoMs})`
+runs only the fixed genuine `verifyIdentity` once, under that original end
+bounded by workEnd; it returns no driver proof. `consume(args,{deadlineMonoMs})`
+returns the exact privately completed identity once for Recorder A, with exact
+workspace/run/phase/CommonIdentity/input binding and the current cleanup bound.
+`interrupt(reason)` synchronously expires an active scanner through its same
+handle; an already completed own observation survives the induced selftest stop.
+`isComplete()` is a private control predicate, never final identity authority.
+Only lowlevel clock functions are optional; no supplied verifier/status setter.
+The operational assembly always supplies this owner to Watchdog and Recorder.
+The reserved existing command id is `${runId}:final-integrity`; dispatch fences
+all later experimental begin/register/event/artifact requests while heartbeat,
+Native, footprint, the matching end and finish remain live. No public capability,
+wire, required-check or CLI field changes. First stop never awaits the scan.
+The serialized command launch retains the file-only scan in the existing
+Watchdog admission-task slot. Native cleanup never waits for that scan;
+shutdown joins its actual body after Native teardown before capture A.
+Lifecycle `finish` joins its own raw send callback even when normal STOP
+arrives first; it preserves the actual send error and final close joins
+that same debt. Ordinary waits retain their existing stop races.
+The TEST-only `setupRun` adds optional trusted `finalIntegrity`, forwarded
+unchanged for controlled lifecycle cases; operational assembly supplies
+only its fixed genuine owner.
+
+Private `watchdog-selftest-operation.mjs` is declared before creation. Sole
+export `runSelftestBegin(ctx,records,runInternalSelfTest,msg,arm)` receives the
+WHOLE existing first-begin handshake, preserving its original deadline, parent
+pause, abort, exact receipt validation and ACK. DAG: operations -> selftest leaf
+-> prerequisites/owned IO; supervisor -> final-integrity -> snapshots/budget;
+Watchdog only forwards the trusted private four-method owner. Both runtime
+paths are included in the literal archive union before creation. The two new
+TEST owners have no exports and remain outside that union. Implementation:
+Sol High; orchestration/review/publication: Sol Max; historical SWE provenance
+is retained. The accepted addition is outside the locked Runtime070 block.
+
+#### Accepted final integrity ordering amendment (2026-11-06)
+
+Approved by Hansel on 2026-11-06 (Asia/Singapore), selecting “Approve ordering change (Recommended)”.
+The accepted packet SHA256 is `9faa7e66ceba942531ce0a3924b4fe748e7a60840875ae7db7bce349cb3bcbf1`.
+The failed five-second replays and complete-guard prototype are retained at
+`/tmp/tinyaz-c4a2-sol-review/c4b-check2-identity-reproducer-5/result.json` and
+`/tmp/tinyaz-c4a2-sol-review/sol-high-complete-sync-prototype-1793890260949978000/constraint-report.json`.
+
+After the last experimental operation and expected SDK close, and before
+requesting normal finish, the supervisor performs one mandatory fresh full
+software/environment and frozen-input integrity verification. It is a
+supervised command with end = min(commandStart + 90,000 ms, the ORIGINAL
+phase work end). The supervisor permanently fences further experimental
+operations before this verification; heartbeat, Native RSS/accounting and
+workspace monitoring remain active. The scan reads every required current
+byte and preserves every existing membership, RECORD, directory, symlink,
+size, identity and digest check. It cannot reuse initial or cross-run hashes.
+
+Only the genuine supervisor-owned result, bound to this exact workspace,
+run, phase, expected CommonIdentity and complete input references, may be
+consumed by final capture A without rerunning the full installed-content
+scan. It must have completed within its original command/work bound.
+A driver claim, cached starting identity or incomplete/late observation is
+never a substitute. A still-pending actual read remains owned and joined.
+
+An admitted normal finish or any stop still captures cleanupStart exactly
+once and cleanupEnd = min(cleanupStart + 5,000 ms, phaseDeadline). No scan
+may delay a fault/stop or postpone that capture. All fresh live-process
+identity, listener, RSS/accounting and actual child/pipe cleanup proofs stay
+inside that original five seconds. A validates the same-run integrity result
+and actual cleanup proof before cleanupEnd. If the scan is absent, failed,
+late or interrupted, the run cannot pass; its actual IO remains owned and
+late completion cannot promote eligibility. No identity recollection starts
+after the cutoff. Receipt-only filesystem sealing remains separate.
+
+The existing expected heartbeat self-test keeps its FIRST trusted begin
+pause exactly where it is. After that immediate pause, and after its OWN
+subrun manifest/runId is established, collect one fresh same-subrun full
+integrity observation as pre-driver admission, before synthetic heartbeat
+silence is injected. This uses the remaining ORIGINAL parent command90 and
+phase work bound, never a new allowance. It cannot reuse the parent's or
+another run's observation. At the induced stop, consume that exact subrun
+observation and require its fresh scoped Native cleanup within the unchanged
+five seconds. The required result stays exactly HEARTBEAT_TIMEOUT,
+inconclusive/2, zero scored games, analysisEligible false and verified
+cleanup. A missing, failed or late pre-injection scan cannot qualify this
+control. Neither the trusted first-begin pause nor the injection is delayed
+after its admitted boundary; the scan occurs while the parent is paused
+and before the synthetic driver/injection is admitted.
+
+The original 10-minute check/parity/preflight and 60-minute comparison ends,
+30-second readiness, 90-second command ceiling, output/RSS limits, and one
+approved final comparison remain unchanged. This amendment changes when the
+fresh final integrity observation is collected, not a resource limit.
+
+
+## Operational command usage
+
+Run each phase explicitly from the original checkout. `--out` is absolute.
+Check exclusively creates a fresh directory and captures immutable inputs;
+any partial attempt remains diagnostic and is never resumed or overwritten.
+Parity reuses that completed check workspace. Public arguments are exactly
+`--protocol`, `--candidate` and `--out`; the protocol is the fixed fixture.
+
+```sh
+npm run test:chess-browser -- --protocol train/fixtures/browser-protocol.json --candidate WORKTREE --out /absolute/fresh/development-workspace
+train/.venv/bin/python train/scripts/check_browser_parity.py --protocol train/fixtures/browser-protocol.json --candidate WORKTREE --out /absolute/fresh/development-workspace
+```
+
+For the committed chain, use one resolved green commit and a separate fresh
+workspace. Run committed check, parity, preflight, then comparison only when
+the preceding real receipts are admitted. The aliases for the last two are:
+
+```sh
+npm run eval:browser:preflight -- --protocol train/fixtures/browser-protocol.json --candidate FULL_COMMIT --out /absolute/committed-workspace
+npm run eval:browser -- --protocol train/fixtures/browser-protocol.json --candidate FULL_COMMIT --out /absolute/committed-workspace
+```
+
+Each command is independent. `WORKTREE` is rejected for preflight/compare.
+Preparation uses one original setup90 deadline, reports its elapsed time,
+and transfers that same bound through the private archived entry. The
+archived entry rejects late transfer before starting the separate phase
+clock. The original phase end is captured before fresh reopen/environment
+remeasurement and never renewed by a lower owner. Whole CLI wall time also
+includes preparation; execution receipts should retain both measurements.
+The fixed readiness30/command90 and phase600000/compare3600000 bounds,
+ordinary end D-5000, cleanup inside D, RSS and cumulative workspace caps
+remain unchanged. Private `--archived`/`--driver` arguments have no public
+admission-disable or proof flag. No command runs training or publishes data.
+
+`bootstrapWorkspace` takes exactly `{phase,candidate,protocolPath,
+workspaceRoot,repoRoot}` and returns those fields plus `{frozenCliPath,
+elapsedPreparationMs,preparationDeadlineMonoNs}`. `runSupervisor` takes the
+same selection and returns the actual `{status,exitCode,stopReason}`;
+`runDriver` takes `{manifestPath,workspaceRoot,repoRoot}` and resolves void
+only after real teardown. Driver resources are exactly `{browser,servers,
+workspaceRoot,commonIdentity,lifetime,fixtures,selftestEvidence}`. Phase
+entry snapshots all serializable data before SDK callouts and retains the
+same resource references. `runChecks` returns `{checks,summary}`; each
+private check owner returns nonempty per-group `{passed,path}` assertion
+lists. Raw assertion/reference observations stay in their actual artifacts;
+finish summaries contain compact indices/counts within the driver frame cap.
+
+Functional groups include actual Worker and retained-main recovery with no
+second fetch, controlled application deadlines/cancellation/history, real
+Workbench computed geometry, retry/reset/stale results, explicit demo and
+unbound/missing history. Every initializer owns a readiness operation and
+functional commands follow separately. Unit SDK observations cannot replace
+the required real WORKTREE check/parity gates or committed receipt chain.
+
+`watchdog-parent-admission-test-fixtures.mjs` is declared before creation,
+TEST-only, exporting `capturePriorReceiptProbes(t,evidence)` and
+`awaitEvidenceEntry(gate)`. The latter is the whole existing truthful
+entry-wait helper moved from the capacity-bound selftest TEST owner. It owns the
+actual receipt-graph reads through the existing teardown/body owner and
+same Store lifetime, derives exact historical running tuples, rejects a
+prior tuple equal to the current healthy parent and returns only an exact
+scripted prior-gone map. No wildcard unavailable bypass or runtime proof
+API exists. DAG: evidence TEST owner -> new leaf -> existing receipt/Store/
+teardown owners; no backedge. The existing positive selftest case races
+actual driver startup against the original run outcome, preserving assertions.
+Held-callback/read regressions first account for the exact legitimate parent
+probes, then require zero additional probes after stop and real release.
+
+The private driver closes every actual SDK resource before successful finish
+inside one original-bound command operation. A failure prevents finish; a
+held close remains true body debt while supervisor teardown runs independently.
+Finally repeats only each SDK's existing idempotent close/join. The private
+`closeSdkResources` function adds no export or wire/API. Its actual function
+body is AST-selected by TypeScript's parser in the TEST owner for faithful
+class-shaped close-error and held-close controls, without executing a phase.
+
+`watchdog-prior-evidence.test.mjs` is declared before creation, TEST-only,
+no exports. It receives the whole captured-end re-verification case from
+the selftest TEST owner, preserving its gates/real release/assertions.
+The case distinguishes exact current-parent and verified-prior tuple probes,
+with no additional probe after expiry. This cohesive split preserves every
+original named test and keeps full readable guards under the file cap.
 
 ## Test suites
 
@@ -8282,3 +8654,405 @@ evidence 1,748,598 bytes under the 4 MiB bound. Receipt and SHAs are
 recorded under Current verified status at the top of this document.
 C4b capture/parity/preflight, C5 and the ONE approved comparison have
 not run.
+
+Private `watchdog-admission.mjs`, declared before creation, exports only
+`admitWatchdogDriver({config,capabilities,state,timing,bounded,checkLive})`.
+It owns the complete pre-driver parent/own-scan admission body over the SAME
+existing `admissionTask`, recorder, owner and original work end. Normal calls
+use genuine `admitPhase`; own subruns read their actual manifest inputs and
+supply their own exact association to the fixed scan before driver issue.
+DAG: watchdog-runtime -> watchdog-admission -> prerequisites/artifact-files;
+there is no new queue, ledger, clock, proof setter or public capability.
+TEST-only `watchdog-integrity-selftest.test.mjs` has no exports and tests own
+subrun ordering, parent-observation rejection and the genuine control receipt.
+Both paths are appended to the map; only the admission owner is runtime.
+
+#### Check transition and normal-finish bindings
+
+The rendered CardPanel title is `EFFICIENCY CARD` in browser text. Complete
+Workbench frame checks retain panel, Roadmap, reset and geometry predicates.
+Opening a Workbench uses a distinct `*-open` readiness operation; each explicit
+reload/control initialization retains its own `*-init` operation. Invalid-position
+checks use a syntactically valid FEN that disagrees with the replay, preserving
+the exact `POSITION_INVALID` semantic assertion.
+
+The existing `createBrowserContexts` export and three-method factory roster stay
+unchanged. Each returned per-Page game arm and Workbench handle additionally
+exposes private `expectWorkerRetirement() -> void`. It synchronously marks only
+that Page's currently observed live public Worker handles before an intentional
+retirement/recovery/reload/mode transition; later Workers remain unmarked.
+Page/context/browser unexpected-close and cohort sticky-failure predicates stay
+unchanged. This is lifecycle intent, never Native/proof/status authority.
+
+Normal finish fences new ordinary admission immediately and starts the original
+Native cleanup independently. Before Recorder.stopOrdinary, shutdown drains the
+already-admitted ordinary tail under the SAME original cleanup bound. Fault/stop
+still stops Recorder immediately; no new grace, queue, ACK, wire field or writer
+is introduced. Held tail IO remains actual owned debt and cannot promote a late
+result.
+
+TEST-only `browser-transitions.test.mjs` and
+`watchdog-finish-ordering.test.mjs`, declared before creation, have no exports.
+The former uses actual browser context ownership with controlled public Worker
+resources; the latter uses the genuine Recorder/operation queue and exact
+AST-selected shutdown ordering. Both remain outside the runtime union.
+
+The earlier diagnostic-only implementation retained the `pid list never stable`
+cause prefix and three-read ordered-list agreement (history, before the
+2026-11-06 membership correction below). The existing error
+detail includes bounded JSON for each of the two actually observed adjacent
+pairs: counts, `sameMembership`, `orderEqual`, and at most four added/removed
+PID samples in observed order. These are derived only from already-read vectors;
+there is no extra OS read, sort, retry, UID dump, wire key, budget or successful
+row/output change. The whole stdlib fake-backend suites retain malformed-list,
+full-buffer, errno and UID checks and distinguish ordering-only from membership
+churn. A new diagnostic sample cannot recover a historical unrecorded cause.
+
+PageArm constructors receive exactly `{kind,id,page,context,capabilities}` at
+all operational call sites. Per-Page lifecycle controls stay on their browser
+handles and are never spread into the closed PageArm options schema.
+
+The existing driver channel treats disconnect after a successfully validated
+and dispatched `closed` notice as expected transport closure, like its own
+explicit close initiation. This notice never proves process exit, either pipe
+close or raw send/body settlement. Missing/invalid notices and unexpected
+errors still fault; real exit plus BOTH closes and actual scope joins remain
+mandatory. No new ACK, wire field or cleanup allowance is introduced.
+TEST-only `driver-ipc.test.mjs`, declared before creation, has no exports and
+stays outside the runtime union. It uses a controlled real Node IPC child,
+actual bridge/driver channel and the AST-selected operational transport/close
+body to exercise normal and unexpected disconnect ordering without any
+Native/browser/model/phase execution.
+
+Collector accounting-fault diagnostics remain on the existing fault-detail
+path. The actual monitor retains the validated collector reason and diagnostic
+in its sticky informational fault. Watchdog's invalid-Native-observation error
+includes that actual retained detail when available and keeps its original
+ACCOUNTING_UNAVAILABLE code and generic fallback when unavailable. Both existing
+Watchdog fault-description copies use the existing 4096 diagnostic bound so
+the persisted Recorder fault event can retain both observed PID-pair
+classifications. This adds no wire key, authority, retry, clock, budget or
+historical-cause inference. Stop, horizon narrowing and cleanup ordering stay
+unchanged; invalid accounting remains unproven regardless of empty arrays.
+
+Early startup/transport fault events preserve the original primary error,
+code and stop priority. Only AFTER recordFault and first-stop/horizon narrowing,
+the existing event description appends actual retained `monitor.fault().detail`
+when available, within the same 4096 bound. Missing, throwing or reentrant
+informational access cannot postpone/replace the first stop; fallback keeps
+the original event. No guard, API, wire field, retry or allowance changes.
+A shared-protocol collector-fault/startup-register control reads the genuine
+canonical Recorder event before the resource poll; it does not recover a
+historical failure's unrecorded cause. The existing finish-ordering TEST owner
+also covers this first-stop/error-description ordering boundary. Its supplied
+clock follows Node's cross-kind timer clearing. Controls inspect sampler
+closure before manual teardown and hold the first genuine cleanup-event
+callback under the same lifetime. Native stop completes under the original
+cleanup end while that callback remains owned; releasing it permits the raw
+Recorder write and run join. Neither a held event nor a Native accounting
+fault can promote the control's cleanup proof. These controlled observations
+do not identify an incomplete real run's blocking location.
+
+
+`watchdog-native-fault.test.mjs` is declared before creation as a TEST-only
+whole-owner split with no exports. It owns the complete full-Watchdog,
+shared-protocol, genuine-monitor fault controls moved from
+`watchdog-finish-ordering.test.mjs`, retaining every existing assertion.
+It adds a periodic sample whose actual observed requestId binds the collector
+fault reply, then true fixture exit and both pipe closes. TEST imports point
+only to existing runtime/TEST owners; neither runtime nor the original TEST
+imports this new owner. The runtime union stays unchanged. The original
+finish-ordering owner retains operation-tail and error-description ordering.
+
+
+#### Independent shutdown await diagnostics
+
+`watchdog-lifetime.mjs` adds the private descriptive helper
+`observeAwaitStage(owner, scope, label, issue)`, alongside its two existing
+exports. `createWatchdogLifetime` accepts the optional trusted low-level
+`reportAwaitStage(line)` synchronous sink, captured at construction. The helper
+reports entry and actual native-Promise fulfillment/rejection, returns the exact issued Promise or
+value, and rethrows an exact synchronous cause. It owns no required IO,
+settlement receipt, proof or phase state. Missing/throwing reporters and
+reentrant reporting are ignored. Only fixed labels and `phase`/`selftest`
+scopes are accepted. Each genuine owner permits at most 64 records, each at
+most 256 UTF-8 bytes, hence at most 16 KiB; records contain sequence, local call ordinal, scope, fixed stage and state.
+Rejected observations may also retain safe STRING code/message/detail and
+one-level causeCode/causeMessage, within the SAME 256-byte record bound.
+Original cause detail receives priority over verbose wrapper descriptions. There is no stack, raw object, identity or input ref.
+
+Operational `run.mjs` supplies a best-effort standard-stderr sink only to
+the archived supervisor owner. Marker delivery and backpressure are never
+awaited or retained. The existing shutdown owner observes cleanup, actual
+ordinary/admission/resource/driver/scope joins, Recorder finalize/containment
+and its final lifetime joins. The existing cleanup controller accepts the
+same optional diagnostic `lifetime` and observes its Native stages and event
+callbacks. The outer supervisor lifetime join is observed independently.
+First stop and the original cleanup-end capture/narrow precede all shutdown
+reporter calls. No marker uses Recorder or Store, changes a result/fault,
+queries Native, adds a timer/deadline, retries work or authorizes clearance.
+
+The runtime dependency graph adds only imports of the existing lifetime
+owner from cleanup and shutdown; operational assembly forwards its SAME
+owner. No runtime path is added to the fixed input union.
+`await-stage.test.mjs` is TEST-only with no exports, importing the existing
+lifetime owner. Existing shared-Native controls use a genuinely supplied
+Store lifetime through the optional `makeStore({chargedBytes, lifetime})`
+TEST fixture passthrough and `createRunDrainBinding` same-owner diagnostic
+forwarding, preserving both omitted defaults. Their held real
+Recorder callback demonstrates marker independence and unchanged cleanup
+ineligibility. TEST imports remain one-way into runtime/fixtures.
+
+
+#### Earlier cross-time membership overconstraint (2026-11-06, superseded)
+
+The earlier implementation required two consecutive fully validated PID sets
+to have identical membership, within three reads. It selected the current
+vector's unsorted order. This was an implementation-only overconstraint,
+superseded by the complete-vector interpretation below. Full-buffer retries, malformed/range/duplicate/errno rejection,
+current-UID checks, ESRCH handling and full-tuple/sample guards remain unchanged.
+That implementation failed on cross-time membership churn and emitted two-pair
+diagnostics; the correction below removes that invented comparison.
+There is no added read, retry, clock, deadline, Native authority or cleared fault.
+
+Apple's [proc_listpids implementation](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/proc_info.c#L337-L457)
+traverses allproc then zombproc, filtering UID and appending traversal order.
+Its [exit transition](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/kern_exit.c#L1932-L1949)
+moves a process between those lists while holding the process-list lock. The
+[libproc private-interface declaration](https://github.com/apple-oss-distributions/xnu/blob/main/libsyscall/wrappers/libproc/libproc.h#L38-L40)
+promises no ordering. Thus equal complete membership can have different order.
+These sources explain ordering behavior, without requiring cross-time
+quiescence or establishing the actual transition in check8. They do not
+promote check7/check8's retained failed/incomplete proof.
+
+For readable capacity, the WHOLE `DiscoverStabilityTests` class moves from
+`process-macos.test.py` to the existing TEST-only
+`process_macos_path_test_cases.py`. Before that move/use, its roster becomes
+TWO factories: existing `make_pid_path_cases(N, fake_be)` plus
+`make_discover_stability_cases(N, fake_be, bsd_struct)`, each returning its
+`unittest.TestCase` class. The main suite binds the returned class into globals
+through its SAME frozen-sibling loader and already loaded N/fake backend/struct
+builder. No new module, command, sys.path fallback, runtime input or helper
+identity is added. Existing negative assertions remain; the historical
+order-only negative becomes the qualified positive. Causal cases assert exact
+two/three read limits, current-vector row order, genuine churn rejection,
+duplicate rejection before set agreement, wrong UID and ESRCH skipping.
+
+
+#### Native discovery uses one complete capture (2026-11-06)
+
+`discover` now calls the EXISTING `list_process_pids(be)` exactly once, then
+iterates its complete validated vector unchanged and unsorted. The helper's
+same four capacity attempts remain: a full returned buffer retries with larger
+capacity; exhausted full buffers, empty/errno/unaligned/out-of-range/duplicate
+vectors still fail. Every BSD/UID/ESRCH/identity/sample/ownership guard remains.
+No later membership vector, intersection, union, cached/partial snapshot,
+clock, extra retry, deadline or fault suppression is introduced.
+
+The locked Runtime discovery table and unstable-capture paragraph require
+sufficient buffer capacity and reject truncated/unstable capture after retry. They do not require consecutive
+snapshots to have equal membership. Apple's
+[locked UID-filtered traversal](https://github.com/apple-oss-distributions/xnu/blob/main/bsd/kern/proc_info.c#L377-L448)
+produces a complete nonfull vector at capture. The original sampling clause
+also explicitly permits transients between observations. Accordingly the
+implementation-only ordered and membership-equality loops and their two-pair
+comparison diagnostics are removed. The `unstable-list` reason remains for
+actual vector-acquisition failures, with their original details.
+
+The existing TEST companion retains its two-factory loader/API. Its discovery
+cases now prove one actual helper admission despite mocked later churn,
+unchanged first-vector order, no later-vector reads, buffer retry INSIDE that
+single admission, and duplicate/UID/ESRCH guards. Historical check7/check8/check9
+failures and the unlocalized check7 hang remain retained; this correction does
+not establish eligibility or actual host-kernel transition history.
+
+
+#### Sticky Recorder failure containment and descriptive rejection fields
+
+If genuine `finalizeAndRead` rejects, the existing shutdown helper now records
+that original failure, then awaits the Recorder's EXISTING
+`closeIncompleteEvidence` before returning the same null/fallback and before
+its global lifetime join. This handles pre-A sticky rejection, which occurs
+before the finalizer's own close-all body is admitted. The incomplete drain
+still enforces its actual finalization/fence guards, joins admitted bodies and
+closes real sinks. A later containment failure is recorded separately and
+cannot replace the original cause or promote an outcome. Successful finalization,
+Native teardown, the original cleanup end and every deadline stay unchanged.
+Held or failed physical close remains real outstanding debt, never forced zero.
+
+The passive await reporter's optional rejected `code`, `message` and `detail`
+are read only when strings, without String/toString, stack or raw-object
+rendering. Each candidate is sliced before bounded JSON encoding and shortened
+inside the unchanged 256-byte record/64-record budget. The reentry guard is
+armed BEFORE any cause accessor; throwing/hostile access and reporter failures
+cannot replace the original Promise/result/cause or control state. No diagnostic
+IO is awaited or retained. Genuine Store/FD controls prove containment starts
+before global zero and holds on actual close; arbitrary primary/secondary
+handler controls retain exact values. This independently reproduces a missing
+containment path. Check10's unrecorded original Store/Recorder cause remains
+unknown and its incomplete evidence is not promoted.
+
+
+#### Bounded footprint failure diagnostics
+
+The existing producer owner `workspace-footprint.mjs` adds the pure
+`describeFootprintFailure(sample, root) -> string` export beside
+`createFootprintObserver`. It reads at most eight string errors and safe
+validity/interruption fields, with fallible access isolated from accounting.
+Only bounded operations, genuine root-relative first components/tail basenames,
+first/tail errno or unsafe-metadata tags and validity tags reach Error.detail; full paths, raw samples, arbitrary
+String/toString and stacks are not rendered. The invalid producer DTO keeps
+its existing first-eight errors and may add the fixed descriptive
+`interruption` string when stop/generation invalidates its actual scan.
+Successful DTOs and every accounting decision remain unchanged. The captured
+trusted Store root permits only exact known operation/root prefixes; unexpected,
+outside or unreadable paths retain the generic classification. Root-relative
+roles and bounded leaf tails distinguish inputs/browser/driver-tmp without
+rendering the absolute workspace prefix.
+
+Store's existing invalid-sample branch marks accounting sticky BEFORE optional
+diagnostic access, retains the identical STORE_ACCOUNTING/invalid-sample
+primary, and attaches only the helper's bounded string detail. Existing passive
+markers retain that detail within their unchanged64-record/256-byte bounds.
+Malformed, throwing or reentrant diagnostic providers cannot replace the
+primary or admit another Store write. That diagnostic-only change introduced no
+ENOENT skip or retry. The confirmed-retirement correction below supersedes its
+no-retry implementation. It retains the original allocation/link,
+freshness/regression, generation, deadline, resource limit and Native behavior.
+Controlled producer/Store tests live in the existing roomy footprint
+TEST owner; no runtime path, public command or authority is added. Check11
+identifies invalid-sample accounting only; its exact source remains unknown
+until a fresh actual observation supplies the preserved diagnostics.
+
+
+#### Failed sample-interval scalar diagnostics
+
+The existing failed `sample interval` branch keeps its exact >500 ms or
+sticky-fault predicate, ACCOUNTING_UNAVAILABLE code and message prefix. It
+adds only owned scalar diagnostics: already-read Node `startedNs`, `finishedNs`,
+`lastValidNs`, `gapMs` (finished minus last valid, or first-cycle duration),
+`preCycleGapMs` (started minus last valid, null on first cycle),
+`cycleDurationMs` (finished minus started), sum `nativeDurationMs` from each
+reply's OWN Python start/end pair, actual `coverageRounds` and `stickyPresent`.
+No new clock read, queue timestamp, Native query, Promise, deadline or proof is
+created. The existing first-fault monitor and 4096-byte descriptive event
+funnel retain the bounded scalar text. Positive observation DTOs are unchanged.
+Pre-cycle time combines timer scheduling, queue waiting and event-loop effects;
+Node cycle duration is not itself libproc duration. No cause is inferred from
+these values or from check12's retained resource projection timestamps.
+
+For capacity, TEST-only `process-observation.test.mjs` is declared before
+creation, with no exports. The WHOLE final first-sticky/physically-settled
+collector case moves there from `process-lifecycle.test.mjs` without assertion
+loss. New controlled-time cases use the actual observation and ownership
+factories with genuine budget handles. This is a one-way TEST-to-existing
+runtime/fixture DAG, excluded from the unchanged runtime input union. There
+is no performance, scheduling, worker, threshold or accounting repair here.
+
+
+#### First sticky cause retained through the passive diagnostic lane
+
+The same private Recorder state now retains a presence bit and the exact raw
+FIRST noncorrectable sticky cause, including null/undefined/false/frozen Errors.
+Correctable rejections do not claim that slot; later failures cannot replace
+it. Existing sticky semantic values and the original operation's exact
+rejection are unchanged. The private lifecycle state reader forwards that
+association only to construct the same RECORDER_STICKY code/message wrapper
+with the standard one-level Error.cause. No Recorder getter, method, field,
+record schema, status, proof or budget is exposed or changed.
+
+The existing guarded passive formatter reads only safe strings at the top
+and ONE optional cause level. It never reads cause.cause. Marker allocation
+prioritizes bounded top code/causeCode and the original cause detail before
+verbose wrapper message/causeMessage, preserving operation/errno/relative
+role and basename within the FINAL full UTF-8 256-byte frame. Optional
+causeCode/causeMessage remain descriptive fields only. The same 64-record/
+16-KiB bound, pre-access reentry guard, no arbitrary String/toString/raw-object
+rendering, no stack and no required diagnostic IO remain. Hostile, missing or
+throwing optional access/reporters cannot replace the original Promise/cause.
+
+Whole pure transport-description and finalize-handler controls move from the
+full finish-ordering TEST owner to the existing roomy await-stage TEST owner,
+with all original assertions retained. The genuine Store/Footprint/Recorder/
+running-Watchdog control now includes a long-root/cache/long-basename failure:
+containment can fulfill while the rejected sticky wrapper's final marker still
+exposes the FIRST original filesystem cause. Genuine Recorder falsey/correctable
+and no-overwrite controls cover the private association. No new path, runtime
+union entry or public command is added. Check13's exact original filesystem
+cause is still unknown; this repairs loss of subsequent diagnostic evidence.
+
+
+#### Confirmed retired-child rescan and independent ordinary fault description
+
+The footprint observer may restart the WHOLE root walk once inside the SAME
+scan when a descendant lstat returns ENOENT and a second real lstat confirms
+absence while every captured ancestor remains the same safe non-symlink
+directory (device/inode/mode/birth identity), including the root, before and
+after confirmation and across the complete restart. Root/parent loss, replacement, unsafe metadata, symlinks,
+reappearance, other errno, repeated churn, stop or generation change stay
+unavailable. A restart discards the first partial charge, keeps the ORIGINAL
+scan-start timestamp and borrowed operation/owner, and charges every current
+entry afresh. Failed confirmation/restart preserves the original ENOENT first.
+The first attempt is never published as invalid then repaired. No earlier
+published sample or Store sticky failure is repaired by this restart.
+
+The existing private lifetime owner adds
+`reportStoppedFault(owner, scope, error) -> undefined`, a synchronous data-only
+report through the SAME reporter/64-record/256-byte full UTF8 frame budget.
+Config supplies internal `ctx.reportOrdinaryFault(error)` to Ordinary; only
+AFTER its original recordFault then requestStop return does Ordinary describe
+the exact error. No public API, promise, IO debt, clock, query or control fact
+is added. The guarded formatter may use safe one-level `error.fault.detail`
+as informational Native context. For an existing sample-interval detail it
+compacts only supplied finite scalar facts (the initial preCycleGapMs may be
+null) as g=gapMs, p=preCycleGapMs,
+c=cycleDurationMs, n=nativeDurationMs, r=coverageRounds. These are differences
+already measured, not new timing or queue attribution. Missing/hostile
+fields/reporters cannot replace the original failure or first-stop.
+Parity1's exact original primary and full retired-log path remain UNKNOWN;
+this separately proven filesystem race does not identify that historical log.
+
+
+#### Root executable mismatch diagnostic tails
+
+The existing process-proof root-executable mismatch still rejects the exact
+same inspected image, with the same ACCOUNTING_UNAVAILABLE code/full message
+and proof ordering. That SAME Error now carries a descriptive `detail` string:
+`expected=<last36 validated path characters> actual=<last36 validated path characters>`.
+Both bounded distinctive suffixes survive the existing full256-byte passive
+ordinary-fault marker even when the original paths share a long prefix. No
+path is learned/accepted, no registration or launcher/payload identity changes,
+and no Native query, retry, readiness or deadline is added. Reference launch
+still uses the selected invocationPath; registration still expects the pinned
+monitoring.python.processImage.realPath. Parity2's actual mismatching observed
+suffix was not retained historically and remains unknown until fresh evidence.
+
+
+#### Private reference interpreter-entry data barrier
+
+Before creation/use, `reference-child.test.mjs` is declared as one cohesive
+TEST-only whole owner (no exports), importing the actual reference child,
+Native-faked genuine monitor/proofs and existing fixture/lifetime owners.
+It is not in the runtime union. Existing paths/APIs remain unchanged.
+
+After isolated Python interpreter entry and the existing manifest/path and
+ML-absent checks, parity-reference writes exactly one <=4096-byte newline JSON
+DATA frame on existing duplex fd3: exact fields type=reference-entry, runId,
+pid, manifestSha256. This is not readiness, identity or Native proof. The
+parent consumes it exactly once, under the SAME original reference command,
+then performs the unchanged kind=python strict pinned processImage proof and
+real registration ACK. Only then may it send the existing reference-go gate.
+The stdout reference JSON and raw stdout/stderr artifacts remain separate and
+unchanged. Entry EOF, malformed/duplicate/extra/missing data, STOP/fault or a
+late entry cannot authorize GO or renew an end. Every issued child remains
+strongly owned from spawn until actual exit and stdout/stderr/fd3 close.
+The separate diagnostic reproduced a launcher-to-payload transition before
+ENTRY receipt; its later public probe proved same-live, not a fresh image.
+That mechanism does not recover Parity3's exact historical registration time.
+
+The existing phase-runners stdlib-only AST bridge also executes the actual
+announce_entry body over a real duplex socket, including partial writes,
+wrong-FD/oversize pre-write rejection and ML-absent checks. The new entry
+TEST owner covers fragmented/extraneous frames and actual Native-faked strict
+registration/ACK ordering. Its command-expiry control retains the same initial
+end and holds true child debt through the last real gate-close event.

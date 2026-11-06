@@ -68,6 +68,7 @@ export function createWatchdog(options) {
     // filesystem scan body — an actual promise only, never proof or a
     // ledger.
     resourceTask: null,
+    admissionTask: null,
     phaseEnd: Infinity,
     workEnd: Infinity,
     cleanupStart: null,
@@ -112,7 +113,7 @@ export function createWatchdog(options) {
   const recordFault = (error) => {
     faults.push({
       code: error && error.code ? error.code : "FAULT",
-      detail: error && error.message ? error.message.slice(0, 400) : "?",
+      detail: error && error.message ? error.message.slice(0, 4096) : "?",
       atMonoNs: nowNs().toString(),
     });
   };
@@ -173,6 +174,7 @@ export function createWatchdog(options) {
     state.ops?.closeOrdinaryAdmission();
     captureCleanupBound();
     narrowHorizonToCleanupEnd();
+    capabilities.finalIntegrity?.interrupt(reason);
     // Facade-owned phase/work/heartbeat/resource/operation timers end
     // with admission — Native and cleanup-owned clock handles are
     // untouched — so a later filesystem-only seal can never produce a
@@ -232,6 +234,11 @@ export function createWatchdog(options) {
       return;
     }
     if (!admissionOpen()) return;
+    if (capabilities.finalIntegrity !== null && !capabilities.finalIntegrity.isComplete()) {
+      recordFault(fail("FINAL_INTEGRITY", "finish without completed own scan"));
+      latchStop("FINAL_INTEGRITY");
+      return;
+    }
     state.finishReq = copyDeep(msg);
     state.ops?.closeOrdinaryAdmission();
     captureCleanupBound();
@@ -277,7 +284,7 @@ export function createWatchdog(options) {
       : state.records
           .recordEvent("fault", {
             code: error && error.code ? error.code : "FAULT",
-            detail: error && error.message ? error.message.slice(0, 400) : "?",
+            detail: error && error.message ? error.message.slice(0, 4096) : "?",
           })
           .catch((e) => recordFault(e));
 
@@ -305,10 +312,20 @@ export function createWatchdog(options) {
   const onError = (error) => {
     recordFault(error);
     latchStop(error && error.code === "IPC_DISCONNECT" ? "IPC_DISCONNECT" : "IPC_INVALID");
-    // Dispatch the existing fault lane NONBLOCKING after the first-stop
-    // latch — an actually observed transport fault is retained through the
-    // real append without ever delaying teardown.
-    void faultEvent(error);
+    // Retained monitor facts describe the event only AFTER the original
+    // first-stop/narrow. They cannot replace its primary code or value.
+    let descriptive = error;
+    try {
+      const retained = monitor.fault?.()?.detail;
+      if (typeof retained === "string") {
+        descriptive = new Error(
+          `${error?.message ?? "?"}; retained monitor fault: ${retained}`.slice(0, 4096),
+          { cause: error },
+        );
+        descriptive.code = error && error.code ? error.code : "FAULT";
+      }
+    } catch {}
+    void faultEvent(descriptive);
   };
   const onExit = () => {
     if (!state.driverClosed) {

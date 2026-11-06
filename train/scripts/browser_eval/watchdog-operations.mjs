@@ -13,6 +13,7 @@
 import { copyDeep, isObj } from "./protocol-values.mjs";
 import { verifyInternalSelfTest } from "./prerequisites.mjs";
 import { issueActual } from "./artifact-files.mjs";
+import { runSelftestBegin } from "./watchdog-selftest-operation.mjs";
 import { createWatchdogOrdinaryQueue } from "./watchdog-ordinary.mjs";
 
 export { createWatchdogOperationContext } from "./watchdog-config.mjs";
@@ -29,6 +30,13 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
   if (!isObj(ctx)) throw fail("IPC_INVALID", "ctx");
   if (!isObj(records)) throw fail("IPC_INVALID", "records");
   let firstOpAdmitted = false;
+  let integrityRequested = false;
+  const integrityId = `${ctx.runId}:final-integrity`;
+  const rejectExperiment = () => {
+    const error = fail("FINAL_INTEGRITY", "experimental admission permanently fenced");
+    ctx.recordFault(error);
+    ctx.requestStop("FINAL_INTEGRITY");
+  };
 
   // The bounded serialized ordinary queue lives in watchdog-ordinary.mjs —
   // ONE instance over the SAME ctx retainer, no copied chain here.
@@ -99,126 +107,39 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
     if (ctx.phase === "preflight" && msg.operationId === ctx.selftest.id) {
       return onSelftestBegin(msg, arm);
     }
-    const remainingMs = Math.floor(arm.deadlineMonoMs - ctx.nowMonoMs());
-    if (remainingMs <= 0) {
-      ctx.requestStop("OPERATION_TIMEOUT");
+    const begun = async () => {
+      if (!ctx.admissionOpen()) return;
+      const remainingMs = Math.floor(arm.deadlineMonoMs - ctx.nowMonoMs());
+      if (remainingMs <= 0) {
+        ctx.requestStop("OPERATION_TIMEOUT");
+        return;
+      }
+      await send("begun", { operationId: msg.operationId, remainingMs });
+    };
+    if (ctx.finalIntegrity !== null && msg.operationId === integrityId) {
+      // Queue position is serialized; the owned file-only scan uses the
+      // EXISTING admission slot, joined after independent Native teardown.
+      ctx.startFinalIntegrity(async () => {
+        const inputs = await records.manifestInputs();
+        if (!ctx.admissionOpen()) return;
+        await ctx.finalIntegrity.collect({ workspaceId: ctx.workspaceId, runId: ctx.runId,
+          phase: ctx.phase, expectedCommonIdentity: ctx.commonIdentity, inputs },
+        { deadlineMonoMs: arm.deadlineMonoMs });
+        if (!ctx.admissionOpen()) return;
+        if (!ctx.finalIntegrity.isComplete()) throw fail("FINAL_INTEGRITY", "own scan incomplete");
+        await begun();
+      }).catch((error) => {
+        if (!ctx.stopped()) {
+          ctx.recordFault(error);
+          ctx.requestStop(`FAULT ${error?.code ?? "WORK"}`);
+        }
+      });
       return;
     }
-    await send("begun", { operationId: msg.operationId, remainingMs });
+    await begun();
   };
 
-  // Fixed-first-preflight handshake: the callback runs under the ORIGINAL
-  // command/work bound (captured at dispatch) and an abort wired into the
-  // first-stop latch with the real parent reason. Eligibility and the bound
-  // are rechecked after the awaited manifest-input load BEFORE the callback
-  // is invoked — a stop during that load cancels. The only accepted output is
-  // a genuine independently verified completionRef; begun emits the current
-  // remaining only while the run is still eligible.
-  const onSelftestBegin = async (msg, arm) => {
-    const st = ctx.selftest;
-    if (msg.kind !== "command" || st.invoked) {
-      const e = fail("IPC_INVALID", "selftest begin kind/order");
-      ctx.recordFault(e);
-      ctx.requestStop("SELFTEST_INVALID");
-      return;
-    }
-    if (typeof runInternalSelfTest !== "function") {
-      const e = fail("SELFTEST_UNAVAILABLE", "no trusted callback");
-      ctx.recordFault(e);
-      ctx.requestStop("SELFTEST_UNAVAILABLE");
-      return;
-    }
-    st.invoked = true;
-    const controller = new AbortController();
-    st.controller = controller;
-    ctx.onFirstStop(() => {
-      if (!controller.signal.aborted) {
-        controller.abort(ctx.stopReason() ?? "STOPPED");
-      }
-    });
-    try {
-      const inputs = await records.manifestInputs();
-      if (ctx.stopped() || controller.signal.aborted) return;
-      if (ctx.nowMonoMs() >= arm.deadlineMonoMs) {
-        ctx.requestStop("OPERATION_TIMEOUT");
-        return;
-      }
-      const context = Object.freeze({
-        workspaceRoot: ctx.workspaceRoot,
-        parentRunId: ctx.runId,
-        parentSupervisor: copyDeep(ctx.parentSupervisor()),
-        commonIdentity: copyDeep(ctx.commonIdentity),
-        inputs: copyDeep(inputs),
-        monitor: ctx.monitor,
-        subrunRunId: `${ctx.runId}:watchdog-selftest`,
-        phaseDirectory: "preflight/selftest",
-        owner: {
-          phase: "preflight",
-          runId: ctx.runId,
-          supervisor: copyDeep(ctx.parentSupervisor()),
-        },
-        deadlineMonoNs: BigInt(Math.floor(arm.deadlineMonoMs)) * 1000000n,
-        signal: controller.signal,
-        // The ONE opaque driver actual scope forwards by reference — the
-        // nested selftest enrolls under it; never copied or remade.
-        parentDriverScope: ctx.driverActualScope,
-      });
-      const result = await runInternalSelfTest(context);
-      // Recheck actual admission AFTER the awaited selftest callback: a
-      // first stop during it cancels — no fresh ordinary Native probe and
-      // no late positive ack/ref can be admitted afterward.
-      if (
-        ctx.stopped() ||
-        !ctx.admissionOpen() ||
-        controller.signal.aborted
-      ) {
-        return;
-      }
-      if (ctx.nowMonoMs() >= arm.deadlineMonoMs) {
-        ctx.requestStop("OPERATION_TIMEOUT");
-        return;
-      }
-      const completionRef =
-        isObj(result) && isObj(result.completionRef)
-          ? copyDeep(result.completionRef)
-          : null;
-      if (!completionRef) throw fail("SELFTEST_UNAVAILABLE", "no completionRef");
-      const verified = await verifyInternalSelfTest({
-        workspaceRoot: ctx.workspaceRoot,
-        completionRef,
-        parentRunId: ctx.runId,
-        parentSupervisor: ctx.parentSupervisor(),
-        expectedIdentity: ctx.commonIdentity,
-        probeIdentity: (identity) => {
-          // The same guard runs INSIDE the post-receipt-IO probe: held
-          // receipt IO can never let a Native dispatch begin after closed
-          // admission or the captured original arm bound.
-          if (
-            ctx.stopped() ||
-            !ctx.admissionOpen() ||
-            controller.signal.aborted ||
-            ctx.nowMonoMs() >= arm.deadlineMonoMs
-          ) {
-            return Promise.reject(
-              fail("OPERATION_TIMEOUT", "probe after stop or bound"),
-            );
-          }
-          return ctx.monitor.probeIdentity(identity, {
-            deadlineMonoMs: arm.deadlineMonoMs,
-          });
-        },
-      }, ctx.io);
-      st.completionRef = copyDeep(verified.completionRef);
-      st.verified = verified;
-      const remainingMs = Math.floor(arm.deadlineMonoMs - ctx.nowMonoMs());
-      if (ctx.admissionOpen() && remainingMs > 0) {
-        await send("begun", { operationId: msg.operationId, remainingMs });
-      }
-    } catch (error) {
-      ctx.recordFault(error);
-      if (!ctx.stopped()) ctx.requestStop("SELFTEST_UNAVAILABLE");
-    }
-  };
+  const onSelftestBegin = (msg, arm) => runSelftestBegin(ctx, records, runInternalSelfTest, msg, arm);
 
   const onRecord = async (msg) => {
     if (!ctx.admissionOpen()) return;
@@ -338,12 +259,19 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
         return;
       case "register":
         if (!ordinaryAdmissionOpen()) return;
+        if (integrityRequested) return rejectExperiment();
         enqueue(() => onRegister(msg));
         return;
       case "begin": {
         // Fence BEFORE firstOpAdmitted mutation and ctx.armOperation; the
         // clock still arms at dispatch, never behind the queue.
         if (!ordinaryAdmissionOpen()) return;
+        if (ctx.finalIntegrity !== null && msg.operationId === integrityId) {
+          if (integrityRequested || msg.kind !== "command") return rejectExperiment();
+          integrityRequested = true;
+        } else if (integrityRequested) {
+          return rejectExperiment();
+        }
         if (ctx.phase === "preflight" && !firstOpAdmitted) {
           if (msg.operationId !== ctx.selftest.id || msg.kind !== "command") {
             const e = fail("IPC_INVALID", "first op must be fixed selftest begin");
@@ -360,6 +288,7 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
       case "event":
       case "artifact":
         if (!ordinaryAdmissionOpen()) return;
+        if (integrityRequested) return rejectExperiment();
         if (ctx.phase === "preflight" && !firstOpAdmitted) {
           const e = fail("IPC_INVALID", "record before fixed selftest begin");
           ctx.recordFault(e);

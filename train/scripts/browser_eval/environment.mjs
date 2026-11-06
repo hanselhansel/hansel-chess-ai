@@ -39,7 +39,7 @@ const bindAdapters = (adapters) => {
   return Object.freeze({
     statFile: (p) => fsp.lstat(p),
     createStream: (p) => createReadStream(p),
-    resolvePath: realpathSync,
+    resolvePath: realpathSync.native,
     ...adapters,
   });
 };

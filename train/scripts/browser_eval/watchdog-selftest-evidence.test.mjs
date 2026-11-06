@@ -18,6 +18,7 @@
 // through the one per-test teardown owner — even on assertion
 // failure. A synthetic unit pass is never Native, phase or cleanup
 // acceptance.
+// The whole captured-end case now lives in watchdog-prior-evidence.test.mjs.
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -28,6 +29,7 @@ import {
   cleanupMonitorFixture,
   watchdogTestClock,
 } from "./watchdog-test-fixtures.mjs";
+import { capturePriorReceiptProbes, awaitEvidenceEntry as awaitEntered } from "./watchdog-parent-admission-test-fixtures.mjs";
 import { advanceBy } from "./watchdog-drain-test-fixtures.mjs";
 import {
   gateFs,
@@ -53,22 +55,6 @@ const yield2 = async () => {
   await yieldTurn();
 };
 
-// Waits on the truthful gate-entered channel across bounded real
-// turns — entered resolves on actual entry, never a periodic poll;
-// the neutral receipt keeps both outcome handlers so a rejected
-// original entry floats no discarded descendant, and awaiting the
-// original entered still throws the original error.
-const awaitEntered = async (gate) => {
-  let saw = false;
-  void gate.entered.then(
-    () => {
-      saw = true;
-    },
-    () => {},
-  );
-  for (let i = 0; i < 60 && !saw; i += 1) await yield2();
-  await gate.entered;
-};
 
 test("selftestEvidence validates its bound and never probes past the original end", async (t) => {
   const clk = watchdogTestClock();
@@ -177,85 +163,6 @@ test("selftestEvidence validates its bound and never probes past the original en
   assert.ok(!monitorCalls.some((c) => c.startsWith("probe:")));
 });
 
-test("a held re-verification read expiring past the captured end dispatches no fresh Native probe", async (t) => {
-  const clk = watchdogTestClock();
-  const evidence = await makeEvidenceWorkspace(t, { clock: clk });
-  const { driver, monitorCalls, run, dispose } = await makePreflightRun(t, {
-    evidence,
-    clock: clk,
-  });
-  const opId = `${evidence.parentManifest.runId}:preflight-selftest`;
-  // The shared begun observer installs BEFORE run/begin — the receipt
-  // settles on the actual outgoing admission, a stop with its reason.
-  const begunReceipt = observeDriverBegun(t, driver);
-  let p = null;
-  let gate = null;
-  try {
-    p = run();
-    await liveStart(clk, driver);
-    driver.emit({ type: "begin", operationId: opId, kind: "command" });
-    // The positive handshake already admitted — the first verification's
-    // own read and parent probe already landed; racing the original run
-    // outcome reports an impossible early end instead of hanging.
-    const earlyEnd = p.then((res) => {
-      throw new Error(`run ended before begun admission: ${res.stopReason}`);
-    });
-    earlyEnd.catch(() => {}); // the race loser never floats unhandled
-    await Promise.race([begunReceipt, earlyEnd]);
-    assert.ok(driver.written.some((m) => m.type === "begun"));
-    assert.ok(
-      monitorCalls.includes(`probe:${evidence.parentSupervisor.pid}:1000:0`),
-    );
-    // Arm the read gate NOW so only the cleanup-specific re-verification
-    // receipt read is held — never the already-completed first verify.
-    gate = gateFs(t, {
-      workspaceRoot: evidence.env.workspaceRoot,
-      relativePath: "preflight/selftest/completion.json",
-      operation: "read",
-    });
-    const endAt = clk.nowMonoMs();
-    driver.emit({
-      type: "end",
-      operationId: opId,
-      result: { status: "completed", evidencePaths: [], detail: {} },
-    });
-    await yield2();
-    driver.emit({
-      type: "finish",
-      requestedStatus: "inconclusive",
-      requestedExitCode: 2,
-      stopReason: null,
-      checks: [],
-      summary: {},
-      analysisEligible: false,
-    });
-    // The re-verification's genuine receipt read is held while the clock
-    // is driven PAST the captured cleanup end — the original bound is
-    // spent before the read resolves.
-    await awaitEntered(gate);
-    for (let i = 0; i < 12 && clk.nowMonoMs() < endAt + 5000; i += 1) {
-      clk.advance(500);
-      await yield2();
-    }
-    gate.release();
-    closeAll(driver);
-    const res = await drainRun(clk, p);
-    // The spent original end admitted no fresh Native probe — exactly
-    // the one parent probe from the positive handshake exists, and the
-    // cleanup-specific re-verification dispatched NONE.
-    assert.equal(
-      monitorCalls.filter((c) => c.startsWith("probe:")).length,
-      1,
-    );
-    assert.equal(res.status, "inconclusive");
-  } finally {
-    if (gate !== null) gate.release();
-    closeAll(driver);
-    if (p !== null) await drainRun(clk, p, 30).catch(() => {});
-    await dispose();
-  }
-});
-
 test("a held required re-verification keeps the collector un-reaped until the actual verifier body settles", async (t) => {
   const clk = watchdogTestClock();
   const evidence = await makeEvidenceWorkspace(t, { clock: clk });
@@ -285,14 +192,27 @@ test("a held required re-verification keeps the collector un-reaped until the ac
   // answers gone only after the actual KILL; the parent supervisor
   // stays same-live at every stage.
   let driverKilled = false;
+  const priorProbes = await capturePriorReceiptProbes(t, evidence);
   const { driver, monitorCalls, run, dispose, settleRecordWrites } =
     await makePreflightRun(t, {
       evidence,
       clock: clk,
       rows: [row(6000, evidence.parentSupervisor.pid, "driver", true, runId)],
       monitorScript: {
-        probe: (arg) =>
-          arg.pid === 6000 && driverKilled ? "gone" : "same-live",
+        probe: (arg) => {
+          const key = `${arg.pid}:${arg.startSec}:${arg.startUsec}`;
+          if (Object.hasOwn(priorProbes, key)) {
+            return priorProbes[key];
+          }
+          const parent = evidence.parentSupervisor;
+          if (key === `${parent.pid}:${parent.startSec}:${parent.startUsec}`) {
+            return "same-live";
+          }
+          if (key === "6000:1000:0") {
+            return driverKilled ? "gone" : "same-live";
+          }
+          return "unavailable";
+        },
         onSignal: (arg) => {
           if (arg.identity.pid === 6000 && arg.signal === "KILL") {
             driverKilled = true;

@@ -255,7 +255,7 @@ export const makeServerTree = async (t) => {
   // the manifest inputs.setup refs bind it by actual path.
   const setupDir = path.join(inputsDir, "setup");
   await fsp.mkdir(setupDir, { recursive: true });
-  const metadataPath = path.join(setupDir, "tinyaz-m-metadata.json");
+  const metadataPath = path.join(setupDir, "tinyaz-m.meta.json");
   await fsp.writeFile(modelPath, SERVER_MODEL_BYTES);
   await fsp.writeFile(metadataPath, SERVER_META_BYTES);
   const modelRef = { path: modelPath, byteLength: MODEL_IDENTITY.byteLength, sha256: MODEL_IDENTITY.sha256, metadataPath };
@@ -293,40 +293,7 @@ export const makeServerCaps = ({ gate, signal, eventGate, eventError } = {}) => 
   };
 };
 
-// Fake Vite server: the route plugin's configureServer installs the
-// captured middleware; listen/bind/transform are spied.
-export const fakeVite = ({ address, closeError } = {}) => {
-  const calls = { middlewares: [], server: null };
-  const server = {
-    middlewares: { use: (fn) => calls.middlewares.push(fn) },
-    httpServer: { address: () => address ?? { address: "127.0.0.1", port: 19001 } },
-    listen: async () => {
-      server.listened = (server.listened ?? 0) + 1;
-    },
-    close: async () => {
-      server.closed = (server.closed ?? 0) + 1;
-      if (closeError !== undefined) throw closeError;
-    },
-    transformIndexHtml: async (url, html) => {
-      server.transforms = [...(server.transforms ?? []), { url, html }];
-      return html;
-    },
-  };
-  calls.server = server;
-  calls.createServer = async (options) => {
-    calls.options = options;
-    for (const plugin of options.plugins) {
-      if (plugin && typeof plugin.configureServer === "function") {
-        plugin.configureServer(server);
-      }
-    }
-    return server;
-  };
-  // The faithful {calls,createServer} shape — every owner drives the
-  // SAME recorded calls object through vite.calls.* and the SAME spy
-  // through vite.createServer.
-  return { calls, createServer: calls.createServer };
-};
+export { fakeVite } from "./vite-test-fixtures.mjs";
 
 // The private trusted dependencies: fake module namespaces through
 // importModule; the sha256 adapter returns the pinned identity ONLY for

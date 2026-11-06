@@ -252,6 +252,23 @@ export function parseCanonicalBytes(bytes) {
   return value;
 }
 
+// Strict noncanonical subprocess JSON. The SAME parser rejects duplicates;
+// canonical owned-copy validation rejects nonfinite values/invalid strings.
+// Records keep the stricter parseCanonicalBytes exact-byte requirement.
+export function parseJSONBytes(bytes) {
+  const buffer = Buffer.from(bytes);
+  if (buffer.length === 0 || buffer[0] === 0xef && buffer[1] === 0xbb && buffer[2] === 0xbf) {
+    fail("CANONICAL_PARSE", "empty or BOM JSON");
+  }
+  let text;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch {
+    fail("CANONICAL_PARSE", "invalid UTF-8");
+  }
+  return parseCanonicalBytes(canonicalBytes(parseJson(text)));
+}
+
 export function sha256Bytes(bytes) {
   const buffer = Buffer.isBuffer(bytes) ? bytes : Buffer.from(bytes);
   return createHash("sha256").update(buffer).digest("hex");

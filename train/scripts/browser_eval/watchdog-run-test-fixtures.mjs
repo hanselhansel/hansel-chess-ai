@@ -70,15 +70,15 @@ const FAIL = (detail) => {
   return e;
 };
 
-export const setupRun = async (t, { monitorScript = {}, rows = [], driverScript = {}, faultGate = null } = {}) =>
+export const setupRun = async (t, { monitorScript = {}, rows = [], driverScript = {}, faultGate = null, finalIntegrity = null } = {}) =>
   ownFixtureAttempt(t, () =>
-    setupRunBody(t, { monitorScript, rows, driverScript, faultGate }),
+    setupRunBody(t, { monitorScript, rows, driverScript, faultGate, finalIntegrity }),
   );
 
 // The raw assembly body: the ownFixtureAttempt receipt is preregistered
 // BEFORE any workspace/monitor/driver/run effect below, so the whole
 // setup is itself a joined body on the same per-test owner.
-const setupRunBody = async (t, { monitorScript, rows, driverScript, faultGate }) => {
+const setupRunBody = async (t, { monitorScript, rows, driverScript, faultGate, finalIntegrity }) => {
   const clk = watchdogTestClock();
   const supervisor = identity(7000);
   // The SAME real controller verifies the recorder through the declared
@@ -307,6 +307,7 @@ const setupRunBody = async (t, { monitorScript, rows, driverScript, faultGate })
     },
     recorder: env.recorder,
     cleanup,
+    finalIntegrity,
     driverEntry: {
       executable: "/drv/node",
       args: ["/drv/driver.js"],

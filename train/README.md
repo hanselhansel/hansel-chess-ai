@@ -89,6 +89,19 @@ Not a fork of `hansel-chesslite`. That repo perfected a measuring instrument and
 - UCI consumes standard streams and loads model bytes. Stockfish rating launches an external process; the binary-fetch helper makes a network download. `[src/tinyaz/engine_uci.py:run_stdio]` `[src/tinyaz/engine_uci.py:TinyazUci.ensure_eval]` `[src/tinyaz/uci.py:Stockfish]` `[scripts/fetch_stockfish.sh:curl]`
 - Bot rotation reads its token/state, sends HTTP requests, writes state/WDL/PGNs, and sleeps between polls. It marks seen IDs before result exports; outputs are not one transaction. `[lichess-bot/challenge_rotator.py:token]` `[lichess-bot/challenge_rotator.py:api]` `[lichess-bot/challenge_rotator.py:save_state]` `[lichess-bot/challenge_rotator.py:sync_games]` `[lichess-bot/challenge_rotator.py:main]`
 
+## Browser reference verification
+
+`train/scripts/check_browser_parity.py` is a stdlib-only launcher into the
+already captured archived parity CLI. Its one setup90 bound covers actual
+requested/frozen input checks and survives process transfer. The separate
+archived phase clock includes fresh environment remeasurement and startup.
+The private FD3 child loads only the six frozen TinyAZ modules after actual
+Native registration, using pinned M on CPU float32 with one intra/inter-op
+thread. Full numeric outputs, strict tolerance failures and import origins
+remain workspace artifacts. No training or public metadata is written.
+Use [the harness commands](scripts/browser_eval/README.md#operational-command-usage)
+for development and committed phase boundaries.
+
 ## Verification
 
 Use the pinned project environment `train/.venv` (CPython 3.11, pip 25.2) with

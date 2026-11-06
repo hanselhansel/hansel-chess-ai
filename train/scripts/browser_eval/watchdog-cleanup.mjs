@@ -18,6 +18,7 @@
 // supervisor, deadlineMonoMs, settleWorkloadHandles, cleanupStartMonoMs}.
 import { copyDeep, isIdentity, isObj } from "./protocol-values.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
+import { observeAwaitStage } from "./watchdog-lifetime.mjs";
 
 const TERM_MS = 2000;
 const KILL_MS = 4000;
@@ -62,6 +63,7 @@ export function createCleanupController({
   clock = realClock,
   recordEvent,
   runId = null,
+  lifetime = undefined,
 }) {
   if (typeof runId !== "string" || runId.length === 0)
     unproven("runId required");
@@ -123,6 +125,8 @@ export function createCleanupController({
     const absEnd = Math.min(startMono + PROOF_MS, snap.deadlineMonoMs);
     const dl = () => ({ deadlineMonoMs: absEnd });
     const remaining = () => absEnd - clock.nowMonoMs();
+    const stage = (label, issue) => observeAwaitStage(lifetime,
+      snap.scope === "selftest-workload" ? "selftest" : "phase", label, issue);
     // No fresh capability call may begin once the original bound is spent;
     // a delayed wait or slow earlier call ends the run unproven instead of
     // starting further native work after absEnd.
@@ -139,7 +143,7 @@ export function createCleanupController({
       // observer throw and an asynchronous rejection are retained through
       // the same catch — never aborting or delaying the Native stages.
       void Promise.resolve()
-        .then(() => recordEvent({ kind: "cleanup", payload }))
+        .then(() => stage("cleanup.event", () => recordEvent({ kind: "cleanup", payload })))
         .catch(() => {
           eventFaults += 1;
         });
@@ -213,10 +217,10 @@ export function createCleanupController({
     try {
       emit({ stage: "graceful", scope: snap.scope, targets: targets().length });
       await stageWait(TERM_MS);
-      await signalStage(targets(), "TERM");
+      await stage("cleanup.term", () => signalStage(targets(), "TERM"));
       emit({ stage: "term", scope: snap.scope });
       await stageWait(KILL_MS);
-      await signalStage(targets(), "KILL");
+      await stage("cleanup.kill", () => signalStage(targets(), "KILL"));
       emit({ stage: "kill", scope: snap.scope });
 
       // Final proof begins right after KILL — every remaining query/probe is
@@ -233,7 +237,7 @@ export function createCleanupController({
       for (const s of scopes) {
         try {
           cap();
-          const lq = await monitor.queryListeners(s, dl());
+          const lq = await stage("cleanup.listeners", () => monitor.queryListeners(s, dl()));
           listenersRemaining = listenersRemaining.concat(
             lq.listeners,
             lq.unexpected.map((u) => u.listener),
@@ -262,7 +266,7 @@ export function createCleanupController({
       if (snap.settleWorkloadHandles !== null) {
         try {
           cap();
-          await snap.settleWorkloadHandles({ deadlineMonoMs: absEnd });
+          await stage("cleanup.workload", () => snap.settleWorkloadHandles({ deadlineMonoMs: absEnd }));
         } catch {
           signalFaults += 1;
           accountingValid = false;
@@ -281,7 +285,7 @@ export function createCleanupController({
       if (snap.scope === "phase-workload" && !settlementDebt) {
         try {
           cap();
-          await monitor.stopAndReap(dl());
+          await stage("cleanup.monitor", () => monitor.stopAndReap(dl()));
         } catch {
           accountingValid = false;
         }

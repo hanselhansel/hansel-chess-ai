@@ -79,6 +79,7 @@ export function createDriverChannel({
   let connected = false;
   let failed = false;
   let closedByUs = false;
+  let closedReceived = false;
   let reaped = null;
   let reaping = null;
 
@@ -178,6 +179,7 @@ export function createDriverChannel({
     }
     try {
       onMessage(msg);
+      if (msg.type === "closed") closedReceived = true;
     } catch (error) {
       poison(error);
       onError(error);
@@ -204,9 +206,9 @@ export function createDriverChannel({
   });
   child.on("disconnect", () => {
     connected = false;
-    // A disconnect after our own close()/reap() initiation is the expected
-    // closure — never an IPC_DISCONNECT fault.
-    if (!exited && !failed && !closedByUs) {
+    // Our close initiation or a validated/dispatched closed notice permits
+    // disconnect only; actual exit, pipes and callback debt remain owed.
+    if (!exited && !failed && !closedByUs && !closedReceived) {
       const e = fail("IPC_DISCONNECT", "driver channel");
       poison(e);
       onError(e);

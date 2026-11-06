@@ -29,11 +29,18 @@ const metaSha = () => createHash("sha256").update(META_BYTES).digest("hex");
 test("routes stay closed until the listener ACK, then serve engine, workbench and pinned bytes", async (t) => {
   const tree = await makeTree(t);
   const vite = fakeVite();
+  let hookArgs = null;
+  await vite.createServer({ plugins: [{ configureServer: () => (...args) => { hookArgs = args; } }] });
+  assert.deepEqual(hookArgs, []);
+  const oldHook = fakeVite();
+  await assert.rejects(oldHook.createServer({ plugins: [{ configureServer: (s) => s.middlewares.use(() => {}) }] }), /url/);
   let release = () => {};
   const gate = new Promise((resolve) => {
     release = resolve;
   });
   const caps = makeCaps({ gate });
+  // Exact retained metadata layout produced by immutable capture.
+  assert.equal(path.relative(tree.root, tree.modelRef.metadataPath), "inputs/setup/tinyaz-m.meta.json");
   const modelReal = await fsp.realpath(tree.modelRef.path);
   let modelReads = 0;
   const deps = makeDeps(vite, {
@@ -47,7 +54,8 @@ test("routes stay closed until the listener ACK, then serve engine, workbench an
     () => startFixtureServer({ ...tree, arm: "candidate", capabilities: caps }, deps),
     { release: () => release() },
   );
-  await caps.calledPromise;
+  await Promise.race([caps.calledPromise, start]);
+  assert.deepEqual(vite.calls.postHooks, [undefined]);
   assert.equal(caps.calls.length, 1);
   assert.equal(caps.calls[0].kind, "fixture");
   assert.equal(caps.calls[0].rootPid, null);

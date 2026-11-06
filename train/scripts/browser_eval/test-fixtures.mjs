@@ -257,11 +257,12 @@ export async function makeTmpDir(prefix = "be-fixture-") {
 
 // A real artifact store over a temp workspace with a fully controlled
 // footprint/clock so tests drive accounting deterministically.
-export async function makeStore({ chargedBytes = 0 } = {}) {
+export async function makeStore({ chargedBytes = 0, lifetime = undefined } = {}) {
   const workspaceRoot = await makeTmpDir();
   const ctl = { chargedBytes, observedAtMs: 0, accountingValid: true, now: 0 };
   const store = createArtifactStore({
     workspaceRoot,
+    lifetime,
     readFootprint: async () => ({
       chargedBytes: ctl.chargedBytes,
       observedAtMs: ctl.observedAtMs,

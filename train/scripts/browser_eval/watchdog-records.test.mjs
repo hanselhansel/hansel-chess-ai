@@ -312,3 +312,71 @@ test("a normal finish carries the actual null stopReason through the receipt", a
   assert.equal(res.final.stopReason, null);
   assert.equal(res.final.exitCode, 2);
 });
+
+test("ordinary first-fault reporting follows stop and preserves raw values and Native scalars", async () => {
+  const { createWatchdogLifetime, reportStoppedFault } = await import("./watchdog-lifetime.mjs");
+  const { createWatchdogOrdinaryQueue } = await import("./watchdog-ordinary.mjs");
+  const facts = { gapMs: 714.125123456789, preCycleGapMs: 503.25123456789, cycleDurationMs: 210.875123456789,
+    nativeDurationMs: 201.5123456789, coverageRounds: 2 };
+  const retained = "ACCOUNTING_UNAVAILABLE sample interval " + JSON.stringify(facts);
+  const original = Object.freeze(Object.assign(new Error("monitor fault"), {
+    code: "ACCOUNTING_UNAVAILABLE", fault: Object.freeze({ detail: retained }),
+  }));
+  const firstCycle = Object.freeze(Object.assign(new Error("first cycle monitor fault"), {
+    code: "ACCOUNTING_UNAVAILABLE", fault: { detail: "sample interval " + JSON.stringify({
+      ...facts, preCycleGapMs: null,
+    }) },
+  }));
+  const hostile = Object.freeze(Object.defineProperty({}, "fault", { get() { throw null; } }));
+  for (const primary of [original, firstCycle, hostile, null, undefined, false]) {
+    const lines = [];
+    const order = [];
+    let stopped = false;
+    let owner;
+    owner = createWatchdogLifetime({ reportAwaitStage: (line) => {
+      assert.equal(stopped, true);
+      order.push("report");
+      lines.push(line);
+      reportStoppedFault(owner, "phase", primary); // Reporter reentry is suppressed.
+      throw undefined;
+    } });
+    const ctx = { stopped: () => stopped,
+      recordFault: (error) => {
+        assert.equal(error, primary);
+        order.push("fault");
+      },
+      requestStop: () => {
+        order.push("stop");
+        stopped = true;
+      },
+      reportOrdinaryFault: (error) => reportStoppedFault(owner, "phase", error) };
+    const queue = createWatchdogOrdinaryQueue({ ctx, retainActual: owner.retainActual });
+    const actual = queue.enqueue(() => { throw primary; });
+    await assert.rejects(actual, (error) => Object.is(error, primary));
+    queue.closeOrdinaryAdmission();
+    await queue.whenOrdinarySettled();
+    await owner.whenSettled();
+    assert.deepEqual(order, ["fault", "stop", "report"]);
+    assert.equal(lines.length, 1);
+    assert.ok(Buffer.byteLength(lines[0]) <= 256);
+    const marker = JSON.parse(lines[0].slice("TINYAZ_AWAIT ".length));
+    assert.equal(marker.stage, "ordinary.fault");
+    if (primary === original || primary === firstCycle) {
+      assert.equal(marker.code, original.code);
+      const pre = primary === firstCycle ? null : facts.preCycleGapMs;
+      assert.equal(marker.detail, `g=${facts.gapMs} p=${pre} c=${facts.cycleDurationMs} n=${facts.nativeDurationMs} r=2`);
+    }
+  }
+  const lines = [];
+  let owner;
+  const reentrant = Object.defineProperty({}, "fault", { get() {
+    reportStoppedFault(owner, "phase", reentrant);
+    throw false;
+  } });
+  owner = createWatchdogLifetime({ reportAwaitStage: (line) => lines.push(line) });
+  for (let index = 0; index < 100; index += 1) reportStoppedFault(owner, "phase", index % 2 ? original : reentrant);
+  assert.equal(lines.length, 64);
+  assert.ok(lines.every((line) => Buffer.byteLength(line) <= 256));
+  const final = JSON.parse(lines.at(-1).slice("TINYAZ_AWAIT ".length));
+  assert.equal(final.detail, `g=${facts.gapMs} p=${facts.preCycleGapMs} c=${facts.cycleDurationMs} n=${facts.nativeDurationMs} r=2`);
+});

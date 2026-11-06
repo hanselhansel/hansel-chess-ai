@@ -19,6 +19,10 @@ export function createWatchdogOrdinaryQueue({ ctx, retainActual }) {
     if (!ctx.stopped()) {
       ctx.recordFault(error);
       ctx.requestStop(`FAULT ${error && error.code ? error.code : "WORK"}`);
+      // First-stop/narrow already happened. Descriptive failure cannot mask it.
+      try {
+        ctx.reportOrdinaryFault?.(error);
+      } catch {}
     }
     throw error;
   };

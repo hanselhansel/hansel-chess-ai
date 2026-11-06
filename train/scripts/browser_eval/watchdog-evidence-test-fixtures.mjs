@@ -17,6 +17,7 @@
 // CommonIdentity, no production debug hook, no real
 // fork/spawn/kill/Native/network — a synthetic unit pass is never
 // Native, phase or cleanup acceptance.
+import { capturePriorReceiptProbes } from "./watchdog-parent-admission-test-fixtures.mjs";
 import path from "node:path";
 
 import { copyDeep } from "./protocol-values.mjs";
@@ -111,7 +112,7 @@ export async function makePreflightRun(
     rows,
     script: {
       knownRoots: { 6000: identity(6000) },
-      probes: { [keyOf(parentSupervisor)]: "same-live" },
+      probes: { ...await capturePriorReceiptProbes(t, evidence), [keyOf(parentSupervisor)]: "same-live" },
       observation: CLEAN_OBS,
       listeners: {
         [runId]: { listeners: [], unexpected: [] },

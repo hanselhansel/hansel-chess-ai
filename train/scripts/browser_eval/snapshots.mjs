@@ -247,12 +247,28 @@ export async function verifyIdentity(options, context) {
     throw fail("manifest identity changed");
   }
   const observed = new Map();
-  for (const ref of refs) {
-    const bytes = await files.readFrozen(ref.path);
-    if (!deepEqual(refFor(ref.path, bytes), ref)) {
-      throw fail(`frozen input changed ${ref.path}`);
+  for (let offset = 0; offset < refs.length; offset += 16) {
+    let failed = false;
+    let first;
+    const batch = refs.slice(offset, offset + 16);
+    await Promise.allSettled(batch.map(async (ref) => {
+      try {
+        context.budget.assertLive("snapshot concurrent input");
+        const bytes = await files.readFrozen(ref.path);
+        if (!deepEqual(refFor(ref.path, bytes), ref)) {
+          throw fail(`frozen input changed ${ref.path}`);
+        }
+        observed.set(ref.path, bytes);
+      } catch (error) {
+        if (!failed) {
+          failed = true;
+          first = error;
+        }
+      }
+    }));
+    if (failed) {
+      throw first;
     }
-    observed.set(ref.path, bytes);
   }
   const paths = await io.listAt(context.workspaceRoot, ["inputs"]);
   if (!deepEqual(paths, refs.map((ref) => ref.path).sort())) {

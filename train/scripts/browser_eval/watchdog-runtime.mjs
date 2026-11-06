@@ -13,6 +13,7 @@
 // KNOWN_OVERSIZE over the 375 target: the run-entry horizon arm and the
 // resourceTask overlap guards are kept whole, not packed.
 import path from "node:path";
+import { admitWatchdogDriver } from "./watchdog-admission.mjs";
 import { copyDeep, isIdentity } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { createDriverChannel } from "./watchdog-driver.mjs";
@@ -59,7 +60,8 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
   const runStart = timing.now();
   const ceiling =
     T.phaseMs[config.phase] !== undefined ? T.phaseMs[config.phase] : T.phaseMs.check;
-  state.phaseEnd = Math.min(runStart + ceiling, config.ctxDeadlineMs);
+  state.phaseEnd = Math.min(runStart + ceiling, config.ctxDeadlineMs,
+    config.phaseDeadlineMonoMs === null ? Infinity : config.phaseDeadlineMonoMs);
   state.workEnd = state.phaseEnd - 5000;
 
   // Kept at function scope for the finally's listener removal; the
@@ -189,6 +191,7 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
       // fulfillment — a copied supervisor tuple can never select canonical
       // finalization on its own.
       state.runningWritten = true;
+      await admitWatchdogDriver({ config, capabilities, state, timing, bounded, checkLive });
       checkLive("driver launch");
       const entry = config.driverEntry.args[0];
       const moduleArgs = config.driverEntry.args.slice(1);
@@ -319,8 +322,14 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
           }
         };
         try {
-          if (!mo || mo.accountingValid !== true)
-            throw fail("ACCOUNTING_UNAVAILABLE", "native observation");
+          if (!mo || mo.accountingValid !== true) {
+            let detail = "native observation";
+            try {
+              const retained = monitor.fault?.()?.detail;
+              if (typeof retained === "string") detail += `: ${retained}`;
+            } catch {}
+            throw fail("ACCOUNTING_UNAVAILABLE", detail.slice(0, 4096));
+          }
           if (mo.rssLimitExceeded === true || mo.rssBytes > L.resources.rssBytes)
             throw fail("RESOURCE_RSS", `peak ${mo.peakRssBytes}`);
         } catch (e) {
@@ -374,7 +383,7 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
       config.ctxSignal.removeEventListener("abort", abortListener);
     }
     try {
-      footprint.stop();
+      if (!config.selftestPhase) footprint.stop();
     } catch {}
   }
 }

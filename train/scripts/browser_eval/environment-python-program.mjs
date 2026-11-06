@@ -1,7 +1,8 @@
 // The ONE shared horizon bootstrap: every Python child receives the
 // ORIGINAL absolute monotonic deadline (ms) through the isolated env
 // and arms a stdlib ITIMER_REAL against deadlineMonoMs/1000 minus
-// time.monotonic() BEFORE any third-party import — SIGALRM's default
+// the Node clock epoch (macOS CLOCK_MONOTONIC_RAW) BEFORE any third-party
+// import — SIGALRM's default
 // disposition kills a child that outlives the borrowed horizon.
 const DEADLINE_BOUND = `import os
 import signal
@@ -14,9 +15,11 @@ def _die(detail):
 
 
 try:
+    _clock_now = (time.clock_gettime(time.CLOCK_MONOTONIC_RAW)
+                  if sys.platform == "darwin" else time.monotonic())
     _remaining = (
         float(os.environ["SETUP_AUDIT_DEADLINE_MONO_MS"]) / 1000.0
-        - time.monotonic()
+        - _clock_now
     )
 except (KeyError, ValueError):
     _die("deadline")
