@@ -6,6 +6,8 @@ core is replaced by an injected fake whose BackendError/ipc_error are
 the REAL classes from process-macos-abi.py through the core re-export,
 so guard assertions exercise the actual production error surface.
 """
+import ctypes
+import errno
 import importlib.util
 import io
 import json
@@ -25,6 +27,7 @@ def load(name, file):
 
 N = load("process_macos_native", "process-macos-native.py")
 E = load("process_macos_entry", "process-macos.py")
+S = load("process_macos_support", "process_macos_test_support.py")
 
 
 def frame(msg, seq, run="run-1"):
@@ -209,6 +212,59 @@ class CollectorWireTests(unittest.TestCase):
         self.assertEqual(out[-1]["type"], "accounting-fault")
         self.assertEqual(out[-1]["code"], "ACCOUNTING_UNAVAILABLE")
         self.assertEqual(calls, [])
+
+    def test_revalidated_census_keeps_first_clock_and_owned_coverage(self):
+        for owned_failure in (False, "task", "bsd"):
+            with self.subTest(owned_failure=owned_failure):
+                lists, bsd_reads = [], []
+
+                def listpids(flavor, uid, arr, size):
+                    vector = [3, 11] if not lists else [3]
+                    lists.append(vector)
+                    for index, pid in enumerate(vector):
+                        arr[index] = pid
+                    return len(vector) * 4
+
+                def pidinfo(pid, flavor, arg, bufp, size):
+                    if pid == 3 and flavor == N.PROC_PIDTBSDINFO:
+                        bsd_reads.append(pid)
+                    denied = ((owned_failure == "task" and flavor == N.PROC_PIDTASKINFO)
+                              or (owned_failure == "bsd" and len(bsd_reads) >= 3))
+                    if pid == 11 or denied:
+                        ctypes.set_errno(errno.EPERM)
+                        return -1
+                    value = (S.task_struct(N, rss=123) if flavor == N.PROC_PIDTASKINFO
+                             else S.bsd_struct(N, pid=pid, uid=os.getuid(), sec=1, usec=0))
+                    ctypes.memmove(bufp, ctypes.byref(value), size)
+                    return size
+
+                native = fake_n()
+                native.discover = N.discover
+                native.sample_process = N.sample_process
+                ident = {"pid": 3, "startSec": "1", "startUsec": 0}
+                script = frame({"type": "sample", "requestId": "s1", "owned": [ident],
+                                "inspectPids": [], "probes": []}, 0)
+                script += frame({"type": "shutdown", "requestId": "done"}, 1)
+                stream = io.BytesIO()
+                collector = E.Collector(native, N.Backend(listpids, pidinfo, lambda *a: 0),
+                                        "run-1", False, io.BytesIO(script), stream)
+                with mock.patch.object(E.time, "monotonic_ns", side_effect=[100, 600000101]):
+                    code = collector.run(1)
+                messages = [json.loads(line) for line in stream.getvalue().splitlines()]
+                self.assertEqual(lists, [[3, 11], [3]])
+                if owned_failure:
+                    self.assertEqual(code, 2)
+                    self.assertFalse(any(m["type"] == "process-samples" for m in messages))
+                    flavor = "task" if owned_failure == "task" else "bsd"
+                    self.assertIn(f"pidinfo-{flavor} 3 errno 1", messages[-1]["diagnostic"])
+                else:
+                    self.assertEqual(code, 0)
+                    reply = messages[1]
+                    self.assertEqual(reply["startedAtMonoNs"], "100")
+                    self.assertEqual(reply["finishedAtMonoNs"], "600000101")
+                    self.assertEqual(reply["samples"][0]["identity"], ident)
+                    self.assertEqual(reply["samples"][0]["residentBytes"], 123)
+                    self.assertEqual(reply["gone"], [])
 
     def test_signal_reply(self):
         ident = {"pid": 3, "startSec": "4", "startUsec": 5}

@@ -349,3 +349,30 @@ test("terminal collector state keeps its stream closed", () => {
   fail(() => pv.accept("collector", "c2s", msg(2, "signal-result", { requestId: "x", identity: identity(1), signal: "TERM", outcome: "gone" }), bytes));
   fail(() => pv.accept("collector", "s2c", msg(1, "signal", { requestId: "x", identity: identity(1), signal: "TERM" }), bytes));
 });
+
+test("collector fault preserves validated pre-STOP liveness without admitting new work", () => {
+  for (const kind of ["heartbeat", "bad-heartbeat", "bad-seq", "register"]) {
+    const pv = v();
+    hello(pv);
+    start(pv);
+    pv.accept("collector", "c2s", msg(0, "accounting-fault", {
+      requestId: null, code: "ACCOUNTING_UNAVAILABLE", reason: "permission",
+      diagnostic: "pidinfo-bsd 37355 errno 1",
+    }), bytes);
+    const frame = kind === "register" ? msg(1, "register", {
+      requestId: "forbidden", kind: "fixture", rootPid: null, expectedExecutable: null, listener: null,
+    }) : msg(kind === "bad-seq" ? 9 : 1, "heartbeat", { operationId: kind === "bad-heartbeat" ? "ghost" : null });
+    if (kind !== "heartbeat") {
+      fail(() => pv.accept("driver", "d2s", frame, 100));
+      continue;
+    }
+    pv.accept("driver", "d2s", frame, 100);
+    pv.accept("driver", "s2d", msg(1, "stop", { stopReason: "ACCOUNTING_UNAVAILABLE", cleanupRemainingMs: 5000 }), 100);
+    pv.accept("driver", "d2s", msg(2, "closed", { gracefulCloseAttempted: true, expectedShutdowns: [] }), 100);
+  }
+  const stopped = v();
+  hello(stopped);
+  start(stopped);
+  stopped.accept("driver", "s2d", msg(1, "stop", { stopReason: "ACCOUNTING_UNAVAILABLE", cleanupRemainingMs: 5000 }), 100);
+  fail(() => stopped.accept("driver", "d2s", msg(1, "heartbeat", { operationId: null }), 100));
+});

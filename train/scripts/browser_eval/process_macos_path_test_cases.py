@@ -99,8 +99,9 @@ def make_pid_path_cases(N, fake_be):
 def make_discover_stability_cases(N, fake_be, bsd_struct):
     """Build discovery cases against the SAME loaded Native module."""
     class DiscoverStabilityTests(unittest.TestCase):
-        def _backend(self, vectors, gone=(), wrong_uid=None):
+        def _backend(self, vectors, gone=(), wrong_uid=None, denied=None):
             lists, rows = [], []
+            denied = {pid: list(values) for pid, values in (denied or {}).items()}
 
             def lp(flavor, uid, arr, nbytes):
                 self.assertEqual((flavor, uid), (N.PROC_UID_ONLY, os.getuid()))
@@ -115,6 +116,11 @@ def make_discover_stability_cases(N, fake_be, bsd_struct):
             def info(pid, flavor, arg, bufp, size):
                 self.assertEqual((flavor, arg, size), (N.PROC_PIDTBSDINFO, 0, 136))
                 rows.append(pid)
+                errors = denied.get(pid, [])
+                error = errors.pop(0) if errors else None
+                if error is not None:
+                    ctypes.set_errno(error)
+                    return -1
                 if pid in gone:
                     ctypes.set_errno(errno.ESRCH)
                     return -1
@@ -196,6 +202,76 @@ def make_discover_stability_cases(N, fake_be, bsd_struct):
             self.assertEqual(lists, [[11, 7]])
             self.assertEqual(rows, [11, 7])
             self.assertEqual([r["identity"]["pid"] for r in result], [11, 7])
+
+        def test_denied_first_row_restarts_whole_fresh_census(self):
+            vectors = [[11, 7, 9], [13, 7]]
+            be, lists, rows = self._backend(
+                vectors, denied={7: [errno.EPERM, None]})
+            result = N.discover(be)
+            self.assertEqual(lists, vectors)
+            self.assertEqual(rows, [11, 7, 13, 7])
+            self.assertEqual([r["identity"]["pid"] for r in result], [13, 7])
+
+        def test_denied_pid_can_retire_without_skipping_any_fresh_row(self):
+            vectors = [[11, 7], [13, 9]]
+            be, lists, rows = self._backend(
+                vectors, denied={7: [errno.EACCES]})
+            result = N.discover(be)
+            self.assertEqual(lists, vectors)
+            self.assertEqual(rows, [11, 7, 13, 9])
+            self.assertEqual([r["identity"]["pid"] for r in result], [13, 9])
+
+        def test_second_permission_is_fatal_with_both_attempts_retained(self):
+            for second in (7, 9):
+                with self.subTest(second=second):
+                    denied = {7: [errno.EPERM, errno.EACCES]}
+                    if second != 7:
+                        denied[second] = [errno.EACCES]
+                    be, lists, rows = self._backend([[7], [second]], denied=denied)
+                    with self.assertRaises(N.BackendError) as caught:
+                        N.discover(be)
+                    self.assertEqual(caught.exception.reason, "permission")
+                    self.assertIn("pidinfo-bsd 7 errno 1", caught.exception.detail)
+                    self.assertIn(f"pidinfo-bsd {second} errno 13", caught.exception.detail)
+                    self.assertEqual(len(lists), 2)
+                    self.assertEqual(rows, [7, second])
+
+        def test_revalidation_keeps_vector_and_uid_guards(self):
+            for vector, wrong, reason in [([9, 9], None, "unstable-list"),
+                                          ([9], 9, "uid-mismatch")]:
+                with self.subTest(reason=reason):
+                    be, lists, rows = self._backend(
+                        [[7], vector], wrong_uid=wrong, denied={7: [errno.EPERM]})
+                    with self.assertRaises(N.BackendError) as caught:
+                        N.discover(be)
+                    self.assertEqual(caught.exception.reason, reason)
+                    self.assertIn("pidinfo-bsd 7 errno 1", caught.exception.detail)
+                    self.assertEqual(len(lists), 2)
+
+        def test_nonpermission_bsd_and_list_permission_do_not_restart(self):
+            be, lists, rows = self._backend([[7]], denied={7: [errno.EIO]})
+            with self.assertRaises(N.BackendError) as caught:
+                N.discover(be)
+            self.assertEqual(caught.exception.reason, "unclassifiable-process")
+            self.assertEqual(len(lists), 1)
+            be, lists, rows = self._backend([[7]])
+            short = fake_be(listpids=be.listpids,
+                            pidinfo=lambda pid, flavor, arg, bufp, size: size - 1)
+            with self.assertRaises(N.BackendError) as caught:
+                N.discover(short)
+            self.assertEqual(caught.exception.reason, "short-read")
+            self.assertEqual(len(lists), 1)
+            calls = []
+
+            def denied_list(*args):
+                calls.append(args)
+                ctypes.set_errno(errno.EPERM)
+                return -1
+
+            with self.assertRaises(N.BackendError) as caught:
+                N.discover(fake_be(listpids=denied_list))
+            self.assertEqual(caught.exception.reason, "permission")
+            self.assertEqual(len(calls), 1)
 
         def test_unaligned_byte_count_rejected(self):
             be = fake_be(listpids=lambda *a: 6)

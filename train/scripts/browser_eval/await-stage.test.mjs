@@ -310,13 +310,13 @@ test("genuine Recorder retains falsey firsts after correctable rejection without
 test("transport description reads monitor info only after primary stop/narrow and preserves arbitrary first values", async () => {
   const source = await fsp.readFile(new URL("./watchdog.mjs", import.meta.url), "utf8");
   const tree = ts.createSourceFile("watchdog.mjs", source, ts.ScriptTarget.Latest, true);
-  let expression;
+  const expressions = new Map();
   const visit = (node) => {
-    if (ts.isVariableDeclaration(node) && node.name.getText(tree) === "onError") expression = node.initializer;
+    if (ts.isVariableDeclaration(node) && ["onError", "noteNativeFault", "fail"].includes(node.name.getText(tree))) expressions.set(node.name.getText(tree), node.initializer);
     ts.forEachChild(node, visit);
   };
   visit(tree);
-  assert.ok(expression);
+  assert.equal(expressions.size, 3);
   for (const primary of [Object.assign(new Error("original IPC error"), { code: "IPC_INVALID" }),
     Object.assign(new Error("original disconnect"), { code: "IPC_DISCONNECT" }), null, undefined]) {
     for (const mode of ["missing", "absent", "throwing", "reentrant"]) {
@@ -340,9 +340,11 @@ test("transport description reads monitor info only after primary stop/narrow an
         latchStop("LATE_OTHER_REASON");
         return { detail: "observed collector diagnostic" };
       };
-      const handler = new Function("recordFault", "latchStop", "faultEvent", "monitor",
-        `return ${expression.getText(tree)}`)((error) => records.push(error), latchStop,
-      async (error) => { described = error; }, mode === "missing" ? {} : { fault: getter });
+      const handler = new Function("recordFault", "latchStop", "faultEvent", "monitor", "stopped",
+        `const fail = ${expressions.get("fail").getText(tree)};
+         const noteNativeFault = ${expressions.get("noteNativeFault").getText(tree)};
+         return ${expressions.get("onError").getText(tree)}`)((error) => records.push(error), latchStop,
+      async (error) => { described = error; }, mode === "missing" ? {} : { fault: getter }, () => reason !== null);
       handler(primary);
       assert.equal(records.length, 1);
       assert.equal(records[0], primary);

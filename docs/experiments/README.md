@@ -1,5 +1,16 @@
 # Tinyaz local software verification
 
+Latest full-cohort attempt: committed `17d2ff8` naturally exited 2 at 6/40
+complete games and 3/20 pairs, with `p04-g1` incomplete at 115 plies.
+It remains inconclusive, IPC_INVALID, three faults and invalid Native
+cleanup/accounting. The separate 36-known-tuple gone/reused probe does not
+promote that cleanup. PID 37355's EPERM cause and the earlier retained Node
+reference remain UNKNOWN. The [ledger](tinyaz-software-plan.md#preserved-full-cohort-failure-and-native-repair-2026-11-06)
+records the immutable receipts and targeted permission/heartbeat repair.
+A fresh full cohort needs the reviewed source repair, fresh committed
+check/parity/preflight and controller execution release. The same model,
+24-hour ceiling, locked schedule and analysis method remain fixed.
+
 The executable local phase commands and archived launch/retention rules are
 now documented in [harness usage](../../train/scripts/browser_eval/README.md#operational-command-usage).
 Check/parity, committed preflight and the one locked cohort remain distinct

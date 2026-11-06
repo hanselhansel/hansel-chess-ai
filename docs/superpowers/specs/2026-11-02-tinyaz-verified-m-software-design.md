@@ -3685,3 +3685,38 @@ Before creation, pgn-evidence-test-fixtures.mjs is declared TEST-only above:
 the whole real-PGN fixture moves from pgn-evidence.test.mjs to keep both
 readable owners below 400 physical lines. Final verification and controller
 review are required before any real phase; no comparison result is claimed.
+
+
+## Complete-census and pre-STOP liveness correction (2026-11-06)
+
+The concrete 17d2ff8 permission/heartbeat failure is retained in the experiment
+ledger. Root assessed this bounded correction against the approved readable
+current-UID snapshot and liveness/STOP requirements. The protected historical
+Section 3 text remains byte-exact; this addendum makes the implementation
+rule explicit without waiving permission, ownership or timing proof.
+
+Only a first BSD-row permission failure inside `discover()` permits ONE
+whole-census restart. Discard all initial rows, reacquire a complete validated
+current-UID vector and validate every fresh live BSD row. No denied row is
+skipped. A second failure is fatal, with useful first/second diagnostics;
+listpids permission, malformed vectors, short reads, UID mismatch and other
+unclassifiable errors do not trigger this retry. The existing original sample
+start covers both attempts. No sleep, fresh clock/window or third attempt.
+Projection follows full validation. Owned BSD/tuple/RSS sampling and the
+unchanged 500 ms checks remain independently mandatory; their errors cannot
+be recovered by census revalidation. No new wire or proof/status authority.
+
+A strictly validated pre-STOP heartbeat remains liveness after a fault on
+another channel. Envelope/sequence/operation guards are unchanged. Register,
+begin, ordinary records and artifact traffic remain fenced. After STOP only
+CLOSED is admitted, exactly as before. Watchdog preserves its already-retained
+Native fault before later driver callbacks/errors can replace it, keeps
+malformed traffic as distinct faults, dispatches valid CLOSED and joins all
+actual shutdown debts. No fault-counter suppression or cleanup promotion.
+
+Historical PID 37355's identity and EPERM cause remain UNKNOWN. Current OS
+census and controlled mocked-kernel evidence cannot establish its old race or
+protection state. Both old cohorts stay immutable and inconclusive. Continuing
+the requested full 40 games needs reviewed committed source, fresh committed
+check/parity/preflight and a separate Root execution release. The fixed M,
+24-hour comparison budget, schedule, visits and analysis method are unchanged.

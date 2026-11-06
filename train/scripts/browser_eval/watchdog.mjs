@@ -1,18 +1,7 @@
-// watchdog.mjs is the public createWatchdog facade: it composes the grouped
-// {config,capabilities,state,timing,control} context through
-// watchdog-runtime.mjs and retains the SAME first-stop/fault/operation/
-// finalization authorities over the ONE shared private state. run() invokes
-// the sole lifecycle owner; requestStop is the first-stop latch. Dispatch and
-// the preflight selftest handshake live in watchdog-operations.mjs; recorder,
-// artifact ordinal, PGN and receipt readback in watchdog-records.mjs; the
-// fork IPC channel in watchdog-driver.mjs; staged proof in
-// watchdog-cleanup.mjs; config/context capture in watchdog-config.mjs; the
-// bounded shutdown/finalization sequencer in watchdog-shutdown.mjs. The
-// derived shared owner binds to the recorder's timed runtime once here
-// and the supplied nativeHorizon narrows to the original cleanup end at
-// the first stop or admitted finish.
-// KNOWN_OVERSIZE over the 375 target: the owner bind, horizon narrow and
-// timer-clear guards/comments are kept whole, not packed.
+// Public Watchdog facade over the one grouped run state and first-stop latch.
+// Runtime, operations, records and shutdown retain their existing ownership;
+// Native/proof/driver resources remain owned by their dedicated modules.
+// Every first stop captures and narrows the original cleanup bound once.
 import { copyDeep } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { captureWatchdogRuntimeConfig, runWatchdogLifecycle } from "./watchdog-runtime.mjs";
@@ -306,10 +295,24 @@ export function createWatchdog(options) {
 
   // Channel callbacks stay thin: validated dispatch lives in the operations
   // owner, hello included.
+  const noteNativeFault = () => {
+    if (stopped()) return false;
+    let retained;
+    try { retained = monitor.fault?.(); } catch { return false; }
+    if (!retained || typeof retained.detail !== "string") return false;
+    const error = fail(typeof retained.code === "string" ? retained.code : "ACCOUNTING_UNAVAILABLE", retained.detail);
+    recordFault(error);
+    latchStop(error.code);
+    void faultEvent(error);
+    return true;
+  };
   const onMessage = (msg) => {
+    noteNativeFault();
+    // Lifecycle dispatch remains required; admission/finish keep their fences.
     if (state.ops !== null) state.ops.dispatch(msg);
   };
   const onError = (error) => {
+    noteNativeFault();
     recordFault(error);
     latchStop(error && error.code === "IPC_DISCONNECT" ? "IPC_DISCONNECT" : "IPC_INVALID");
     // Retained monitor facts describe the event only AFTER the original

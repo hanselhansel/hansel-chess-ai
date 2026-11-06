@@ -279,24 +279,41 @@ def list_process_pids(be, capacity=4096):
 
 
 def discover(be):
-    """One complete current-UID BSD row snapshot.
+    """Complete current-UID BSD census, with one permission revalidation.
 
-    list_process_pids owns bounded capacity retries and all vector guards.
-    Its nonfull validated vector is complete at capture; later process
-    membership changes do not require rereading it. Keep its unsorted order.
-    Every live BSD row requires the caller's UID; ESRCH rows are skipped.
+    A first BSD permission failure discards ALL partial rows and restarts
+    the complete validated UID vector once. No row is skipped on denial;
+    every second failure is fatal. List/UID/other BSD errors never restart.
+    The caller's original sample start covers both attempts, without sleep
+    or a fresh clock/budget. Owned tuple/RSS reads remain separate duties.
     """
     uid = os.getuid()
-    pids = list_process_pids(be)
-    rows = []
-    for pid in pids:
-        row = bsd_row(be, pid)
-        if row is not None:
-            if row["uid"] != uid:
-                raise BackendError("uid-mismatch",
-                                   f"pid {pid} uid {row['uid']}")
-            rows.append(row)
-    return rows
+    first = None
+    for attempt in range(2):
+        try:
+            pids = list_process_pids(be)
+            rows = []
+            for pid in pids:
+                try:
+                    row = bsd_row(be, pid)
+                except BackendError as exc:
+                    if attempt == 0 and exc.reason == "permission":
+                        first = exc
+                        break
+                    raise
+                if row is not None:
+                    if row["uid"] != uid:
+                        raise BackendError("uid-mismatch",
+                                           f"pid {pid} uid {row['uid']}")
+                    rows.append(row)
+            else:
+                return rows
+        except BackendError as exc:
+            if first is not None:
+                raise BackendError(
+                    exc.reason, f"{first.detail}; revalidation {exc.reason}: {exc.detail}",
+                    ipc=exc.code == "IPC_INVALID") from exc
+            raise
 
 
 def project_discovery(rows, owned, roots):

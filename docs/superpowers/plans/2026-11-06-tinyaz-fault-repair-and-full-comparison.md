@@ -46,6 +46,30 @@ Run changed-area tests, full required checks, and final code-to-doc comparison. 
 
 ## Task 3: Execute and verify all 40 games
 
+### Concrete 17d2ff8 failure and source repair
+
+The committed attempt naturally exited 2 after 5172.471 seconds at 6/40
+complete games, 3/20 pairs and `p04-g1` incomplete at 115 total plies.
+Preserve its inconclusive IPC_INVALID result, three faults and invalid
+Native cleanup/accounting. The later 36-known-tuple gone/reused probe does
+not repair sealed cleanup; unknown actors and PID 37355's exact historical
+cause remain unknown. Freeze the 486 compare files and all handoff refs.
+
+Sol High repairs the causal Native-fault/valid-heartbeat poisoning path and
+adds one whole readable-census revalidation after a first discover BSD
+permission denial. Keep all vector/UID/owned tuple/RSS and first-start timing
+requirements, persistent-denial fatality, actual shutdown debts and fault
+visibility. Update affected READMEs, accepted contract addendum and result
+status with the code; run focused and full checks, inspect the final
+code-to-doc diff and commit green for independent source review.
+
+After review/publication, use fresh committed check, 13-case parity and
+preflight in a new workspace. Root supplies a separate release for a fresh
+source-repaired full 40-game attempt under the unchanged 24-hour bound.
+This continues Hansel's requested fix-and-finish work; it is not a resumed
+or automatic same-candidate retry. Never tune against observed scores.
+
+
 Create a fresh workspace and run committed check, 13-case Python/browser parity, and preflight in order. Verify all actual required checks, closed receipts, cleanup, and prerequisite graph. Then execute the newly authorized locked cohort once under its recorded larger bound, with one game at a time and fresh contexts/roots as specified.
 
 Follow the owned command to closure. Monitor actual completed-game progress where the existing bounded stream permits; do not change source/settings while active. On a concrete failure preserve evidence and diagnose it. A failing or partial cohort cannot pass or produce statistical/Elo conclusions.

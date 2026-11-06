@@ -1,5 +1,38 @@
 # Browser evaluation harness libraries
 
+## Current full-cohort failure and repair (2026-11-06)
+
+Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2
+at 6/40 complete games, 3/20 complete pairs and one incomplete game. Its
+sealed status stays inconclusive, IPC_INVALID, three faults, with invalid
+Native cleanup/accounting and no analysis. The earlier retained Node
+reference remains UNKNOWN. A later probe found all 36 known sealed tuples
+gone or reused; that limited observation never repairs the sealed cleanup.
+
+The repair keeps full-census authority. Only a first `discover()` BSD-row
+permission failure permits ONE complete current-UID census restart. Every
+partial row is discarded. The fresh vector and every live BSD row must
+validate. Second failures, vector/UID/short-read/unclassifiable failures and
+listpids permission remain fatal. Owned tuple/BSD/RSS reads still must
+succeed independently. The original sample start covers both attempts and
+the unchanged 500 ms guards still decide admission. Failure diagnostics
+retain the first denial and second failure without new wire/status fields.
+No denied row is skipped and projection still follows complete validation.
+
+A fully validated pre-STOP heartbeat is liveness after another channel's
+fault. Envelope, sequence, current-operation and post-STOP guards remain;
+new work/evidence stays fenced and only CLOSED is accepted after STOP.
+Watchdog latches its already-retained Native fault before later driver
+callbacks/errors can replace it, then retains genuine malformed traffic as
+separate faults. Valid CLOSED still dispatches and all real shutdown debts
+remain owed. No fault-counter suppression or cleanup-proof promotion.
+
+Historical PID 37355's identity and reason for EPERM remain UNKNOWN. Current
+read-only production censuses were complete/readable and that PID absent.
+Mocked-kernel regressions establish bounded recovery and persistent-denial
+fatality, not the historical cause. See the experiment ledger and
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/full40-native-fault-repair-report.md`.
+
 Task 1 fault-repair test owners declared before creation (2026-11-06):
 `cli-shutdown-test-fixtures.mjs` exports only `prepareCliShutdownFixture`.
 It creates a synthetic archived workspace with real CLI, supervisor,
@@ -521,7 +554,9 @@ loads a CDLL or executes a loop on import.
 - `proc_pidinfo` must return the exact struct size; a short positive read
   is `short-read`, `errno` `ESRCH` on a *repeated* lookup is a confirmed
   gone, `EPERM`/`EACCES` is `permission`, anything else is
-  `unclassifiable-process`. A PID path comes from `proc_pidpath` and is
+  `unclassifiable-process`. Only discover's first BSD-row permission failure
+  permits the one complete-census revalidation above. Other native reads and
+  persistent denials retain immediate fatal permission semantics. A PID path comes from `proc_pidpath` and is
   decoded as STRICT UTF-8 — malformed bytes fail `unclassifiable-process`
   through the existing `BackendError`, never a surrogateescape guess; the
   returned count/NUL-terminator/absolute-path guards are unchanged. A

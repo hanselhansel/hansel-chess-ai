@@ -191,3 +191,12 @@ Native cleanup 5s, RSS 4GiB and output 256MiB remain unchanged. Its bounded
 counts only. They have no result or proof authority. The original one-hour
 cohort stays inconclusive; see the [accepted budget amendment](docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md#accepted-second-cohort-budget-and-progress-amendment-2026-11-06)
 and [progress format](train/scripts/browser_eval/README.md#authorized-second-comparison-budget-and-progress-2026-11-06).
+
+The 24-hour candidate `17d2ff8` naturally exited 2 at 6/40 complete games
+and 3/20 pairs. Its permission fault, three sealed faults and invalid Native
+cleanup/accounting remain inconclusive. The source repair preserves Native
+first-cause priority across valid pre-STOP heartbeats and permits one complete
+readable-census revalidation after a first BSD permission failure. Persistent
+denials, all owned tuple/RSS requirements and the original timing guards
+remain fatal. A fresh full cohort requires reviewed committed source, fresh
+check/parity/preflight and a separate controller execution release.

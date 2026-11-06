@@ -1,14 +1,55 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State (2026-11-06):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result exists. Hansel subsequently authorized one fresh full cohort after repair, with a 24-hour ceiling; the Task2 amendment below records that separate authorization.
+- **State (2026-11-06):** Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2 after 5172.471 seconds at 6/40 complete games, 3/20 pairs and one incomplete game. It remains inconclusive, IPC_INVALID, three faults, invalid Native cleanup/accounting and no eligible analysis. The concrete permission/heartbeat cascade is under source repair. A fresh full cohort follows green review/publication, fresh prerequisite gates and separate controller release. The 24-hour budget, model, schedule and statistical method stay unchanged.
+- **Historical first-cohort state (preserved):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result exists. Hansel subsequently authorized one fresh full cohort after repair, with a 24-hour ceiling; the Task2 amendment below records that separate authorization.
 - **Historical state before C4b execution (preserved):** Runtime implementation exists and every earlier stage below is accepted: C1 and C2a on their fix branches, the C3a/C3b/C3c runtime (latest known runtime base `87d3c5b410bf07fdfc4f324a0a0b50f6813d073f`) and the C2b Python verification at `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`. C4a1's pure-JS browser-evaluation evidence libraries are accepted tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`: Sol's prepared-5 `npm run test:browser-harness` gate exited 0 with 138/138 cases, zero fail/skip/cancel and no warnings, `git diff --check` exited 0, all 33 frozen hashes stayed unchanged, both independent Sol 6.1-Max reviews returned ACCEPTABLE, and the final verdict is `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`. The final functional-input union and comparison candidate are not yet frozen: real native cleanup/identity bindings, C4a2 capture/supervisor wiring, harness integration and the final candidate freeze remain pending. The source-feature commit and its ref proof are recorded externally after Sol performs them; no SHA is invented here. Source-feature Git publication is distinct from prohibited new model/weight publication. C4a2's native supervision and watchdog stack on `feat/tinyaz-native-supervision` is verified at the whole-JS boundary by the 2026-11-05 actual 352/352 serial receipt (current-verification paragraph in the C4a2 section); C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison remain open. No comparison, training, model publication, deployment, bot or strength result exists.
 - **Historical C0/C1/C2a checkpoint (2026-11-02, preserved verbatim):** C0 documentation baseline committed at `8e23a787771fd74a723a52aa8941aaa38de9adf8`; fresh baseline captured. C1 is implemented and verified in this change on `fix/tinyaz-test-fixtures` (verification base `0f5c5f72e1bbd0d760f7176a5308a205715aba5b`): Sol's full `npm test` passed 191/191 application script cases then 39/39 core cases and `npm run typecheck` exited 0 on that snapshot. The coordinator accepted the executable change, both documentation corrections and the static doc review, with the eight frozen executable hashes verified unchanged. The four upstream authoring checks remain unavailable without real `GROK_TEMPLATE_ROOT` input. C1 is committed at `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` on `fix/tinyaz-test-fixtures`. Earlier push attempts hit GitHub TCP timeouts and a read-only connector then found no remote branch; the coordinator pushed the same commit at about 2026-11-02T01:02Z, and `git ls-remote` plus the GitHub connector now confirm `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` at `refs/heads/fix/tinyaz-test-fixtures`, so C1 is local verified and remote published. C2a's comment/inventory packet passed Sol's static gates with verdict `ACCEPTED_FOR_METADATA_FINALIZATION` and is implemented and verified in this change on `fix/tinyaz-contract-inventories`, built on that unchanged base; the containing commit supplies its closure.
 - **Requirements:** [Canonical design](../superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md).
 - **Review:** [Five-stage report](../superpowers/reviews/2026-11-02-tinyaz-verified-m/consolidated_review_report.md) and [resolved text actions](../superpowers/reviews/2026-11-02-tinyaz-verified-m/resolution/goldfish_review_report.md).
 - **Functional control source:** `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`.
 - **Integration branch:** `feat/tinyaz-browser-harness` (initial documentation branch: `chore/egm-bootstrap-tinyaz`). Never commit to main.
-- **Candidate:** the comparison used committed `583b317d458d361dc218ac3f704fe1f4ec158055` against fixed baseline `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Later documentation or any exit-only repair cannot replace those experimental inputs. WORKTREE receipts remain separate. No retraining, model publication, deployment, live-bot action or eligible strength result.
+- **First sealed candidate:** the comparison used committed `583b317d458d361dc218ac3f704fe1f4ec158055` against fixed baseline `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Later documentation or any exit-only repair cannot replace those experimental inputs. WORKTREE receipts remain separate. No retraining, model publication, deployment, live-bot action or eligible strength result.
+
+## Preserved full-cohort failure and Native repair (2026-11-06)
+
+The 24-hour attempt used committed `17d2ff8424c7d8c73fd7565034c01e74a4641bdf`
+in `/private/var/folders/48/mn49jb697djfv2xv2t03nbn40000gn/T/tinyaz-full40-17d2ff8-20261106T115104081Z-0a2a5c3c-49cf-4f6a-a316-20ef1af950ac`.
+It naturally exited 2 after 5172.470568625 seconds. Six games and three pairs
+completed; `p04-g1` remains incomplete at 115 total plies. The sealed result
+is inconclusive, analysis ineligible, with no p-value, interval or Elo result.
+Native cleanup/accounting remains invalid. Fault count remains three.
+Event 6084 records heartbeat-after-fault IPC_INVALID with the earlier
+ACCOUNTING_UNAVAILABLE collector permission denial for PID 37355, errno 1.
+That PID's historical identity and exact race/protection cause remain UNKNOWN.
+
+The closed handoff and read-only freeze manifest are under
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/`:
+`task-3-failure-probe-handoff-17d2ff8.json` (SHA256
+`ea5f626c28ac172c62be6f8d059c168174b910ec1be790bb871832f87b501278`)
+and `task-3-sealed-comparison-17d2ff8-manifest.json` (SHA256
+`aaf744a1c74e614b1fd1c479e09dbb23b17878474d9d38c3593ffb39591f0662`).
+The latter binds all 486 sealed compare files, 3,902,788 bytes, plus closed
+orchestration/probe/prerequisite refs. A separate finite probe found all 36
+known tuples gone or reused, with no live/unavailable rows and no signals.
+Its known-set limitation remains; sealed cleanup is never promoted.
+
+The targeted source correction validates pre-STOP heartbeats as liveness
+without admitting new work, preserves the actual Native fault before later
+protocol errors, and still dispatches CLOSED and joins physical shutdown.
+Only a first discover BSD-row permission failure permits one complete fresh
+UID census. Partial rows are discarded; fresh vector/UID validation, original
+sample duration and every owned tuple/RSS read remain required. Persistent
+or second failures and all other fault classes remain fatal. Mocked-kernel
+controls prove the rule; a current readable OS census does not reconstruct
+the historical failure. No weight, chess, score-driven or budget change.
+
+Continuing Hansel's fix-and-finish request requires a new source-repaired
+candidate after green review/publication and fresh committed check, 13-case
+parity and preflight. The controller issues the next execution release.
+No same-candidate automatic retry, partial-cohort inference or outcome
+selection is authorized. Both sealed cohorts and the earlier unexplained
+protected-Node reference remain immutable and qualified.
 
 ## Task 1 demonstrated fault repair (2026-11-06)
 

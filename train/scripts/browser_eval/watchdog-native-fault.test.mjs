@@ -25,14 +25,16 @@ const gate = () => {
   return { promise, resolve };
 };
 
-for (const [holdCleanupEvent, periodic] of [[false, false], [true, false], [false, true]]) {
-  test(`shared Native fault stops sampler, held event=${holdCleanupEvent}, pending periodic=${periodic}`, { timeout: 15000 }, async (t) => {
+for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, false], [false, true], [false, false, true], [false, false, "bad"], [false, false, "closed-first"]]) {
+  test(`shared Native fault stops sampler, held event=${holdCleanupEvent}, pending periodic=${periodic}, driver=${heartbeat ?? "register"}`, { timeout: 15000 }, async (t) => {
     const ready = gate();
     const started = gate();
     const eventRelease = gate();
     const eventEntered = gate();
     const monitorStopped = gate();
     const stopCalls = [];
+    const driverStops = [];
+    const driverStopped = gate();
     const stopResults = [];
     const cleanupStages = [];
     const sampleEntered = gate();
@@ -127,6 +129,10 @@ for (const [holdCleanupEvent, periodic] of [[false, false], [true, false], [fals
     driver.child.send = function (...args) {
       const result = send.apply(this, args);
       if (args[0].type === "start") started.resolve();
+      if (args[0].type === "stop") {
+        driverStops.push(structuredClone(args[0]));
+        driverStopped.resolve();
+      }
       return result;
     };
     const onListener = (name) => {
@@ -165,7 +171,9 @@ for (const [holdCleanupEvent, periodic] of [[false, false], [true, false], [fals
     ]) healthy.accept("driver", direction, frame, Buffer.byteLength(JSON.stringify(frame)));
     const first = JSON.stringify({ sameMembership: true, orderEqual: false });
     const second = JSON.stringify({ sameMembership: false, orderEqual: false });
-    const diagnostic = `pid list never stable [${first},${" ".repeat(3700)}${second}]`;
+    const reason = heartbeat ? "permission" : "unstable-list";
+    const diagnostic = heartbeat ? "pidinfo-bsd 37355 errno 1" :
+      `pid list never stable [${first},${" ".repeat(3700)}${second}]`;
     let requestId = null;
     if (periodic) {
       script.muteSample = true;
@@ -180,17 +188,20 @@ for (const [holdCleanupEvent, periodic] of [[false, false], [true, false], [fals
       requestId = issued.requestId;
     }
     native.fixture.emit({ type: "accounting-fault", code: "ACCOUNTING_UNAVAILABLE",
-      reason: "unstable-list", diagnostic, requestId });
+      reason, diagnostic, requestId });
     const fault = native.monitor.fault();
     assert.ok(fault.detail.includes(diagnostic));
     const beforeRegister = clock.nowMonoMs();
     stopAt = beforeRegister;
     const originalPhaseEnd = horizon.reader.read();
     if (periodic) native.clock.runDue();
-    else driver.emit(registration);
+    else driver.emit(heartbeat === "closed-first" ? {
+      type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [],
+    } : heartbeat ? { type: "heartbeat", operationId: heartbeat === "bad" ? "ghost" : null } : registration);
     assert.equal(horizon.reader.read(), beforeRegister + 5000);
     assert.ok(horizon.reader.read() < originalPhaseEnd);
-    driver.emit({ type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [] });
+    if (heartbeat === true) await Promise.race([driverStopped.promise, early]);
+    if (heartbeat !== "closed-first") driver.emit({ type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [] });
     driver.exit(0); driver.closeOut(); driver.closeErr();
     native.fixture.exit(2);
     let returned = false;
@@ -224,31 +235,48 @@ for (const [holdCleanupEvent, periodic] of [[false, false], [true, false], [fals
     assert.ok(stopCalls[0].at < beforeRegister + 5000);
     assert.equal(native.clock.liveIntervals(), 0,
       "Watchdog outcome must close the sampler before test teardown");
-    assert.equal(outcome.stopReason, periodic ? "ACCOUNTING_UNAVAILABLE" : "IPC_INVALID");
+    assert.equal(outcome.stopReason, "ACCOUNTING_UNAVAILABLE");
     assert.equal(outcome.exitCode, 2);
     const lines = (await fsp.readFile(path.join(env.workspaceRoot, "check/events.jsonl"), "utf8"))
       .trim().split("\n").map((line) => parseCanonicalBytes(Buffer.from(line + "\n")));
     const event = lines.find((line) => line.kind === "fault");
     assert.equal(lines.filter((line) => line.kind === "cleanup" &&
       line.payload.stage === "graceful").length, 1);
-    if (!periodic) {
+    if (!periodic && !heartbeat) {
       assert.equal(event.seq, 0);
       assert.equal(lines.some((line) => line.kind === "resource"), false);
-      assert.ok(event.payload.detail.includes("register after fault"));
-    } else {
+      assert.ok(lines.some((line) => line.kind === "fault" && line.payload.detail.includes("register after fault")));
+    } else if (periodic) {
       const replied = native.fixture.written.filter((frame) => frame.requestId === requestId);
       assert.equal(replied.length, 1);
       assert.equal(replied[0].type, "sample");
     }
-    assert.equal(event.payload.code, periodic ? "ACCOUNTING_UNAVAILABLE" : "IPC_INVALID");
+    assert.equal(event.payload.code, "ACCOUNTING_UNAVAILABLE");
     t.diagnostic(JSON.stringify({ nativeCode: fault.code, primaryCode: event.payload.code,
       nativePairs: [fault.detail.includes(first), fault.detail.includes(second)],
       persistedPairs: [event.payload.detail.includes(first), event.payload.detail.includes(second)] }));
-    assert.ok(event.payload.detail.includes("collector unstable-list: pid list never stable"));
-    assert.ok(event.payload.detail.includes(first));
-    assert.ok(event.payload.detail.includes(second));
+    if (heartbeat) {
+      assert.ok(event.payload.detail.includes("collector permission: pidinfo-bsd 37355 errno 1"));
+    } else {
+      assert.ok(event.payload.detail.includes("collector unstable-list: pid list never stable"));
+      assert.ok(event.payload.detail.includes(first));
+      assert.ok(event.payload.detail.includes(second));
+    }
     assert.ok(Buffer.byteLength(event.payload.detail) <= 4096);
     const final = parseCanonicalBytes(await fsp.readFile(path.join(env.workspaceRoot, "check/final.json")));
+    if (heartbeat === true) {
+      assert.equal(final.unplannedFaultCount, 1, "one real Native fault, no heartbeat/STOP cascade");
+      assert.equal(driverStops.length, 1);
+      assert.equal(driverStops[0].stopReason, "ACCOUNTING_UNAVAILABLE");
+    }
+    if (heartbeat === "closed-first") {
+      assert.equal(final.unplannedFaultCount, 1, "valid CLOSED still dispatches after Native first-stop");
+      assert.equal(driverStops.length, 0);
+    }
+    if (heartbeat === "bad") {
+      assert.ok(final.unplannedFaultCount >= 2);
+      assert.ok(lines.some((line) => line.kind === "fault" && line.payload.detail.includes("heartbeat op")));
+    }
     assert.equal(final.cleanup.accountingValid, false);
     assert.equal(final.cleanup.verified, false);
     assert.deepEqual(native.monitor.fault(), fault);

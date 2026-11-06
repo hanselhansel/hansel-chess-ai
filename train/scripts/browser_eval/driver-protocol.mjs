@@ -32,10 +32,10 @@ const OP_CEILING = {
   readiness: FIXED_LIMITS.timing.readinessMs,
   command: FIXED_LIMITS.timing.commandMs,
 };
-// Driver message kinds that create new workload or ordinary evidence. A
-// run-global fault keeps lifecycle/close traffic admissible but blocks
-// these on every channel.
-const ORDINARY = new Set(["heartbeat", "register", "begin", "event", "artifact"]);
+// New workload/evidence is fenced by a run-global fault. A fully validated
+// pre-STOP heartbeat is liveness from a peer not yet notified to stop.
+// All existing envelope/sequence/operation and post-STOP guards still apply.
+const ORDINARY = new Set(["register", "begin", "event", "artifact"]);
 
 export const driverD2S = (ctx, st, message) => {
   const t = message.type;
