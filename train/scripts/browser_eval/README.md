@@ -23,8 +23,9 @@ A fully validated pre-STOP heartbeat is liveness after another channel's
 fault. Envelope, sequence, current-operation and post-STOP guards remain;
 new work/evidence stays fenced and only CLOSED is accepted after STOP.
 Watchdog latches its already-retained Native fault before later driver
-callbacks/errors can replace it, then retains genuine malformed traffic as
-separate faults. Valid CLOSED still dispatches and all real shutdown debts
+message/error/exit callbacks can replace it. An exit-first callback still
+records genuine DRIVER_EXIT as a separate fault; it cannot mask an earlier
+Native primary. Genuine malformed traffic remains a separate fault. Valid CLOSED still dispatches and all real shutdown debts
 remain owed. No fault-counter suppression or cleanup-proof promotion.
 
 Historical PID 37355's identity and reason for EPERM remain UNKNOWN. Current

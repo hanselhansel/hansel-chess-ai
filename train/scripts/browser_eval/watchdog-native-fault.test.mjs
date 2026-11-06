@@ -25,7 +25,7 @@ const gate = () => {
   return { promise, resolve };
 };
 
-for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, false], [false, true], [false, false, true], [false, false, "bad"], [false, false, "closed-first"]]) {
+for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, false], [false, true], [false, false, true], [false, false, "bad"], [false, false, "closed-first"], [false, false, "exit-first"]]) {
   test(`shared Native fault stops sampler, held event=${holdCleanupEvent}, pending periodic=${periodic}, driver=${heartbeat ?? "register"}`, { timeout: 15000 }, async (t) => {
     const ready = gate();
     const started = gate();
@@ -194,15 +194,30 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     const beforeRegister = clock.nowMonoMs();
     stopAt = beforeRegister;
     const originalPhaseEnd = horizon.reader.read();
+    let exitObserved = null;
+    driver.child.once("exit", (code, signal) => { exitObserved = { code, signal }; });
+    let lifetimeSettled = false;
+    lifetime.whenSettled().then(() => { lifetimeSettled = true; });
     if (periodic) native.clock.runDue();
-    else driver.emit(heartbeat === "closed-first" ? {
+    else if (heartbeat === "exit-first") {
+      driver.exit(17);
+      driver.disconnect();
+    } else driver.emit(heartbeat === "closed-first" ? {
       type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [],
     } : heartbeat ? { type: "heartbeat", operationId: heartbeat === "bad" ? "ghost" : null } : registration);
     assert.equal(horizon.reader.read(), beforeRegister + 5000);
     assert.ok(horizon.reader.read() < originalPhaseEnd);
     if (heartbeat === true) await Promise.race([driverStopped.promise, early]);
-    if (heartbeat !== "closed-first") driver.emit({ type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [] });
-    driver.exit(0); driver.closeOut(); driver.closeErr();
+    if (heartbeat !== "closed-first" && heartbeat !== "exit-first") driver.emit({ type: "closed", gracefulCloseAttempted: true, expectedShutdowns: [] });
+    if (heartbeat !== "exit-first") driver.exit(0);
+    driver.closeOut();
+    await Promise.resolve();
+    assert.equal(driver.child.stdout.closed, true);
+    assert.equal(driver.child.stderr.closed, false);
+    assert.equal(lifetimeSettled, false, "exit and stdout cannot settle missing stderr debt");
+    driver.closeErr();
+    assert.deepEqual(exitObserved, { code: heartbeat === "exit-first" ? 17 : 0, signal: null });
+    assert.equal(driver.child.stderr.closed, true);
     native.fixture.exit(2);
     let returned = false;
     pending.then(() => { returned = true; });
@@ -272,6 +287,10 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     if (heartbeat === "closed-first") {
       assert.equal(final.unplannedFaultCount, 1, "valid CLOSED still dispatches after Native first-stop");
       assert.equal(driverStops.length, 0);
+    }
+    if (heartbeat === "exit-first") {
+      assert.equal(final.unplannedFaultCount, 2, "Native primary plus genuine DRIVER_EXIT");
+      assert.equal(final.stopReason, "ACCOUNTING_UNAVAILABLE");
     }
     if (heartbeat === "bad") {
       assert.ok(final.unplannedFaultCount >= 2);

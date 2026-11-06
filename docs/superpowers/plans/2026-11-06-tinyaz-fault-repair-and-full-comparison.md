@@ -63,6 +63,16 @@ visibility. Update affected READMEs, accepted contract addendum and result
 status with the code; run focused and full checks, inspect the final
 code-to-doc diff and commit green for independent source review.
 
+Source review of `92eec4b` identified the separate exit-first callback gap:
+check the retained Native fault before recording/latching DRIVER_EXIT too.
+A causal whole Watchdog/monitor/Recorder regression must retain the Native
+primary plus the genuine exit fault, actual exit, BOTH pipes and lifetime
+settlement. Run affected whole owners and the full serial harness on the
+corrected frozen bytes, update contract/report, and commit green for scoped
+source re-review. The AST diagnostic fixture records both permitted Native
+probe and later descriptive-read state, then asserts order outside production
+catch blocks. Census and heartbeat admission rules remain unchanged.
+
 After review/publication, use fresh committed check, 13-case parity and
 preflight in a new workspace. Root supplies a separate release for a fresh
 source-repaired full 40-game attempt under the unchanged 24-hour bound.

@@ -307,7 +307,7 @@ test("genuine Recorder retains falsey firsts after correctable rejection without
   }
 });
 
-test("transport description reads monitor info only after primary stop/narrow and preserves arbitrary first values", async () => {
+test("Native probe precedes primary stop, description follows it and preserves arbitrary first values", async () => {
   const source = await fsp.readFile(new URL("./watchdog.mjs", import.meta.url), "utf8");
   const tree = ts.createSourceFile("watchdog.mjs", source, ts.ScriptTarget.Latest, true);
   const expressions = new Map();
@@ -326,15 +326,15 @@ test("transport description reads monitor info only after primary stop/narrow an
       const expectedReason = primary?.code === "IPC_DISCONNECT" ? "IPC_DISCONNECT" : "IPC_INVALID";
       let reason = null;
       let described;
+      const reads = [];
       const latchStop = (code) => {
         if (reason !== null) return;
         reason = code;
         horizon.narrow(5000);
       };
       const getter = () => {
-        assert.equal(records[0], primary);
-        assert.equal(reason, expectedReason);
-        assert.equal(horizon.reader.read(), 5000);
+        reads.push([records.slice(), reason, horizon.reader.read()]);
+        if (reads.length === 1) return null;
         if (mode === "throwing") throw null;
         if (mode === "absent") return null;
         latchStop("LATE_OTHER_REASON");
@@ -346,6 +346,7 @@ test("transport description reads monitor info only after primary stop/narrow an
          return ${expressions.get("onError").getText(tree)}`)((error) => records.push(error), latchStop,
       async (error) => { described = error; }, mode === "missing" ? {} : { fault: getter }, () => reason !== null);
       handler(primary);
+      assert.deepEqual(reads, mode === "missing" ? [] : [[[], null, 600000], [[primary], expectedReason, 5000]]);
       assert.equal(records.length, 1);
       assert.equal(records[0], primary);
       assert.equal(reason, expectedReason);
