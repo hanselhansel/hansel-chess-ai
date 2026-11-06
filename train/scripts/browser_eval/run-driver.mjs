@@ -263,13 +263,15 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
       await session.finish(outcome);
     }
   } catch (error) {
-    retainPrimary(error);
-    // A real driver fault closes IPC immediately so the independent
-    // supervisor latches a stop and starts Native teardown even if an SDK
-    // close/body remains held. This cannot turn into a successful finish.
-    if (process.connected) process.disconnect();
-    controller.abort(error);
-    reportDriverDiagnostic(lifetime, diagnosticScope, "driver.fault", primary);
+    // A validated STOP is ordinary cancellation. Keep IPC until CLOSED
+    // and join the same actual bodies, SDK closes and send callbacks.
+    if (session === null || !session.isPlannedStop(error)) {
+      retainPrimary(error);
+      // Genuine faults still wake the supervisor before a held SDK close.
+      if (process.connected) process.disconnect();
+      controller.abort(error);
+      reportDriverDiagnostic(lifetime, diagnosticScope, "driver.fault", primary);
+    }
   } finally {
     budget.dispose();
     for (const resource of [browser, ...servers.reverse()]) {

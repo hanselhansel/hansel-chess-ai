@@ -174,3 +174,12 @@ consumes that privately bound same-run observation. Stop and Native cleanup
 remain immediate and retain their original five-second limit. Internal watchdog
 selftests perform their own scan after their durable manifest and before
 synthetic-driver admission under the original paused parent command bound.
+
+Planned supervisor STOP cancellation now retains IPC through the driver's
+real SDK/actual-body close and CLOSED handshake. Only the session's exact
+validated stop cause takes that path. Genuine callback errors and nonzero
+driver exits remain faults. The historical post-cap protected-Node reference
+remains unidentified; bounded full-CLI/Native/compare controls naturally
+closed but do not identify or repair that historical reference.
+The archived CLI now reports bounded public active-resource type counts
+after the supervisor returns, without adding timers or changing its result.

@@ -332,3 +332,47 @@ for (const mode of ["missing", "invalid", "fault", "early"]) {
     await env.owner.whenSettled();
   });
 }
+
+test("planned STOP identity cannot hide forged, late or actual callback failures", async (t) => {
+  const env = makeEnv(t);
+  await driveStart(env);
+  const pending = env.b.capabilities.operation("command", "planned-stop", async () => {
+    assert.fail("held begin callback must precede work");
+  });
+  pending.catch(() => {});
+  const begun = env.sends.at(-1);
+  env.s2d("stop", { stopReason: "PHASE_TIMEOUT", cleanupRemainingMs: 5000 });
+  let stopped;
+  await assert.rejects(pending, (error) => { stopped = error; return true; });
+  assert.equal(env.b.isPlannedStop(stopped), true);
+  assert.equal(env.b.isPlannedStop(Object.assign(new Error(stopped.message), { code: stopped.code })), false);
+  const closed = env.b.close({ gracefulCloseAttempted: true });
+  env.sends.at(-1).cb(null);
+  let settled = false;
+  closed.then(() => { settled = true; }, () => { settled = true; });
+  await flush();
+  assert.equal(settled, false);
+  const raw = new Error("genuine late begin callback failure");
+  begun.cb(raw);
+  await assert.rejects(closed, (error) => error === raw);
+  assert.equal(env.b.isPlannedStop(stopped), false);
+  await env.owner.whenSettled();
+});
+
+test("planned STOP classification rejects external abort and premature FINISH", async (t) => {
+  for (const reason of ["PHASE_TIMEOUT", "FINISH"]) {
+    const env = makeEnv(t);
+    await driveStart(env);
+    const pending = env.b.capabilities.operation("command", `identity-${reason}`, async () => {
+      assert.fail("begin remains held");
+    });
+    pending.catch(() => {});
+    env.s2d("stop", { stopReason: reason, cleanupRemainingMs: 5000 });
+    let stopped;
+    await assert.rejects(pending, (error) => { stopped = error; return true; });
+    assert.strictEqual(env.b.capabilities.signal.reason, stopped);
+    assert.equal(env.b.isPlannedStop(stopped), reason === "PHASE_TIMEOUT");
+    env.ext.abort(new Error("external abort is not a trusted STOP"));
+    assert.equal(env.b.isPlannedStop(stopped), false);
+  }
+});

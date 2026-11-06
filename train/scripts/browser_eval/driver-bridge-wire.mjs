@@ -31,10 +31,7 @@
 // joinActual pair is built WHOLE by driver-protocol's
 // createDriverBridgeActual({state:st,transport}) over the SAME
 // st.actual Set and trusted transport — identical returned refs, no
-// second queue/debt/ledger/proof/status/clock/globaljoin. Functional
-// runtime input; DAG wire -> driver-protocol pure helpers +
-// existing pure primitives/constants/canonical JSON only, never the
-// facade or methods.
+// second queue/debt/ledger/proof/status/clock/globaljoin.
 
 import { canonicalBytes } from "./canonical-json.mjs";
 import { bridgeError, defer, createDriverBridgeActual } from "./driver-protocol.mjs";
@@ -118,7 +115,7 @@ export function createDriverBridgeWire(ctx) {
   };
   const terminate = (err) => {
     clearHeartbeat();
-    st.derived.abort();
+    st.derived.abort(err);
     rejectPending(err);
   };
   const sessionFault = (value) => {
@@ -307,7 +304,9 @@ export function createDriverBridgeWire(ctx) {
         throw bridgeError("cleanupRemainingMs");
       st.finishStop = st.finished && st.seqOut > st.finishSeq && msg.stopReason === "FINISH";
       st.stopped = true;
-      terminate(bridgeError(`stop ${msg.stopReason}`));
+      st.stopReason = msg.stopReason;
+      st.stopCause = bridgeError(`stop ${msg.stopReason}`);
+      terminate(st.stopCause);
       return;
     }
     throw bridgeError("type");

@@ -1,5 +1,53 @@
 # Browser evaluation harness libraries
 
+Task 1 fault-repair test owners declared before creation (2026-11-06):
+`cli-shutdown-test-fixtures.mjs` exports only `prepareCliShutdownFixture`.
+It creates a synthetic archived workspace with real CLI, supervisor,
+Watchdog, Recorder/Store and driver bytes, and controlled Native/SDK/input
+collaborators. `cli-shutdown-hooks.mjs` is a TEST-only preload with no
+exports. It applies isolated short clocks, substitutes those collaborators,
+and records actual active resources, timer creation stacks, child exit and
+both output closes. `cli-shutdown.test.mjs` has no exports and owns bounded
+real Node commands plus their actual pipes, readback and disposal. DAG:
+suite -> fixture -> existing test-fixtures; isolated preload -> Node builtins.
+These owners stay outside functional-runtime inputs. Synthetic receipts
+are never phase, Native, browser, parity or strength evidence.
+
+Task 1 cancellation semantics (2026-11-06): the private driver session adds
+`isPlannedStop(error)`. It accepts only the identical cause created by this
+session's validated ordinary STOP, while its original stop state remains
+free of a later transport/callback/external-abort fault. FINISH before finish,
+fault STOP during finish, forged errors and malformed/late frames cannot use
+this path. The derived AbortSignal carries the original termination cause.
+`executeDriver` treats that exact planned cancellation as a request to close
+SDK resources, send CLOSED, join actual callbacks/bodies and disconnect.
+Real errors retain the existing immediate-disconnect first-fault path.
+Session close rethrows its first actual callback fault after the local join.
+A nonzero real driver exit remains a fault even after CLOSED, which only
+acknowledges graceful-close attempts. Authorized cleanup signals remain
+distinct from a nonzero process exit. Exit and both pipe closes, scope joins
+and the final genuine owner settlement remain required.
+
+The historical protected-Node reference is still UNKNOWN. Bounded controls
+on unchanged historical runtime bytes exercised full archived CLI reopening,
+the original 90-second setup expiry, actual Native cleanup, and compare's
+initial PGN checkpoint/freeze/finalization. They naturally exited 2 at
+PHASE_TIMEOUT, with no live timer at beforeExit. This is nonreproduction,
+not an identified leak repair, actual phase result or replacement cohort.
+Receipts: `/tmp/tinyaz-task1-controls/closer-cap.json` and
+`/tmp/tinyaz-task1-controls/compare-cap.json`. The original sealed faults,
+partial results and external intervention are unchanged.
+
+After an archived CLI supervisor actually returns, the existing CLI emits
+one best-effort `TINYAZ_RESOURCES` stderr line with public
+`process.getActiveResourcesInfo()` type counts. Only up to 16 bounded type
+names and counts plus a truncation flag are included, within 2048 bytes.
+There is no environment, argument, raw handle, timer, awaited IO, proof or
+status authority. Reporter failure cannot replace the result or first error;
+sealed files are untouched. A controlled retained-timer regression observes
+that timer and requires genuine owner release before natural closure. This
+diagnostic does not identify or repair the historical reference.
+
 Owners for the canonical bytes, record envelopes, bounded artifact IO,
 sole-writer recording, prerequisite admission, supervisor IPC validation,
 paired-cohort statistics, persisted PGN selection, rules-owned match control

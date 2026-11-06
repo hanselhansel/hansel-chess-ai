@@ -37,7 +37,7 @@ import {
 test("capabilities expose the exact rosters and a genuine derived signal", (t) => {
   const env = makeEnv(t);
   const { b } = env;
-  assert.deepEqual(Object.keys(b).sort(), ["capabilities", "close", "finish", "start"]);
+  assert.deepEqual(Object.keys(b).sort(), ["capabilities", "close", "finish", "isPlannedStop", "start"]);
   assert.deepEqual(
     Object.keys(b.capabilities).sort(),
     ["artifact", "event", "manifest", "operation", "register", "runId", "signal"],

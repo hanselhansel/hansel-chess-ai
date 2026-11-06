@@ -4,6 +4,25 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bootstrapWorkspace, runSupervisor, runDriver } from "./run.mjs";
 
+// Passive post-return diagnostics only. No timer, wait, proof or status work.
+const reportActiveResourceTypes = () => {
+  try {
+    const counts = new Map();
+    let truncated = false;
+    for (const type of process.getActiveResourcesInfo()) {
+      if (typeof type !== "string" || !/^[A-Za-z][A-Za-z0-9]{0,63}$/.test(type) ||
+        (!counts.has(type) && counts.size === 16)) {
+        truncated = true;
+        continue;
+      }
+      counts.set(type, (counts.get(type) ?? 0) + 1);
+    }
+    const types = [...counts].map(([type, count]) => ({ type, count }));
+    const line = `TINYAZ_RESOURCES ${JSON.stringify({ types, truncated })}\n`;
+    if (Buffer.byteLength(line) <= 2048) process.stderr.write(line, () => {});
+  } catch {} // Best effort, never replacement of an actual result or error.
+};
+
 const parse = (argv) => {
   const values = {};
   const flags = new Set(["--archived", "--driver"]);
@@ -58,6 +77,7 @@ try {
         throw new Error("original immutable preparation deadline spent before transfer");
       }
       const outcome = await runSupervisor(options);
+      reportActiveResourceTypes();
       process.stdout.write(`${JSON.stringify(outcome)}\n`);
       process.exitCode = outcome.exitCode;
     } else {

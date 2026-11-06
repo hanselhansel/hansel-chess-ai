@@ -327,8 +327,9 @@ export function createWatchdog(options) {
     } catch {}
     void faultEvent(descriptive);
   };
-  const onExit = () => {
-    if (!state.driverClosed) {
+  const onExit = ({ exitCode }) => {
+    // CLOSED acknowledges graceful attempts, never a successful exit.
+    if (!state.driverClosed || (Number.isInteger(exitCode) && exitCode !== 0)) {
       recordFault(fail("DRIVER_EXIT", "unexpected exit"));
       latchStop("DRIVER_EXIT");
     }

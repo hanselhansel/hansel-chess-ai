@@ -1198,6 +1198,9 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/driver-diagnostics.test.mjs` | TEST-only selected actual catch/real IPC bounded first-error and late-stderr physical closure controls; no exports/runtime input. |
 | Create | `./train/scripts/browser_eval/fixture-numeric.mjs` | Candidate-only lazy whole numeric body, sole computeNumeric export; explicit runtime input. |
 | Create | `./train/scripts/browser_eval/fixture-transform.test.mjs` | TEST-only genuine Vite baseline/candidate import-analysis boundary; no exports/runtime input. |
+| Create | `./train/scripts/browser_eval/cli-shutdown-test-fixtures.mjs` | TEST-only archived CLI workspace and controlled Native/SDK collaborators; exports prepareCliShutdownFixture; no runtime input. |
+| Create | `./train/scripts/browser_eval/cli-shutdown-hooks.mjs` | TEST-only isolated Node loader, short test clock and active-resource provenance; no exports/runtime input. |
+| Create | `./train/scripts/browser_eval/cli-shutdown.test.mjs` | TEST-only full archived CLI normal/cap/error natural exit, physical pipe and owner-settlement regressions; no exports/runtime input. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -3602,3 +3605,37 @@ using ONLY AST-selected actual frozen bb76439 finish/uciOf plus real Chess
 move data (no search/inference), and optional baselineResultFactory data
 input to makeOperationalFixture. Existing PageArm/phase tests exercise the
 real producer, Worker echo, turn validation and deterministic signature.
+
+## Task 1 demonstrated planned-stop fault repair (2026-11-06)
+
+The existing private driver session adds `isPlannedStop(error)`, a read-only
+predicate over its own validated ordinary STOP state and identical retained
+cause. It never matches by message/code, accepts FINISH before finish or
+fault STOP after finish, or accepts a later transport/callback/external-abort
+fault. The derived AbortSignal carries that original termination cause.
+The operational driver keeps IPC until SDK closes, CLOSED, actual callback/
+body settlement and lifetime zero only for this exact cancellation. Other
+errors keep immediate disconnect and the original first-error route. Close
+rethrows the first actual callback fault after its local join; a nonzero real
+driver exit faults even after CLOSED. Cleanup signals remain separate.
+No wire/frame/schema/check/count/clock/native-proof authority changes.
+
+The declared full-CLI test owners use synthetic retained records and
+controlled Native/SDK collaborators, real archived CLI/supervisor/Watchdog/
+Recorder/driver processes, actual pipe closes and genuine owner joins. Their
+isolated short clocks are test-only. Controlled genuine-Native retained-input
+controls also exercised original 90-second setup expiry and compare's real
+initial PGN checkpoint/freeze/finalizer on unchanged historical runtime.
+They naturally exited 2, so the historical remaining Node reference stays
+UNKNOWN/nonreproduced. No leak repair is claimed without a concrete cause.
+Old sealed records, models, chess behavior, numeric/statistical contracts and
+production timing/resource limits remain unchanged.
+
+The existing archived CLI additionally emits a best-effort post-supervisor
+`TINYAZ_RESOURCES` stderr snapshot, using public active-resource type counts
+only (16 bounded names/counts, truncation flag, 2048-byte line ceiling).
+It creates no timer/awaited IO, has no proof/status authority, changes no
+sealed file, and never replaces the supervisor result/first error/exit code.
+The controlled retained timer regression proves observation followed by
+natural closure only after genuine owner release. This is diagnostic
+visibility for a future unexplained exit, never a historical-cause claim.

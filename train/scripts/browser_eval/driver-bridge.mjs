@@ -134,6 +134,8 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     finishCalled: false,
     finishSeq: null,
     finishStop: false,
+    stopCause: null,
+    stopReason: null,
     closeCalled: false,
   };
   const endLatch = defer();
@@ -271,6 +273,7 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
       // its exact arbitrary value by explicit presence, and an
       // unknown submission honestly keeps the actual pending.
       await wire.joinActual();
+      if (st.fault !== null) throw st.fault.value;
       if (outcome.threw) throw outcome.value;
     })();
     try {
@@ -299,5 +302,11 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     event: methods.event,
     artifact: methods.artifact,
   });
-  return Object.freeze({ capabilities, start, finish, close });
+  // Only this session's validated ordinary STOP cause is cancellation.
+  // Forged errors, normal-finish/fault STOP and later transport faults
+  // still enter the driver's original fault path.
+  const isPlannedStop = (error) => st.stopCause !== null && error === st.stopCause &&
+    st.stopped && !st.finishCalled && st.stopReason !== "FINISH" &&
+    st.fault === null && !st.disconnected && !st.aborted;
+  return Object.freeze({ capabilities, start, finish, close, isPlannedStop });
 }

@@ -215,9 +215,13 @@ for (const raw of [null, new Error("real finish callback failure")]) {
     assert.equal(closedDone, false);
     assert.equal(zeroSeen, false);
     submitted.cb(raw);
-    if (raw === null) await pending;
-    else await assert.rejects(pending, (error) => error === raw);
-    await closed;
+    if (raw === null) {
+      await pending;
+      await closed;
+    } else {
+      await assert.rejects(pending, (error) => error === raw);
+      await assert.rejects(closed, (error) => error === raw);
+    }
     await zero;
     assert.equal(env.msgFns.size, 0);
   });

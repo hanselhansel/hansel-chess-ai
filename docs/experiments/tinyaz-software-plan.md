@@ -10,6 +10,34 @@
 - **Integration branch:** `feat/tinyaz-browser-harness` (initial documentation branch: `chore/egm-bootstrap-tinyaz`). Never commit to main.
 - **Candidate:** the comparison used committed `583b317d458d361dc218ac3f704fe1f4ec158055` against fixed baseline `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Later documentation or any exit-only repair cannot replace those experimental inputs. WORKTREE receipts remain separate. No retraining, model publication, deployment, live-bot action or eligible strength result.
 
+## Task 1 demonstrated fault repair (2026-11-06)
+
+The planned STOP path entered the generic driver fault catch, disconnecting
+before CLOSED and producing IPC_DISCONNECT plus DRIVER_EXIT. A full archived
+CLI regression first failed with two faults; normal, genuine-error and
+unexpected-disconnect controls passed. The repair recognizes only the exact
+session-owned validated stop cause. SDK/body/callback joins and CLOSED now
+precede disconnect on that cancellation path. Genuine SDK-close and late
+send-callback errors remain faults, including nonzero exit after CLOSED.
+The actual late callback identity is retained after local close settlement.
+
+The historical protected-Node reference remains UNKNOWN. On unchanged old
+runtime bytes, genuine retained-input reopening and actual Native cleanup
+with the original setup/command/cleanup limits naturally closed under a
+120-second private test bound. The compare control included the actual
+retained check/parity/preflight parents and one initial incomplete PGN
+checkpoint through genuine checkpoint persistence, freeze and finalization.
+No game completed and no inference ran. These are controlled non-scoring
+nonreproductions, never actual phase receipts or a demonstrated leak repair.
+The archived CLI now emits a best-effort bounded resource-type-count stderr
+snapshot after its supervisor returns. It adds no timer, awaited IO, proof,
+status or sealed-file mutation. A controlled timer must appear in the
+snapshot and genuinely release before natural exit.
+Receipts: `/tmp/tinyaz-task1-controls/closer-cap.json` and
+`/tmp/tinyaz-task1-controls/compare-cap.json`. The original result below and
+its two faults remain immutable. Source checks and Task 1 handoff are recorded
+in `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/task-1-report.md`.
+
 ## Locked comparison result (2026-11-06)
 
 The approved single cohort ran in
