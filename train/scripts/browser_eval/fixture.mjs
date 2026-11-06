@@ -5,8 +5,8 @@
 // module requires it on every entry so a bare import can never reach a
 // snapshot or the network. All snapshot modules load through the `@`
 // alias, which the server binds to the selected arm's immutable src —
-// the actual candidate think-protocol API and the recorded baseline
-// bb76439 API differ only in think(), handled below by arm.
+// the actual candidate and recorded bb76439 thinker APIs are bound below.
+// Candidate-only numeric imports live in a lazy leaf.
 
 const ARMS = ["candidate", "baseline"];
 
@@ -129,53 +129,15 @@ const think = async ({ requestId, gameGeneration, position, requestedVisits }) =
   return session.thinker.think(fen, requestedVisits);
 };
 
-// The actual numeric pipeline over the snapshot's own modules. The raw
-// parity case is {id,initialFen,movesUci,expectedRawEpTarget} — NOT a
-// GamePosition — so the ONE replay creates from initialFen then pushes
-// each recorded move once, and the actual rawEpTarget must equal the
-// recorded expectation. encodeBoard consumes the real board plus raw
-// en-passant target, unpackWeights decodes the verified delivered
-// bytes, forward(planes,weights) returns the real {policy,value}, and
-// encodeMovePlane maps legal UCI to policy indices.
+// Numeric parity is candidate-only. Keeping its literal snapshot imports
+// in a lazy leaf prevents Vite from resolving them for the locked baseline.
 const numeric = async (testCase) => {
   const cfg = requireConfig();
-  const [position, encode, policy, weights, net] = await Promise.all([
-    import("@/lib/chess/position.ts"),
-    import("@/lib/chess/encode.ts"),
-    import("@/lib/chess/policy.ts"),
-    import("@/lib/chess/weights.ts"),
-    import("@/lib/chess/net.ts"),
-  ]);
-  const replay = position.createPositionState(testCase.initialFen);
-  for (const uci of testCase.movesUci ?? []) {
-    position.pushPositionMove(replay, uciToMove(uci));
+  if (cfg.arm !== "candidate") {
+    throw new Error("tinyaz fixture: numeric requires candidate arm");
   }
-  if (replay.rawEpTarget !== testCase.expectedRawEpTarget) {
-    throw new Error("tinyaz fixture: raw en-passant target mismatch");
-  }
-  const planes = encode.encodeBoard(replay.board, replay.rawEpTarget);
-  const bytes = await fetchModelBytes(cfg);
-  const weightSet = weights.unpackWeights(new Uint8Array(bytes));
-  const out = net.forward(planes, weightSet);
-  const flip = replay.board.turn() === "b";
-  const legalMoves = replay.board.moves({ verbose: true });
-  const legalUci = legalMoves.map((m) => `${m.from}${m.to}${m.promotion ?? ""}`);
-  const legalIndices = legalMoves.map((m) => {
-    const encoded = policy.encodeMovePlane(m.from, m.to, m.promotion, flip);
-    return encoded.plane * 64 + encoded.from;
-  });
-  return {
-    id: testCase.id,
-    planes: Array.from(planes),
-    logits: Array.from(out.policy),
-    legalUci,
-    legalIndices,
-    rawEpTarget: replay.rawEpTarget,
-    value: out.value,
-    fen: replay.board.fen(),
-    history: replay.board.history(),
-    movesUci: [...(testCase.movesUci ?? [])],
-  };
+  const { computeNumeric } = await import("./fixture-numeric.mjs");
+  return computeNumeric(testCase, () => fetchModelBytes(cfg));
 };
 
 // Dispose the REAL thinker through its actual terminate() — both the

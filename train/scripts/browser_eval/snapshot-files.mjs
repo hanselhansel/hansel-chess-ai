@@ -40,6 +40,7 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/environment-python.mjs",
   "train/scripts/browser_eval/environment.mjs",
   "train/scripts/browser_eval/final-integrity.mjs",
+  "train/scripts/browser_eval/fixture-numeric.mjs",
   "train/scripts/browser_eval/fixture.html",
   "train/scripts/browser_eval/fixture.mjs",
   "train/scripts/browser_eval/identity-schema.mjs",

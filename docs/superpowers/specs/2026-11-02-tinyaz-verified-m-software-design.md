@@ -1196,6 +1196,8 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/environment-files-test-fixtures.mjs` | TEST-only whole bounded file fixture moved from environment-files.test.mjs, sole makeEnvironmentFilesFixture export, no runtime input. |
 | Create | `./train/scripts/browser_eval/record-cleanup-diagnostics.test.mjs` | TEST-only genuine Recorder/Store cleanup-verifier classification, original-bound and passive reporter controls; no exports/runtime input. |
 | Create | `./train/scripts/browser_eval/driver-diagnostics.test.mjs` | TEST-only selected actual catch/real IPC bounded first-error and late-stderr physical closure controls; no exports/runtime input. |
+| Create | `./train/scripts/browser_eval/fixture-numeric.mjs` | Candidate-only lazy whole numeric body, sole computeNumeric export; explicit runtime input. |
+| Create | `./train/scripts/browser_eval/fixture-transform.test.mjs` | TEST-only genuine Vite baseline/candidate import-analysis boundary; no exports/runtime input. |
 
 #### C4b-12 readable backend setup capacity corrections (declared before creation)
 
@@ -3533,3 +3535,38 @@ actual-driver-catch/real Node IPC late-stderr and physical-close controls,
 safe cause/falsey/reentry and approved framing controls. Existing browser
 transition tests own the actual requestfailed SDK data/policy controls.
 Neither TEST owner is a functional runtime input.
+
+
+### Candidate-only numeric fixture import boundary
+
+Before creation/use, declare runtime `fixture-numeric.mjs` with sole private
+`computeNumeric(testCase, loadModelBytes) -> Promise<{id,planes,logits,
+legalUci,legalIndices,rawEpTarget,value,fen,history,movesUci}>`. It owns the
+WHOLE existing replay/encode/unpack/forward/legal-policy numeric body in its
+original order. The SAME whole private uciToMove helper/comments are copied
+into this leaf; the shared copy remains for baseline think. Nonempty-history
+SSR control reaches a frozen sentinel only after actual replay/encoding and
+before model unpack/forward. The only data callback loads the same verified
+delivered model bytes after replay/encoding. It adds no alternate numeric pipeline,
+identity/proof source, model work at module import or new timing authority.
+DAG: common browser fixture lazily imports this leaf ONLY for candidate
+numeric calls; leaf resolves the candidate's real five `@/lib/chess` modules.
+The shared entry keeps both actual thinker APIs and initialize/think/dispose
+unchanged. Baseline numeric calls reject explicitly before loading the leaf.
+
+Vite analyzes literal dynamic imports while transforming the shared entry,
+even if numeric is never invoked. The locked baseline has no position.ts;
+its first fixture transform must not resolve that candidate-only module.
+The new leaf keeps candidate parity real and prevents that baseline binding.
+No baseline shim/source change, optimizer tuning, navigation retry or
+requestfailure-policy change is introduced. Public fixture surface and all
+thirteen numeric case/shape/tolerance contracts remain unchanged.
+
+Append exact runtime path `train/scripts/browser_eval/fixture-numeric.mjs`
+to the explicit functional union (lexically placed, every old path retained).
+TEST-only `fixture-transform.test.mjs` has no exports/runtime membership. It
+uses genuine pinned Vite import-analysis over actual baseline/candidate Git
+source data, with no listener/watch/HMR/browser/model inference; it closes
+Vite before removing its cache/source copies and checks baseline entry plus
+candidate entry/numeric-leaf resolution. Existing phase/numeric tests retain
+their original assertions.
