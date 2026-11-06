@@ -138,7 +138,7 @@ included); the three Python sources stay exactly
 | `checks.mjs` | gate-enforced | `runChecks` |
 | `check-engine.mjs` | gate-enforced | `checkEngine` |
 | `check-workbench.mjs` | gate-enforced | `checkWorkbench` |
-| `match-observations.mjs` | gate-enforced | `validateArmReady`, `validateArmTurn` |
+| `match-observations.mjs` | gate-enforced | `validateArmReady`, `validateArmTurn`, `captureArmTurnObservation` |
 | `reference-child.mjs` | gate-enforced | `runPythonReference` |
 | `parity-reference.py` | gate-enforced | (private Python entry) |
 | `phase-runners.test.mjs` | gate-enforced | (TEST entry, no exports) |
@@ -146,7 +146,7 @@ included); the three Python sources stay exactly
 | `run.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `watchdog-prior-evidence.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `watchdog-parent-admission-test-fixtures.mjs` | gate-enforced | `capturePriorReceiptProbes`, `awaitEvidenceEntry` (TEST-only) |
-| `operational-test-fixtures.mjs` | gate-enforced | `makeOperationalFixture` (TEST-only) |
+| `operational-test-fixtures.mjs` | gate-enforced | `makeOperationalFixture`, `loadLegacyResultFactory` (TEST-only) |
 | `vite-test-fixtures.mjs` | gate-enforced | `fakeVite` (TEST-only) |
 | `environment-files.test.mjs` | gate-enforced | (TEST entry, no exports) |
 | `page-arm.mjs` | gate-enforced | `createPageArm` |
@@ -9250,3 +9250,35 @@ source data, with no listener/watch/HMR/browser/model inference; it closes
 Vite before removing its cache/source copies and checks baseline entry plus
 candidate entry/numeric-leaf resolution. Existing phase/numeric tests retain
 their original assertions.
+
+
+### Baseline optional-promotion observation DTO
+
+The frozen baseline ThinkResult has required keys uci,san,from,to,value,
+visits,ms,children,heatmap and the sole optional key promotion. Its actual
+finish function creates own promotion:undefined for non-promoting moves.
+Canonical records remain strict. Existing match-observations owner adds
+`captureArmTurnObservation(kind,response,worker) -> frozen Observation`.
+ONLY baseline own enumerable DATA undefined at response.promotion and
+worker.raw.result.promotion is omitted in the canonical DTO. A nonempty,
+sorted, unique `baselineOptionalUndefined` path array preserves exactly
+which original optional properties were own-undefined. All other fields
+and defined promotions remain actual data. Candidate, unknown/required or
+accessor undefined is never normalized. No baseline source/API is changed.
+
+The ordinary Observation remains exact {response,worker}. ONLY baseline
+may additionally carry baselineOptionalUndefined, with one/two of the two
+literal paths above; listed normalized paths must lack promotion and retain
+the complete required ThinkResult keys. validateArmTurn accepts this closed
+data DTO, still compares actual Worker result/id, M/ready/context/visits,
+and returns the same canonical result data for preflight signatures. Tags
+are evidence of optional-field presence, never identity/status proof.
+PageArm calls this capture before persisting the observation. No global
+canonical codec, wire, model, deadline or inference rule changes.
+
+TEST-only existing operational-test-fixtures adds
+`loadLegacyResultFactory() -> Promise<(position,visits,selectedUci)=>ThinkResult>`
+using ONLY AST-selected actual frozen bb76439 finish/uciOf plus real Chess
+move data (no search/inference), and optional baselineResultFactory data
+input to makeOperationalFixture. Existing PageArm/phase tests exercise the
+real producer, Worker echo, turn validation and deterministic signature.

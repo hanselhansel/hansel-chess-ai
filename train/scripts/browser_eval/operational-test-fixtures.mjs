@@ -3,11 +3,14 @@ import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import ts from "typescript";
 import { Chess } from "chess.js";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
 import { fixtureWorkspace, fixtureManifest } from "./test-fixtures.mjs";
-import { REQUIRED_CHECK_IDS, MODEL_IDENTITY } from "./schema-constants.mjs";
+import { BASELINE_COMMIT, REQUIRED_CHECK_IDS, MODEL_IDENTITY } from "./schema-constants.mjs";
 
 const modelBytes = await readFile(new URL("../../../public/weights/tinyaz-m.bin", import.meta.url));
 const load = async (name) => JSON.parse(await readFile(new URL(`../../fixtures/${name}`, import.meta.url), "utf8"));
@@ -22,7 +25,7 @@ const defer = () => {
   return { promise, resolve };
 };
 
-export function makeOperationalFixture(t, { phase = "preflight", fault = null, holdThink = false } = {}) {
+export function makeOperationalFixture(t, { phase = "preflight", fault = null, holdThink = false, baselineResultFactory = null } = {}) {
   const workspace = fixtureWorkspace();
   const prerequisites = { check: [], parity: ["check"], preflight: ["check", "parity"], compare: ["check", "parity", "preflight"] }[phase]
     .map((parent) => ({ phase: parent, runId: `fixture-${parent}`,
@@ -113,7 +116,8 @@ export function makeOperationalFixture(t, { phase = "preflight", fault = null, h
           const board = new Chess(request.position.initialFen);
           for (const uci of request.position.movesUci) board.move(uci);
           const move = board.moves({ verbose: true })[0];
-          const result = { uci: move.from + move.to + (move.promotion ?? ""), visits: fault === "visits" ? 63 : 64,
+          const result = kind === "baseline" && baselineResultFactory !== null ?
+            baselineResultFactory(request.position, request.requestedVisits) : { uci: move.from + move.to + (move.promotion ?? ""), visits: fault === "visits" ? 63 : 64,
             value: 0, ms: 1, children: [], heatmap: {} };
           let response;
           let raw;
@@ -178,4 +182,29 @@ export function makeOperationalFixture(t, { phase = "preflight", fault = null, h
   });
   return { manifest, capabilities, resources, controller, calls, artifacts, events, own,
     releaseThink: gate.resolve, thinkEntered: thinkEntered.promise };
+}
+
+
+// Actual frozen result construction only. Never execute search/forward or
+// produce a unit claim that these controlled visits were an actual search.
+export async function loadLegacyResultFactory() {
+  const source = execFileSync("/usr/bin/git", ["--no-optional-locks", "--no-replace-objects", "show",
+    `${BASELINE_COMMIT}:src/lib/chess/mcts.ts`], {
+    cwd: fileURLToPath(new URL("../../../", import.meta.url)), maxBuffer: 2 * 1024 * 1024,
+  }).toString("utf8");
+  const tree = ts.createSourceFile("mcts.ts", source, ts.ScriptTarget.Latest, true);
+  const selected = tree.statements.filter((node) => ts.isFunctionDeclaration(node) &&
+    ["uciOf", "finish"].includes(node.name?.text));
+  assert.equal(selected.length, 2);
+  const body = ts.transpileModule(selected.map((node) => node.getText(tree)).join("\n"), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.None },
+  }).outputText;
+  const finish = new Function("performance", `${body}\nreturn finish;`)(performance);
+  return (position, visits = 64, selectedUci = null) => {
+    const board = new Chess(position.initialFen);
+    for (const uci of position.movesUci) board.move(uci);
+    const move = selectedUci === null ? board.moves({ verbose: true })[0] : board.move(selectedUci);
+    assert.ok(move);
+    return finish({ visits, valueSum: 0, children: [{ move, visits, valueSum: 0, prior: 1 }] }, visits, performance.now());
+  };
 }

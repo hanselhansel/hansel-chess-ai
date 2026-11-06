@@ -1,5 +1,6 @@
 // Public Page transport. The bridge owns operation admission and clocks;
 // the enclosing game owns context teardown and real body joining.
+import { captureArmTurnObservation } from "./match-observations.mjs";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { MODEL_IDENTITY, FIXED_LIMITS } from "./schema-constants.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
@@ -234,7 +235,7 @@ export function createPageArm(options) {
         if (worker.instanceId !== workerId) {
           throw fail("Worker changed");
         }
-        observation = freezeDeep(copy({ response, worker }));
+        observation = captureArmTurnObservation(kind, response, worker);
         const evidence = await record(`move-${ordinal}`, observation);
         return { status: "completed", evidencePaths: [evidence], detail: { arm: kind, workerInstanceId: workerId } };
       });

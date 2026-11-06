@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 import path from "node:path";
 import test from "node:test";
 import { runPhase } from "./phase-runners.mjs";
-import { makeOperationalFixture } from "./operational-test-fixtures.mjs";
+import { loadLegacyResultFactory, makeOperationalFixture } from "./operational-test-fixtures.mjs";
 import { PYTHON_EXECUTABLE, REQUIRED_CHECK_IDS } from "./schema-constants.mjs";
 
 const execute = promisify(execFile);
@@ -295,4 +295,24 @@ print(json.dumps({"start":str(start),"end":str(end)}))
   const late = `process.argv = ${JSON.stringify(argv)}; process.hrtime.bigint = () => ${measured.end}n; await import(${JSON.stringify(cli.href)});`;
   await assert.rejects(execute(process.execPath, ["--input-type=module", "-e", late], { maxBuffer: 4096 }),
     (error) => error.code === 1 && error.stdout === "" && /original immutable preparation deadline spent before transfer/.test(error.stderr));
+});
+
+test("actual legacy result DTO reaches full preflight signatures and A/A match validation", async (t) => {
+  const baselineResultFactory = await loadLegacyResultFactory();
+  const f = makeOperationalFixture(t, { baselineResultFactory });
+  const outcome = await f.own(runPhase(f));
+  assert.equal(outcome.requestedStatus, "passed");
+  assert.equal(outcome.summary.timings.baseline.samples, 5);
+  assert.equal(outcome.summary.timings.baseline.deterministic, true);
+  assert.deepEqual(outcome.summary.games.map((game) => game.result), ["1/2-1/2", "1/2-1/2"]);
+  const turns = f.artifacts.filter((artifact) => /move-.*json$/.test(artifact.filename))
+    .map((artifact) => JSON.parse(artifact.bytes));
+  assert.ok(turns.length > 0);
+  const legacy = turns.filter((turn) => Object.hasOwn(turn, "baselineOptionalUndefined"));
+  assert.equal(legacy.length, 7);
+  for (const turn of legacy) {
+    assert.deepEqual(turn.baselineOptionalUndefined, ["response.promotion", "worker.raw.result.promotion"]);
+    assert.equal(Object.hasOwn(turn.response, "promotion"), false);
+    assert.equal(turn.response.visits, 64);
+  }
 });

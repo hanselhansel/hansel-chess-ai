@@ -7,6 +7,8 @@ import vm from "node:vm";
 import test from "node:test";
 import { createPageArm } from "./page-arm.mjs";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
+import { loadLegacyResultFactory } from "./operational-test-fixtures.mjs";
+import { captureArmTurnObservation, validateArmReady, validateArmTurn } from "./match-observations.mjs";
 
 const model = await readFile(new URL("../../../public/weights/tinyaz-m.bin", import.meta.url));
 const deferred = () => {
@@ -262,4 +264,74 @@ test("malformed public binding rejects before any Page or Context call", async (
     context: f.context, capabilities: { ...f.capabilities, signal: {} } }), /genuine signal/);
   assert.equal(f.evaluates, 0);
   assert.equal(f.context.listenerCount("response"), 0);
+});
+
+
+test("actual frozen legacy nonpromotion result survives PageArm and turn/signature validation", async (t) => {
+  const produce = await loadLegacyResultFactory();
+  const f = fixture(t);
+  const ready = validateArmReady(f.arm, await f.own(f.arm.initialize()));
+  const ownRequest = { ...request(), position: {
+    initialFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", movesUci: [],
+  } };
+  let raw;
+  f.sandbox.window.__tinyazEval.think = async (value) => {
+    raw = produce(value.position, 64, "e2e4");
+    assert.equal(Object.hasOwn(raw, "promotion"), true);
+    assert.equal(raw.promotion, undefined);
+    f.workers.at(-1).emit({ type: "result", id: value.requestId, result: raw });
+    return raw;
+  };
+  const observed = await f.own(f.arm.think(ownRequest));
+  const result = validateArmTurn(f.arm, ready, observed, ownRequest);
+  assert.equal(result.uci, "e2e4");
+  assert.equal(Object.hasOwn(result, "promotion"), false);
+  assert.deepEqual(observed.baselineOptionalUndefined, ["response.promotion", "worker.raw.result.promotion"]);
+  assert.equal(Object.hasOwn(raw, "promotion"), true, "capture never mutates actual result");
+  assert.deepEqual(f.artifacts.at(-1).parsed, observed);
+  const { ms, ...deterministic } = result;
+  assert.equal(typeof ms, "number");
+  assert.equal(sha256Bytes(canonicalBytes(deterministic)).length, 64);
+});
+
+test("legacy promotion DTO preserves defined promotions and only the two optional own-undefined paths", async () => {
+  const produce = await loadLegacyResultFactory();
+  const ordinary = produce({ initialFen: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", movesUci: [] }, 64, "e2e4");
+  const promoted = produce({ initialFen: "7k/4P3/8/8/8/8/8/K7 w - - 0 1", movesUci: [] }, 64, "e7e8q");
+  const worker = (result) => ({ instanceId: "worker-1", raw: { type: "result", id: "r1", result } });
+  const ready = { worker: { instanceId: "worker-1" } };
+  const request = { requestId: "r1" };
+  const defined = captureArmTurnObservation("baseline", promoted, worker(promoted));
+  assert.equal(defined.response.promotion, "q");
+  assert.equal(defined.worker.raw.result.promotion, "q");
+  assert.equal(Object.hasOwn(defined, "baselineOptionalUndefined"), false);
+  assert.equal(validateArmTurn({ kind: "baseline" }, ready, defined, request).uci, "e7e8q");
+  const absent = { ...ordinary };
+  delete absent.promotion;
+  for (const [response, raw, tags] of [
+    [ordinary, absent, ["response.promotion"]],
+    [absent, ordinary, ["worker.raw.result.promotion"]],
+    [absent, absent, undefined],
+  ]) {
+    const observed = captureArmTurnObservation("baseline", response, worker(raw));
+    assert.deepEqual(observed.baselineOptionalUndefined, tags);
+    assert.equal(validateArmTurn({ kind: "baseline" }, ready, observed, request).uci, "e2e4");
+  }
+  for (const result of [{ ...ordinary, value: undefined }, { ...ordinary, unknown: undefined },
+    Object.defineProperty({ ...ordinary }, "promotion", { get: () => undefined, enumerable: true })]) {
+    assert.throws(() => captureArmTurnObservation("baseline", result, worker(result)));
+  }
+  assert.throws(() => captureArmTurnObservation("candidate", ordinary, worker(ordinary)), /unsupported undefined/);
+  const valid = captureArmTurnObservation("baseline", ordinary, worker(ordinary));
+  for (const tags of [[], ["unknown"], ["response.promotion", "response.promotion"],
+    ["worker.raw.result.promotion", "response.promotion"]]) {
+    assert.throws(() => validateArmTurn({ kind: "baseline" }, ready, { ...valid, baselineOptionalUndefined: tags }, request), /actual turn/);
+  }
+  assert.throws(() => validateArmTurn({ kind: "candidate" }, ready, valid, request), /actual turn/);
+  assert.throws(() => validateArmTurn({ kind: "baseline" }, ready,
+    { ...defined, baselineOptionalUndefined: ["response.promotion"] }, request), /actual turn/);
+  const missingRequired = { ...valid.response };
+  delete missingRequired.san;
+  assert.throws(() => validateArmTurn({ kind: "baseline" }, ready,
+    { ...valid, response: missingRequired }, request), /actual turn/);
 });
