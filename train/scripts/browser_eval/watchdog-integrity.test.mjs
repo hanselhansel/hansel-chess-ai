@@ -304,3 +304,87 @@ for (const unavailable of [null, () => { throw undefined; }]) {
     await f.dispose();
   });
 }
+
+test("synthetic STOP validates CLOSED before its real survivor settles", { timeout: 10000 }, async (t) => {
+  const { spawn: actualSpawn } = await import("node:child_process");
+  const source = await fsp.readFile(new URL("./run-driver.mjs", import.meta.url), "utf8");
+  const tree = ts.createSourceFile("driver.mjs", source, ts.ScriptTarget.Latest, true);
+  const selected = {};
+  const select = (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name?.text === "syntheticChild") selected.child = node;
+    if (ts.isIfStatement(node) && node.expression.getText(tree) === 'manifest.phase === "watchdog-selftest"') selected.body = node.thenStatement;
+    if (ts.isTryStatement(node) && node.finallyBlock?.getText(tree).includes("await lifetime.whenSettled()")) {
+      const statements = node.finallyBlock.statements;
+      selected.tail = statements.slice(statements.findIndex((item) => ts.isIfStatement(item) && item.expression.getText(tree) === "session !== null"));
+    }
+    ts.forEachChild(node, select);
+  };
+  select(tree);
+  assert.ok(selected.child && selected.body && selected.tail);
+  let env;
+  let child;
+  let physical;
+  let settled = false;
+  const facts = [false, false, false];
+  let stopped;
+  const stop = new Promise((resolve) => { stopped = resolve; });
+  t.after(async () => {
+    if (child && child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
+    if (physical) await physical;
+  });
+  env = makeEnv(t, { sendImpl: (frame, callback) => {
+    env.pv.accept("driver", "d2s", frame, canonicalBytes(frame).length);
+    env.sends.push({ msg: frame, cb: callback });
+    queueMicrotask(() => {
+      callback(null);
+      if (frame.type === "hello") env.s2d("start", { manifestPath: "unit/manifest.json", commonIdentitySha256: frame.commonIdentitySha256 });
+      if (frame.type === "register") env.s2d("registered", { requestId: frame.requestId,
+        identity: { pid: frame.rootPid, startSec: "1", startUsec: 0 }, listener: null });
+      if (frame.type === "event") {
+        env.s2d("recorded", { recordId: frame.recordId, recordSeq: frame.recordSeq, ref: null });
+        setImmediate(() => {
+          env.s2d("stop", { stopReason: "HEARTBEAT_TIMEOUT", cleanupRemainingMs: 5000 });
+          stopped();
+        });
+      }
+    });
+    return true;
+  } });
+  await env.b.start({ manifestPath: "unit/manifest.json" });
+  const spawn = (...args) => {
+    child = actualSpawn(...args);
+    physical = new Promise((resolve) => child.once("close", resolve));
+    child.once("exit", () => { facts[0] = true; });
+    child.stdout.once("close", () => { facts[1] = true; });
+    child.stderr.once("close", () => { facts[2] = true; });
+    return child;
+  };
+  const bindings = { spawn, PINS: new Set(), deferred: () => {
+    let resolve;
+    const promise = new Promise((yes) => { resolve = yes; });
+    return { promise, resolve };
+  }, capabilities: env.b.capabilities, lifetime: env.owner, budget: { dispose() {} },
+  workspace: { commonIdentity: { environment: { node: { invocationPath: process.execPath, realPath: process.execPath } } } },
+  session: env.b, retainPrimary: (error) => { throw error; }, process: { connected: false } };
+  const invoke = new Function(...Object.keys(bindings), `${selected.child.getText(tree)}\nlet syntheticSilent=false;\nreturn (async()=>{try ${selected.body.getText(tree)} finally {${selected.tail.map((item) => item.getText(tree)).join("\n")}}})();`);
+  const pending = invoke(...Object.values(bindings));
+  pending.then(() => { settled = true; }, () => { settled = true; });
+  await stop;
+  // A real event-loop checkpoint follows STOP and the selected branch's
+  // continuations. No physical survivor fact has been released yet.
+  let zero = false;
+  const joined = env.owner.whenSettled().then(() => { zero = true; });
+  await new Promise((resolve) => setImmediate(resolve));
+  const closedBeforeRelease = env.sends.some((item) => item.msg.type === "closed");
+  assert.equal(child.exitCode, null);
+  assert.equal(child.signalCode, null);
+  assert.equal(settled, false);
+  assert.equal(zero, false);
+  child.kill("SIGTERM");
+  await physical;
+  await pending;
+  await joined;
+  assert.deepEqual(facts, [true, true, true]);
+  assert.equal(closedBeforeRelease, true);
+  assert.equal(zero, true);
+});

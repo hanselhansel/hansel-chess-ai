@@ -3424,3 +3424,18 @@ scope/owner joins. Scripted normal-parent fixtures now deliver literal FINISH
 STOP at the actual finish submission, retaining their original assertions.
 The failed committed check remains ineligible; this source repair does not
 promote its receipt or claim a fresh actual phase passage.
+
+
+### Synthetic selftest closes before its retained survivor join
+
+After the synthetic driver's valid STOP, its existing finally sends CLOSED
+before joining the same lifetime that already retains its surviving child's
+exit and both pipe-close receipt. The body does not duplicate that physical
+join ahead of CLOSED. Native scoped cleanup may terminate both processes.
+The channel's strict unexpected-disconnect guard, raw STOP callback/error
+handling, original cleanup bound and final physical joins remain unchanged.
+A controlled real survivor with the selected actual driver branch proves
+CLOSED is protocol-validated while that receipt and owner settlement remain
+pending, then both settle only after the actual child exits and pipes close.
+This corrects the reproduced ordering defect without identifying which
+historical signal caused the failed preflight's disconnect.

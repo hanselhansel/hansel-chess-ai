@@ -198,7 +198,8 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
       if (!capabilities.signal.aborted) {
         await new Promise((resolve) => capabilities.signal.addEventListener("abort", resolve, { once: true }));
       }
-      await surviving.settled;
+      // Finally sends CLOSED before joining this SAME retained physical
+      // child receipt. Native cleanup may terminate both child and driver.
     } else {
       const fixtureReader = reader;
       const fixtures = {};
