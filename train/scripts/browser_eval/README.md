@@ -9056,3 +9056,24 @@ wrong-FD/oversize pre-write rejection and ML-absent checks. The new entry
 TEST owner covers fragmented/extraneous frames and actual Native-faked strict
 registration/ACK ordering. Its command-expiry control retains the same initial
 end and holds true child debt through the last real gate-close event.
+
+
+#### Cooperative environment file scheduling
+
+The existing environment-files parallel owner preserves sixteen workers,
+ordered results, complete validation and first arbitrary failure. Each worker
+performs at most sixteen items before a cooperative event-loop turn through
+the existing private call(tag, thunk). That turn borrows the SAME original
+budget and actual-body receipt. Expiry/failure is rechecked before reserving
+another row; all issued IO and turn bodies join before return. It creates no
+clock, extended deadline, extra IO concurrency, cache or Native policy.
+
+Before creation, `environment-files-test-fixtures.mjs` is declared as a
+TEST-only cohesive move of the WHOLE existing fixture, sole export
+`makeEnvironmentFilesFixture(t, {python=false, changeText=null, payloadCount=45,
+onResolve=null}={})`. Returned fields remain files/root/data/payloads/streams/
+entered/release/own/clock/budget/lifetime/originalEnd/peak/live. The optional
+TEST-only row count and lowlevel resolve observer support count-gated genuine
+RECORD fairness/expiry controls. DAG: environment-files.test -> this TEST leaf
+-> existing environment-files/budget/lifetime/fake-clock owners; no runtime
+union entry or operational hook. All existing assertions/fixture teardown stay.

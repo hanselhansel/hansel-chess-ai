@@ -1,117 +1,17 @@
 // Pure bounded file scheduling and true-close ownership. No OS process,
 // Native, browser, installed software or model is loaded by these fakes.
 import assert from "node:assert/strict";
-import { EventEmitter } from "node:events";
 import path from "node:path";
 import os from "node:os";
 import { promises as fsp, createReadStream } from "node:fs";
 import ts from "typescript";
 import test from "node:test";
 import { createEnvironmentFiles } from "./environment-files.mjs";
-import { createBudgetHandle } from "./process-budget.mjs";
 import { isObj, exactFields, isAbs } from "./protocol-values.mjs";
-import { assertWatchdogLifetime, createWatchdogLifetime } from "./watchdog-lifetime.mjs";
+import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
-import { fakeClock } from "./supervision-test-fixtures.mjs";
+import { makeEnvironmentFilesFixture as fixture } from "./environment-files-test-fixtures.mjs";
 
-function fixture(t, { python = false, changeText = null } = {}) {
-  const clock = fakeClock();
-  const originalEnd = clock.nowMs() + 5000;
-  const budget = createBudgetHandle({ deadlineMonoMs: originalEnd, clock, nowMonoMs: clock.nowMs });
-  const lifetime = createWatchdogLifetime();
-  const root = python ? "/venv/lib/python3.11/site-packages" : "/tree";
-  const data = new Map();
-  const payloads = Array.from({ length: 45 }, (_, index) =>
-    path.join(root, python ? "demo" : "", `file${String(index).padStart(2, "0")}.txt`));
-  for (const file of payloads) {
-    data.set(file, Buffer.from(`${file}\n`));
-  }
-  if (python) {
-    const info = path.join(root, "demo-1.dist-info");
-    data.set(path.join(info, "METADATA"), Buffer.from("Name: Demo\nVersion: 1\n"));
-    data.set("/venv/bin/demo", Buffer.from("external install entry point\n"));
-    const names = [...data.keys(), path.join(info, "RECORD")];
-    data.set(path.join(info, "RECORD"), Buffer.from(names.map((file) => `${path.relative(root, file)},,\n`).join("")));
-  }
-  const children = (dir) => [...new Set([...data.keys()]
-    .filter((file) => file.startsWith(`${dir}/`)).map((file) => file.slice(dir.length + 1).split("/")[0]))];
-  const statFile = async (file) => {
-    const directory = !data.has(file) && children(file).length > 0;
-    assert.ok(directory || data.has(file), `known fake path ${file}`);
-    return { dev: 1, ino: file.length, mtimeMs: 1, size: data.get(file)?.length ?? 0,
-      isFile: () => !directory, isDirectory: () => directory, isSymbolicLink: () => false };
-  };
-  const streams = [];
-  const bodies = new Set();
-  let enter;
-  const entered = new Promise((resolve) => { enter = resolve; });
-  let automatic = false;
-  let held = 0;
-  let live = 0;
-  let peak = 0;
-  class Stream extends EventEmitter {
-    constructor(file) {
-      super();
-      this.file = file;
-      this.closed = false;
-      this.destroyed = false;
-      this.end = budget.deadlineMonoMs();
-      live += 1;
-      peak = Math.max(peak, live);
-      this.once("close", () => { live -= 1; });
-    }
-    destroy() { this.destroyed = true; }
-    finish() {
-      if (this.closed) return;
-      this.emit("data", data.get(this.file));
-      this.emit("end");
-      this.close();
-    }
-    close() {
-      if (this.closed) return;
-      this.closed = true;
-      this.emit("close");
-    }
-  }
-  const files = createEnvironmentFiles({ budget, lifetime }, {
-    statFile, resolvePath: (file) => file, readdir: async (dir) => children(dir).reverse(),
-    createStream: (file) => {
-      if (changeText !== null && file.endsWith(`/${changeText}`) && streams.some((stream) => stream.file === file)) {
-        const changed = Buffer.from(data.get(file));
-        changed[0] ^= 1;
-        data.set(file, changed);
-      }
-      const stream = new Stream(file);
-      streams.push(stream);
-      if (!automatic && payloads.includes(file)) {
-        held += 1;
-        if (held === 16) enter();
-      } else {
-        queueMicrotask(() => stream.finish());
-      }
-      return stream;
-    },
-  });
-  const release = () => {
-    automatic = true;
-    for (const stream of streams) stream.finish();
-  };
-  const own = (body) => {
-    bodies.add(body);
-    body.then(() => bodies.delete(body), () => bodies.delete(body));
-    return body;
-  };
-  t.after(async () => {
-    release();
-    await Promise.allSettled([...bodies]);
-    await lifetime.whenSettled();
-    budget.dispose();
-    assert.equal(live, 0);
-    assert.equal(streams.every((stream) => stream.closed), true);
-  });
-  return { files, root, data, payloads, streams, entered, release, own, clock, budget, lifetime, originalEnd,
-    peak: () => peak, live: () => live };
-}
 
 test("full inventory uses bounded independent reads with stable sorted current hashes", async (t) => {
   const f = fixture(t);
@@ -289,5 +189,133 @@ test("native default retains actual canonical symlink and failure guards", async
   }
   f.clock.advance(5000);
   assert.throws(() => files.resolve(path.join(root, "file")), (error) => error.code === "ACCOUNTING_UNAVAILABLE");
+  await f.lifetime.whenSettled();
+});
+
+test("ordinary RECORD resolution yields a real event-loop turn before all rows exhaust", async (t) => {
+  const resolved = new Set();
+  let seen = null;
+  let notify;
+  const observed = new Promise((resolve) => { notify = resolve; });
+  const f = fixture(t, { python: true, payloadCount: 513, onResolve: (file) => {
+    if (seen !== null || !f.payloads.includes(file)) return;
+    const first = resolved.size === 0;
+    resolved.add(file);
+    if (first) {
+      setImmediate(() => { seen = resolved.size; notify(); });
+    }
+  } });
+  f.own(observed);
+  const pending = f.own(f.files.pythonInstalled("/venv"));
+  await observed;
+  assert.ok(seen > 0 && seen < f.payloads.length, `observer saw ${seen} of ${f.payloads.length} ordinary rows`);
+  await f.entered;
+  assert.equal(f.peak(), 16);
+  f.release();
+  const result = await pending;
+  const entries = [...f.data].map(([file, bytes]) => ({ path: path.relative("/venv", file),
+    byteLength: bytes.length, sha256: sha256Bytes(bytes) })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(result.distributions, [{ name: "demo", version: "1", buildSha256: sha256Bytes(canonicalBytes(entries)) }]);
+  const site = entries.filter((entry) => entry.path.startsWith("lib/python3.11/site-packages/"))
+    .map((entry) => ({ ...entry, path: entry.path.slice("lib/python3.11/site-packages/".length) }));
+  assert.deepEqual(result.inventory.files, site);
+  assert.equal(result.inventory.sha256, sha256Bytes(canonicalBytes({ files: site, links: [] })));
+  const record = path.join(f.root, "demo-1.dist-info/RECORD");
+  assert.deepEqual(result.records, [{ path: record, byteLength: f.data.get(record).length,
+    sha256: sha256Bytes(f.data.get(record)) }]);
+  assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
+  await f.lifetime.whenSettled();
+});
+
+test("expiry at a real cooperative turn admits no later row and joins every issued turn", async (t) => {
+  const immediate = globalThis.setImmediate;
+  const tickets = [];
+  let entered;
+  const turnEntries = new Promise((resolve) => { entered = resolve; });
+  const resolved = new Set();
+  let expiredAt = null;
+  const f = fixture(t, { python: true, payloadCount: 513, onResolve: (file) => {
+    if (!f.payloads.includes(file)) return;
+    const first = resolved.size === 0;
+    resolved.add(file);
+    if (first) {
+      immediate(() => {
+        expiredAt = resolved.size;
+        f.clock.advance(5000);
+      });
+    }
+  } });
+  globalThis.setImmediate = function (callback, ...args) {
+    return Reflect.apply(immediate, this, [function (...values) {
+      tickets.push(() => Reflect.apply(callback, this, values));
+      if (tickets.length === 16) entered();
+    }, ...args]);
+  };
+  let pending;
+  let zero = false;
+  let settled = false;
+  let streamsAtYield;
+  const release = () => {
+    for (const invoke of tickets.splice(0)) invoke();
+  };
+  try {
+    pending = f.own(f.files.pythonInstalled("/venv"));
+    pending.then(() => { settled = true; }, () => { settled = true; });
+    await turnEntries;
+    streamsAtYield = f.streams.length;
+    assert.equal(tickets.length, 16);
+    assert.ok(expiredAt > 0 && expiredAt < f.payloads.length);
+    assert.equal(f.budget.deadlineMonoMs(), f.originalEnd);
+    f.lifetime.whenSettled().then(() => { zero = true; });
+    assert.equal(zero, false);
+    assert.equal(settled, false, "expired public waits do not settle issued turn bodies");
+  } finally {
+    release();
+    globalThis.setImmediate = immediate;
+  }
+  await assert.rejects(pending, (error) => error.code === "ACCOUNTING_UNAVAILABLE");
+  await f.lifetime.whenSettled();
+  assert.equal(zero, true);
+  assert.equal(resolved.size, expiredAt, "no extra row after original-end expiry");
+  assert.equal(f.streams.length, streamsAtYield);
+  assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
+});
+
+test("first nil turn failure joins competing issued turns before rejection", async (t) => {
+  const immediate = globalThis.setImmediate;
+  const tickets = [];
+  let count = 0;
+  let entered;
+  const turnEntries = new Promise((resolve) => { entered = resolve; });
+  const resolved = new Set();
+  const f = fixture(t, { python: true, payloadCount: 513, onResolve: (file) => {
+    if (f.payloads.includes(file)) resolved.add(file);
+  } });
+  globalThis.setImmediate = function (callback, ...args) {
+    count += 1;
+    if (count === 1) throw undefined; // Controlled definite pre-issue failure.
+    return Reflect.apply(immediate, this, [function (...values) {
+      tickets.push(() => Reflect.apply(callback, this, values));
+      if (tickets.length === 15) entered();
+    }, ...args]);
+  };
+  let pending;
+  let settled = false;
+  let atFailure;
+  try {
+    pending = f.own(f.files.pythonInstalled("/venv"));
+    pending.then(() => { settled = true; }, () => { settled = true; });
+    await turnEntries;
+    atFailure = resolved.size;
+    assert.equal(settled, false);
+    assert.equal(tickets.length, 15);
+    assert.ok(atFailure < f.payloads.length);
+  } finally {
+    for (const invoke of tickets) invoke();
+    globalThis.setImmediate = immediate;
+  }
+  await assert.rejects(pending, (error) => error === undefined);
+  assert.equal(resolved.size, atFailure);
+  assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
   await f.lifetime.whenSettled();
 });

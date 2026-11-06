@@ -115,12 +115,22 @@ export function createEnvironmentFiles(context, adapters = {}) {
     let failed = false;
     let first;
     const worker = async () => {
+      let completed = 0;
       while (!failed && next < items.length) {
-        const index = next;
-        next += 1;
         try {
+          // Fulfilled microtasks alone cannot keep Native timers responsive.
+          if (completed === 16) {
+            await call("environment cooperative turn", () => new Promise((resolve) => setImmediate(resolve)));
+            completed = 0;
+          }
           budget.assertLive("environment concurrent file");
+          if (failed || next >= items.length) {
+            return;
+          }
+          const index = next;
+          next += 1;
           results[index] = await work(items[index]);
+          completed += 1;
         } catch (error) {
           if (!failed) {
             failed = true;
