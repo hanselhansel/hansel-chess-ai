@@ -3312,8 +3312,10 @@ scan when a descendant lstat returns ENOENT and a second real lstat confirms
 absence while every captured ancestor remains the same safe non-symlink
 directory (device/inode/mode/birth identity), including the root, before and
 after confirmation and across the complete restart. Root/parent loss, replacement, unsafe metadata, symlinks,
-reappearance, other errno, repeated churn, stop or generation change stay
-unavailable. A restart discards the first partial charge, keeps the ORIGINAL
+reappearance, other errno, stop or generation change stay unavailable. The
+initial implementation also rejected a second confirmed retirement; that
+implementation-specific restriction is superseded below. A restart discards
+the first partial charge, keeps the ORIGINAL
 scan-start timestamp and borrowed operation/owner, and charges every current
 entry afresh. Failed confirmation/restart preserves the original ENOENT first.
 The first attempt is never published as invalid then repaired. No earlier
@@ -3439,3 +3441,29 @@ CLOSED is protocol-validated while that receipt and owner settlement remain
 pending, then both settle only after the actual child exits and pipes close.
 This corrects the reproduced ordering defect without identifying which
 historical signal caused the failed preflight's disconnect.
+
+
+### Confirmed absence after the initial footprint restart
+
+The initial whole-root restart remains, including fresh enumeration that
+charges a replacement created during the first retirement. On its second
+walk only, a descendant lstat ENOENT may contribute zero after genuine
+absence confirmation under the unchanged safe root and every ancestor.
+Each such path and its captured ancestor facts stays private to this scan.
+Before publication the observer rechecks absence, all ancestor identities
+and the same generation for EVERY retired path, including the first one.
+Reappearance, unsafe/replaced/lost ancestors, other errno, unreadable
+confirmation, stop or generation change invalidates the whole observation.
+Root lstat and readdir failures retain their original fail-closed behavior.
+
+Zero describes the approved namespace-lstat allocation metric. It does not
+prove an unlinked kernel allocation vanished. No partial charge, cached
+absence or previously published invalid sample is promoted. Original scan
+start, freshness, operation/owner, directory/symlink charging and byte caps
+remain unchanged; a failed final proof preserves the original first error.
+The 2026-11-06 one-restart rejection of repeated confirmed retirement was an
+implementation choice, not an original accounting requirement. Its real-FS
+negative becomes an exact remaining-tree/zero accounting positive, while
+all unsafe cases stay negative, including final-proof reappearance and
+ancestor replacement. The failed check's second confirmation and full
+historical path remain unknown; this is a separately reproduced correction.

@@ -280,8 +280,8 @@ test("a genuinely retired enumerated child triggers one complete fresh walk", as
   assert.equal(result.chargedBytes, expected, "no partial first-walk charge survives");
 });
 
-for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replaced", "parent-symlink", "root-lost", "root-replaced", "root-symlink", "unsafe-parent", "stop-confirmation", "repeated", "stopped", "EPERM", "EIO"]) {
-  test(`retirement confirmation remains unavailable: ${scenario}`, async (t) => {
+for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replaced", "parent-symlink", "root-lost", "root-replaced", "root-symlink", "unsafe-parent", "stop-confirmation", "repeated", "retired-final-reappeared", "retired-final-parent-replaced", "stopped", "EPERM", "EIO"]) {
+  test(scenario === "repeated" ? "two positively retired children remain completely accounted" : `retirement confirmation remains unavailable: ${scenario}`, async (t) => {
     const root = ownedTree(t);
     const parent = path.join(root, "sub");
     const retired = path.join(parent, "b.bin");
@@ -289,6 +289,8 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
     const stat = fsp.lstat;
     let reads = 0;
     let recreate = false;
+    let againChecks = 0;
+    const repeated = scenario === "repeated" || scenario.startsWith("retired-final-");
     const oldRoot = root + "-retired";
     let observer;
     t.after(() => {
@@ -307,7 +309,7 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
         reads += 1;
         if (reads === 1) {
           await fsp.unlink(retired);
-          if (scenario === "repeated" && reads === 1) {
+          if (repeated && reads === 1) {
             await fsp.writeFile(path.join(parent, "again.bin"), "another retired entry");
           }
           if (scenario === "parent-replaced" || scenario === "parent-symlink") {
@@ -334,8 +336,16 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
       if (file === retired && ["EPERM", "EIO"].includes(scenario)) {
         throw Object.assign(new Error("controlled access failure"), { code: scenario });
       }
-      if (scenario === "repeated" && reads === 2 && file === path.join(parent, "again.bin")) {
-        await fsp.unlink(file);
+      if (repeated && reads === 2 && file === path.join(parent, "again.bin")) {
+        againChecks += 1;
+        if (againChecks === 1) await fsp.unlink(file);
+        if (againChecks === 3 && scenario === "retired-final-reappeared") {
+          await fsp.writeFile(file, "reappeared before final absence proof");
+        }
+        if (againChecks === 3 && scenario === "retired-final-parent-replaced") {
+          await fsp.rename(parent, path.join(root, "old-parent"));
+          await fsp.mkdir(parent);
+        }
       }
       try {
         const result = await Reflect.apply(stat, this, [file, ...args]);
@@ -354,9 +364,20 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
     };
     observer = createFootprintObserver({ workspaceRoot: root, clock: clock() });
     const result = await observer.scan();
-    assert.equal(result.accountingValid, false);
+    assert.equal(result.accountingValid, scenario === "repeated");
     assert.ok(reads <= 2, "at most one whole-walk restart");
-    if (scenario !== "stopped") {
+    if (scenario === "repeated") {
+      assert.deepEqual(result.errors ?? [], []);
+      assert.equal(result.observedAtMs, 1000);
+      assert.equal(reads, 2);
+      let expected = 0;
+      for (const file of [root, path.join(root, "a.bin"), path.join(root, "link"), parent]) {
+        const st = await Reflect.apply(stat, fsp, [file]);
+        expected += st.isDirectory() || st.isSymbolicLink() ? st.blocks * 512 : Math.max(st.size, st.blocks * 512);
+      }
+      assert.equal(result.chargedBytes, expected, "complete remaining tree, absent entries zero");
+    }
+    if (scenario !== "stopped" && scenario !== "repeated") {
       assert.ok(result.errors[0].includes(scenario === "EPERM" || scenario === "EIO" ? scenario : "ENOENT"));
     }
   });

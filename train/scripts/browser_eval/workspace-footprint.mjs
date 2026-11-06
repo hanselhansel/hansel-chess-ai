@@ -150,7 +150,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
     }
   };
 
-  const walk = async (dir, errors, gen, ancestors) => {
+  const walk = async (dir, errors, gen, ancestors, retirements, allowZero) => {
     let total = 0;
     let entries;
     try {
@@ -166,9 +166,16 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
       try {
         st = await fsp.lstat(p);
       } catch (e) {
-        errors.push(`lstat ${p}: ${e.code || e.message}`);
-        const retry = e.code === "ENOENT" && await retired(p, ancestors, gen) ? ancestors : null;
-        return { total, unavailable: true, retry };
+        const failure = `lstat ${p}: ${e.code || e.message}`;
+        const absent = e.code === "ENOENT" && await retired(p, ancestors, gen);
+        if (absent) {
+          retirements.push({ file: p, ancestors, failure });
+          // Only confirmed absence is zero, never an unknown/missing stat.
+          // The SAME per-call facts are all rechecked before publication.
+          if (allowZero) continue;
+        }
+        errors.push(failure);
+        return { total, unavailable: true, retry: absent ? ancestors : null };
       }
       const c = charge(st);
       if (c === null || !Number.isSafeInteger(total + c)) {
@@ -181,7 +188,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
           errors.push(`charge ${p}: unsafe directory`);
           return { total, unavailable: true };
         }
-        const sub = await walk(p, errors, gen, [...ancestors, [p, st]]);
+        const sub = await walk(p, errors, gen, [...ancestors, [p, st]], retirements, allowZero);
         if (!Number.isSafeInteger(total + sub.total)) {
           errors.push(`charge ${p}: unsafe total`);
           return { total, unavailable: true };
@@ -196,6 +203,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
   const run = async (gen) => {
     const observedAtMs = clock.nowMonoMs();
     const firstErrors = [];
+    const retirements = [];
     let originalRoot = null;
     let restartAncestors = null;
     for (let attempt = 0; attempt < 2; attempt += 1) {
@@ -221,12 +229,23 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
           return { observedAtMs, chargedBytes: 0, errors: firstErrors, unavailable: true };
         }
       }
-      const inner = await walk(workspaceRoot, errors, gen, [[workspaceRoot, rootStat]]);
+      const inner = await walk(workspaceRoot, errors, gen, [[workspaceRoot, rootStat]], retirements, attempt === 1);
       // Checked inner additions do not cover the final root allocation.
       const total = charge(rootStat) + inner.total;
       if (!Number.isSafeInteger(total) || total < 0) {
         errors.push(`charge ${workspaceRoot}: unsafe sum`);
         inner.unavailable = true;
+      }
+      if (!inner.unavailable) {
+        // No cached absence crosses calls. Reappearance, changed ancestors
+        // or a stopped generation invalidates every accumulated charge.
+        for (const entry of retirements) {
+          if (!await retired(entry.file, entry.ancestors, gen)) {
+            errors.push(entry.failure);
+            inner.unavailable = true;
+            break;
+          }
+        }
       }
       if (!inner.unavailable) {
         try {
