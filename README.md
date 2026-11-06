@@ -183,3 +183,11 @@ remains unidentified; bounded full-CLI/Native/compare controls naturally
 closed but do not identify or repair that historical reference.
 The archived CLI now reports bounded public active-resource type counts
 after the supervisor returns, without adding timers or changing its result.
+
+The newly authorized second comparison uses a finite 24-hour ceiling
+(86,400,000 ms) for the locked 40 games/20 pairs. Readiness 30s, command 90s,
+Native cleanup 5s, RSS 4GiB and output 256MiB remain unchanged. Its bounded
+`TINYAZ_COMPARE_PROGRESS` stderr lines report acknowledged completed-game/pair
+counts only. They have no result or proof authority. The original one-hour
+cohort stays inconclusive; see the [accepted budget amendment](docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md#accepted-second-cohort-budget-and-progress-amendment-2026-11-06)
+and [progress format](train/scripts/browser_eval/README.md#authorized-second-comparison-budget-and-progress-2026-11-06).

@@ -25,6 +25,7 @@ test("protocol binds every fixed check group and resource/clock literal", () => 
   assert.equal(Object.isFrozen(result.limits.timing.phaseMs), true);
   for (const mutate of [
     (p) => { p.limits.timing.commandMs += 1; },
+    (p) => { p.limits.timing.phaseMs.compare = 3600000; },
     (p) => { p.requiredCheckIds.check.pop(); },
     (p) => { p.preflight.freshRequestsPerArm = 4; },
     (p) => { p.comparison.gameCount = 42; },

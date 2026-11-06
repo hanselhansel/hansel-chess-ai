@@ -101,7 +101,7 @@ export const FIXED_LIMITS = freezeDeep({
     sampleMs: 250,
     sampleGapMs: 500,
     cleanupMs: 5000,
-    phaseMs: { check: 600000, parity: 600000, preflight: 600000, compare: 3600000 },
+    phaseMs: { check: 600000, parity: 600000, preflight: 600000, compare: 86400000 },
   },
   resources: {
     rssBytes: 4294967296,

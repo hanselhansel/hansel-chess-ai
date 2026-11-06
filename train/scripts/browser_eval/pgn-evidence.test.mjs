@@ -1,95 +1,12 @@
-// Actual Recorder/Store PGNs with read-only supervisor selection. All
-// Native/identity fixtures are data only; no phase is finalized as passed.
+// Actual PGN persistence, selection and ACK regressions. No Native/browser phase.
 import assert from "node:assert/strict";
-import { promises as fsp, realpathSync } from "node:fs";
-import os from "node:os";
+import { promises as fsp } from "node:fs";
 import path from "node:path";
 import test from "node:test";
-import { Chess } from "chess.js";
-import { createArtifactStore } from "./artifact-store.mjs";
-import { createBudgetHandle } from "./process-budget.mjs";
 import { createPgnEvidence } from "./pgn-evidence.mjs";
-import { checkpointResult, serializeCheckpointPgn } from "./pgn-format.mjs";
-import { buildGameSchedule } from "./phase-fixtures.mjs";
-import { createPhaseRecorder, writeWorkspaceOnce } from "./records.mjs";
-import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
-import { createWatchdogRecordAdapter } from "./watchdog-records.mjs";
 import { createWatchdogOperations } from "./watchdog-operations.mjs";
-import { createFootprintObserver } from "./workspace-footprint.mjs";
-import { fixtureWorkspace, fixtureManifest, fixtureRunning, ref, identity } from "./test-fixtures.mjs";
-import { ownFixtureAttempt, registerFixtureTeardown } from "./watchdog-teardown-test-fixtures.mjs";
-
-const own = (t, thunk) => ownFixtureAttempt(t, thunk);
-const now = () => Number(process.hrtime.bigint() / 1000000n);
-const deferred = () => {
-  let resolve;
-  const promise = new Promise((r) => { resolve = r; });
-  return { promise, resolve };
-};
-
-async function fixture(t, phase = "compare") {
-  const root = realpathSync(await fsp.mkdtemp(path.join(os.tmpdir(), "tinyaz-pgn-")));
-  const lifetime = createWatchdogLifetime();
-  const budget = createBudgetHandle({ deadlineMonoMs: now() + 90000, nowMonoMs: now, clock: { setTimeout, clearTimeout } });
-  const footprint = createFootprintObserver({ workspaceRoot: root });
-  let recorder;
-  registerFixtureTeardown(t, {
-    settle: () => recorder === undefined ? undefined : recorder.closeIncompleteEvidence(),
-    afterSettle: () => lifetime.whenSettled(),
-    restore: () => { budget.dispose(); footprint.stop(); },
-    remove: () => fsp.rm(root, { recursive: true, force: true }),
-  });
-  const schedule = phase === "preflight" ? buildGameSchedule({ phase }) : buildGameSchedule({ phase,
-    openings: JSON.parse(await own(t, () => fsp.readFile(new URL("../../fixtures/browser-openings.json", import.meta.url), "utf8"))) });
-  const observer = createPgnEvidence({ workspaceRoot: root, runId: "R1", phase, gameSchedule: schedule }, { budget, lifetime });
-  const store = createArtifactStore({ workspaceRoot: root, lifetime, monotonicNow: now, readFootprint: footprint.readFootprint });
-  const workspace = fixtureWorkspace();
-  await own(t, () => writeWorkspaceOnce({ store, workspace }));
-  const prerequisites = (phase === "preflight" ? ["check", "parity"] : ["check", "parity", "preflight"]).map((phase) => ({ phase, runId: `fixture-${phase}`, completion: ref(`${phase}/completion.json`) }));
-  const manifest = fixtureManifest({ workspace, phase, runId: "R1", prerequisites });
-  recorder = createPhaseRecorder({
-    store, workspace, manifest,
-    verifyIdentity: async () => { throw new Error("unit fixture cannot verify a real phase"); },
-    verifyCleanup: async () => { throw new Error("unit fixture has no Native proof"); },
-  });
-  recorder.bindRuntime({ lifetime, nowMonoMs: now });
-  await own(t, () => recorder.writeManifest());
-  await own(t, () => recorder.writeRunning(fixtureRunning({ manifest, supervisor: identity(7000) })));
-  const faults = [];
-  const adapter = createWatchdogRecordAdapter({
-    recorder, pgnEvidence: observer, workspaceRoot: root, manifestRel: `${phase}/manifest.json`,
-    commonIdentity: workspace.commonIdentity, phase, onObserverFault: (e) => faults.push(e),
-    io: Object.freeze({ retainActual: lifetime.retainActual }),
-  });
-  let seq = 0;
-  const nextMessage = (type, fields) => ({ type, recordId: `record-${seq}`, recordSeq: seq++, ...fields });
-  const prepare = async (ordinal, extraMoves = [], gameIndex = 0) => {
-    const game = schedule[gameIndex];
-    const movesUci = [...game.movesUci, ...extraMoves];
-    const board = new Chess(game.initialFen);
-    for (const uci of movesUci) {
-      board.move({ from: uci.slice(0, 2), to: uci.slice(2, 4) });
-    }
-    const result = checkpointResult(board);
-    const bytes = serializeCheckpointPgn({ phase, game, movesUci, result });
-    const slot = ordinal % 2 === 0 ? "a" : "b";
-    const filename = `${phase}/games/${game.gameId}.${slot}.pgn`;
-    const msg = nextMessage("artifact", { artifactId: `${game.gameId}-artifact-${ordinal}`, path: filename,
-      mode: ordinal < 2 ? "append" : "replace", data: bytes.toString("base64"), last: true });
-    const pgn = await own(t, () => adapter.persistArtifact(msg));
-    const payload = { recordType: "pgn-checkpoint", gameId: game.gameId, pairNumber: game.pairNumber,
-      gameNumber: game.gameNumber, openingId: game.openingId, candidateColor: game.candidateColor,
-      checkpointId: `${game.gameId}-c${ordinal}`, previousCheckpointId: ordinal === 0 ? null : `${game.gameId}-c${ordinal - 1}`,
-      ordinal, slot, plyCount: movesUci.length, initialFen: game.initialFen, fen: board.fen(), result, pgn };
-    return { payload, message: nextMessage("event", { kind: "response", payload }), bytes };
-  };
-  const promote = async (ordinal, moves = [], gameIndex = 0) => {
-    const data = await prepare(ordinal, moves, gameIndex);
-    await own(t, () => adapter.persistEvent(data.message));
-    return data;
-  };
-  return { root, lifetime, budget, observer, adapter, faults, prepare, promote, nextMessage, schedule };
-}
+import { registerFixtureTeardown } from "./watchdog-teardown-test-fixtures.mjs";
+import { fixture, own, deferred, operationHarness, terminalComparison } from "./pgn-evidence-test-fixtures.mjs";
 
 test("actual close alone is diagnostic; persisted event selects canonical full-history PGN", async (t) => {
   const f = await fixture(t);
@@ -251,4 +168,119 @@ test("prewrite guard preserves the selected actual PGN and ref", async (t) => {
     artifactId: "forbidden-case-alias", path: attempt.path.replace("p01", "P01"),
   })), /noncanonical PGN path/);
   assert.deepEqual(await own(t, () => fsp.readFile(filename)), before);
+});
+
+
+test("count progress follows actual validated terminal checkpoint and successful ACK", async (t) => {
+  const f = await fixture(t);
+  const h = operationHarness(t, f);
+  const terminal = await terminalComparison(t, f, h);
+  assert.equal(h.lines.length, 0); // partial PGNs and close alone cannot count
+  const entered = deferred();
+  const release = deferred();
+  registerFixtureTeardown(t, { release: () => release.resolve() });
+  h.ack.send = async (type) => { assert.equal(type, "recorded"); entered.resolve(); await release.promise; };
+  h.operations.dispatch(terminal.message);
+  await entered.promise;
+  assert.equal(f.observer.snapshot().games[0].state, "complete");
+  assert.equal(h.lines.length, 0); // validation without ACK settlement cannot count
+  release.resolve();
+  await new Promise(setImmediate);
+  assert.equal(h.lines[0], 'TINYAZ_COMPARE_PROGRESS {"completedGames":1,"completedPairs":0}\n');
+  h.ack.send = async () => {};
+  const second = await terminalComparison(t, f, h, 1);
+  await h.record(second.message);
+  assert.equal(h.lines[1], 'TINYAZ_COMPARE_PROGRESS {"completedGames":2,"completedPairs":1}\n');
+  assert.ok(h.lines.every((line) => Buffer.byteLength(line) <= 256));
+  // Re-ACK of the same record must not emit a duplicate completion.
+  await h.record(second.message);
+  assert.equal(h.lines.length, 2);
+});
+
+for (const boundary of ["failed-ack", "stop-during-ack", "freeze-during-ack", "stop-before-validation", "invalid-terminal"]) {
+  test(`count progress excludes ${boundary}`, async (t) => {
+    const f = await fixture(t);
+    const h = operationHarness(t, f);
+    const terminal = await terminalComparison(t, f, h);
+    if (boundary === "failed-ack") h.ack.send = async () => { throw new Error("actual ACK failure"); };
+    if (boundary === "stop-during-ack") h.ack.send = async () => { h.stop(); };
+    if (boundary === "freeze-during-ack") h.ack.send = async () => {
+      f.adapter.freeze({ stopReason: "PHASE_TIMEOUT", atMonoNs: 5000000n });
+    };
+    if (boundary === "stop-before-validation") h.stop();
+    if (boundary === "invalid-terminal") terminal.message.payload.fen = "forged";
+    await h.record(terminal.message);
+    assert.equal(h.lines.length, 0);
+    assert.equal(f.faults.length, boundary === "invalid-terminal" ? 2 : boundary === "failed-ack" ? 1 : 0);
+  });
+}
+
+for (const failure of ["throw", "callback"]) {
+  test(`progress sink ${failure} failure preserves selected evidence and ordinary admission`, async (t) => {
+    const f = await fixture(t);
+    const h = operationHarness(t, f);
+    const terminal = await terminalComparison(t, f, h);
+    const originalWrite = process.stderr.write;
+    registerFixtureTeardown(t, { restore: () => { process.stderr.write = originalWrite; } });
+    process.stderr.write = function (line, callback) {
+      if (!String(line).startsWith("TINYAZ_COMPARE_PROGRESS ")) return originalWrite.call(this, line, callback);
+      if (failure === "throw") throw new Error("diagnostic sink unavailable");
+      callback(new Error("diagnostic write failed"));
+      return false;
+    };
+    await h.record(terminal.message);
+    assert.equal(f.observer.snapshot().games[0].state, "complete");
+    assert.equal(f.faults.length, 0);
+    process.stderr.write = originalWrite;
+    const second = await terminalComparison(t, f, h, 1);
+    await h.record(second.message);
+    assert.equal(h.lines[0], 'TINYAZ_COMPARE_PROGRESS {"completedGames":2,"completedPairs":1}\n');
+    assert.equal(f.faults.length, 0);
+  });
+}
+
+
+test("all forty rules-validated terminal ACKs yield bounded counts through twenty pairs", async (t) => {
+  const f = await fixture(t);
+  const h = operationHarness(t, f);
+  for (let index = 0; index < 40; index += 1) {
+    const terminal = await terminalComparison(t, f, h, index);
+    await h.record(terminal.message);
+  }
+  assert.equal(h.lines.length, 40);
+  assert.equal(h.lines.at(-1), 'TINYAZ_COMPARE_PROGRESS {"completedGames":40,"completedPairs":20}\n');
+  assert.ok(h.lines.every((line) => Buffer.byteLength(line) <= 256));
+  assert.equal(f.faults.length, 0);
+  f.adapter.freeze({ stopReason: null, atMonoNs: 10000000n });
+  assert.equal(f.observer.snapshot().games.filter((game) => game.state === "complete").length, 40);
+});
+
+test("late terminal PGN read after first stop stays diagnostic with no ACK or progress", async (t) => {
+  const f = await fixture(t);
+  const h = operationHarness(t, f);
+  const terminal = await terminalComparison(t, f, h);
+  const entered = deferred();
+  const release = deferred();
+  const originalStat = fsp.lstat;
+  registerFixtureTeardown(t, { release: () => release.resolve(), restore: () => { fsp.lstat = originalStat; } });
+  fsp.lstat = async function (filename, ...args) {
+    if (filename === path.join(f.root, terminal.payload.pgn.path)) {
+      entered.resolve();
+      await release.promise;
+    }
+    return originalStat.call(this, filename, ...args);
+  };
+  let ackCount = 0;
+  h.ack.send = async () => { ackCount += 1; };
+  h.operations.dispatch(terminal.message);
+  await entered.promise;
+  h.stop();
+  release.resolve();
+  await h.operations.whenOrdinarySettled();
+  const body = f.observer.snapshot();
+  assert.equal(body.games[0].state, "incomplete");
+  assert.equal(body.games[0].checkpoint.ordinal, 7);
+  assert.equal(ackCount, 0);
+  assert.equal(h.lines.length, 0);
+  assert.equal(f.faults.length, 0);
 });

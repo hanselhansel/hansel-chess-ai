@@ -37,7 +37,7 @@ test("frozen declarations hold exact pinned values", () => {
   assert.equal(MODEL_IDENTITY.sha256, "b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee");
   assert.equal(FIXED_LIMITS.ipc.chunkBytes, 65536);
   assert.equal(FIXED_LIMITS.timing.cleanupMs, 5000);
-  assert.equal(FIXED_LIMITS.timing.phaseMs.compare, 3600000);
+  assert.equal(FIXED_LIMITS.timing.phaseMs.compare, 86400000);
   assert.deepEqual(REQUIRED_PARENT_PHASES.compare, ["check", "parity", "preflight"]);
   assert.equal(REQUIRED_CHECK_IDS["watchdog-selftest"].length, 4);
   assert.equal(PROTOCOL_IDS.visitId, "completed-root64-v1");
@@ -272,6 +272,9 @@ test("workspace and manifest records validate and reject coherence breaks", () =
   const badLimits = copy(mf);
   badLimits.limits.timing.cleanupMs = 1;
   fails(() => assertRecord("manifest", badLimits), "SCHEMA_LITERAL");
+  const oldComparison = copy(mf);
+  oldComparison.limits.timing.phaseMs.compare = 3600000;
+  fails(() => assertRecord("manifest", oldComparison), "SCHEMA_LITERAL");
   const badChecks = copy(mf);
   badChecks.requiredCheckIds = ["other"];
   fails(() => assertRecord("manifest", badChecks), "SCHEMA_LITERAL");

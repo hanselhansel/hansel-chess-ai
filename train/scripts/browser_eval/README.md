@@ -1847,7 +1847,7 @@ phase `watchdog-selftest` — an absolute `process.hrtime`-origin bound
 plus a genuine `AbortSignal` that narrows and cancels the nested run;
 supplying it for another phase, or an invalid/missing selftest context,
 is rejected. `run()` takes no phase duration: the phase ceiling is the
-fixed `600000`/`3600000 ms` limit from before monitor startup (capped
+fixed `600000`/`86400000 ms` limit from before monitor startup (capped
 by `internalContext.deadlineMonoNs` for a nested run), ordinary work
 ends at `phaseEnd - 5000`, and the cleanup reserve is the original
 fixed window, never a caller-selected duration or a reset clock.
@@ -2588,7 +2588,7 @@ Frozen exports (all deeply frozen, never mutated):
   chunkBytes:65536}, timing:{readinessMs:30000, commandMs:90000,
   heartbeatMs:500, heartbeatGapMs:2000, sampleMs:250, sampleGapMs:500,
   cleanupMs:5000, phaseMs:{check:600000, parity:600000, preflight:600000,
-  compare:3600000}}, resources:{rssBytes:4294967296,
+  compare:86400000}}, resources:{rssBytes:4294967296,
   workspaceBytes:268435456, ordinaryBytes:266338304,
   finalReserveBytes:2097152}, visits:64, cohort:{pairs:20, games:40}}`.
 
@@ -3282,7 +3282,7 @@ never a default, new ledger or noop.
   aliases of the `FIXED_LIMITS` members: frame `1048576`, driver message
   `262144`, chunk `65536`; readiness `30000`, command `90000`, heartbeat
   `500`, heartbeat gap `2000`, sample `250`, sample gap `500`, cleanup
-  `5000`, phase `600000/600000/600000/3600000`; rss `4294967296`, workspace
+  `5000`, phase `600000/600000/600000/86400000`; rss `4294967296`, workspace
   `268435456`, ordinary `266338304`, final reserve `2097152`.
 - `createProtocolValidator({runId})` creates the one run-global validator.
   `accept(channel, direction, message, encodedByteLength)` enforces the
@@ -7684,10 +7684,11 @@ control. Neither the trusted first-begin pause nor the injection is delayed
 after its admitted boundary; the scan occurs while the parent is paused
 and before the synthetic driver/injection is admitted.
 
-The original 10-minute check/parity/preflight and 60-minute comparison ends,
+At this earlier ordering amendment, the original 10-minute check/parity/preflight and 60-minute comparison ends,
 30-second readiness, 90-second command ceiling, output/RSS limits, and one
 approved final comparison remain unchanged. This amendment changes when the
-fresh final integrity observation is collected, not a resource limit.
+fresh final integrity observation is collected, not a resource limit. The later
+authorized second-comparison amendment below supersedes only the comparison ceiling.
 
 
 ## Operational command usage
@@ -7719,9 +7720,9 @@ archived entry rejects late transfer before starting the separate phase
 clock. The original phase end is captured before fresh reopen/environment
 remeasurement and never renewed by a lower owner. Whole CLI wall time also
 includes preparation; execution receipts should retain both measurements.
-The fixed readiness30/command90 and phase600000/compare3600000 bounds,
-ordinary end D-5000, cleanup inside D, RSS and cumulative workspace caps
-remain unchanged. Private `--archived`/`--driver` arguments have no public
+The new comparison bound is 86400000 ms; check/parity/preflight stay 600000 ms.
+Readiness30/command90, ordinary end D-5000, cleanup inside D, RSS and
+cumulative workspace caps remain unchanged. Private `--archived`/`--driver` arguments have no public
 admission-disable or proof flag. No command runs training or publishes data.
 
 `bootstrapWorkspace` takes exactly `{phase,candidate,protocolPath,
@@ -9330,3 +9331,34 @@ using ONLY AST-selected actual frozen bb76439 finish/uciOf plus real Chess
 move data (no search/inference), and optional baselineResultFactory data
 input to makeOperationalFixture. Existing PageArm/phase tests exercise the
 real producer, Worker echo, turn validation and deterministic signature.
+
+## Authorized second comparison budget and progress (2026-11-06)
+
+The newly authorized full cohort uses a 24-hour comparison ceiling
+(86,400,000 ms). Original one-hour run receipts remain sealed and inconclusive.
+The accepted design amendment records duration/ply and retained-allocation
+evidence. Existing readiness 30s, command 90s, cleanup 5s, RSS 4GiB, output 256MiB,
+heartbeat/sample guards, 64 visits and locked 20-pair/40-game method remain
+unchanged. Old protocol/manifests cannot satisfy the new fixed-limit binding.
+
+After the supervisor validates persisted terminal PGN/checkpoint evidence and
+its recorded ACK succeeds, watchdog-operations emits the following provisional
+line to stderr, with a newline terminator:
+
+```text
+TINYAZ_COMPARE_PROGRESS {"completedGames":1,"completedPairs":0}
+```
+
+The prefix and two integer fields are fixed. Counts contain no game outcomes.
+Only acknowledged complete games count; a pair counts after both of its games
+are acknowledged. Fresh admission and unfrozen selected-checkpoint checks
+exclude late work. There are at most 40 lines and at most 256 UTF-8 bytes per
+line, including newline. No timer or awaited logging is added. Diagnostic sink
+failure has no proof, status, selection or failure authority. The controller
+consumes its existing owned stream; these lines never establish a passed run.
+
+TEST-only pgn-evidence-test-fixtures.mjs is declared before creation in the
+canonical file map. It owns the whole existing actual Store/Recorder/PGN
+fixture, own/deferred helpers and controlled checkpoint-ACK operations. It is
+excluded from functional-runtime inputs and establishes no Native/browser
+phase acceptance.

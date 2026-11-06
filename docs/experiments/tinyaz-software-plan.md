@@ -1,7 +1,7 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State (2026-11-06):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result, replacement cohort or further experiment is authorized.
+- **State (2026-11-06):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result exists. Hansel subsequently authorized one fresh full cohort after repair, with a 24-hour ceiling; the Task2 amendment below records that separate authorization.
 - **Historical state before C4b execution (preserved):** Runtime implementation exists and every earlier stage below is accepted: C1 and C2a on their fix branches, the C3a/C3b/C3c runtime (latest known runtime base `87d3c5b410bf07fdfc4f324a0a0b50f6813d073f`) and the C2b Python verification at `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`. C4a1's pure-JS browser-evaluation evidence libraries are accepted tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`: Sol's prepared-5 `npm run test:browser-harness` gate exited 0 with 138/138 cases, zero fail/skip/cancel and no warnings, `git diff --check` exited 0, all 33 frozen hashes stayed unchanged, both independent Sol 6.1-Max reviews returned ACCEPTABLE, and the final verdict is `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`. The final functional-input union and comparison candidate are not yet frozen: real native cleanup/identity bindings, C4a2 capture/supervisor wiring, harness integration and the final candidate freeze remain pending. The source-feature commit and its ref proof are recorded externally after Sol performs them; no SHA is invented here. Source-feature Git publication is distinct from prohibited new model/weight publication. C4a2's native supervision and watchdog stack on `feat/tinyaz-native-supervision` is verified at the whole-JS boundary by the 2026-11-05 actual 352/352 serial receipt (current-verification paragraph in the C4a2 section); C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison remain open. No comparison, training, model publication, deployment, bot or strength result exists.
 - **Historical C0/C1/C2a checkpoint (2026-11-02, preserved verbatim):** C0 documentation baseline committed at `8e23a787771fd74a723a52aa8941aaa38de9adf8`; fresh baseline captured. C1 is implemented and verified in this change on `fix/tinyaz-test-fixtures` (verification base `0f5c5f72e1bbd0d760f7176a5308a205715aba5b`): Sol's full `npm test` passed 191/191 application script cases then 39/39 core cases and `npm run typecheck` exited 0 on that snapshot. The coordinator accepted the executable change, both documentation corrections and the static doc review, with the eight frozen executable hashes verified unchanged. The four upstream authoring checks remain unavailable without real `GROK_TEMPLATE_ROOT` input. C1 is committed at `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` on `fix/tinyaz-test-fixtures`. Earlier push attempts hit GitHub TCP timeouts and a read-only connector then found no remote branch; the coordinator pushed the same commit at about 2026-11-02T01:02Z, and `git ls-remote` plus the GitHub connector now confirm `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` at `refs/heads/fix/tinyaz-test-fixtures`, so C1 is local verified and remote published. C2a's comment/inventory packet passed Sol's static gates with verdict `ACCEPTED_FOR_METADATA_FINALIZATION` and is implemented and verified in this change on `fix/tinyaz-contract-inventories`, built on that unchanged base; the containing commit supplies its closure.
 - **Requirements:** [Canonical design](../superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md).
@@ -38,6 +38,63 @@ Receipts: `/tmp/tinyaz-task1-controls/closer-cap.json` and
 its two faults remain immutable. Source checks and Task 1 handoff are recorded
 in `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/task-1-report.md`.
 
+## Task 2 authorized second-cohort budget and progress (2026-11-06)
+
+Hansel authorized one fresh full 40-game comparison after repair, using the
+unchanged model. The new fixed comparison ceiling is 24 hours (86,400,000 ms),
+with readiness 30s, command 90s, cleanup 5s, RSS 4GiB, output 256MiB and accounting
+reserves unchanged. This supersedes only the new comparison's time limit.
+The original sealed one-hour result below stays inconclusive with both faults.
+
+Five completed games/hour project about eight hours for 40 games. The prior
+budget selection used 117 maximum completed plies and approximately 11.7s per
+preflight PageArm outer command, projecting 15.2 hours for 40 such games
+before overhead. The 24-hour
+ceiling adds margin, without a completion guarantee or strength claim.
+The prior retained allocation observation was 33,244,184 bytes, including
+3,999,840 in compare. That initial observation omitted the root entry. The
+corrected inclusive total is 33,244,504 bytes. A conservative 24-times
+compare-directory growth projection plus retained non-comparison bytes is
+125,240,824, below 256MiB.
+Actual footprint/peak observations remain authoritative; a breach is inconclusive.
+
+The original preflight artifact is
+`/private/var/folders/48/mn49jb697djfv2xv2t03nbn40000gn/T/tinyaz-committed-20261106T082705Z/preflight/throughput.json`.
+Its candidate/baseline outer PageArm command medians are 11681.048667 /
+11661.945584 ms. The same workspace's compare/final.json and observations
+supply the separate read-only recheck: complete plies 34/34/33/117/87.
+Across 283 retained move observations, candidate response.moveElapsedMs and
+baseline response.ms have a combined median 11,944.7ms (about 15.53 hours for
+40×117). These use different response timing fields and a different
+workload from
+preflight, not a replacement experimental measurement. Rechecked allocation
+is 33,244,504 bytes (compare unchanged), including the root entry omitted from
+the earlier observation (logical 320 bytes/zero blocks). Neither difference
+changes the
+chosen 24-hour ceiling or the preserved output/accounting caps.
+
+Constants, protocol fixture and synthetic manifest limits now bind 86400000 ms.
+Existing schema, snapshot, CLI and parent-receipt consumers retain their exact
+fixed-limit and input-hash checks; old one-hour values fail closed.
+watchdog-operations now emits bounded provisional count metadata only after
+actual persisted PGN validation and successful recorded checkpoint ACK, with
+fresh admission/unfrozen/current-selection checks. PgnEvidence and Recorder
+APIs and evidence authority stay unchanged. Exact stderr format:
+
+```text
+TINYAZ_COMPARE_PROGRESS {"completedGames":1,"completedPairs":0}
+```
+
+At most 40 lines, each at most 256 UTF-8 bytes including newline. Only complete
+acknowledged games/pairs count. No outcomes, timer or awaited logging are added;
+sink errors cannot change evidence or failure handling. Source-only tests use
+actual rule replay/persistence with controlled transport, never inference.
+Final checks and code-to-doc comparison are recorded in
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/task-2-report.md`.
+A fresh committed check, 13-case parity and preflight receipt chain is still
+required before the newly authorized cohort. No real phase or push is part
+of the implementer's Task2 handoff.
+
 ## Locked comparison result (2026-11-06)
 
 The approved single cohort ran in
@@ -55,7 +112,7 @@ in total: four form two complete pairs, and the fifth belongs to the partial
 third pair whose sixth game is incomplete. 34 games and 17 pairs never started. The
 completed-game 2W/2D/1L is descriptive only. No partial-cohort p-value,
 confidence interval, significance, rating or Elo inference is permitted.
-There is no restart, resumed cohort or new comparison authorization.
+At this historical result boundary there was no restart, resumed cohort or new comparison authorization. The later Task2 amendment above records the separate fresh-cohort decision.
 
 `compare/final.json` SHA256 is
 `8f4361d6a44e72c9b64b38266bc2f3441bc8eb348d9d063bf5ddeefc16ec6d46`.

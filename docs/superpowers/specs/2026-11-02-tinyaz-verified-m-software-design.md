@@ -42,7 +42,7 @@ All ten implementation findings remain OPEN. This design draft does not repair c
 3. **Close all ten findings with the right evidence.** Repair F1 in behavior and its contracts. Correct F2/F3 comments without changing migrations or database initialization. Complete the owning inventories for F4-F9. Document F10's current valid-prefix retention and silent command handling. Keep each finding open until its own completion evidence exists.
 4. **Record required verification results.** Account for every existing failure and missing check in the accepted verification ledger. Preserve actual application integration and authentication contracts. Verify model encoding, inference, legal moves, search value/history behavior, and restoration after failure using focused fixtures. Declare numerical tolerances before parity results. Distinguish a passing subset from a green full suite.
 5. **Isolate any playing-strength effect.** Preserve existing M bytes as the control. Keep browser S-to-M delivery separate from an actual same-M software change. Preserve fresh-root 64-visit results. Verify an identical-engine control before candidate comparisons. Require browser/Python parity evidence before Python games support a browser claim. Freeze software and model identities, openings, outcomes, and statistical rules before games. Report faults, raw results, uncertainty, and stopping reason. Do not claim a Python software gain when its execution did not change.
-6. **Keep the first experiment finite.** Carry forward the accepted one-machine, one-game-at-a-time limits: a 10-minute preflight; at most 20 complete opening/color pairs, 40 games, or 60 minutes for the comparison; 30-second readiness and 90-second command watchdogs; 4 GiB aggregate evaluation-process resident memory; and 256 MiB of new outputs. Preserve incomplete records and faults. A fault or an early resource/time stop makes the strength result inconclusive. These limits are ceilings, not performance or statistical-power claims. Detailed Implementation 5 defines the required accounting before any run.
+6. **Keep each authorized experiment finite.** Carry forward the accepted one-machine, one-game-at-a-time limits: a 10-minute preflight; at most 20 complete opening/color pairs, 40 games, or the newly authorized 24 hours for the comparison; 30-second readiness and 90-second command watchdogs; 4 GiB aggregate evaluation-process resident memory; and 256 MiB of new outputs. Preserve incomplete records and faults. A fault or an early resource/time stop makes the strength result inconclusive. These limits are ceilings, not performance or statistical-power claims. Detailed Implementation 5 defines the required accounting before any run.
 7. **Preserve honest historical claims.** Keep historical Stockfish-instrument results, Lichess BOT-pool ratings, and one-visit controls separate. Treat missing checkpoint or measurement provenance as unknown. Preserve the old eight-game instrument and historical records. A supported no-gain result can finish this milestone; a higher Elo number is not required for delivery correctness.
 8. **Keep implementation and documentation together.** Every later meaningful code change includes affected README contracts, usage/API/configuration documentation, and design progress updates. Keep edited source and test files below 400 lines. Inspect each final diff and compare docs with behavior, interfaces, invariants, side effects, paths, and commands before a green commit or completion claim. Record why no doc change is needed when applicable. Preserve approved requirements and unrelated dirty work.
 
@@ -277,7 +277,7 @@ Use one locked set of 20 opening/color pairs for the final cohort. Development a
 
 The controller uses the pinned browser-library checkmate/draw predicates. It validates every engine move. There is no synthetic material winner or added ply adjudication in this browser protocol. A nonterminal game interrupted by the run cap stays incomplete. This is a new, labeled browser comparison instrument, separate from the historical Stockfish instrument. Preserve the historical 160-ply/material protocol and its records unchanged.
 
-Enforce one machine, one game at a time, the 60-minute/40-game cohort cap, 30-second readiness and 90-second command watchdogs, 4 GiB aggregate evaluation-process resident memory, and 256 MiB of new run-owned outputs. Account for the controller, fixture servers, Chromium, and descendants. An external watchdog must be able to stop stalled browser-side work. Temporary fixture/profile/cache artifacts belong to the run and are accounted for; pre-existing dependencies and control weights remain unchanged. Record cleanup and verify that owned processes and listening ports are gone.
+Enforce one machine, one game at a time, the newly authorized 24-hour/40-game cohort cap, 30-second readiness and 90-second command watchdogs, 4 GiB aggregate evaluation-process resident memory, and 256 MiB of new run-owned outputs. Account for the controller, fixture servers, Chromium, and descendants. An external watchdog must be able to stop stalled browser-side work. Temporary fixture/profile/cache artifacts belong to the run and are accounted for; pre-existing dependencies and control weights remain unchanged. Record cleanup and verify that owned processes and listening ports are gone.
 
 Persist the run manifest before games. It contains revision and source hashes, tool/browser/dependency identities, checkpoint proof and normalization, rule convention, visits, openings, resource limits, and statistical plan. Record each request, response, actual backend, attempts, timing, faults, game ID, color, moves, and outcome. Write raw PGNs and incremental events. Record a final completion or stop reason even after a crash. Never write results into public weights or legacy rating metadata.
 
@@ -430,7 +430,7 @@ These requirements apply to the proposed implementation below. None is an observ
 - **Failure and ownership:** Every pending operation settles on success, explicit cancellation, disposal, or failure. Replaced sessions and requests cannot update a current game. Worker recovery uses retained bytes once; failed turns require explicit action. Main searches run sequentially and yield between bounded groups of visits.
 - **Deadlines:** Initialization and a move each have the approved 90-second total-operation rule. The eight-second worker acknowledgement is subordinate. A late result is rejected even if browser scheduling delays physical interruption. The runner independently enforces 30-second readiness and 90-second command watchdogs.
 - **Responsiveness:** Prefer the worker. In browser checks, record main-thread timer gaps during a real M fallback and verify that Reset can be delivered and invalidates the pending move. Report maximum observed gap and cancellation delay. Do not invent a latency target or call a cooperative deadline hard CPU preemption.
-- **Resources:** Use one existing local machine and one game at a time. The throughput preflight is at most 10 minutes. The final cohort is at most 20 complete pairs, 40 games, or 60 minutes. Aggregate evaluation-process RSS is at most 4 GiB; all new evaluation-workspace outputs together are at most 256 MiB. Unknown accounting, a fault, or an early cap stop prevents a strength conclusion.
+- **Resources:** Use one existing local machine and one game at a time. The throughput preflight is at most 10 minutes. The final cohort is at most 20 complete pairs, 40 games, or the newly authorized 24 hours. Aggregate evaluation-process RSS is at most 4 GiB; all new evaluation-workspace outputs together are at most 256 MiB. Unknown accounting, a fault, or an early cap stop prevents a strength conclusion.
 - **Reproducibility:** Freeze both source revisions, the shared dependency installation, Chromium binary/configuration, M hash, rules, opening order, fixtures, and analysis before candidate games. Never hot-reload or silently resume a partial final cohort. A new candidate or changed method needs a new decision and an unused final set.
 - **Scope and data:** Bind evaluation servers to loopback and block external browser requests. Keep profiles, snapshots, caches, logs, and results inside one explicit temporary evaluation workspace. Do not include credentials in records. No training, publishing, database migration, deployment, or live account action is part of this implementation.
 - **Maintainability:** Keep every edited source and test file below 400 lines. Commit a green change with its affected contracts and design progress. Compare code and docs before each commit and final handoff. A passing subset or recorded skip never becomes a green full-suite claim.
@@ -1160,6 +1160,7 @@ Under scope `c4b-scope-11e-final-existing-resource-fixes.json` on `feat/tinyaz-b
 | Create | `./train/scripts/browser_eval/phase-fixtures.test.mjs` | C4b-15 TEST-only locked protocol/opening/schedule rules regressions, declared before creation. No model/Native/browser work. |
 | Create | `./train/scripts/browser_eval/pgn-evidence.mjs` | C4b-16 read-only persisted PGN observer, declared before creation. Exact three-method callback over same budget/lifetime; existing Watchdog observes before ACK and freezes first-stop selection. |
 | Create | `./train/scripts/browser_eval/pgn-format.mjs` | C4b-16 runtime canonical PGN/rules replay leaf, declared before creation. Exact API and bounded replay in owning contract. |
+| Create | `./train/scripts/browser_eval/pgn-evidence-test-fixtures.mjs` | TEST-only whole actual PGN/Recorder fixture extraction for the authorized 24-hour comparison progress regressions. Exports fixture, own, deferred, operationHarness and terminalComparison; real Store/Recorder/PgnEvidence and controlled ACK transport. No browser/model/Native and excluded from functional-runtime inputs. |
 | Create | `./train/scripts/browser_eval/pgn-evidence.test.mjs` | C4b-16 TEST-only real PGN/read/stop-race regressions, declared before creation. No browser/model/Native. |
 | Create | `./train/scripts/browser_eval/pgn-summary.mjs` | C4b-16 pure runtime final-facts paired inference, declared before creation. Selected refs bound to actual closed inventory and genuine final cleanup/identity facts. |
 | Create | `./train/scripts/browser_eval/pgn-summary.test.mjs` | C4b-16 TEST-only final-facts eligibility/ref/inference regressions, declared before creation. |
@@ -1867,10 +1868,11 @@ control. Neither the trusted first-begin pause nor the injection is delayed
 after its admitted boundary; the scan occurs while the parent is paused
 and before the synthetic driver/injection is admitted.
 
-The original 10-minute check/parity/preflight and 60-minute comparison ends,
+At this earlier ordering amendment, the original 10-minute check/parity/preflight and 60-minute comparison ends,
 30-second readiness, 90-second command ceiling, output/RSS limits, and one
 approved final comparison remain unchanged. This amendment changes when the
-fresh final integrity observation is collected, not a resource limit.
+fresh final integrity observation is collected, not a resource limit. The later
+accepted second-cohort amendment below supersedes only that comparison ceiling.
 
 
 All new private helpers above belong to the explicit runtime union.
@@ -2502,7 +2504,7 @@ Use Node's fork IPC for the driver and a bounded JSON-lines stdin/stdout channel
 
 The collector accepts only own-root updates, sample requests, exact-identity signal requests and shutdown. It produces ready, process samples, signal results and accounting faults; all include version/run/sequence. Sampling runs every 250 ms, includes supervisor and collector RSS once, and remains outside the driver. The supervisor stops if the driver heartbeat gap exceeds 2,000 ms or IPC closes unexpectedly, even when no operation timer is pending. It also holds independent timers for every admitted readiness/command, so a stalled driver cannot disable or reset the 30/90-second watchdog. A stale end/finish after any deadline cannot turn the stop into a successful phase. Scope nested self-test IDs separately while its parent driver continues ordinary heartbeat.
 
-Keep supervisor work asynchronous and bounded while a driver is live. Do not use synchronous filesystem walks, synchronous subprocess calls, unbounded buffers or whole-model processing in its event loop. The Python collector and bounded lsof children are included in process accounting. A failed monitor is a stop; it is never replaced by the driver's self-report. The phase clock starts before monitored driver/fixture startup. Reserve its final five seconds for cleanup by ending ordinary work at phaseDeadline minus 5,000 ms; this does not increase the existing 10-minute check/parity/preflight or 60-minute comparison ceilings. Capture cleanupStart once at the first stop or admitted normal finish, and keep cleanupEnd = min(cleanupStart + 5,000 ms, phaseDeadline). Every required experimental, functional, Native accounting, identity, listener and actual process/pipe cleanup fact must be complete before that original cleanupEnd. A delayed callback or cleanup overrun invalidates compliance rather than extending a limit; a late positive callback cannot restore eligibility or clear a fault. Only filesystem receipt bookkeeping for already-closed evidence may finish afterward, with its extra elapsed time reported separately. The self-test and all earlier retained files remain in cumulative workspace accounting.
+Keep supervisor work asynchronous and bounded while a driver is live. Do not use synchronous filesystem walks, synchronous subprocess calls, unbounded buffers or whole-model processing in its event loop. The Python collector and bounded lsof children are included in process accounting. A failed monitor is a stop; it is never replaced by the driver's self-report. The phase clock starts before monitored driver/fixture startup. Reserve its final five seconds for cleanup by ending ordinary work at phaseDeadline minus 5,000 ms; this does not increase the existing 10-minute check/parity/preflight or newly authorized 24-hour comparison ceilings. Capture cleanupStart once at the first stop or admitted normal finish, and keep cleanupEnd = min(cleanupStart + 5,000 ms, phaseDeadline). Every required experimental, functional, Native accounting, identity, listener and actual process/pipe cleanup fact must be complete before that original cleanupEnd. A delayed callback or cleanup overrun invalidates compliance rather than extending a limit; a late positive callback cannot restore eligibility or clear a fault. Only filesystem receipt bookkeeping for already-closed evidence may finish afterward, with its extra elapsed time reported separately. The self-test and all earlier retained files remain in cumulative workspace accounting.
 
 Resource sampling retains the approved conventions: aggregate all current owned RSS once per identity, conservatively summing shared pages; scan run-owned outputs at least once per second using lstat without following links; count each regular file as max(logical length, st_blocks*512), and directory/symlink allocation. Keep the 4 GiB/256 MiB ceilings, 2 MiB final-record reserve and ordinary-writer 254 MiB boundary. Scans include snapshots, copied M, profile/cache/temp, logs, numeric evidence, JSON and PGNs. Pre-existing dependencies/Python environment are recorded setup inputs. A sampled exceedance or missing accounting is an inconclusive stop, with actual overrun preserved. A resource sample is an observation, not kernel enforcement.
 
@@ -2719,7 +2721,7 @@ PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python"
 PATH="$TINYAZ_VERIFY_BIN:$PATH" PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python" train/scripts/test_mcts.py
 ```
 
-`TINYAZ_EVAL_DIR` below is an explicitly created absolute temporary directory outside the repository. Commands share its footprint/peak accounting across all phase directories. The check phase is capped at 10 minutes; parity at 10 minutes; throughput preflight at the approved 10 minutes; comparison at the approved 60 minutes. These separate verification phases do not extend the final comparison ceiling. Missing or invalid completed prerequisite receipts, final evidence, identity, or hashes fail closed.
+`TINYAZ_EVAL_DIR` below is an explicitly created absolute temporary directory outside the repository. Commands share its footprint/peak accounting across all phase directories. The check phase is capped at 10 minutes; parity at 10 minutes; throughput preflight at the approved 10 minutes; the newly authorized comparison at 24 hours. These separate verification phases do not extend the final comparison ceiling. Missing or invalid completed prerequisite receipts, final evidence, identity, or hashes fail closed.
 
 ```sh
 npm run test:scripts
@@ -2733,7 +2735,7 @@ npm run eval:browser:preflight -- --protocol train/fixtures/browser-protocol.jso
 npm run eval:browser -- --protocol train/fixtures/browser-protocol.json --candidate HEAD --out "$TINYAZ_EVAL_DIR"
 ```
 
-The public Python parity entrypoint delegates with process replacement to the Node `parity` supervisor. That phase exports actual browser results, then launches the frozen archived Python entrypoint in isolated reference-child mode, using only the six verified tinyaz modules and the explicit frozen import root in Detailed Implementation 5. The active Python model process is a monitored descendant and counts toward RSS/time/output ceilings. A passed check/parity/preflight is bound to the identical candidate, model, toolchain, protocol and fixtures. Changing any executed input invalidates downstream prerequisites. The compare phase starts its own 60-minute clock before final fixture/browser startup and includes that startup/cleanup accounting. Setup/package downloads happen beforehand. A new final cohort needs a new workspace and owner decision; do not automatically rerun an inconclusive cohort. Exit 0 means the phase completed its required method/checks, including a complete comparison with no detected advantage or a regression signal. Exit 1 means invalid input or a failed functional assertion; exit 2 means an inconclusive interrupted/faulted run. Never interpret exit 0 alone as a strength gain.
+The public Python parity entrypoint delegates with process replacement to the Node `parity` supervisor. That phase exports actual browser results, then launches the frozen archived Python entrypoint in isolated reference-child mode, using only the six verified tinyaz modules and the explicit frozen import root in Detailed Implementation 5. The active Python model process is a monitored descendant and counts toward RSS/time/output ceilings. A passed check/parity/preflight is bound to the identical candidate, model, toolchain, protocol and fixtures. Changing any executed input invalidates downstream prerequisites. The compare phase starts its own 24-hour clock for the newly authorized cohort before final fixture/browser startup and includes that startup/cleanup accounting. Setup/package downloads happen beforehand. A new final cohort needs a new workspace and owner decision; do not automatically rerun an inconclusive cohort. Exit 0 means the phase completed its required method/checks, including a complete comparison with no detected advantage or a regression signal. Exit 1 means invalid input or a failed functional assertion; exit 2 means an inconclusive interrupted/faulted run. Never interpret exit 0 alone as a strength gain.
 
 Execute this sequence after final design approval and independent EGM review. Each green change includes named affected docs and an updated implementation checklist. Introduce APIs with all their consumers in the same green change; do not leave the branch intentionally uncompilable between commits.
 
@@ -3639,3 +3641,47 @@ sealed file, and never replaces the supervisor result/first error/exit code.
 The controlled retained timer regression proves observation followed by
 natural closure only after genuine owner release. This is diagnostic
 visibility for a future unexplained exit, never a historical-cause claim.
+
+## Accepted second-cohort budget and progress amendment (2026-11-06)
+
+Hansel authorized one fresh full 40-game comparison after fault repair, with
+unchanged model weights and enough time to finish. The selected new comparison
+ceiling is 24 hours (86,400,000 ms). The original one-hour cohort and its sealed
+receipts remain historical and inconclusive. This amendment supersedes the
+60-minute ceiling only for newly prepared runs. It does not alter the protected
+Section-3 historical runtime slice.
+
+Five completed games in one hour project roughly eight hours for 40 games.
+The longest completed game had 117 plies; 40 such games at the approximately
+11.7-second measured preflight PageArm command median project about 15.2 hours
+before other overhead. The sealed preflight/throughput.json reports candidate
+11681.048667 ms and baseline 11661.945584 ms outer-command medians.
+The 24-hour ceiling adds margin; these projections are not guarantees or
+strength claims. Initial retained allocation was 33,244,184 bytes, including
+3,999,840 in the old comparison directory. That observation omitted the root
+entry (320 logical bytes, zero blocks). The corrected inclusive retained total
+is 33,244,504 bytes, not a historical peak. A conservative 24-times
+comparison-directory projection plus retained non-comparison allocation is
+125,240,824 bytes, below 268,435,456. The sealed source paths and a separate
+comparison response-timing recheck are recorded in the experiment ledger.
+Actual footprint/peak accounting and reserves remain authoritative; no cap is
+raised and a breach remains inconclusive.
+
+Only comparison phaseMs changes. Readiness 30 seconds, command 90 seconds,
+Native cleanup 5 seconds, heartbeat/sample/gap guards, RSS 4 GiB, output
+256 MiB, 64 visits, locked 20 pairs/40 games, model bytes, CPU Float32 parity,
+statistical rules, identity and cleanup proof remain unchanged. Fresh committed
+check/parity/preflight receipts must bind the amended protocol and candidate.
+
+The existing watchdog-operations owner emits count-only provisional metadata
+after actual Recorder close, PgnEvidence validation and successful recorded
+checkpoint ACK. It rechecks ordinary admission, unfrozen selected terminal
+checkpoint identity and acknowledges each game once. It writes at most 40
+lines, each at most 256 UTF-8 bytes, with no timer or awaited diagnostic IO.
+Diagnostic sink errors have no evidence/status/selection authority. The
+PgnEvidence, Recorder and wire APIs stay unchanged.
+
+Before creation, pgn-evidence-test-fixtures.mjs is declared TEST-only above:
+the whole real-PGN fixture moves from pgn-evidence.test.mjs to keep both
+readable owners below 400 physical lines. Final verification and controller
+review are required before any real phase; no comparison result is claimed.

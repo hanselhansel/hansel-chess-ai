@@ -53,7 +53,11 @@ supervisor/driver composition; `phase-runners.mjs` dispatches real checks,
 full numeric exports, throughput controls and locked matches. Scratch,
 profiles, evidence and cache files stay counted in the workspace. These
 paths do not train, publish weights or automatically launch a comparison.
-See [exact usage](browser_eval/README.md#operational-command-usage).
+See [exact usage](browser_eval/README.md#operational-command-usage). The newly authorized second comparison
+uses 24 hours, with all shorter watchdogs and 256 MiB output accounting
+unchanged. Count-only `TINYAZ_COMPARE_PROGRESS` lines follow real validated
+terminal checkpoint ACKs and have no result/proof authority.
+
 
 ## Invariants
 

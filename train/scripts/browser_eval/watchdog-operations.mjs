@@ -141,6 +141,32 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
 
   const onSelftestBegin = (msg, arm) => runSelftestBegin(ctx, records, runInternalSelfTest, msg, arm);
 
+  // Provisional count-only metadata. Selection remains entirely with the
+  // existing supervisor PGN observer, and the successful recorded ACK below
+  // is mandatory. No timer, awaited logging, proof or result authority.
+  const acknowledgedGames = new Set();
+  const acknowledgedPairs = new Map();
+  const reportCompletedGame = (msg) => {
+    if (ctx.phase !== "compare" || msg.type !== "event" || msg.kind !== "response" ||
+      msg.payload?.recordType !== "pgn-checkpoint" || acknowledgedGames.size >= 40 ||
+      !ctx.admissionOpen() || !ordinaryAdmissionOpen()) return;
+    const body = records.summaryEvidence();
+    if (!body || body.frozen) return;
+    const game = body.games.find((entry) => entry.gameId === msg.payload.gameId);
+    if (game?.state !== "complete" || game.checkpoint.checkpointId !== msg.payload.checkpointId ||
+      acknowledgedGames.has(game.gameId)) return;
+    acknowledgedGames.add(game.gameId);
+    acknowledgedPairs.set(game.pairNumber, (acknowledgedPairs.get(game.pairNumber) ?? 0) + 1);
+    const counts = { completedGames: acknowledgedGames.size,
+      completedPairs: [...acknowledgedPairs.values()].filter((count) => count === 2).length };
+    const line = `TINYAZ_COMPARE_PROGRESS ${JSON.stringify(counts)}\n`;
+    // Only the diagnostic sink is isolated. Original persistence, validation
+    // and ACK failures keep their unchanged fault/stop behavior.
+    try {
+      if (Buffer.byteLength(line) <= 256) process.stderr.write(line, () => {});
+    } catch {}
+  };
+
   const onRecord = async (msg) => {
     if (!ctx.admissionOpen()) return;
     const ref =
@@ -153,6 +179,7 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
       recordSeq: msg.recordSeq,
       ref: ref === undefined ? null : ref,
     });
+    reportCompletedGame(msg);
   };
 
   // Re-verify the retained receipt before parent finalization while the

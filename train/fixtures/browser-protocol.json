@@ -31,7 +31,7 @@
         "check": 600000,
         "parity": 600000,
         "preflight": 600000,
-        "compare": 3600000
+        "compare": 86400000
       }
     },
     "resources": {
