@@ -132,6 +132,8 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     derived: new AbortController(),
     unsubs: [],
     finishCalled: false,
+    finishSeq: null,
+    finishStop: false,
     closeCalled: false,
   };
   const endLatch = defer();
@@ -224,11 +226,20 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     const fields = snapshotFinish(phaseResult);
     const flow = (async () => {
       wire.clearHeartbeat();
+      st.finishSeq = st.seqOut;
       st.finished = true;
       // The real parent may stop after receiving finish but before its
       // raw send callback returns. Lifecycle finish owns that callback;
       // normal STOP cannot replace its actual success or first send error.
       await wire.sendFrame("finish", fields);
+      // Keep IPC open until the supervisor's EXISTING validated normal STOP.
+      // This wait owns no new timer/receipt and never replaces raw send error.
+      try {
+        await endLatch.promise;
+      } catch (error) {
+        if (st.fault !== null) throw st.fault.value;
+        if (!st.finishStop || st.disconnected || st.aborted) throw error;
+      }
     })();
     return flow;
   };

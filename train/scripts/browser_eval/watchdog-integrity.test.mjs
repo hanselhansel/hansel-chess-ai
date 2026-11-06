@@ -85,6 +85,7 @@ test("actual driver tail closes SDKs before supervisor scan ACK and finish; hear
       }
       if (frame.type === "finish") {
         trace.push("finish");
+        env.s2d("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 });
       }
       callback(null);
     };
@@ -202,7 +203,7 @@ for (const raw of [null, new Error("real finish callback failure")]) {
     assert.ok(submitted);
     let finished = false;
     pending.then(() => { finished = true; }, () => { finished = true; });
-    env.s2d("stop", { stopReason: "FINISHED", cleanupRemainingMs: 5000 });
+    env.s2d("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 });
     const closed = env.b.close({ gracefulCloseAttempted: true });
     let closedDone = false;
     closed.then(() => { closedDone = true; }, () => { closedDone = true; });

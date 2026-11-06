@@ -83,6 +83,7 @@ test("finish sends the exact six fields; close joins real callbacks then unwinds
     ].sort(),
   );
   fsent.cb(null);
+  env.s2d("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 });
   await fin;
   const cl = env.b.close({ gracefulCloseAttempted: true });
   const csent = env.sends.find((s) => s.msg.type === "closed");
@@ -297,3 +298,37 @@ test("fixture teardown releases gates, joins the real start body and closes the 
   // The owner's remove stage ran after the probe — the root is gone.
   await assert.rejects(fsp.stat(tree.root), { code: "ENOENT" });
 });
+
+for (const mode of ["missing", "invalid", "fault", "early"]) {
+  test(`finish cannot treat ${mode} STOP as the normal supervisor handshake`, async (t) => {
+    const env = makeEnv(t);
+    await driveStart(env);
+    const fields = { requestedStatus: "failed", requestedExitCode: 1, stopReason: null,
+      checks: [], summary: {}, analysisEligible: false };
+    if (mode === "early") {
+      env.s2d("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 });
+      await assert.rejects(env.b.finish(fields), /finish order/);
+      assert.equal(env.sends.some((item) => item.msg.type === "finish"), false);
+      return;
+    }
+    const pending = env.b.finish(fields);
+    env.sends.find((item) => item.msg.type === "finish").cb(null);
+    let finished = false;
+    pending.then(() => { finished = true; }, () => { finished = true; });
+    await flush();
+    assert.equal(finished, false, "raw callback alone cannot release normal close");
+    assert.equal(env.sends.some((item) => item.msg.type === "closed"), false);
+    if (mode === "missing") {
+      env.drop();
+      await assert.rejects(pending, /transport closed/);
+    } else if (mode === "invalid") {
+      env.emit({ ipcVersion: 1, runId: env.b.capabilities.runId, seq: 1, type: "stop",
+        stopReason: false, cleanupRemainingMs: 5000 });
+      await assert.rejects(pending, /stopReason/);
+    } else {
+      env.s2d("stop", { stopReason: "CONTROLLED_FAULT", cleanupRemainingMs: 5000 });
+      await assert.rejects(pending, /stop CONTROLLED_FAULT/);
+    }
+    await env.owner.whenSettled();
+  });
+}

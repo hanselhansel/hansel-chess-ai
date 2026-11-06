@@ -3400,3 +3400,27 @@ TEST-only row count and lowlevel resolve observer support count-gated genuine
 RECORD fairness/expiry controls. DAG: environment-files.test -> this TEST leaf
 -> existing environment-files/budget/lifetime/fake-clock owners; no runtime
 union entry or operational hook. All existing assertions/fixture teardown stay.
+
+
+#### Normal finish waits for the existing supervisor STOP
+
+The private driver session now keeps IPC open after its real FINISH send
+callback until the supervisor's existing validated STOP with reason FINISH.
+The private queued-finish sequence and validated-stop latch distinguish that
+reply from early, fault or malformed STOP. This is lifecycle ordering, never
+phase success or cleanup proof. Only then does the operational driver send
+CLOSED, join actual callbacks/bodies and disconnect. The wire/version, session
+methods/capability keys, parent guards and original cleanup end are unchanged.
+
+A normal STOP received while the FINISH callback is held does not settle that
+callback or close debt; its later raw error still rejects with the original
+value. Missing/invalid/fault STOP or disconnect cannot complete normal finish.
+The parent still begins Native cleanup before STOP-send and all body/scope
+joins. Raw STOP errors (including EPIPE before valid closure) and late callback
+errors remain faults. No error is suppressed, no new ACK/timer/grace is added, and no
+physical pipe/child fact is fabricated. Real Node IPC controls cover a delayed
+parent raw write and unexpected peer disconnect, preserving exit/BOTH-pipe/
+scope/owner joins. Scripted normal-parent fixtures now deliver literal FINISH
+STOP at the actual finish submission, retaining their original assertions.
+The failed committed check remains ineligible; this source repair does not
+promote its receipt or claim a fresh actual phase passage.

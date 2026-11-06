@@ -194,6 +194,7 @@ test("real bridge admits every Workbench open and distinct control initializatio
       commonIdentitySha256: frame.commonIdentitySha256 });
     if (frame.type === "begin") env.s2d("begun", { operationId: frame.operationId,
       remainingMs: frame.kind === "readiness" ? 30000 : 90000 });
+    if (frame.type === "finish") env.s2d("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 });
     callback(null);
     return true;
   } });

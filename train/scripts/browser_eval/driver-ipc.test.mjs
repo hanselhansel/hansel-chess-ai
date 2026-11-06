@@ -109,7 +109,7 @@ if(process.connected)process.disconnect();
         if (frame.type === "hello") sends.push(channel.send("start", {
           manifestPath: "unit/manifest.json", commonIdentitySha256: hash,
         }, remaining()));
-        if (frame.type === "finish" && mode === "normal") sends.push(channel.send("stop", { stopReason: "FINISH",
+        if (frame.type === "finish") sends.push(channel.send("stop", { stopReason: "FINISH",
           cleanupRemainingMs: 5000 }, remaining()));
         for (const sent of sends) sent.catch(() => {});
       },
@@ -172,3 +172,127 @@ test("validated closed does not suppress a late raw send callback error or settl
   await finishDriverActualScope(scope);
   await joined;
 });
+
+for (const premature of [false, true]) {
+  test(premature ? "unexpected disconnect before STOP preserves actual raw EPIPE fault" :
+    "normal FINISH keeps real IPC open for a delayed parent STOP raw write", { timeout: 10000 }, async (t) => {
+    const { existsSync, readFileSync } = await import("node:fs");
+    const lifetime = createWatchdogLifetime();
+    const scope = createDriverActualScope({ runId: "stop-race", retainActual: lifetime.retainActual });
+    const physical = gate();
+    const disconnected = gate();
+    const errors = [];
+    const stderr = [];
+    const frames = [];
+    const sends = [];
+    const end = Date.now() + 8000;
+    const remaining = () => Math.max(1, end - Date.now());
+    let child;
+    let channel;
+    let root;
+    let exited = false;
+    const pipes = [false, false];
+    t.after(async () => {
+      if (channel) {
+        channel.close();
+        await channel.reap(remaining());
+      }
+      if (child) await physical.promise;
+      await Promise.allSettled(sends);
+      await finishDriverActualScope(scope);
+      await lifetime.whenSettled();
+      if (root) await fsp.rm(root, { recursive: true, force: true });
+  });
+  root = await fsp.mkdtemp(path.join(os.tmpdir(), "tinyaz-stop-race-"));
+  const checkpoint = path.join(root, "actual-peer-state.json");
+  const entry = path.join(root, "control.mjs");
+  const manifest = { runId: "stop-race", phase: "check", commonIdentitySha256: hash };
+  await fsp.writeFile(entry, `import {createDriverCapabilities} from ${JSON.stringify(bridgeURL)};
+import {createWatchdogLifetime} from ${JSON.stringify(lifetimeURL)};
+import {writeFileSync} from 'node:fs';
+const lifetime=createWatchdogLifetime();
+const controller=new AbortController();
+const syntheticSilent=false;
+const manifest=${JSON.stringify(manifest)};
+const transport=${transport.getText(tree)};
+let finishReturned=false;
+let done;
+const rawSend=transport.send;
+transport.send=(frame,callback)=>rawSend(frame,(error)=>{
+callback(error);
+if(frame.type==='finish') setImmediate(async()=>{
+if(${premature}) await new Promise((resolve)=>{
+process.once('disconnect',resolve);
+process.disconnect();
+});
+else if(finishReturned) await done;
+writeFileSync(${JSON.stringify(checkpoint)},JSON.stringify({finishReturned,connected:process.connected}));
+});
+});
+const session=createDriverCapabilities({runId:manifest.runId,manifest,transport,signal:controller.signal});
+await session.start({manifestPath:'unit/manifest.json'});
+done=(async()=>{
+await session.finish(${JSON.stringify(outcome)});
+finishReturned=true;
+await session.close({gracefulCloseAttempted:true});
+await lifetime.whenSettled();
+if(process.connected) process.disconnect();
+})();
+await done;
+`);
+  channel = createDriverChannel({ entry, args: [], cwd: root, execPath: process.execPath,
+    runId: "stop-race", protocol: createProtocolValidator({ runId: "stop-race" }),
+    clock: { setTimeout, clearTimeout }, retainActual: lifetime.retainActual, actualScope: scope,
+    forkImpl: (...args) => {
+      child = fork(...args);
+      child.stdout.on("data", (bytes) => assert.equal(bytes.length, 0));
+      child.stderr.on("data", (bytes) => stderr.push(bytes));
+      child.once("exit", () => { exited = true; });
+      child.stdout.once("close", () => { pipes[0] = true; });
+      child.stderr.once("close", () => { pipes[1] = true; });
+      child.once("close", physical.resolve);
+      child.once("disconnect", disconnected.resolve);
+      return child;
+    },
+    onMessage: (frame) => {
+      frames.push(frame.type);
+      if (frame.type === "hello") sends.push(channel.send("start", {
+        manifestPath: "unit/manifest.json", commonIdentitySha256: hash,
+      }, remaining()));
+      if (frame.type === "finish") {
+        // Controlled real filesystem checkpoint prevents parent event dispatch
+        // until the peer either waits for STOP or actually disconnects. No
+        // callback/closed state is fabricated. The deadline is test containment.
+        while (!existsSync(checkpoint)) {
+          if (Date.now() >= end) throw new Error("peer checkpoint not reached");
+        }
+        assert.equal(channel.connected, true, "guard state before queued CLOSED delivery");
+        sends.push(channel.send("stop", { stopReason: "FINISH", cleanupRemainingMs: 5000 }, remaining()));
+      }
+      for (const send of sends) send.catch(() => {});
+    },
+    onError: (error) => errors.push(error),
+  });
+  await disconnected.promise;
+  const reaped = await channel.reap(remaining());
+  await physical.promise;
+  const results = await Promise.allSettled(sends);
+  await finishDriverActualScope(scope);
+  await lifetime.whenSettled();
+  const rawFailure = results.find((result) => result.status === "rejected");
+  if (premature) {
+    assert.equal(rawFailure?.reason.code, "EPIPE");
+    assert.ok(errors.some((error) => error.code === "IPC_DISCONNECT"));
+    assert.notEqual(reaped.exitCode, 0);
+  } else {
+    assert.equal(rawFailure, undefined, `actual raw STOP callback ${rawFailure?.reason?.code}: ${rawFailure?.reason?.message}`);
+    assert.deepEqual(errors, []);
+    assert.equal(reaped.exitCode, 0);
+  }
+  assert.deepEqual(JSON.parse(readFileSync(checkpoint, "utf8")), { finishReturned: false, connected: !premature });
+  assert.deepEqual(frames, premature ? ["hello", "finish"] : ["hello", "finish", "closed"]);
+  assert.equal(exited, true);
+  assert.deepEqual(pipes, [true, true]);
+  assert.equal(Buffer.concat(stderr).length === 0, !premature);
+  });
+}

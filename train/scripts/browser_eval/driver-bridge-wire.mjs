@@ -305,6 +305,7 @@ export function createDriverBridgeWire(ctx) {
       if (!strNE(msg.stopReason)) throw bridgeError("stopReason");
       if (!nat(msg.cleanupRemainingMs) || msg.cleanupRemainingMs > TIMING.cleanupMs)
         throw bridgeError("cleanupRemainingMs");
+      st.finishStop = st.finished && st.seqOut > st.finishSeq && msg.stopReason === "FINISH";
       st.stopped = true;
       terminate(bridgeError(`stop ${msg.stopReason}`));
       return;
