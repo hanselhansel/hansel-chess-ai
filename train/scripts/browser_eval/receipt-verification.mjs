@@ -27,7 +27,7 @@ import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-js
 import { assertRecord, assertCommonIdentity } from "./record-schema.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
 import { isCleanupProven } from "./record-finalization.mjs";
-import { issueActual, phaseArtifactRefs, storeFail } from "./artifact-files.mjs";
+import { assertReadEffect, issueActual, phaseArtifactRefs, storeFail } from "./artifact-files.mjs";
 import { confinedRead, loadRecord, verifyInputRefs } from "./receipt-files.mjs";
 import { readPreparedCompletion } from "./completion-publication.mjs";
 
@@ -66,8 +66,9 @@ const registrar = (io) => {
 
 // Registered bigint lstat that reports genuine absence instead of
 // rejecting.
-const lstatOrNull = async (retain, abs) => {
+const lstatOrNull = async (retain, abs, io) => {
   try {
+    assertReadEffect(io);
     return await issueActual(retain, () => fsp.lstat(abs, { bigint: true }));
   } catch (error) {
     if (error.code === "ENOENT") return null;
@@ -161,7 +162,7 @@ const verifyCompletion = async (
       fail("EVIDENCE_MISMATCH", "prepared temp");
     }
     const tempAbs = path.resolve(root, prepared.temporaryRef.path);
-    const tempStat = await lstatOrNull(registrar(io), tempAbs);
+    const tempStat = await lstatOrNull(registrar(io), tempAbs, io);
     if (tempStat === null || !isSameFile(tempStat, prepared.fileId)) {
       fail("EVIDENCE_MISMATCH", "prepared temp");
     }
@@ -331,7 +332,7 @@ export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedI
   // The fixed canonical target must still be absent: this verifier
   // never publishes and never accepts an occupied target.
   const canonicalAbs = path.resolve(root, read.canonicalRef.path);
-  if ((await lstatOrNull(retain, canonicalAbs)) !== null) {
+  if ((await lstatOrNull(retain, canonicalAbs, read.io)) !== null) {
     storeFail("STORE_EXISTS", read.canonicalRef.path);
   }
   await verifyCompletion(

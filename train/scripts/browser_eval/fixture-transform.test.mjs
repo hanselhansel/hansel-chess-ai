@@ -22,7 +22,16 @@ async function sources(t, candidateRuntime = false) {
   const children = [];
   const servers = [];
   t.after(async () => {
-    await Promise.all(servers.map((server) => server.close()));
+    await Promise.all(servers.map(async (server) => {
+      // Pinned Vite close snapshots optimizationResult before awaiting its
+      // scan. Join that issued scan first so close owns the resulting optimizer.
+      const scans = await Promise.allSettled(Object.values(server.environments)
+        .map((env) => env.depsOptimizer?.scanProcessing));
+      const close = await Promise.allSettled([server.close()]);
+      const failures = [...scans, ...close].filter((result) => result.status === "rejected");
+      if (failures.length === 1) throw failures[0].reason;
+      if (failures.length > 1) throw new AggregateError(failures.map((result) => result.reason));
+    }));
     await Promise.all(children.map((entry) => entry.closed));
     for (const entry of children) assert.deepEqual(entry.facts, [true, true, true]);
     await fs.rm(root, { recursive: true, force: true });

@@ -18,6 +18,14 @@ import { createOwnedFileOperations } from "./artifact-owned-file.mjs";
 
 const READ_CHUNK = 65536;
 
+// Verifier-only captured effect fence. Actual descriptor closes are exempt.
+export const assertReadEffect = (io) => {
+  if (io?.assertEffectLive !== undefined) {
+    if (typeof io.assertEffectLive !== "function") storeFail("STORE_ARGS", "io.assertEffectLive");
+    io.assertEffectLive();
+  }
+};
+
 export const storeFail = (code, detail, options) => {
   const error = new Error(`artifact-store ${code}: ${detail}`, options);
   error.code = code;
@@ -79,8 +87,10 @@ export const issueActual = (retainActual, issueThunk) => {
 
 // Raw metadata effects pass the real registrar when io is bound; the
 // untimed path invokes the same thunk directly with identical guards.
-const track = (retain, thunk) =>
-  retain === null ? thunk() : issueActual(retain, thunk);
+const track = (retain, thunk, io) => {
+  assertReadEffect(io);
+  return retain === null ? thunk() : issueActual(retain, thunk);
+};
 
 // The whole OwnedFile acquisition/close owner lives in
 // artifact-owned-file.mjs; it is instantiated ONCE here, after
@@ -92,8 +102,10 @@ export const openActual = ownedFileOperations.openActual;
 export const ownedFileCloseReceipt = ownedFileOperations.ownedFileCloseReceipt;
 
 // Open calls gain the OwnedFile tracked-close wrapper only when bound.
-const openTracked = (retain, thunk) =>
-  retain === null ? thunk() : openActual(retain, thunk);
+const openTracked = (retain, thunk, io) => {
+  assertReadEffect(io);
+  return retain === null ? thunk() : openActual(retain, thunk);
+};
 
 // Resolves a confined absolute path and rejects any symlink component
 // already present between the workspace root and the target.
@@ -107,7 +119,7 @@ export const confined = async (root, rel, name, io) => {
     cursor = path.join(cursor, segment);
     let stat;
     try {
-      stat = await track(retain, () => fsp.lstat(cursor));
+      stat = await track(retain, () => fsp.lstat(cursor), io);
     } catch (error) {
       if (error.code === "ENOENT") break;
       throw error;
@@ -128,7 +140,7 @@ export const dirSync = async (dir, io) => {
   let primaryFailed = false;
   let primary;
   try {
-    handle = await openTracked(retain, () => fsp.open(dir, "r"));
+    handle = await openTracked(retain, () => fsp.open(dir, "r"), io);
     await handle.sync();
   } catch (error) {
     primaryFailed = true;
@@ -158,7 +170,7 @@ export const tempIn = async (dir, base, io) => {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const candidate = path.join(dir, `.${base}.tmp-${randomBytes(6).toString("hex")}`);
     try {
-      await track(retain, () => fsp.lstat(candidate));
+      await track(retain, () => fsp.lstat(candidate), io);
     } catch (error) {
       if (error.code === "ENOENT") return candidate;
       throw error;
@@ -194,9 +206,9 @@ export const writeAtomic = async (abs, bytes, io) => {
   // Copy the caller-owned bytes before the first await: later mutation
   // cannot alter what is written.
   const owned = Buffer.from(bytes ?? []);
-  await track(retain, () => fsp.mkdir(dir, { recursive: true })).catch(tag("setup"));
+  await track(retain, () => fsp.mkdir(dir, { recursive: true }), io).catch(tag("setup"));
   const tmp = await tempIn(dir, path.basename(abs), io);
-  const handle = await openTracked(retain, () => fsp.open(tmp, "wx")).catch(tag("setup"));
+  const handle = await openTracked(retain, () => fsp.open(tmp, "wx"), io).catch(tag("setup"));
   let primary = null;
   try {
     await writeAll(handle, owned);
@@ -211,14 +223,14 @@ export const writeAtomic = async (abs, bytes, io) => {
   }
   if (primary !== null) {
     primary.storeStage = "io";
-    await track(retain, () => fsp.unlink(tmp)).catch(() => {});
+    await track(retain, () => fsp.unlink(tmp), io).catch(() => {});
     throw primary;
   }
   try {
-    await track(retain, () => fsp.rename(tmp, abs));
+    await track(retain, () => fsp.rename(tmp, abs), io);
   } catch (error) {
     error.storeStage = "io";
-    await track(retain, () => fsp.unlink(tmp)).catch(() => {});
+    await track(retain, () => fsp.unlink(tmp), io).catch(() => {});
     throw error;
   }
   await dirSync(dir, io).catch(tag("io"));
@@ -229,16 +241,17 @@ export const writeAtomic = async (abs, bytes, io) => {
 // bounds memory and detects concurrent size or inode changes.
 export const hashFileRef = async (abs, rel, io) => {
   const retain = registrar(io);
-  const before = await track(retain, () => fsp.lstat(abs));
+  const before = await track(retain, () => fsp.lstat(abs), io);
   if (!before.isFile() || before.isSymbolicLink()) {
     storeFail("ARTIFACT_INTEGRITY", `${rel} not regular`);
   }
   const hash = createHash("sha256");
   let read = 0;
-  const handle = await openTracked(retain, () => fsp.open(abs, "r"));
+  const handle = await openTracked(retain, () => fsp.open(abs, "r"), io);
   try {
     const buffer = Buffer.alloc(READ_CHUNK);
     for (;;) {
+      assertReadEffect(io);
       const { bytesRead } = await handle.read(buffer, 0, READ_CHUNK, read);
       if (bytesRead === 0) break;
       read += bytesRead;
@@ -247,7 +260,7 @@ export const hashFileRef = async (abs, rel, io) => {
   } finally {
     await handle.close();
   }
-  const after = await track(retain, () => fsp.lstat(abs));
+  const after = await track(retain, () => fsp.lstat(abs), io);
   if (
     read !== before.size ||
     after.size !== before.size ||
@@ -269,7 +282,7 @@ export async function inspectArtifactRef({ workspaceRoot, ref }, io) {
   const { abs } = await confined(root, declared.path, "ref.path", io);
   let stat;
   try {
-    stat = await track(retain, () => fsp.lstat(abs));
+    stat = await track(retain, () => fsp.lstat(abs), io);
   } catch (error) {
     if (error.code === "ENOENT") storeFail("ARTIFACT_MISSING", declared.path);
     throw error;
@@ -286,16 +299,16 @@ export async function phaseArtifactRefs({ workspaceRoot, phaseDirectory }, io) {
   const retain = registrar(io);
   const root = path.resolve(workspaceRoot);
   const { abs, clean } = await confined(root, phaseDirectory, "phaseDirectory", io);
-  const stat = await track(retain, () => fsp.lstat(abs));
+  const stat = await track(retain, () => fsp.lstat(abs), io);
   if (!stat.isDirectory()) storeFail("STORE_PATH", `${clean} not a directory`);
   const completion = `${clean}/completion.json`;
   const refs = [];
   const walk = async (dirAbs, dirRel) => {
-    const entries = await track(retain, () => fsp.readdir(dirAbs, { withFileTypes: true }));
+    const entries = await track(retain, () => fsp.readdir(dirAbs, { withFileTypes: true }), io);
     for (const entry of entries) {
       const entryAbs = path.join(dirAbs, entry.name);
       const entryRel = `${dirRel}/${entry.name}`;
-      const st = await track(retain, () => fsp.lstat(entryAbs));
+      const st = await track(retain, () => fsp.lstat(entryAbs), io);
       if (st.isSymbolicLink()) storeFail("STORE_PATH", `${entryRel} symlink`);
       if (st.isDirectory()) {
         await walk(entryAbs, entryRel);

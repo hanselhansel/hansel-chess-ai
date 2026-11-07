@@ -43,11 +43,11 @@ for (const mode of ["normal", "cap", "error", "disconnect", "cap-close-error", "
     const final = JSON.parse(await fs.readFile(path.join(env.workspaceRoot, "check/final.json")));
     const events = (await fs.readFile(path.join(env.workspaceRoot, "check/events.jsonl"), "utf8"))
       .trim().split("\n").map(JSON.parse);
-    assert.equal(code, normal ? 0 : 2);
+    assert.equal(code, normal ? 0 : 2, Buffer.concat(stderr).toString());
     assert.equal(outcome.exitCode, code);
     assert.equal(outcome.stopReason, normal ? null : mode.startsWith("cap") ? "PHASE_TIMEOUT" : "IPC_DISCONNECT");
     if (mode.startsWith("cap-")) assert.ok(final.unplannedFaultCount > 0, "genuine close/send fault survives STOP");
-    else assert.equal(final.unplannedFaultCount, normal || mode === "cap" ? 0 : 2);
+    else assert.equal(final.unplannedFaultCount, normal || mode === "cap" ? 0 : 2, Buffer.concat(stderr).toString());
     assert.equal(final.analysisEligible, false);
     const errors = events.filter((event) => event.kind === "fault").map((event) => event.payload.code);
     if (!mode.startsWith("cap-")) assert.deepEqual(errors, normal || mode === "cap" ? [] : ["IPC_DISCONNECT"]);

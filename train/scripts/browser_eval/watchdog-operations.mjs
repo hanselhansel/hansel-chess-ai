@@ -202,6 +202,10 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
     // Clock guard BEFORE verifier IO: a spent bound never starts receipt
     // verification.
     if (ctx.nowMonoMs() >= deadlineMonoMs) return null;
+    const assertEffectLive = () => {
+      if (ctx.nowMonoMs() >= deadlineMonoMs) throw fail("OPERATION_TIMEOUT", "proof effect past cleanup fence");
+    };
+    const proofIo = Object.freeze({ retainActual: ctx.io.retainActual, assertEffectLive });
     try {
       // Prearm the verifier body through the SAME actual retainer BEFORE
       // the verifier is invoked: the awaited issue covers its receipt IO
@@ -227,9 +231,10 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
               return ctx.monitor.probeIdentity(identity, { deadlineMonoMs });
             },
           },
-          ctx.io,
+          proofIo,
         ),
       );
+      assertEffectLive();
       return {
         completion: copyDeep(verified.completionRef),
         expectedStopReason: "HEARTBEAT_TIMEOUT",

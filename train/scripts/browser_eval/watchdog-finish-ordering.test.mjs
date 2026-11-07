@@ -6,6 +6,7 @@ import { promises as fsp, realpathSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { createNativeHorizon } from "./process-horizon.mjs";
+import { cleanupProofEnd } from "./watchdog-cleanup-context.mjs";
 import { makeRecorder } from "./test-fixtures.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
 import { createWatchdogRecordAdapter } from "./watchdog-records.mjs";
@@ -48,7 +49,7 @@ const visit = (node) => {
 };
 visit(parsed);
 assert.ok(selected);
-const stopStatements = new Function("state", "boundedCleanup", "control", "stage",
+const stopStatements = new Function("state", "boundedCleanup", "control", "stage", "proofEnd",
   `return (async()=>{${selected.map((item) => item.getText(parsed)).join("\n")}})();`);
 
 for (const normal of [true, false]) {
@@ -67,8 +68,7 @@ for (const normal of [true, false]) {
         ops.closeOrdinaryAdmission();
         await ops.whenOrdinarySettled();
       }
-      if (pending) await pending;
-      if (joined) await joined;
+      await Promise.allSettled([pending, joined].filter(Boolean));
       if (env) {
         await env.recorder.closeIncompleteEvidence();
         await phaseRecorderLifetime(env.recorder).whenSettled();
@@ -110,17 +110,19 @@ for (const normal of [true, false]) {
       } } };
     const waits = [];
     const originalEnd = 5000;
-    const boundedCleanup = (body, label) => {
-      waits.push({ label, originalEnd });
+    const proofEnd = cleanupProofEnd(0, originalEnd, "phase-workload");
+    const boundedCleanup = (body, label, end = originalEnd) => {
+      waits.push({ label, end });
       return body;
     };
     pending = stopStatements(state, boundedCleanup, { recordFault: (error) => faults.push(error) },
-      (label, issue) => observeAwaitStage(life, "phase", label, issue));
+      (label, issue) => observeAwaitStage(life, "phase", label, issue), proofEnd);
+    pending.catch(() => {});
     if (normal) {
       assert.equal(stoppedRecorder, false);
       assert.equal(waits[0].label, "finish-operation-tail");
     } else {
-      await stopCalled.promise;
+      await Promise.race([stopCalled.promise, pending]);
       await pending;
       assert.equal(waits.some((item) => item.label === "finish-operation-tail"), false);
     }
@@ -129,7 +131,11 @@ for (const normal of [true, false]) {
     await joined;
     await pending;
     assert.equal(stoppedRecorder, true);
-    assert.equal(waits.every((item) => item.originalEnd === originalEnd), true);
+    assert.deepEqual(waits, [
+      ...(normal ? [{ label: "finish-operation-tail", end: proofEnd }] : []),
+      { label: "stop-ordinary", end: originalEnd },
+      ...(!normal ? [{ label: "game-stop", end: originalEnd }] : []),
+    ]);
     if (normal) {
       assert.deepEqual(faults, []);
       const events = (await fsp.readFile(env.workspaceRoot + "/check/events.jsonl", "utf8"))

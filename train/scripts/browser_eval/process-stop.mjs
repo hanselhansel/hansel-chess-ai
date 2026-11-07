@@ -117,96 +117,86 @@ export function createProcessStop({ state, clock, authority }) {
   // existing flow after a caller error.
   const stopAndReap = (options) => {
     try {
-      // Repeated calls join the SAME original flow: the options
-      // object is validated through the same pure numeric capture,
-      // then the first stop handle and the remaining queue are
-      // narrowed MIN-only to an earlier supplied bound — never a
-      // second acquired stop handle, a wider extension, a new stop
-      // clock or a second shutdown flow.
-      if (state.stopFlow !== null) {
-        const bound = authority.captureOperationBound(
-          options,
-          TIMING_LIMITS.commandMs,
-        );
-        authority.queue.narrowAll(bound);
-        return state.stopFlow.promise;
+      // Validate and snapshot the stop-only form before any latch/clock effects.
+      let failure = false;
+      let numeric;
+      if (options != null) {
+        if (!isObj(options)) throw acct("stop options");
+        const keys = Object.getOwnPropertyNames(options);
+        failure = keys.includes("failureContainment");
+        const deadlineMonoMs = options.deadlineMonoMs;
+        if (!keys.includes("deadlineMonoMs") || keys.length !== (failure ? 2 : 1) ||
+          Object.getOwnPropertySymbols(options).length !== 0 ||
+          !Number.isFinite(deadlineMonoMs) || deadlineMonoMs < 0 ||
+          (failure && options.failureContainment !== true)) throw acct("stop options");
+        numeric = Object.freeze({ deadlineMonoMs });
       }
-      const h = authority.op(options, TIMING_LIMITS.commandMs);
+      if (state.stopFlow?.settled) return state.stopFlow.promise;
+      const bound = authority.captureOperationBound(numeric, TIMING_LIMITS.commandMs);
+      if (state.stopFlow !== null) {
+        const flow = state.stopFlow;
+        flow.handle.narrow(bound);
+        authority.queue.narrowAll(bound);
+        if (failure) flow.upgrade();
+        return flow.promise;
+      }
+      const h = authority.op({ deadlineMonoMs: bound }, TIMING_LIMITS.commandMs);
       const lifetime = authority.ownOperation(h);
-      // The monotonic fence closes new external admission BEFORE the
-      // drain snapshot; the sampling timer clears and ONLY the
-      // actual pending start handle is expired through the same
-      // hrtime, preserving its actual pending body/IO debts — never
-      // a raw kill, fresh grace or second queue.
       state.stopping = true;
       if (state.timer !== null) {
         clock.clearInterval(state.timer);
         state.timer = null;
       }
-      if (state.startHandle !== null) {
-        state.startHandle.narrow(authority.nowMonoMs());
-      }
-      // The stop handle's own bound narrows every already-admitted
-      // non-start handle MIN-only BEFORE the drain snapshot, so an
-      // explicit tighter stop option reaches active, queued and
-      // unqueued handles alike — narrow only, never extend.
+      if (state.startHandle !== null) state.startHandle.narrow(authority.nowMonoMs());
       authority.queue.narrowAll(h.deadlineMonoMs());
       const ordinaryDrain = authority.queue.settled({ excludeHandle: h });
-      // ONE passive barrier: the continuation starts no shutdown,
-      // Native call or IO, and contains neither stop's own
-      // actualSettled/acquisition, the public stop promise nor the
-      // global lifetime.whenSettled — so it can never self-wait.
-      const actualStopSettlement = ordinaryDrain.then(() =>
-        collectorPhysicalAfterDrain(),
-      );
-      // Registered on the STOP operation's local retainActual BEFORE
-      // bounded waiting, and the SAME actual promise is handed to the
-      // private horizon release when a binding exists.
+      // Failure containment never retires this real drain or the independently
+      // prearmed collector physical receipt; both remain owned after expiry.
+      const actualStopSettlement = ordinaryDrain.then(() => collectorPhysicalAfterDrain());
       lifetime.retainActual(actualStopSettlement);
-      if (releaseHorizonAfter !== null) {
-        releaseHorizonAfter(actualStopSettlement);
-      }
-      const promise = (async () => {
+      if (releaseHorizonAfter !== null) releaseHorizonAfter(actualStopSettlement);
+      const flow = { handle: h, promise: null, settled: false, failed: false, sent: false, upgrade: null };
+      const sendOnce = () => {
+        if (flow.sent) return;
+        h.assertLive("teardown deadline");
+        flow.sent = true;
+        teardownSend(h);
+      };
+      flow.upgrade = () => {
+        if (!flow.failed) {
+          flow.failed = true;
+          authority.markFault(unproven("failed cleanup containment"));
+        }
+        try { sendOnce(); } catch { /* A spent/failed send never invents closure. */ }
+      };
+      // Associate the one flow before any frame/callback can reenter stop.
+      flow.promise = Promise.resolve().then(async () => {
         try {
           await waitHandle(h, ordinaryDrain, "drain");
         } catch {
-          // Teardown remains a permitted failure action, never proof:
-          // a spent original handle issues nothing fresh, the drain
-          // stays unproven inside the bound and no late ordinary work
-          // or late-success continuation follows.
-          try {
-            teardownSend(h);
-          } catch {
-            // The wire already owns its terminal state.
-          }
+          try { sendOnce(); } catch { /* No fresh action after the same end. */ }
           authority.markFault(unproven("drain"));
           throw unproven("drain");
         }
         try {
-          // Only while the original stop handle is live may the
-          // wire-only shutdown/EOF be issued; the actual barrier is
-          // then awaited under the SAME handle, the real result is
-          // captured and the actual clock rechecked immediately
-          // before public success — a late actual settlement never
-          // revives a timed-out result.
-          const teardownRun = teardownCollector(h);
-          teardownRun.then(
-            () => {},
-            () => {},
-          );
+          sendOnce();
+          const teardownRun = state.transport === null ? Promise.resolve({ exitCode: null }) : state.transport.reap(h);
+          teardownRun.catch(() => {});
           await waitHandle(h, actualStopSettlement, "reap");
           const result = await teardownRun;
           h.assertLive("reap");
+          if (flow.failed) throw unproven("failed cleanup containment");
           return result;
         } catch {
           authority.markFault(unproven("collector reap"));
           throw unproven("collector reap");
         }
-      })().finally(() => lifetime.finish());
-      state.stopFlow = { handle: h, promise };
-      return promise;
-    } catch (e) {
-      return Promise.reject(e);
+      }).finally(() => { flow.settled = true; lifetime.finish(); });
+      state.stopFlow = flow;
+      if (failure) flow.upgrade();
+      return flow.promise;
+    } catch (error) {
+      return Promise.reject(error);
     }
   };
 

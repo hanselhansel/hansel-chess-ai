@@ -76,11 +76,12 @@ export function createProcessMonitor({lifetime}){
     fault:()=>null};
   owners.set(monitor,lifetime);return monitor;
 }`;
-  replacements["watchdog-cleanup.mjs"] = `import {proof} from ${JSON.stringify(fixtureURL)};
+  replacements["watchdog-cleanup.mjs"] = `import {cleanupProofEnd} from "./watchdog-cleanup-context.mjs";
+import {proof} from ${JSON.stringify(fixtureURL)};
 export function createCleanupController(){let result;return {
   async run(args){
     await new Promise(resolve=>setTimeout(resolve,100));
-    await args.settleWorkloadHandles({deadlineMonoMs:args.deadlineMonoMs});
+    await args.settleWorkloadHandles({deadlineMonoMs:cleanupProofEnd(args.cleanupStartMonoMs,args.deadlineMonoMs,args.scope)});
     result=proof(args.scope,args.expectedFinalizer);return result;
   },
   async verifyCleanup(){return result;}

@@ -14,6 +14,8 @@ import { copyDeep, isObj } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { finishDriverActualScope } from "./watchdog-driver.mjs";
 import { observeAwaitStage } from "./watchdog-lifetime.mjs";
+import { cleanupProofEnd } from "./watchdog-cleanup-context.mjs";
+export { createWatchdogCleanupArgs } from "./watchdog-cleanup-context.mjs";
 
 const fail = (code, detail) => {
   const e = new Error(`watchdog-shutdown ${code}: ${detail}`);
@@ -73,11 +75,11 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
 
   // Every shutdown wait consumes the ONE captured end — a stalled writer or
   // callback can never push cleanup past it.
-  const boundedCleanup = (p, what) =>
+  const boundedCleanup = (p, what, end = state.cleanupEnd) =>
     new Promise((res, rej) => {
       const t = timing.later(
         () => rej(fail("CLEANUP_DEADLINE", what)),
-        Math.max(1, timing.cleanupRemainingMs()),
+        Math.max(1, end - timing.now()),
       );
       Promise.resolve(p).then(
         (v) => {
@@ -110,10 +112,12 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // awaited stop/evidence writer — `Promise.resolve().then` registers the
     // actual verifier continuation under the ONE captured cleanup end and
     // is never replaced by the public bounded wait.
+    const proofEnd = cleanupProofEnd(state.cleanupStart, state.cleanupEnd,
+      config.selftestPhase ? "selftest-workload" : "phase-workload");
     const liveEvidence =
       config.phase === "preflight" && state.ops !== null
         ? Promise.resolve().then(() =>
-            state.ops.selftestEvidence({ deadlineMonoMs: state.cleanupEnd }),
+            state.ops.selftestEvidence({ deadlineMonoMs: proofEnd }),
           )
         : null;
     // Staged native teardown starts NOW through the existing owner at the
@@ -125,6 +129,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       teardown = boundedCleanup(
         stage("cleanup.run", () => cleanup.run(
           control.cleanupArgs({
+            proofDeadlineMonoMs: proofEnd,
             settleRequiredLiveEvidence:
               liveEvidence === null
                 ? null
@@ -179,7 +184,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // Native stages already run independently. A normal finish must drain
     // its admitted final end before Recorder closes ordinary evidence.
     if (state.finishReq !== null && state.stopReq === null && state.ops !== null) {
-      await boundedCleanup(stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled()), "finish-operation-tail")
+      await boundedCleanup(stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled()), "finish-operation-tail", proofEnd)
         .catch((error) => control.recordFault(error));
     }
     if (state.records !== null) {
@@ -198,7 +203,7 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       // The SAME owned task resolves the expected evidence — its true
       // settlement was already joined inside the collector-last ordering;
       // a stalled proof stays unproven and can never dispatch a late probe.
-      expected = await boundedCleanup(liveEvidence, "selftest-evidence").catch(
+      expected = await boundedCleanup(liveEvidence, "selftest-evidence", proofEnd).catch(
         (e) => {
           control.recordFault(e);
           return null;
@@ -326,58 +331,4 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
   };
 
   return Object.freeze({ finalize, shutdown });
-}
-
-// createWatchdogCleanupArgs owns the WHOLE cleanupArgs capacity moved
-// intact from the facade under corrective 64: pure construction over the
-// SAME grouped {config,capabilities,state,timing} refs — now = timing.now
-// and T = FIXED_LIMITS.timing keep the original clock and fixed constants
-// — and the returned function is assigned unchanged to
-// control.cleanupArgs. No constructor clock read, callback, IO, second
-// cleanup controller or new authority.
-export function createWatchdogCleanupArgs({ config, capabilities, state, timing }) {
-  const now = timing.now;
-  const T = FIXED_LIMITS.timing;
-  const stage = (label, issue) => observeAwaitStage(capabilities.lifetime,
-    config.selftestPhase ? "selftest" : "phase", label, issue);
-  const cleanupArgs = ({ settleRequiredLiveEvidence = null } = {}) => ({
-    phase: config.phase,
-    scope: config.selftestPhase ? "selftest-workload" : "phase-workload",
-    scopeRunId: config.runId,
-    expectedFinalizer: config.selftestPhase
-      ? config.selftestOwnerSupervisor
-      : state.running,
-    supervisor: state.running,
-    deadlineMonoMs:
-      state.cleanupEnd === null
-        ? Math.min(now() + T.cleanupMs, state.phaseEnd)
-        : state.cleanupEnd,
-    // Trusted run-context callback: the SAME operation owner's ordinary
-    // settlement joins FIRST — outside its own drained body, covering
-    // admitted nested callbacks and an own nested shutdown/STOP — then
-    // the real driver channel reap/close under the same absolute
-    // ORIGINAL end, then the enrolled driver scope finish, then the
-    // supplied already-scheduled required live-evidence task. A null
-    // channel never skips the remaining debts, and a missing ops method
-    // is a failure, never a permissive skip. No proof boolean, identity
-    // or signal authority.
-    settleWorkloadHandles: async ({ deadlineMonoMs }) => {
-      if (state.ops !== null) await stage("shutdown.ordinary", () => state.ops.whenOrdinarySettled());
-      if (state.channel !== null) {
-        await stage("shutdown.driver-reap", () => state.channel.reap(Math.max(1, deadlineMonoMs - now())));
-      }
-      // Own scope finish fences ctor/send/enrollment across the ENTIRE
-      // enrolled subtree and passively joins its real receipts — nested
-      // and partial-ctor attempts included, never a parent global zero.
-      await stage("shutdown.driver-scope", () => finishDriverActualScope(capabilities.driverActualScope));
-      if (typeof settleRequiredLiveEvidence === "function") {
-        await Promise.resolve().then(settleRequiredLiveEvidence);
-      }
-    },
-    // Anchors TERM/KILL/proof staging to the ORIGINAL captured cleanup
-    // entry — never to a delayed callback inside the cleanup routine.
-    cleanupStartMonoMs:
-      state.cleanupStart === null ? now() : state.cleanupStart,
-  });
-  return cleanupArgs;
 }

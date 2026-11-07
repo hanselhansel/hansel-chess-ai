@@ -1,5 +1,33 @@
 # Browser evaluation harness libraries
 
+## Approved failed-cleanup containment implementation (2026-11-07)
+
+The user-approved proposal `e079b8a9d2237db1915391ee59e4357b1adc2c12f701c8fa8936f02f1ba894ec` is implemented. This dated contract supersedes unconditional collector-last wording below only on failed containment. The original outer end is C=min(start+5000,inherited end), with TERM at +2000 and KILL at +4000. Top-level proof uses P=min(C,max(start,C-500)), borrowing the existing 500ms sample gap. Successful post-KILL proof therefore has 500ms; inherited windows <=500ms immediately fail proof without early signals. Nested selftest-workload keeps P=C and never stops the parent collector.
+
+`watchdog-cleanup.mjs` bounds every proof call and the actual workload callback by P. `watchdog-shutdown.mjs` captures that same P before prestarting live evidence. `watchdog-cleanup-context.mjs` checks it before and after each awaited continuation. The frozen verifier-only IO retains the identical actual registrar and checks P before every new metadata/open/read and Native probe. Mandatory descriptor closes remain allowed afterward. Every already-issued body stays enrolled and joined. Late settlement cannot start fresh proof or promote success.
+
+Failed proof may initiate the existing wire shutdown/EOF before C even if required workload proof remains pending. `process-stop.mjs` accepts exactly the existing numeric options or `{deadlineMonoMs, failureContainment:true}`. It validates before effects, min-narrows the first handle, and monotonically upgrades a pending cached normal flow without another teardown. Later normal joins cannot restore eligibility; settled joins validate and return the original result unchanged. Failure mode records CLEANUP_UNPROVEN and cannot retire any actual debt. Real collector exit and BOTH pipe closes remain mandatory; workload, driver, helper, SDK, verifier and file bodies remain owned independently. No action starts at/after C, no added grace, and no OS/scheduling completion guarantee.
+
+`watchdog-faults.mjs` owns the unchanged shared fault array and recorder. It schedules one best-effort first-fault description through `watchdog-lifetime.reportSupervisorFault`, including periodic resource faults. ArtifactStore preserves the exact 1000ms rule and reports the actual decision now/start/age and class (invalid-now, future-start or age-exceeded). Existing 64-marker/256-byte bounds apply. This passive diagnostic adds no timer, required IO, fault/status/proof authority or scan duration inference. The primary stale-sample latency remains UNKNOWN.
+
+The latest 7ecb853 restored-browser attempt reached 7/40 games and 3/20 pairs, with no canonical final/completion. Its command and pipes closed only after guarded Inspector capture and supervisor TERM. Preserve its 1091-file intervention-qualified freeze. The causal regression proves exhausted cleanup omitted collector teardown; it does not prove the primary stale-sample cause. Review/publication, fresh committed check/parity/preflight and a separate Root release still precede one fresh full40 attempt. Model/science and all original phase/command/readiness limits remain unchanged.
+
+The pinned Vite import-analysis test joins each environment's already-issued `depsOptimizer.scanProcessing` before `server.close()`. Pinned Vite snapshots the optimizer cancellation when close starts; a pending scan can assign that optimizer afterward. Joining the admitted scan first lets close own that actual optimizer before removing the cache. Transform assertions and real Git exit/BOTHpipe joins stay unchanged. This test-only ordering repair is not evidence of the unrelated Native sample-gap cause.
+
+The explicit functional runtime union in `snapshot-files.mjs` is now 109 sorted paths, adding only `watchdog-cleanup-context.mjs` and `watchdog-faults.mjs`. Candidate original-input union/reopen verification follows the same roster. BackendIdentity.helpers remains exactly the same three Python files. The new tests remain excluded. Existing CLI/configuration/PATH usage below is unchanged.
+
+Verifier-only read binding: `artifact-files.assertReadEffect(io)` checks the optional captured `assertEffectLive` before each new proof read/metadata/open; real closes remain bookkeeping. Declared before use, no new proof authority.
+
+Before-creation owner declarations:
+
+- `watchdog-cleanup-context.mjs`: Private runtime leaf, declared before creation on 2026-11-07: whole createWatchdogCleanupArgs moves from watchdog-shutdown with identical facade re-export; adds pure cleanupProofEnd(start,C,scope) for the approved captured P and late-continuation guards. No new clock/owner/wire. Functional runtime input.
+- `watchdog-faults.mjs`: Private runtime leaf, declared before creation: whole fault array and recordFault body move from facade into pure createWatchdogFaultRecorder({nowNs,lifetime,scope}); same sole fault authority, one bounded passive first-fault description through existing lifetime owner. Functional runtime input.
+- `failed-cleanup.test.mjs`: TEST-only owner declared before creation: actual cached-stop failure upgrades/validation/settled joins; P-bound verifier IO and late continuation guards; first-fault and strict freshness diagnostic controls. Real existing owners and controlled child/clock effects, no Native/browser/model/phase authority or exports. Excluded from runtime input union.
+
+
+Verification on 2026-11-07: final serial harness 736/736, app 191+184, typecheck, Python 58+19 and the reviewed actual-Native short archived CLI cap all closed naturally. All14 Native actors had actual exit/BOTHpipe/settlement; the cap returned2/PHASE_TIMEOUT with zero faults and valid cleanup/accounting. The preceding failed734/736 gate remains preserved, including its independent fatal616.296667ms Native interval (cause UNKNOWN). This source acceptance does not prove the historical primary latency or multi-hour closure. Independent review/publication and a new Root execution release remain required. Full commands/hashes, causal RED, failed receipts, final immutable audit and limits are in `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/failed-cleanup-implementation-report.md`.
+
+
 ## Isolated Node runtime qualification (2026-11-07)
 
 Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40

@@ -18,7 +18,7 @@
 
 const OWNERS = new WeakMap();
 const AWAIT_LABELS = new Set([
-  "cleanup.run", "cleanup.event", "cleanup.term", "cleanup.kill",
+  "supervisor.fault", "cleanup.run", "cleanup.event", "cleanup.term", "cleanup.kill",
   "cleanup.listeners", "cleanup.workload", "cleanup.monitor",
   "shutdown.ordinary", "shutdown.admission", "shutdown.resource",
   "shutdown.driver-reap", "shutdown.driver-scope", "shutdown.lifetime",
@@ -72,6 +72,16 @@ function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineM
       };
       const top = strings(cause);
       const first = strings(read(cause, "cause")); // Exactly one level; no recursive cause read.
+      if (label === "supervisor.fault") {
+        const detail = read(cause, "detail");
+        if (typeof detail === "string" && detail.length <= 256) try {
+          const fact = JSON.parse(detail);
+          if (["invalid-now", "future-start", "age-exceeded"].includes(fact.classification) &&
+            [fact.nowMs, fact.sampleStartMs, fact.ageMs].every((v) => v === null || Number.isFinite(v))) {
+            top.detail = `${fact.classification} now=${fact.nowMs} start=${fact.sampleStartMs} age=${fact.ageMs}`;
+          }
+        } catch {} // Unknown diagnostic data retains the original bounded formatter.
+      }
       // Monitor wrappers already retain a bounded informational detail. Compact
       // ONLY known supplied sample scalars, never infer queue or scheduling time.
       let nativeDetail;
@@ -164,6 +174,12 @@ export function reportStoppedFault(owner, scope, error) {
     return;
   }
   emitMarker(state, scope, "ordinary.fault", state.observationCount++, "rejected", error);
+}
+
+// Earliest shared fault, including resource persistence; descriptive only.
+export function reportSupervisorFault(owner, scope, error) {
+  const state = OWNERS.get(owner);
+  if (state) emitMarker(state, scope, "supervisor.fault", state.observationCount++, "rejected", error);
 }
 
 // Private Recorder classification only. The SAME marker budget/guard is used;

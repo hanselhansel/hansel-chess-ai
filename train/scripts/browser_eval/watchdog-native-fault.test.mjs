@@ -25,8 +25,14 @@ const gate = () => {
   return { promise, resolve };
 };
 
-for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, false], [false, true], [false, false, true], [false, false, "bad"], [false, false, "closed-first"], [false, false, "exit-first"]]) {
+for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, false], [false, true], [false, false, true], [false, false, "bad"], [false, false, "closed-first"], [false, false, "exit-first"], [false, false, "store-stale"]]) {
   test(`shared Native fault stops sampler, held event=${holdCleanupEvent}, pending periodic=${periodic}, driver=${heartbeat ?? "register"}`, { timeout: 15000 }, async (t) => {
+    const stale = heartbeat === "store-stale";
+    const atLifetime = gate();
+    const delayedProbeEntered = gate();
+    let killEntered = false;
+    let delayedProbe = false;
+    const collectorFacts = { exit: false, stdout: false, stderr: false };
     const ready = gate();
     const started = gate();
     const eventRelease = gate();
@@ -64,8 +70,11 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
       if (wd) wd.requestStop("TEARDOWN");
       if (pending) await drain(clock, pending);
       else if (recorder) await recorder.closeIncompleteEvidence();
-      if (binding) await binding.settleActual();
-      if (native) await native.monitor.stopAndReap();
+      if (binding) await binding.settleActual().catch((error) => {
+        if (!stale) throw error;
+        assert.equal(error.code, "CLEANUP_UNPROVEN");
+      });
+      if (native) await native.monitor.stopAndReap().catch((error) => { if (!stale) throw error; });
       if (lifetime) await lifetime.whenSettled();
       if (native) native.cleanup();
       if (env) await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
@@ -78,6 +87,10 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
       if (marker.stage === "cleanup.run" && marker.state === "fulfilled") {
         cleanupCompleted.resolve();
       }
+      if (stale && marker.stage === "cleanup.kill" && marker.state === "entered") {
+        killEntered = true;
+      }
+      if (marker.stage === "shutdown.lifetime" && marker.state === "entered") atLifetime.resolve();
       markers.push(marker);
     } });
     env = await makeStore({ lifetime: suppliedOwner });
@@ -86,6 +99,9 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     script.inspected[6000] = { pid: 6000, state: "live",
       process: bsdRow(6000, process.pid, 6000, 501), executable: realpathSync(process.execPath) };
     native = createMonitorFixture({ lifetime, script });
+    native.fixture.child.once("exit", () => { collectorFacts.exit = true; });
+    native.fixture.child.stdout.once("close", () => { collectorFacts.stdout = true; });
+    native.fixture.child.stderr.once("close", () => { collectorFacts.stderr = true; });
     // Node's two clear functions accept either timer kind. Keep this local
     // clock faithful so generic WD interval debt cannot mask sampler state.
     const clearTimer = (id) => {
@@ -95,7 +111,18 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     clock = { ...native.clock, clearTimeout: clearTimer, clearInterval: clearTimer,
       nowMonoMs: native.clock.nowMs,
       nowUtc: () => "2026-11-06T00:00:00Z" };
-    const observedMonitor = { ...native.monitor, stopAndReap(...args) {
+    const observedMonitor = { ...native.monitor, async probeIdentity(...args) {
+      const actual = await native.monitor.probeIdentity(...args);
+      if (!stale || !killEntered || delayedProbe) return actual;
+      delayedProbe = true;
+      delayedProbeEntered.resolve(args[1].deadlineMonoMs);
+      // Retain this controlled callback through its caller-supplied deadline.
+      // The actual Native probe above has settled; no raw request is abandoned.
+      return issueActual(lifetime.retainActual, () => new Promise((resolve, reject) => {
+        clock.setTimeout(() => reject(Object.assign(new Error("controlled probe deadline"),
+          { code: "CLEANUP_UNPROVEN" })), Math.max(0, args[1].deadlineMonoMs - clock.nowMonoMs()));
+      }));
+    }, stopAndReap(...args) {
       stopCalls.push({ at: clock.nowMonoMs(), args: structuredClone(args) });
       const actual = Reflect.apply(native.monitor.stopAndReap, native.monitor, args);
       actual.then(() => {
@@ -187,10 +214,11 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
       assert.equal(typeof issued.requestId, "string");
       requestId = issued.requestId;
     }
-    native.fixture.emit({ type: "accounting-fault", code: "ACCOUNTING_UNAVAILABLE",
+    if (!stale) native.fixture.emit({ type: "accounting-fault", code: "ACCOUNTING_UNAVAILABLE",
       reason, diagnostic, requestId });
+    else env.ctl.now = 1001; // Real Store still receives observedAtMs=0, valid bytes.
     const fault = native.monitor.fault();
-    assert.ok(fault.detail.includes(diagnostic));
+    if (!stale) assert.ok(fault.detail.includes(diagnostic));
     const beforeRegister = clock.nowMonoMs();
     stopAt = beforeRegister;
     const originalPhaseEnd = horizon.reader.read();
@@ -198,7 +226,11 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     driver.child.once("exit", (code, signal) => { exitObserved = { code, signal }; });
     let lifetimeSettled = false;
     lifetime.whenSettled().then(() => { lifetimeSettled = true; });
-    if (periodic) native.clock.runDue();
+    if (stale) {
+      driver.emit({ type: "event", recordId: "stale-input", recordSeq: 0,
+        kind: "response", payload: { controlled: true } });
+      await Promise.race([driverStopped.promise, early]);
+    } else if (periodic) native.clock.runDue();
     else if (heartbeat === "exit-first") {
       driver.exit(17);
       driver.disconnect();
@@ -218,10 +250,36 @@ for (const [holdCleanupEvent, periodic, heartbeat] of [[false, false], [true, fa
     driver.closeErr();
     assert.deepEqual(exitObserved, { code: heartbeat === "exit-first" ? 17 : 0, signal: null });
     assert.equal(driver.child.stderr.closed, true);
-    native.fixture.exit(2);
+    if (!stale) native.fixture.exit(2);
     let returned = false;
     pending.then(() => { returned = true; });
     const draining = drain(clock, pending);
+    if (stale) {
+      try {
+        const deadline = await delayedProbeEntered.promise;
+        clock.advance(deadline - clock.nowMonoMs());
+        await atLifetime.promise;
+        const firstFault = markers.filter((m) => m.stage === "supervisor.fault");
+        assert.equal(firstFault.length, 1);
+        assert.equal(firstFault[0].code, "STORE_ACCOUNTING");
+        assert.match(firstFault[0].detail, /age-exceeded.*now=1001.*start=0.*age=1001/);
+        assert.equal(stopCalls.length, 1, "failed cleanup must initiate collector teardown within original bound");
+        assert.equal(stopCalls[0].at, stopAt + 4500);
+        assert.equal(stopCalls[0].args[0].deadlineMonoMs, stopAt + 5000);
+        assert.equal(stopCalls[0].args[0].failureContainment, true);
+        assert.deepEqual(collectorFacts, { exit: true, stdout: true, stderr: true });
+      } finally {
+        // Test containment observes actual collector exit plus BOTH closes, never fake settlement.
+        native.fixture.exit(2);
+        await draining;
+        assert.deepEqual(collectorFacts, { exit: true, stdout: true, stderr: true });
+        await lifetime.whenSettled();
+      }
+      assert.deepEqual(collectorFacts, { exit: true, stdout: true, stderr: true });
+      assert.equal((await pending).stopReason, "FAULT STORE_ACCOUNTING");
+      assert.equal(await fsp.stat(path.join(env.workspaceRoot, "check/final.json")).then(() => true, () => false), false);
+      return;
+    }
     if (holdCleanupEvent) {
       await eventEntered.promise;
       await monitorStopped.promise;

@@ -128,7 +128,13 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
       now - sample.observedAtMs > STALE_MS
     ) {
       state.accountingFault = true;
-      fail("STORE_ACCOUNTING", "stale sample");
+      const error = new Error("artifact-store STORE_ACCOUNTING: stale sample");
+      error.code = "STORE_ACCOUNTING";
+      error.detail = JSON.stringify({ classification: !Number.isFinite(now) ? "invalid-now" :
+        sample.observedAtMs > now ? "future-start" : "age-exceeded",
+        nowMs: Number.isFinite(now) ? now : null, sampleStartMs: sample.observedAtMs,
+        ageMs: Number.isFinite(now) ? now - sample.observedAtMs : null });
+      throw error;
     }
     // observedAtMs is the conservative start of the provider's whole
     // footprint scan: a walk can only prove bytes that committed strictly

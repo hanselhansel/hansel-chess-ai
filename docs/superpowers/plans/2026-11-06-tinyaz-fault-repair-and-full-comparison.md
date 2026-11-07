@@ -46,6 +46,48 @@ Run changed-area tests, full required checks, and final code-to-doc comparison. 
 
 ## Task 3: Execute and verify all 40 games
 
+### Approved failure-only collector containment amendment, 2026-11-07
+
+Hansel explicitly approved the reviewed proposal
+`e079b8a9d2237db1915391ee59e4357b1adc2c12f701c8fa8936f02f1ba894ec`.
+Sol High implements it before another candidate release. The latest7ecb853
+restored-browser attempt stopped at7/40games and3/20pairs, with no canonical
+final/completion. Its actual command/pipes closed only after guarded Inspector
+capture and supervisor TERM. Preserve its1091-file freeze and intervention
+qualification. The causal whole-owner RED proves exhausted cleanup skips the
+collector stop; it does not prove the historical stale-sample latency.
+
+Keep the original outer end C=min(cleanupStart+5000,inherited end), TERM+2000
+and KILL+4000. For phase-workload derive P=min(C,max(cleanupStart,C-500)),
+using existing sampleGapMs500. All fresh proof actions and the prestarted
+live-evidence verifier's actual effect authority use P, with late-continuation
+checks after awaits. Actual promises remain enrolled. Nested selftest-workload
+retains its parent-collector behavior. The usual successful post-KILL proof
+interval becomes500ms; an inherited window<=500ms immediately fails proof.
+
+On failed proof, permit wire-only collector shutdown/EOF before C even if
+required workload proof is unsettled. This is failure containment only:
+CLEANUP_UNPROVEN/ineligibility and every actual workload/helper/driver/SDK/file
+debt remain. No action starts at/after C, no early TERM/KILL, no added grace.
+Normal proof keeps every original ordering prerequisite. The stop API accepts
+validated failureContainment:true locally, with one cached flow and a monotonic
+failure latch that also upgrades a pending normal stop. Validate before effects,
+min-narrow the original handle, never repeat teardown or restore eligibility.
+Already-settled calls join unchanged without new IO or retroactive result edits.
+
+Add bounded first-fault decision-now/sample-start/age/class diagnostics through
+the existing shared fault/lifetime owner, including periodic resource failures.
+Keep1000ms freshness and full-tree/start coverage unchanged; age is not scan
+duration and the diagnostic is not a latency fix. Record the accepted exception
+outside the protected Section3 block and update affected READMEs/contracts,
+status and usage docs in the same green change. Prove causal RED-to-green,
+P/C and2s/4s ordering, mode upgrades/validation, held/failed/late actual debts,
+withheld pipes and no fresh verifier effects after P/C. Run required affected
+and full serial/Native/app checks with actual process/BOTHpipe closure, inspect
+the final code-to-doc diff and commit green for independent review. Preserve M,
+all old evidence and all scientific settings. Only then publish and obtain a
+new Root release with fresh check/parity/preflight for one new full40 attempt.
+
 ### Incomplete 6ff0128 attempt and runtime qualification
 
 Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40
@@ -119,3 +161,8 @@ Create a fresh workspace and run committed check, 13-case Python/browser parity,
 Follow the owned command to closure. Monitor actual completed-game progress where the existing bounded stream permits; do not change source/settings while active. On a concrete failure preserve evidence and diagnose it. A failing or partial cohort cannot pass or produce statistical/Elo conclusions.
 
 Verify exactly 40 complete games/20 complete pairs, identity-bound legal PGNs, zero unplanned faults, actual natural command exit, Native cleanup/accounting, original-input equality and genuine receipt graph. Only then derive the preregistered analysis. Report unchanged model identity and the method's limits. Update established result/status documents and accepted open-item ledger, inspect final code-to-doc consistency, and publish the final evidence-backed result. No retraining, merge or deployment.
+
+
+### Approved failed-cleanup implementation checkpoint (2026-11-07)
+
+The accepted failure-only containment amendment is implemented and locally green. Final serial harness736/736, app191+184, typecheck and Python58+19 passed. All14 real Native actor exit/BOTHpipe receipts settled; the reviewed actual-Native short archived cap naturally exited2 with zero faults and valid cleanup/accounting. Preserve the preceding734/736 failure, repaired Vite test-owner scan/close ordering, and UNKNOWN cause of that run's fatal616.296667ms Native interval. Exact scope, TDD receipts, source/input hashes and code-to-doc/immutable audit are in `failed-cleanup-implementation-report.md` in the SDD workspace. Independent implementation review, publication and fresh committed prerequisites plus a separate Root full40 release remain OPEN. No push or scoring execution occurred; no historical latency/global-FS cause is claimed fixed.

@@ -2,7 +2,7 @@
 // regressions for the declared pending-repair private bindings — a
 // supplied malformed cleanupStartMonoMs rejects without a fresh window
 // on a fresh eligible controller per binding, missing/failed/withheld
-// required settlement reaches no collector reap, a synchronous observer
+// required settlement remains invalid despite failed containment, a synchronous observer
 // throw is retained while the actual original +2000/+4000 offsets still
 // land, and the late ordinary/FINISH no-revival purposes run in FRESH
 // independently eligible idle contexts — each kind is that context's
@@ -88,7 +88,7 @@ test("a supplied malformed cleanupStartMonoMs rejects without a fresh window", a
   assert.equal(proof.verified, true);
 });
 
-test("a missing driver settlement reaches no collector reap", async () => {
+test("a missing driver settlement permits failure containment only", async () => {
   const { clk, calls, cc } = fixture(ROWS, {
     observation: OBS,
     probeDefault: "gone",
@@ -98,11 +98,11 @@ test("a missing driver settlement reaches no collector reap", async () => {
   const proof = await drive(clk, cc.run(args(clk))); // no settle callback
   assert.equal(proof.accountingValid, false);
   assert.equal(proof.verified, false);
-  // The unproven debt never falls through to the collector-last reap.
-  assert.ok(!calls.includes("stopAndReap"));
+  // Failed containment cannot turn the missing required debt into proof.
+  assert.equal(calls.filter((call) => call === "stopAndReap").length, 1);
 });
 
-test("a failed required settlement still reaches no collector reap", async () => {
+test("a failed required settlement permits failure containment only", async () => {
   const { clk, calls, cc } = fixture(ROWS, {
     observation: OBS,
     probeDefault: "gone",
@@ -121,10 +121,10 @@ test("a failed required settlement still reaches no collector reap", async () =>
   );
   assert.equal(proof.accountingValid, false);
   assert.equal(proof.verified, false);
-  assert.ok(!calls.includes("stopAndReap"));
+  assert.equal(calls.filter((call) => call === "stopAndReap").length, 1);
 });
 
-test("a withheld required live-evidence join keeps the collector un-reaped", async () => {
+test("a required live-evidence join settles before P and collector-last", async () => {
   const { clk, calls, cc } = fixture(ROWS, {
     observation: OBS,
     probeDefault: "gone",
@@ -147,7 +147,9 @@ test("a withheld required live-evidence join keeps the collector un-reaped", asy
   );
   try {
     // Past the fixed +4000 KILL stage, still inside the original window.
-    await advanceBy(clk, 9);
+    await advanceBy(clk, 8);
+    clk.advance(250);
+    await yieldTurn();
     assert.ok(calls.includes("settle-evidence"));
     assert.ok(!calls.includes("stopAndReap"));
     releaseEvidence();

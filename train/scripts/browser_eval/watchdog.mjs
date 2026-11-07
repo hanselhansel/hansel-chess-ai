@@ -2,6 +2,7 @@
 // Runtime, operations, records and shutdown retain their existing ownership;
 // Native/proof/driver resources remain owned by their dedicated modules.
 // Every first stop captures and narrows the original cleanup bound once.
+import { createWatchdogFaultRecorder } from "./watchdog-faults.mjs";
 import { copyDeep } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { captureWatchdogRuntimeConfig, runWatchdogLifecycle } from "./watchdog-runtime.mjs";
@@ -98,14 +99,8 @@ export function createWatchdog(options) {
     for (const t of timers) clearT(t);
   };
 
-  const faults = [];
-  const recordFault = (error) => {
-    faults.push({
-      code: error && error.code ? error.code : "FAULT",
-      detail: error && error.message ? error.message.slice(0, 4096) : "?",
-      atMonoNs: nowNs().toString(),
-    });
-  };
+  const { faults, recordFault } = createWatchdogFaultRecorder({ nowNs,
+    lifetime: capabilities.lifetime, scope: config.selftestPhase ? "selftest" : "phase" });
 
   // The sticky Native overage flag: a retained historical observed fact —
   // never a fresh sample — checked before ordinary admission, before a
@@ -352,7 +347,7 @@ export function createWatchdog(options) {
     armOperation,
     disarmOperation,
   };
-  // The whole cleanupArgs capacity lives in watchdog-shutdown.mjs under
+  // The whole cleanupArgs capacity lives in watchdog-cleanup-context.mjs under
   // corrective 64 — pure construction over the same grouped refs, invoked
   // after the timing literal exists and before control (no TDZ).
   const cleanupArgs = createWatchdogCleanupArgs({

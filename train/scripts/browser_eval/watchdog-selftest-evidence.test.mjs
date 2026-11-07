@@ -163,7 +163,7 @@ test("selftestEvidence validates its bound and never probes past the original en
   assert.ok(!monitorCalls.some((c) => c.startsWith("probe:")));
 });
 
-test("a held required re-verification keeps the collector un-reaped until the actual verifier body settles", async (t) => {
+for (const releaseAfter of [4501, 5001]) test(`failed verifier containment retains actual body released after ${releaseAfter}ms`, async (t) => {
   const clk = watchdogTestClock();
   const evidence = await makeEvidenceWorkspace(t, { clock: clk });
   const runId = evidence.parentManifest.runId;
@@ -283,24 +283,19 @@ test("a held required re-verification keeps the collector un-reaped until the ac
     faultGate.held = false;
     faultGate.release();
     await settleRecordWrites();
-    // Collector-last waits for the actual required verification, never
-    // for those already-settled driver/record debts.
-    assert.ok(!monitorCalls.includes("stopAndReap"));
-    // The genuine held read is released: the verifier body itself then
-    // completes inside the original end.
+    // P closes positive proof, while the held actual verifier still owns debt.
+    assert.ok(monitorCalls.includes("stopAndReap"));
+    let returned = false;
+    p.then(() => { returned = true; });
+    await yield2();
+    assert.equal(returned, false);
+    clk.advance(releaseAfter - 4500);
     gate.release();
     const res = await drainRun(clk, p);
-    // The actual re-verification ran — the second genuine parent-tuple
-    // probe among the legitimately added driver probes — and only then
-    // did the collector reap last: the required debt was the real
-    // verifier body, never a boolean gate or the held fault write.
-    assert.equal(
-      monitorCalls.filter(
-        (c) => c === `probe:${evidence.parentSupervisor.pid}:1000:0`,
-      ).length,
-      2,
-    );
-    assert.equal(monitorCalls[monitorCalls.length - 1], "stopAndReap");
+    // The initial handshake probed once. Late verifier read completion cannot
+    // issue another Native probe or promote the old result after P or C.
+    assert.equal(monitorCalls.filter((c) => c === `probe:${evidence.parentSupervisor.pid}:1000:0`).length, 1);
+    assert.equal(monitorCalls.at(-1), "stopAndReap");
     assert.equal(res.status, "inconclusive");
     assert.equal(res.exitCode, 2);
     assert.equal(res.stopReason, "IPC_INVALID");

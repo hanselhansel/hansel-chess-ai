@@ -652,3 +652,14 @@ observation; Native cleanup still starts immediately with its original5s end.
 The own-subrun selftest scan follows the unchanged first trusted-begin pause
 and own manifest, before injection, with no renewed allowance. Earlier failed
 replays/prototype remain historical failures; approval is not a phase pass.
+
+
+## Approved failure-only cleanup repair (2026-11-07)
+
+Hansel approved proposal `e079b8a9d2237db1915391ee59e4357b1adc2c12f701c8fa8936f02f1ba894ec`. The restored-browser 7ecb853 attempt reached 7/40 acknowledged games and 3/20 pairs before the stale-accounting/shutdown failure. No canonical final/completion exists. Actual closure followed guarded Inspector capture and supervisor TERM. Its 1091-file freeze is immutable and intervention-qualified; no analysis is eligible.
+
+The causal whole-owner regression proves cleanup exhaustion skipped collector stop, leaving actual lifetime debt. The approved repair reserves the existing 500ms before the original five-second end for failed wire-only teardown. Positive proof stops at P=C-500 (bounded by the original start); +2/+4 signal stages and C stay fixed. Failure containment never releases unresolved workload or physical receipts, restores eligibility, extends a clock or authorizes late IO. Shared bounded first-fault now/start/age/class diagnostics preserve the exact 1000ms freshness rule. Primary historical stale latency remains UNKNOWN. Twenty preserved-tree qualification scans completed in 9.967–15.451ms, without tree changes; that control is not historical-cause evidence.
+
+Source acceptance still requires independent review/publication; final gate results are recorded below. Fresh committed check, 13-case parity and preflight under the qualified runtime, followed by one new full40 attempt, need a separate Root release. Keep M, 24-hour ceiling, shorter limits, visits, openings, schedule and statistical method unchanged. Preserve every earlier incomplete/inconclusive attempt and its limitations. See the accepted canonical amendment and owning browser-evaluation README for the exact implementation boundary.
+
+Local implementation verification: final serial harness736/736, app191+184, typecheck and Python58+19 passed; all14 actual Native actors exited with BOTHpipes closed and settlement. A controlled8s archived-CLI cap with actual Native naturally returned2/PHASE_TIMEOUT, zero faults and valid cleanup/accounting. Preserve the preceding734/736 gate and its independent fatal616.296667ms Native gap (cause UNKNOWN); only its concrete Vite test-owner teardown race was repaired. These are source/runtime controls, not cohort acceptance or evidence that the historical stale latency is fixed. Independent review/publication and the separate fresh prerequisite/full40 release remain pending.

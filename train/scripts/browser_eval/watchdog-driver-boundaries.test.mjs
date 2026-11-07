@@ -80,9 +80,11 @@ test("driver settlement with a withheld handle close stays unproven until it set
   try {
     p = cc.run(makeArgs(clk, driverMap));
     // Settlement follows the fixed +4000 KILL stage — advance PAST it
-    // (+4500, still inside the original +5000 window) and flush real
+    // (+4250, before the inner +4500 proof fence) and flush real
     // turns until the genuine reap was actually ENTERED.
-    await advanceBy(clk, 9);
+    await advanceBy(clk, 8);
+    clk.advance(250);
+    await yieldTurn();
     for (let i = 0; i < 20 && nested.channel.closedByUs !== true; i += 1) {
       await yieldTurn();
     }

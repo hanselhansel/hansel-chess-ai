@@ -2,8 +2,8 @@
 // retained settled proof. Stages anchor to ONE original monotonic start —
 // the trusted cleanupStartMonoMs captured at cleanup entry when supplied,
 // else this call's own first tick: graceful 0..2000 ms, TERM at +2000,
-// KILL at +4000, and every probe/listener/helper/collector proof done by
-// +5000 or the earlier caller-supplied deadlineMonoMs — awaited
+// KILL at +4000. Top-level proof ends 500ms before the original outer
+// +5000/inherited end; failure-only collector teardown uses that outer end. Awaited
 // probe/signal/query time is charged to the same horizon, a shorter
 // inherited bound never advances a stage, and no fresh stage begins after
 // exhaustion. Workload targets are reconciled live every stage
@@ -12,12 +12,14 @@
 // exactly; selftest-workload narrows to the exact scope), signalled
 // descendants-first through fresh exact tuples, and healthy
 // supervisor/collector roots are never targets. Listener proof runs while
-// the collector lives; the collector's own stopAndReap settlement is last
-// for phase-workload only. The closed proof schema is preserved exactly;
+// the collector lives; normal stopAndReap is collector-last. Failed
+// containment may stop earlier without retiring any required physical debt. The closed proof schema is preserved exactly;
 // run context fields are {phase, scope, scopeRunId, expectedFinalizer,
 // supervisor, deadlineMonoMs, settleWorkloadHandles, cleanupStartMonoMs}.
 import { copyDeep, isIdentity, isObj } from "./protocol-values.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
+import { issueActual } from "./artifact-files.mjs";
+import { cleanupProofEnd } from "./watchdog-cleanup-context.mjs";
 import { observeAwaitStage } from "./watchdog-lifetime.mjs";
 
 const TERM_MS = 2000;
@@ -123,7 +125,8 @@ export function createCleanupController({
         ? clock.nowMonoMs()
         : snap.cleanupStartMonoMs;
     const absEnd = Math.min(startMono + PROOF_MS, snap.deadlineMonoMs);
-    const dl = () => ({ deadlineMonoMs: absEnd });
+    const proofEnd = cleanupProofEnd(startMono, absEnd, snap.scope);
+    const dl = () => ({ deadlineMonoMs: proofEnd });
     const remaining = () => absEnd - clock.nowMonoMs();
     const stage = (label, issue) => observeAwaitStage(lifetime,
       snap.scope === "selftest-workload" ? "selftest" : "phase", label, issue);
@@ -131,7 +134,26 @@ export function createCleanupController({
     // a delayed wait or slow earlier call ends the run unproven instead of
     // starting further native work after absEnd.
     const cap = () => {
-      if (clock.nowMonoMs() >= absEnd) unproven("cleanup window exhausted");
+      if (clock.nowMonoMs() >= proofEnd) unproven("cleanup proof window exhausted");
+    };
+    // Only the public wait expires at P. Its original body/IO stays enrolled.
+    const proofCall = (issue) => {
+      cap();
+      const actual = lifetime ? issueActual(lifetime.retainActual, issue) : Promise.resolve().then(issue);
+      return new Promise((resolve, reject) => {
+        const timer = clock.setTimeout(() => reject(Object.assign(new Error("cleanup proof deadline"),
+          { code: "CLEANUP_UNPROVEN" })), Math.max(0, proofEnd - clock.nowMonoMs()));
+        actual.then((value) => { clock.clearTimeout(timer); resolve(value); },
+          (error) => { clock.clearTimeout(timer); reject(error); });
+      });
+    };
+    let collectorAttempted = false;
+    const stopCollector = async (failed) => {
+      if (snap.scope !== "phase-workload" || collectorAttempted) return;
+      if (remaining() <= 0) unproven("collector window exhausted");
+      collectorAttempted = true;
+      const options = failed ? { deadlineMonoMs: absEnd, failureContainment: true } : { deadlineMonoMs: absEnd };
+      await stage("cleanup.monitor", () => monitor.stopAndReap(options));
     };
     let eventFaults = 0;
     // Cleanup-event persistence is nonblocking for the fixed stages: a
@@ -174,9 +196,8 @@ export function createCleanupController({
       const live = [];
       for (const t of list) {
         cap();
-        const s = await monitor
-          .probeIdentity(t.identity, dl())
-          .catch(() => "unavailable");
+        const s = await proofCall(() => monitor.probeIdentity(t.identity, dl())).catch(() => "unavailable");
+        cap();
         if (s !== "gone") {
           if (s !== "same-live") probeFaults += 1;
           live.push(t.identity);
@@ -189,14 +210,12 @@ export function createCleanupController({
       for (const t of list) {
         if (!live.some((i) => i.pid === t.identity.pid)) continue;
         cap();
-        await monitor
-          .signalOwned(
-            { identity: t.identity, signal, scopeRunId: t.scopeRunId },
-            dl(),
-          )
+        await proofCall(() => monitor.signalOwned(
+            { identity: t.identity, signal, scopeRunId: t.scopeRunId }, dl()))
           .catch(() => {
             signalFaults += 1;
           });
+        cap();
       }
     };
     // Fixed stage offsets from the ORIGINAL start: a shorter inherited
@@ -206,8 +225,8 @@ export function createCleanupController({
     const stageWait = async (atMs) => {
       const due = startMono + atMs;
       cap();
-      if (due > absEnd) {
-        await delay(clock, absEnd - clock.nowMonoMs());
+      if (due >= proofEnd) {
+        await delay(clock, proofEnd - clock.nowMonoMs());
         unproven("stage beyond cleanup window");
       }
       await delay(clock, due - clock.nowMonoMs());
@@ -237,7 +256,8 @@ export function createCleanupController({
       for (const s of scopes) {
         try {
           cap();
-          const lq = await stage("cleanup.listeners", () => monitor.queryListeners(s, dl()));
+          const lq = await proofCall(() => stage("cleanup.listeners", () => monitor.queryListeners(s, dl())));
+          cap();
           listenersRemaining = listenersRemaining.concat(
             lq.listeners,
             lq.unexpected.map((u) => u.listener),
@@ -260,13 +280,14 @@ export function createCleanupController({
       // exists stays unproven — for the parent scope AND the real nested
       // selftest scope under the same registry filter.
       // A missing/failed/unsettled required driver-handle debt is sticky
-      // and MUST NOT fall through to the collector-last reap — no borrowed
-      // or inferred settlement ever authorizes collector stop.
+      // and never authorizes positive collector-last proof. The approved
+      // failure-only teardown retains all actual debt and ineligibility.
       let settlementDebt = false;
       if (snap.settleWorkloadHandles !== null) {
         try {
           cap();
-          await stage("cleanup.workload", () => snap.settleWorkloadHandles({ deadlineMonoMs: absEnd }));
+          await proofCall(() => stage("cleanup.workload", () => snap.settleWorkloadHandles({ deadlineMonoMs: proofEnd })));
+          cap();
         } catch {
           signalFaults += 1;
           accountingValid = false;
@@ -282,17 +303,9 @@ export function createCleanupController({
       // the projection disables age checking once sampling has stopped.
       const obs = monitor.lastObservation();
       if (!obs || obs.accountingValid !== true) accountingValid = false;
-      if (snap.scope === "phase-workload" && !settlementDebt) {
-        try {
-          cap();
-          await stage("cleanup.monitor", () => monitor.stopAndReap(dl()));
-        } catch {
-          accountingValid = false;
-        }
-      }
-      if (signalFaults > 0 || probeFaults > 0 || eventFaults > 0) {
-        accountingValid = false;
-      }
+      if (signalFaults > 0 || probeFaults > 0 || eventFaults > 0) accountingValid = false;
+      const failedProof = settlementDebt; // Settled negative proof already has the original ordering.
+      try { await stopCollector(failedProof); } catch { accountingValid = false; }
       const proof = {
         scope: snap.scope,
         expectedFinalizer: copyDeep(snap.expectedFinalizer),
@@ -325,6 +338,10 @@ export function createCleanupController({
         queryFaults,
       });
       return copyDeep(settled.proof);
+    } catch (error) {
+      // Approved failure-only exception: stop within C; never infer work settled.
+      try { await stopCollector(true); } catch { /* Original failure stays primary. */ }
+      throw error;
     } finally {
       inRun = false;
     }

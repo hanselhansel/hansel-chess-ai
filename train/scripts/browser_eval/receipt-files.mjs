@@ -16,6 +16,7 @@ import { parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertRecord } from "./record-schema.mjs";
 import { isRelPath } from "./schema-primitives.mjs";
 import {
+  assertReadEffect,
   confined,
   hashFileRef,
   issueActual,
@@ -52,8 +53,10 @@ const registrar = (io) => {
 
 // Raw metadata effects pass the real registrar when io is bound; the
 // untimed path invokes the same thunk directly with identical guards.
-const track = (retain, thunk) =>
-  retain === null ? thunk() : issueActual(retain, thunk);
+const track = (retain, thunk, io) => {
+  assertReadEffect(io);
+  return retain === null ? thunk() : issueActual(retain, thunk);
+};
 
 // Translates the shared artifact-file primitives' bounded codes into the
 // receipt layer's evidence codes; anything else propagates unchanged.
@@ -75,7 +78,8 @@ const evidenceCall = async (fn, name) => {
 // pre-read size — a grown file stops accumulating and the post-read
 // stat check fails it — and a rejected close propagates its real
 // fault instead of posing as read evidence.
-const readOwned = async (retain, abs, size) => {
+const readOwned = async (retain, abs, size, io) => {
+  assertReadEffect(io);
   const handle = await openActual(retain, () => fsp.open(abs, "r"));
   // Fault presence is tracked separately from the fault value so a
   // nullish rejection still counts: the first read failure always wins,
@@ -88,6 +92,7 @@ const readOwned = async (retain, abs, size) => {
     let read = 0;
     const buffer = Buffer.alloc(Math.max(1, Math.min(READ_CHUNK, size)));
     for (;;) {
+      assertReadEffect(io);
       const { bytesRead } = await handle.read(buffer, 0, buffer.length, read);
       if (bytesRead === 0) break;
       read += bytesRead;
@@ -131,7 +136,7 @@ export const confinedRead = async (root, rel, name, io) => {
   if (!isRelPath(rel)) fail("EVIDENCE_INVALID", `${name} path`);
   const { abs } = await evidenceCall(() => confined(root, rel, name, io), name);
   const statAt = (p) =>
-    track(retain, () => fsp.lstat(p)).then(
+    track(retain, () => fsp.lstat(p), io).then(
       (s) => s,
       (error) => {
         if (error.code === "ENOENT") return null;
@@ -142,8 +147,8 @@ export const confinedRead = async (root, rel, name, io) => {
   if (before === null) fail("EVIDENCE_INCOMPLETE", `${name} missing`);
   if (!before.isFile() || before.isSymbolicLink()) fail("EVIDENCE_INVALID", `${name} regular`);
   const bytes =
-    retain === null ? await fsp.readFile(abs) : await readOwned(retain, abs, before.size);
-  const after = await track(retain, () => fsp.lstat(abs));
+    retain === null ? await fsp.readFile(abs) : await readOwned(retain, abs, before.size, io);
+  const after = await track(retain, () => fsp.lstat(abs), io);
   if (
     bytes.length !== before.size ||
     after.size !== before.size ||
