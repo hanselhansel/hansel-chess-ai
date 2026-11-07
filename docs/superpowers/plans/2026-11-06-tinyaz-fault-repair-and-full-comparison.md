@@ -255,3 +255,46 @@ exact. Source/test remains below400; no new owner/API/clock/timing/settings.
 Round0 report and review RED are pinned; append-only implementation report
 records exact commands/closure/limits. Scoped I1 re-review, publication and new
 Root release before prerequisites/cohort remain OPEN. No push or phase.
+
+
+### Private filesystem backend mitigation continuation, 2026-11-07
+
+The 0ccfc56 attempt reached13games/6pairs, then remained incomplete with an
+operation timeout and required shutdown work pending. Preserve its intervention-
+qualified freeze and all scientific/model/settings identities. Same-pause native
+read-only evidence linked the actual observer LSTAT request to a nonempty global
+work queue while all4workers were waiting. The underlying OS/native cause stays
+UNKNOWN. No old process was woken or old cleanup promoted.
+
+Implement ONE declared private-fs.mjs backend across all20 harness-private FS
+default owners; functional union111, Python helpers3 unchanged. Existing callers
+preregister and guard before actual immediate synchronous Node FS. One
+setImmediate delivers the completed value/original throw only, preserving fair
+IO turns and Promise/injected-async interfaces. Cold bounded streams keep actual
+FD/close receipts, same captured read guards and physical-only close state.
+Ambiguous FD errors remain unknown; never reuse that integer for another OS
+close/read/write. No new clock, retry, freshness/limit waiver, runtime upgrade,
+model or scientific change. Node internals/dependencies/Python remain excluded.
+
+Preserve causal RED, cover actual Store/Recorder/retained readers plus injected
+async failures, FD reuse/ambiguous stream close/fairness/late guards, then run
+covering whole owners and ONE frozen full serial/Native14 gate/current-byte
+actual-Native short CLI cap. Carry app/typecheck/Python solely under exact prior
+executed-input equality. Finish immutable/code-to-doc audit and green local
+commit for fresh independent review. No push or fresh real prerequisites/cohort
+before reviewed publication and a separate Root release. Full evidence and
+limits go in SDD private-fs-implementation-report.md.
+
+
+Private-FS local implementation checkpoint: causal RED preserved and migration
+implemented across20 defaults with one declared leaf. Frozen serial760/760,
+actual Native14 physical receipts and controlled current-byte archived CLI cap2
+are green. Cap fault0/verified cleanup/accounting and driver/collector exit0/
+BOTHpipes are actual; controlled8s SDK/body is not multi-hour/scoring evidence.
+App191+184/typecheck/Python58+19 carry only on178 exact executed-input refs.
+Preserve the first ambiguous-stream state RED and286-case covering3 failures;
+corrected whole owners39/39 passed. All sources/tests<400, runtime111/helpers3,
+protected23/Section3/M and all old attempts exact. Full report: SDD private-fs-
+implementation-report.md. Native/OS root cause stays UNKNOWN. Fresh independent
+source review, publication and Root release before fresh committed check/parity/
+preflight/ONE full40 remain OPEN. No push or real phase occurred.

@@ -2,7 +2,7 @@
 // identities and physical signals. This owner closes public SDK resources.
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
 import { assertRecord } from "./record-schema.mjs";

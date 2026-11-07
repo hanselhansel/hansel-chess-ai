@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // Path/symlink confinement, logical-versus-allocated bytes, cumulative
 // reserve/pending-concurrent admission, stale/unavailable accounting,
 // atomic write/fsync/rename order and phase sealing, all on temporary
@@ -200,9 +201,9 @@ test("a path rejection stays correctable; required IO failure latches", async ()
   await store.writeOnce("z", Buffer.alloc(1), "ordinary");
   // A real sync failure on an owned handle is required durable IO: it
   // latches a sticky fault and every later op rejects.
-  const realOpen = fsp.open;
+  const realOpen = phaseFs.open;
   try {
-    fsp.open = async function (...args) {
+    phaseFs.open = async function (...args) {
       const handle = await realOpen.apply(this, args);
       handle.sync = async () => {
         const error = new Error("forced-sync");
@@ -217,7 +218,7 @@ test("a path rejection stays correctable; required IO failure latches", async ()
     );
   } finally {
     await artifactStoreLifetime(store).whenSettled();
-    fsp.open = realOpen;
+    phaseFs.open = realOpen;
   }
   await code(store.writeOnce("v", Buffer.alloc(1), "ordinary"), "STORE_IO");
   await code(store.deleteEphemeral("x"), "STORE_IO");
@@ -225,10 +226,10 @@ test("a path rejection stays correctable; required IO failure latches", async ()
 
 test("a failed durable close rejects on every repeated close", async () => {
   const { store } = await makeStore();
-  const realOpen = fsp.open;
+  const realOpen = phaseFs.open;
   let sink;
   try {
-    fsp.open = async function (...args) {
+    phaseFs.open = async function (...args) {
       const handle = await realOpen.apply(this, args);
       handle.sync = async () => {
         throw new Error("forced-sync-failure");
@@ -244,16 +245,16 @@ test("a failed durable close rejects on every repeated close", async () => {
       await sink.close().then(() => {}, () => {});
     }
     await artifactStoreLifetime(store).whenSettled();
-    fsp.open = realOpen;
+    phaseFs.open = realOpen;
   }
 });
 
 test("a zero-progress append latches and every later close rejects", async () => {
   const { store } = await makeStore();
-  const realOpen = fsp.open;
+  const realOpen = phaseFs.open;
   let sink;
   try {
-    fsp.open = async function (...args) {
+    phaseFs.open = async function (...args) {
       const handle = await realOpen.apply(this, args);
       handle.write = async () => ({ bytesWritten: 0 });
       return handle;
@@ -270,7 +271,7 @@ test("a zero-progress append latches and every later close rejects", async () =>
       await sink.close().then(() => {}, () => {});
     }
     await artifactStoreLifetime(store).whenSettled();
-    fsp.open = realOpen;
+    phaseFs.open = realOpen;
   }
 });
 

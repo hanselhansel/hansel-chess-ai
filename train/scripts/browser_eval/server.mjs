@@ -7,7 +7,7 @@
 // only runs the genuine vite.close() — no Native/proof/status authority.
 import { createHash } from "node:crypto";
 import { realpathSync } from "node:fs";
-import fsp from "node:fs/promises";
+import { privateFs as fsp } from "./private-fs.mjs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";

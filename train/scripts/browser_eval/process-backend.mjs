@@ -22,7 +22,8 @@
 // ONE internal assembly backs both entries — no copied IO
 // implementation, second ledger or cache — and the setup descriptor
 // is static expectation data, never a Native availability proof.
-import { promises as fsp, createReadStream, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
+import { privateFs as fsp, createPrivateReadStream as createReadStream } from "./private-fs.mjs";
 import os from "node:os";
 import path from "node:path";
 
@@ -76,7 +77,7 @@ const assembleBackendIdentity = async ({
   budget = undefined,
   retainActual = undefined,
   statFile = (p) => fsp.stat(p),
-  createStream = (p) => createReadStream(p),
+  createStream = (p, options) => createReadStream(p, options),
   resolvePath = realpathSync,
   osRelease = () => os.release(),
   osVersion = () => os.version(),

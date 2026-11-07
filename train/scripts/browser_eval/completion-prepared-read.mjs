@@ -16,7 +16,7 @@
 // receipt-verification.
 
 import { createHash } from "node:crypto";
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import {
   issueActual,
   ownedFileCloseReceipt,

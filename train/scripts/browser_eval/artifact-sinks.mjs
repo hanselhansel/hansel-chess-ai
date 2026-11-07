@@ -12,7 +12,7 @@
 // a later genuine close may settle without clearing the original error.
 // No process, model or browser operation here.
 
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import {
   confined,

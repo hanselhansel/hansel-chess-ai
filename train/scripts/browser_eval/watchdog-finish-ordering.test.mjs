@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // Exact shutdown statement ordering, genuine ordinary queue and Recorder.
 // Controlled Native-free dependencies do not establish a phase/cleanup pass.
 import test from "node:test";
@@ -189,8 +190,8 @@ for (const mode of ["raw-write", "footprint"]) {
     let physicallyClosed = false;
     let returned = false;
     let manualRescue = false;
-    const actualOpen = fsp.open;
-    const actualStat = fsp.lstat;
+    const actualOpen = phaseFs.open;
+    const actualStat = phaseFs.lstat;
     let firstCause;
     let stickyWrapper;
     t.after(async () => {
@@ -212,8 +213,8 @@ for (const mode of ["raw-write", "footprint"]) {
       if (binding) await binding.settleActual();
       if (native) await native.monitor.stopAndReap();
       await owner.whenSettled();
-      fsp.open = actualOpen;
-      fsp.lstat = actualStat;
+      phaseFs.open = actualOpen;
+      phaseFs.lstat = actualStat;
       if (native) native.cleanup();
       if (env) await fsp.rm(env.cleanupRoot ?? env.workspaceRoot, { recursive: true, force: true });
       t.diagnostic(JSON.stringify({ manualRescue, rawWriteFailures, rawCloseCalls, physicallyClosed, returned }));
@@ -229,7 +230,7 @@ for (const mode of ["raw-write", "footprint"]) {
     } else {
       env = await makeStore({ lifetime: owner });
     }
-    fsp.lstat = function (...args) {
+    phaseFs.lstat = function (...args) {
       if (mode === "footprint" && armed && args[0] === path.join(env.workspaceRoot, "cache", basename)) {
         armed = false; // Only the first real scan fails; containment may close normally.
         return Promise.reject(Object.assign(new Error("controlled missing entry"), { code: "ENOENT" }));
@@ -238,7 +239,7 @@ for (const mode of ["raw-write", "footprint"]) {
     };
     assert.equal(artifactStoreLifetime(env.store), owner);
     const eventsPath = path.join(env.workspaceRoot, "check/events.jsonl");
-    fsp.open = async function (...args) {
+    phaseFs.open = async function (...args) {
       const handle = await Reflect.apply(actualOpen, this, args);
       if (String(args[0]) === eventsPath) {
         rawHandle = handle;

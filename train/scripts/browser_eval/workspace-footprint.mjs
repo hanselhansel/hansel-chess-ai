@@ -12,7 +12,7 @@
 // a newer observation. stop() prevents new scans, invalidates the in-flight
 // generation so an interrupted walk can never publish a successful partial
 // prefix, and lets the active walk drain.
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 
 const realClock = {

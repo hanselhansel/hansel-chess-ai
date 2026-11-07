@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // watchdog-child-test-fixtures.mjs (TEST-ONLY): the child/fixture leaf
 // of the watchdog fixture DAG. Corrective 69 moved the WHOLE
 // forkDriverFixture, createObservedDriver and drivers factories — the
@@ -234,7 +235,7 @@ const recorderFsFail = (detail) => {
 // write on the actual append-mode events.jsonl FileHandle. Install
 // AFTER the genuine root/Recorder acquisition and before w.run; the
 // Recorder passed to createWatchdog stays the ORIGINAL object. Saved
-// fsp.open/fsp.rename delegate every other path/call with the SAME
+// phaseFs.open/phaseFs.rename delegate every other path/call with the SAME
 // this/args/result/error; the append acquisition pins the returned
 // REAL FileHandle and replaces ONLY that object's write method — the
 // saved descriptor is restored later, all stat/read/sync/close and
@@ -267,9 +268,9 @@ export function instrumentRecorderFs(
     events: path.join(canonicalRoot, phaseDir, "events.jsonl"),
   };
   const orig = {
-    open: fsp.open,
+    open: phaseFs.open,
     realpath: fsp.realpath,
-    rename: fsp.rename,
+    rename: phaseFs.rename,
   };
   const ops = [];
   const pinned = [];
@@ -376,8 +377,8 @@ export function instrumentRecorderFs(
       if (entry.own === undefined) delete entry.handle.write;
       else Object.defineProperty(entry.handle, "write", entry.own);
     }
-    fsp.open = orig.open;
-    fsp.rename = orig.rename;
+    phaseFs.open = orig.open;
+    phaseFs.rename = orig.rename;
   };
   // The instrument registers its release/settle/restore BEFORE the
   // interception installs — the fault gate is unconditionally released
@@ -392,7 +393,7 @@ export function instrumentRecorderFs(
     settle: join,
     restore,
   });
-  fsp.open = onOpen;
-  fsp.rename = onRename;
+  phaseFs.open = onOpen;
+  phaseFs.rename = onRename;
   return Object.freeze({ join, restore });
 }

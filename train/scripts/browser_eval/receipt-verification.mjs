@@ -21,7 +21,7 @@
 // any filesystem operation, and no new ledger, noop or fallback is
 // created. This module imports neither the Store nor Prerequisites.
 
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertRecord, assertCommonIdentity } from "./record-schema.mjs";

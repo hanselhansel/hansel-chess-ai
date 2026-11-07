@@ -1,7 +1,8 @@
 // Premanifest environment capture and post-stop static remeasurement.
 // Only capture runs setup children. Verification borrows genuine initial
 // metadata provenance and remeasures current bytes/OS under the SAME bound.
-import { promises as fsp, createReadStream, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
+import { privateFs as fsp, createPrivateReadStream as createReadStream } from "./private-fs.mjs";
 import os from "node:os";
 import path from "node:path";
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
@@ -38,7 +39,7 @@ const bindAdapters = (adapters) => {
   }
   return Object.freeze({
     statFile: (p) => fsp.lstat(p),
-    createStream: (p) => createReadStream(p),
+    createStream: (p, options) => createReadStream(p, options),
     resolvePath: realpathSync.native,
     ...adapters,
   });

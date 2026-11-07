@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // workspace-footprint.test.mjs: whole-union counting, no link recursion,
 // scan-start observedAtMs, in-flight joins, equal-time fault publication,
 // interrupted-walk accounting, error retention, stop and owned-temp
@@ -124,9 +125,9 @@ const failureThroughStore = async (root, readFootprint, lines = []) => {
 
 test("controlled filesystem error survives producer, Store and passive marker", async (t) => {
   const root = ownedTree(t);
-  const read = fsp.readdir;
-  t.after(() => { fsp.readdir = read; });
-  fsp.readdir = async function (dir, ...args) {
+  const read = phaseFs.readdir;
+  t.after(() => { phaseFs.readdir = read; });
+  phaseFs.readdir = async function (dir, ...args) {
     if (dir === root) {
       throw Object.assign(new Error("denied"), { code: "EACCES" });
     }
@@ -144,9 +145,9 @@ test("controlled filesystem error survives producer, Store and passive marker", 
 
 test("unsafe allocation metadata stays invalid with its actual cause", async (t) => {
   const root = ownedTree(t);
-  const stat = fsp.lstat;
-  t.after(() => { fsp.lstat = stat; });
-  fsp.lstat = async function (file, ...args) {
+  const stat = phaseFs.lstat;
+  t.after(() => { phaseFs.lstat = stat; });
+  phaseFs.lstat = async function (file, ...args) {
     if (file === root) {
       return { size: 0, blocks: undefined };
     }
@@ -159,7 +160,7 @@ test("unsafe allocation metadata stays invalid with its actual cause", async (t)
 
 test("interrupted real walk drains and preserves its stop/generation reason", async (t) => {
   const root = ownedTree(t);
-  const read = fsp.readdir;
+  const read = phaseFs.readdir;
   let enter;
   let release;
   const entered = new Promise((resolve) => { enter = resolve; });
@@ -168,9 +169,9 @@ test("interrupted real walk drains and preserves its stop/generation reason", as
   t.after(async () => {
     release();
     if (scan) await scan;
-    fsp.readdir = read;
+    phaseFs.readdir = read;
   });
-  fsp.readdir = async function (...args) {
+  phaseFs.readdir = async function (...args) {
     const entries = await Reflect.apply(read, this, args);
     if (args[0] === root) {
       enter();
@@ -251,12 +252,12 @@ test("a genuinely retired enumerated child triggers one complete fresh walk", as
   const directory = path.join(root, "sub");
   const retired = path.join(directory, "b.bin");
   const replacement = path.join(directory, "current.bin");
-  const read = fsp.readdir;
+  const read = phaseFs.readdir;
   const c = clock();
   let enumerations = 0;
   let rootEnumerations = 0;
-  t.after(() => { fsp.readdir = read; });
-  fsp.readdir = async function (dir, ...args) {
+  t.after(() => { phaseFs.readdir = read; });
+  phaseFs.readdir = async function (dir, ...args) {
     const entries = await Reflect.apply(read, this, [dir, ...args]);
     if (dir === root) rootEnumerations += 1;
     if (dir === directory && enumerations++ === 0) {
@@ -274,7 +275,7 @@ test("a genuinely retired enumerated child triggers one complete fresh walk", as
   assert.equal(rootEnumerations, 2, "restart begins at the root, not the missing entry");
   let expected = 0;
   for (const file of [root, path.join(root, "a.bin"), path.join(root, "link"), directory, replacement]) {
-    const st = await fsp.lstat(file);
+    const st = await phaseFs.lstat(file);
     expected += st.isDirectory() || st.isSymbolicLink() ? st.blocks * 512 : Math.max(st.size, st.blocks * 512);
   }
   assert.equal(result.chargedBytes, expected, "no partial first-walk charge survives");
@@ -285,8 +286,8 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
     const root = ownedTree(t);
     const parent = path.join(root, "sub");
     const retired = path.join(parent, "b.bin");
-    const read = fsp.readdir;
-    const stat = fsp.lstat;
+    const read = phaseFs.readdir;
+    const stat = phaseFs.lstat;
     let reads = 0;
     let recreate = false;
     let againChecks = 0;
@@ -294,11 +295,11 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
     const oldRoot = root + "-retired";
     let observer;
     t.after(() => {
-      fsp.readdir = read;
-      fsp.lstat = stat;
+      phaseFs.readdir = read;
+      phaseFs.lstat = stat;
       rmSync(oldRoot, { recursive: true, force: true });
     });
-    fsp.readdir = async function (dir, ...args) {
+    phaseFs.readdir = async function (dir, ...args) {
       const entries = await Reflect.apply(read, this, [dir, ...args]);
       if (dir === root && reads === 1 && scenario === "restart-parent-replaced") {
         await fsp.rename(parent, path.join(root, "old-parent"));
@@ -332,7 +333,7 @@ for (const scenario of ["reappeared", "parent-replaced", "restart-parent-replace
       }
       return entries;
     };
-    fsp.lstat = async function (file, ...args) {
+    phaseFs.lstat = async function (file, ...args) {
       if (file === retired && ["EPERM", "EIO"].includes(scenario)) {
         throw Object.assign(new Error("controlled access failure"), { code: scenario });
       }

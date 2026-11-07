@@ -1,18 +1,16 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // Passive await diagnostics only. No Native, child, model or phase execution.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { promises as fsp } from "node:fs";
 import ts from "typescript";
+import { createFixtureGate as gate } from "./watchdog-teardown-test-fixtures.mjs";
 import { createNativeHorizon } from "./process-horizon.mjs";
 import { makeRecorder } from "./test-fixtures.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
 import { createWatchdogLifetime, observeAwaitStage } from "./watchdog-lifetime.mjs";
 
-const gate = () => {
-  let resolve;
-  const promise = new Promise((yes) => { resolve = yes; });
-  return { promise, resolve };
-};
+
 const decode = (line) => JSON.parse(line.slice("TINYAZ_AWAIT ".length));
 
 test("entry and real settlement preserve the exact issued promise and paired call identity", async () => {
@@ -256,10 +254,10 @@ test("genuine Recorder retains falsey firsts after correctable rejection without
   const firstError = Object.freeze(Object.assign(new Error("first"), { code: "CONTROLLED_WRITE" }));
   for (const [first, sticky] of [[null, "null"], [undefined, "undefined"], [false, "false"],
     [firstError, "CONTROLLED_WRITE"]]) {
-    const open = fsp.open;
+    const open = phaseFs.open;
     let env;
     let armed = false;
-    fsp.open = async function (...args) {
+    phaseFs.open = async function (...args) {
       const file = await Reflect.apply(open, this, args);
       if (args[0].endsWith("/check/events.jsonl")) {
         const write = file.write;
@@ -299,7 +297,7 @@ test("genuine Recorder retains falsey firsts after correctable rejection without
         await env.recorder.closeIncompleteEvidence().catch(() => {});
         await phaseRecorderLifetime(env.recorder).whenSettled();
       }
-      fsp.open = open;
+      phaseFs.open = open;
       if (env) {
         await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
       }

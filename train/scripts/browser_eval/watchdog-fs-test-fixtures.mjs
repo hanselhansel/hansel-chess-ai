@@ -1,12 +1,13 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // watchdog-fs-test-fixtures.mjs (TEST-ONLY, base child leaf): the
-// exact-path node:fs/promises interception owner for the
+// exact-path private-FS facade interception owner for the
 // evidence-boundary factories; the single per-test teardown owner
 // lives in ./watchdog-teardown-test-fixtures.mjs and is re-exported
 // here unchanged. gateFs holds ONLY the one selected real operation
 // under the canonical workspace root: exactly ONE matching call
 // consumes the gate — every later legitimate call delegates unchanged
 // while still instrumented — operation "read" intercepts BOTH the
-// exact-path fsp.open and the legacy fsp.readFile surface for existing
+// exact-path phaseFs.open and the legacy phaseFs.readFile surface for existing
 // callers (ONE claim across either surface): a claimed open returns
 // the SAME real FileHandle with only its read method replaced — the
 // ORIGINAL read/readFile runs first with the same this/args, retains
@@ -21,7 +22,7 @@
 // admitted wrapper — canon, the original FS call, the held
 // result/error and the caller return — to settle; restore returns
 // instrumentation only after admitted wrappers are genuinely settled
-// and rejects otherwise, restoring fsp.open and every pinned real
+// and rejects otherwise, restoring phaseFs.open and every pinned real
 // handle's saved read descriptor beside readFile/rename. Every other
 // path and call delegates unchanged. No kinds/multigate filter,
 // write or unlink API, no production record, schema, verifier or
@@ -83,10 +84,10 @@ export function gateFs(t, { workspaceRoot, relativePath, operation } = {}) {
     `${relativePath}`,
   );
   const orig = {
-    open: fsp.open,
-    readFile: fsp.readFile,
+    open: phaseFs.open,
+    readFile: phaseFs.readFile,
     realpath: fsp.realpath,
-    rename: fsp.rename,
+    rename: phaseFs.rename,
   };
   const ops = [];
   // The claimed real handles stay pinned with their saved read
@@ -294,9 +295,9 @@ export function gateFs(t, { workspaceRoot, relativePath, operation } = {}) {
     }
     disposed = true;
     issuanceClosed = true;
-    fsp.open = orig.open;
-    fsp.readFile = orig.readFile;
-    fsp.rename = orig.rename;
+    phaseFs.open = orig.open;
+    phaseFs.readFile = orig.readFile;
+    phaseFs.rename = orig.rename;
     // Each pinned real handle's saved read descriptor returns only here
     // — an own descriptor is restored verbatim, an inherited one
     // reverts by deleting the shadowing property; no restorer runs
@@ -317,10 +318,10 @@ export function gateFs(t, { workspaceRoot, relativePath, operation } = {}) {
     restore,
   });
   if (operation === "read") {
-    fsp.open = onOpen;
-    fsp.readFile = onRead;
+    phaseFs.open = onOpen;
+    phaseFs.readFile = onRead;
   } else {
-    fsp.rename = onRename;
+    phaseFs.rename = onRename;
   }
   return { entered, release, join, restore };
 }

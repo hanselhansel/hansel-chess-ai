@@ -7325,6 +7325,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/phase-fixtures.mjs",
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",
+  "train/scripts/browser_eval/private-fs.mjs",
   "train/scripts/browser_eval/process-backend-reader.mjs",
   "train/scripts/browser_eval/process-backend.mjs",
   "train/scripts/browser_eval/process-budget.mjs",
@@ -9596,3 +9597,73 @@ App/typecheck/Python carry solely on178 unchanged executed refs. Round0
 report/receipts and review RED are preserved; exact history is appended to
 listener-query-implementation-report.md. Scoped I1 re-review/publication/new
 Root execution release remain OPEN. No historical cause or old proof promoted.
+
+
+### Private filesystem backend declaration (2026-11-07)
+
+Declared before creation: private-fs.mjs exports privateFs and
+createPrivateReadStream only. privateFs supplies Promise-compatible lstat/stat/
+realpath/readlink/readdir/mkdir/chmod/symlink/unlink/rename/readFile/open defaults.
+Actual synchronous Node FS runs immediately inside existing guarded/prearmed
+issuance, with completed value/original throw delivered by one setImmediate.
+No fresh FS in that delivery callback, new clock/deadline/grace/queue or ledger.
+Raw FD methods retain stat/read/write/sync/close and actual close semantics;
+ambiguous close prohibits all subsequent use of that integer FD. Unknown open/
+close stays owned. Strong raw-resource storage is not a second debt ledger.
+
+The cold bounded Readable has emitClose:false. Its physical close event means
+actual closeSync success or proven never-issued open only. Per-chunk delivery
+is fair; a captured assertEffectLive option binds the SAME original reader
+handle before fresh read/delivery, with no new authority. Mandatory close stays
+allowed after expiry. Existing custom createStream adapters keep injected
+async controls; default wrappers forward this private option before awaits.
+createBackendReader captures the guard once and forwards it as frozen options.
+
+All20 async-FS default owners migrate, including private driver/server/browser,
+setup/environment, snapshots/retained input, Store/Recorder/completion/receipt,
+backend and footprint paths. Node internals, Vite/Playwright/dependency and
+Python IO remain excluded. Runtime union111; helpers3 unchanged. TEST-only
+private-fs.test.mjs/private-fs-phase.test.mjs are declared before creation and
+excluded. Existing fault fixtures intercept privateFs with the SAME held
+callbacks/results/first errors; unrelated fixture IO remains Node FS.
+No guaranteed OS completion, relaxed500ms/P/C guard or kernel-wrap repair claim.
+
+Before use, the TEST-only whole await-stage gate helper moves into existing
+watchdog-teardown-test-fixtures.mjs as createFixtureGate. The record-lifecycle
+code duplicate uses existing test-fixtures.assertRejectCode as code. These
+capacity moves create import margin without trimming comments/guards. Default
+stream .closed exposes actual close/proven never-issued state; .destroyed is
+logical only, and no filesystem reader uses it as physical proof.
+
+
+Private-FS implementation detail: raw `.fd` retains FileHandle-compatible live
+integer / `-1` only after known real close. An ambiguous close retains its first
+cause and performs no further integer-FD operation. The default stream's `.closed`
+is physical state, while `.destroyed` is logical only. `_construct` preserves
+arbitrary null/undefined issued-open faults through the original error channel;
+none can mint a close event. Slow synchronous calls remain subject to the same
+post-return borrowed-handle checks. Actual completed-result and per-chunk turns
+prevent resolved-Promise chains from monopolizing Native polling. No setting or
+CLI switch selects another backend. There is no guaranteed OS completion time.
+
+
+Private-FS local verification checkpoint (2026-11-07): causal genuine Store/
+Footprint/lifetime RED failed before migration and passes with the async pool
+held. Actual Recorder publication/retained receipt reads also avoid every old
+private async default. Tests retain issued-open unknowns, recycled-FD safety,
+ambiguous stream close, fair per-chunk/result turns and original late guards.
+Covering Store/reader owners73/73 and corrected whole owners39/39 passed; the
+preceding286-case covering run's3 compatibility failures remain preserved.
+The frozen full serial harness760/760 passed with all14 actual Native actors
+exit/BOTHpipes/settled, errors[], deliberate EOF exit2 retained, and1905055
+combined bytes under4MiB. Current-byte controlled archived CLI cap naturally
+exited2/PHASE_TIMEOUT with fault0, verified cleanup/accounting and actual driver/
+collector exit0/BOTHpipes. The controlled SDK/body/input reopen/private8s phase
+and real5s cleanup are explicit qualifications, not long-run/scoring proof.
+App191+184/typecheck/Python58+19 carry solely on178 exact executed-input refs.
+All sources/tests remain below400; runtime111/helpers3. Protected23/Section3/M,
+old cohorts and the1588-file incomplete0cc freeze remain exact. The underlying
+native/OS cause and historical retained handle remain UNKNOWN. Full commands,
+failed evidence, hashes, physical receipts and direct code-to-doc audit are in
+SDD private-fs-implementation-report.md. Independent review/publication/new Root
+release remain OPEN before fresh prerequisites/ONE full40; no push/phase here.

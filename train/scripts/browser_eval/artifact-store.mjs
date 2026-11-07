@@ -11,7 +11,7 @@
 // storeContext.retainActual into the sink — is the ONE ledger for every
 // raw effect and real close. No process, model or browser operation here.
 
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { sha256Bytes } from "./canonical-json.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";

@@ -2,7 +2,7 @@
 // deadline and the supervisor owns every physical signal/cleanup action.
 import { spawn } from "node:child_process";
 import path from "node:path";
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import { issueActual } from "./artifact-files.mjs";
 import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";

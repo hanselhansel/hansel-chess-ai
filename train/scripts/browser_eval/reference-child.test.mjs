@@ -1,5 +1,6 @@
 // Real monitor/proof and fake child pipes. No actual Native, Python or ML.
 import test from "node:test";
+import { privateFs as phaseFs } from "./private-fs.mjs";
 import assert from "node:assert/strict";
 import { EventEmitter } from "node:events";
 import { promises as fs } from "node:fs";
@@ -264,7 +265,7 @@ test("fragmented ENTRY is exactly one DATA frame and leaves stdout JSON untouche
 });
 
 test("genuine lifetime registrar STOP before issue admits no child and retires no-resource receipt", async (t) => {
-  const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "ref-reentry-")));
+  const root = await phaseFs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "ref-reentry-")));
   await fs.mkdir(path.join(root, "parity"));
   const controller = new AbortController();
   const primary = false;
@@ -279,8 +280,8 @@ test("genuine lifetime registrar STOP before issue admits no child and retires n
     }
     return () => { releases += 1; };
   } });
-  const realpath = fs.realpath;
-  fs.realpath = async function (...args) {
+  const realpath = phaseFs.realpath;
+  phaseFs.realpath = async function (...args) {
     const result = await Reflect.apply(realpath, this, args);
     if (args[0] === path.join(root, "parity/tmp")) armed = true;
     return result;
@@ -292,7 +293,7 @@ test("genuine lifetime registrar STOP before issue admits no child and retires n
   t.after(async () => {
     if (pending) await pending.catch(() => {});
     await lifetime.whenSettled();
-    fs.realpath = realpath;
+    phaseFs.realpath = realpath;
     await fs.rm(root, { recursive: true });
   });
   const capabilities = { manifest, signal: controller.signal,

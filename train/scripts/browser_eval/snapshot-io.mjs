@@ -1,6 +1,7 @@
 // Bounded immutable snapshot filesystem operations. Pure construction;
 // physical raw effects and owned descriptors retain the caller's lifetime.
-import { constants, promises as fsp, createReadStream } from "node:fs";
+import { constants } from "node:fs";
+import { privateFs as fsp, createPrivateReadStream as createReadStream } from "./private-fs.mjs";
 import path from "node:path";
 import { issueActual, openActual } from "./artifact-files.mjs";
 import { createBackendReader } from "./process-backend-reader.mjs";
@@ -73,7 +74,7 @@ export function createSnapshotIO(options) {
         actual.push(receipt);
       },
       statFile: (p) => fsp.lstat(p),
-      createStream: (p) => createReadStream(p, { flags: constants.O_RDONLY | constants.O_NOFOLLOW }),
+      createStream: (p, options) => createReadStream(p, { ...options, flags: constants.O_RDONLY | constants.O_NOFOLLOW }),
     });
     try {
       if (!Number.isSafeInteger(cap) || cap <= 0 || cap > FIXED_LIMITS.resources.ordinaryBytes) {

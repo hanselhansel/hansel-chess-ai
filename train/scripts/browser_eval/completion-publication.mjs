@@ -18,7 +18,7 @@
 // Imports only artifact-files leaves, its observation leaf and the
 // canonical hash utility — never receipt-verification or the Store.
 
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { sha256Bytes } from "./canonical-json.mjs";
 import {

@@ -1,6 +1,6 @@
 // Explicit functional runtime closure and immutable file/Git operations.
 // No constructor IO. Missing declared runtime files fail closed.
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { createSnapshotIO } from "./snapshot-io.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
@@ -54,6 +54,7 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/phase-fixtures.mjs",
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",
+  "train/scripts/browser_eval/private-fs.mjs",
   "train/scripts/browser_eval/process-backend-reader.mjs",
   "train/scripts/browser_eval/process-backend.mjs",
   "train/scripts/browser_eval/process-budget.mjs",

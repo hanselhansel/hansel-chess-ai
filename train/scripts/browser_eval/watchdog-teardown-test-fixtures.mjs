@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // watchdog-teardown-test-fixtures.mjs (TEST-ONLY, teardown leaf):
 // the single per-test teardown owner shared by the evidence-boundary
 // fixture factories and gates. registerFixtureTeardown/disposeFixture
@@ -223,7 +224,7 @@ export function ownFixtureAttempt(t, issueThunk) {
 // A narrow TEST-ONLY observer at the earliest SELECTED receipt-path
 // metadata admission: its restore is preregistered on the SAME
 // per-test owner BEFORE the instrumentation lands, it wraps the REAL
-// fsp.lstat and fsp.realpath preserving the original this/args and
+// phaseFs.lstat and phaseFs.realpath preserving the original this/args and
 // delegating to the ORIGINAL functions — the genuine result Promise
 // and errors pass through unchanged — and it counts the genuine
 // admission AT invocation, before the underlying call, ONLY when the
@@ -242,13 +243,13 @@ export function ownFixtureAttempt(t, issueThunk) {
 export function observeSelectedReceiptMetadata(t, workspaceRoot, refPath) {
   const target = path.resolve(workspaceRoot, refPath);
   const phaseDir = path.dirname(target);
-  const origLstat = fsp.lstat;
-  const origRealpath = fsp.realpath;
+  const origLstat = phaseFs.lstat;
+  const origRealpath = phaseFs.realpath;
   const seen = { admissions: 0, onAdmission: null };
   registerFixtureTeardown(t, {
     restore: () => {
-      fsp.lstat = origLstat;
-      fsp.realpath = origRealpath;
+      phaseFs.lstat = origLstat;
+      phaseFs.realpath = origRealpath;
     },
   });
   const selected = (p) => {
@@ -256,14 +257,14 @@ export function observeSelectedReceiptMetadata(t, workspaceRoot, refPath) {
     const resolved = path.resolve(p);
     return resolved === target || resolved === phaseDir;
   };
-  fsp.lstat = function (p, ...rest) {
+  phaseFs.lstat = function (p, ...rest) {
     if (selected(p)) {
       seen.admissions += 1;
       if (seen.onAdmission) seen.onAdmission("lstat", p);
     }
     return origLstat.apply(this, [p, ...rest]);
   };
-  fsp.realpath = function (p, ...rest) {
+  phaseFs.realpath = function (p, ...rest) {
     if (selected(p)) {
       seen.admissions += 1;
       if (seen.onAdmission) seen.onAdmission("realpath", p);
@@ -350,4 +351,12 @@ export const captureFixtureThrow = (fn) => {
     out.value = error;
   }
   return out;
+};
+
+
+// Whole bounded gate helper moved from await-stage.test.mjs for import margin.
+export const createFixtureGate = () => {
+  let resolve;
+  const promise = new Promise((yes) => { resolve = yes; });
+  return { promise, resolve };
 };

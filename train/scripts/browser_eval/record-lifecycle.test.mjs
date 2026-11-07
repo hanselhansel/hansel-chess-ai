@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // record-lifecycle.test.mjs: the discovered unfinished-evidence-closure
 // cases for the private record-lifecycle owner, moved whole from
 // records-finalization.test.mjs — pending sink-open drains before real
@@ -19,6 +20,7 @@ import { REQUIRED_CHECK_IDS } from "./record-schema.mjs";
 import { artifactStoreLifetime } from "./artifact-store.mjs";
 import { createPhaseRecorder } from "./records.mjs";
 import {
+  assertRejectCode as code,
   fixtureManifest,
   fixtureRunning,
   identity,
@@ -28,15 +30,6 @@ import {
   verifyCallbacks,
 } from "./test-fixtures.mjs";
 
-const code = async (promise, want) => {
-  try {
-    await promise;
-  } catch (e) {
-    assert.equal(e.code, want);
-    return;
-  }
-  assert.fail(`expected ${want}`);
-};
 
 const passChecks = (phase, evidencePaths = {}) =>
   REQUIRED_CHECK_IDS[phase]
@@ -170,12 +163,12 @@ test("a pending sink open drains before the real sinks close", async () => {
   let rec = null;
   let opening = null;
   let closing = null;
-  const realOpen = fsp.open;
+  const realOpen = phaseFs.open;
   try {
     // Exact-path patch only: the real events.jsonl append open is
     // entered, held at the gate BEFORE the saved real open runs, and
     // every other IO is delegated unchanged.
-    fsp.open = (target, flags) =>
+    phaseFs.open = (target, flags) =>
       issue(bodies, async () => {
         const held = target === eventsPath && flags === "a";
         if (held) {
@@ -227,7 +220,7 @@ test("a pending sink open drains before the real sinks close", async () => {
       closing,
       releaseGates: () => releaseOpen(),
       restore: () => {
-        fsp.open = realOpen;
+        phaseFs.open = realOpen;
       },
     });
   }
@@ -258,12 +251,12 @@ test("a pending append drains and every real sink close is attempted despite one
   let rec = null;
   let appending = null;
   let closing = null;
-  const realOpen = fsp.open;
+  const realOpen = phaseFs.open;
   try {
     // Exact-path patch only: held.bin append opens enter and gate
     // before the saved real open; held and events handles keep the
     // five real bound methods, and every other IO delegates unchanged.
-    fsp.open = (target, flags) =>
+    phaseFs.open = (target, flags) =>
       issue(bodies, async () => {
         const held = target === heldPath && flags === "a";
         if (held) {
@@ -317,7 +310,7 @@ test("a pending append drains and every real sink close is attempted despite one
       closing,
       releaseGates: () => releaseOpen(),
       restore: () => {
-        fsp.open = realOpen;
+        phaseFs.open = realOpen;
       },
     });
   }
@@ -332,13 +325,13 @@ test("a sticky failure is retained while the closure still drains", async () => 
   const bodies = [];
   let rec = null;
   let manifestRenameFaulted = false;
-  const realRename = fsp.rename;
+  const realRename = phaseFs.rename;
   try {
     // Exact-path patch only: the manifest-destination rename rejects
     // once AFTER the genuine temp write/sync/FD close — an issued open
     // is never rejected since that would retain unknown FD debt — and
     // every other rename delegates unchanged.
-    fsp.rename = (source, dest) =>
+    phaseFs.rename = (source, dest) =>
       issue(bodies, async () => {
         if (dest === manifestPath && !manifestRenameFaulted) {
           manifestRenameFaulted = true;
@@ -364,7 +357,7 @@ test("a sticky failure is retained while the closure still drains", async () => 
       closing: null,
       releaseGates: () => {},
       restore: () => {
-        fsp.rename = realRename;
+        phaseFs.rename = realRename;
       },
     });
   }

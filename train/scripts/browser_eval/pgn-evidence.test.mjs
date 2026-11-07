@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // Actual PGN persistence, selection and ACK regressions. No Native/browser phase.
 import assert from "node:assert/strict";
 import { promises as fsp } from "node:fs";
@@ -55,10 +56,10 @@ test("held actual persisted event cannot ACK or promote after independent first 
   const next = await f.prepare(1, ["b5a4"]);
   const entered = deferred();
   const gate = deferred();
-  const originalStat = fsp.lstat;
+  const originalStat = phaseFs.lstat;
   const selected = path.join(f.root, next.payload.pgn.path);
-  registerFixtureTeardown(t, { release: () => gate.resolve(), restore: () => { fsp.lstat = originalStat; } });
-  fsp.lstat = async function (filename, ...args) {
+  registerFixtureTeardown(t, { release: () => gate.resolve(), restore: () => { phaseFs.lstat = originalStat; } });
+  phaseFs.lstat = async function (filename, ...args) {
     if (filename === selected) {
       entered.resolve();
       await gate.promise;
@@ -261,9 +262,9 @@ test("late terminal PGN read after first stop stays diagnostic with no ACK or pr
   const terminal = await terminalComparison(t, f, h);
   const entered = deferred();
   const release = deferred();
-  const originalStat = fsp.lstat;
-  registerFixtureTeardown(t, { release: () => release.resolve(), restore: () => { fsp.lstat = originalStat; } });
-  fsp.lstat = async function (filename, ...args) {
+  const originalStat = phaseFs.lstat;
+  registerFixtureTeardown(t, { release: () => release.resolve(), restore: () => { phaseFs.lstat = originalStat; } });
+  phaseFs.lstat = async function (filename, ...args) {
     if (filename === path.join(f.root, terminal.payload.pgn.path)) {
       entered.resolve();
       await release.promise;

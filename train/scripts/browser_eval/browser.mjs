@@ -8,7 +8,7 @@
 // expected teardown BEFORE graceful real closes — it is never a Native
 // physical proof.
 import path from "node:path";
-import fsp from "node:fs/promises";
+import { privateFs as fsp } from "./private-fs.mjs";
 import { createHash } from "node:crypto";
 import { bridgeError } from "./driver-protocol.mjs";
 import { canonicalBytes } from "./canonical-json.mjs";

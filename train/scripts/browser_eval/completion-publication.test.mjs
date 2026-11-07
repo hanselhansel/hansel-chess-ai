@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // TEST-ONLY suite: real-filesystem regressions over the genuine
 // Store, its lifetime owner and the parent completion-publication
 // raw APIs. Covers the opaque prepared capability, owner-token and
@@ -275,7 +276,7 @@ test("store prepare with a frozen primary and a held real writer close still fin
   const bytes = Buffer.from("contained-fault-bytes-é", "utf8");
   const primary = Object.freeze(new Error("primary writer sync fault"));
 
-  const originalOpen = fsp.open;
+  const originalOpen = phaseFs.open;
   const patchedOpen = async function patchedOpen(file, flags, mode) {
     const handle = await originalOpen.call(this, file, flags, mode);
     if (
@@ -304,9 +305,9 @@ test("store prepare with a frozen primary and a held real writer close still fin
     return handle;
   };
   seen.restore = () => {
-    if (fsp.open === patchedOpen) fsp.open = originalOpen;
+    if (phaseFs.open === patchedOpen) phaseFs.open = originalOpen;
   };
-  fsp.open = patchedOpen;
+  phaseFs.open = patchedOpen;
 
   prepareResult = store.prepareCompletion({ phaseDirectory, bytes });
   const prepareState = observe(prepareResult);
@@ -361,7 +362,7 @@ test("openActual bounds raw closes to two attempts and retains arbitrary first f
       let rawCloseCalls = 0;
       let rawHandle = null;
       const owned = await openActual(owner.retainActual, async () => {
-        const handle = await fsp.open(filePath, "r");
+        const handle = await phaseFs.open(filePath, "r");
         const realClose = handle.close.bind(handle);
         handle.close = async () => {
           rawCloseCalls += 1;

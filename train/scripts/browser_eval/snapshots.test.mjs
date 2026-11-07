@@ -1,3 +1,4 @@
+import { privateFs as phaseFs } from "./private-fs.mjs";
 // Immutable capture tests execute Git data operations and raw model byte
 // checks only. Fixture runtime sources are DATA and are never imported.
 import assert from "node:assert/strict";
@@ -37,14 +38,14 @@ async function fixture(t, { complete = false } = {}) {
     clock: { setTimeout, clearTimeout },
   });
   const writable = async (dir) => {
-    const st = await fsp.lstat(dir);
+    const st = await phaseFs.lstat(dir);
     if (!st.isDirectory()) {
       return;
     }
     await fsp.chmod(dir, 0o755);
     for (const name of await fsp.readdir(dir)) {
       const child = path.join(dir, name);
-      const stat = await fsp.lstat(child);
+      const stat = await phaseFs.lstat(child);
       if (stat.isDirectory() && !stat.isSymbolicLink()) {
         await writable(child);
       }
@@ -112,7 +113,7 @@ async function manifestFor(t, f, result) {
     monotonicNow: now, lifetime: f.context.lifetime,
   });
   await own(t, () => store.writeOnce("check/manifest.json", canonicalBytes(manifest), "ordinary"));
-  const mode = (await fsp.lstat(path.join(f.workspaceRoot, "check/manifest.json"))).mode;
+  const mode = (await phaseFs.lstat(path.join(f.workspaceRoot, "check/manifest.json"))).mode;
   assert.notEqual(mode & 0o222, 0);
   return (overrides = {}) => own(t, () => verifyIdentity({
     workspaceId: result.workspace.workspaceId, runId: manifest.runId, phase: "check",
@@ -121,11 +122,11 @@ async function manifestFor(t, f, result) {
 }
 
 test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 110);
+  assert.equal(RUNTIME_PATHS.length, 111);
   assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
-  for (const name of ["process-listeners", "snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
+  for (const name of ["private-fs", "process-listeners", "snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
     assert.equal(RUNTIME_PATHS.includes(`train/scripts/browser_eval/${name}.mjs`), true);
   }
   const isTestPath = (name) => /\.test\.mjs$|(?:^|[/-])test-|README/.test(name);
@@ -185,7 +186,7 @@ test("missing runtime input fails closed before any workspace is published", asy
   const f = await fixture(t, { complete: true });
   await own(t, () => fsp.rm(path.join(f.repoRoot, "train/scripts/browser_eval/cli.mjs")));
   await assert.rejects(f.capture(), (error) => error.code === "ENOENT");
-  await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+  await assert.rejects(phaseFs.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
 });
 
 test("committed capture rejects dirty Python against requested Git data", async (t) => {
@@ -256,10 +257,10 @@ test("WORKTREE capture retains original inventories, readonly links and immutabl
 for (const mutation of ["changed", "added", "deleted"]) {
   test(`capture rejects mixed source ${mutation} during extraction`, async (t) => {
     const f = await fixture(t, { complete: true });
-    const originalStat = fsp.lstat;
+    const originalStat = phaseFs.lstat;
     let changed = false;
-    registerFixtureTeardown(t, { restore: () => { fsp.lstat = originalStat; } });
-    fsp.lstat = async function (target, ...rest) {
+    registerFixtureTeardown(t, { restore: () => { phaseFs.lstat = originalStat; } });
+    phaseFs.lstat = async function (target, ...rest) {
       if (!changed && target === path.join(f.workspaceRoot, "inputs/candidate/src/a.ts")) {
         changed = true;
         if (mutation === "deleted") {
@@ -298,7 +299,7 @@ test("a spent current handle initiates no snapshot file or Git work", async (t) 
     (error) => error.code === "ACCOUNTING_UNAVAILABLE");
   await assert.rejects(own(t, () => f.files.writeFrozen("inputs/setup/spent", Buffer.from("data"))),
     (error) => error.code === "ACCOUNTING_UNAVAILABLE");
-  await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+  await assert.rejects(phaseFs.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
 });
 
 // Only environment acquisition is controlled here. The exact bootstrap body
@@ -326,7 +327,7 @@ test("bootstrap leaves exclusive workspace creation to the actual snapshot owner
       assert.equal(options.recordRoot, f.repoRoot);
       context.budget.assertLive("controlled environment acquisition");
       if (environmentCalls === 1) {
-        await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+        await assert.rejects(phaseFs.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
       }
       return { environment: f.args.environment, setupFiles: f.args.setupFiles };
     },
@@ -334,7 +335,7 @@ test("bootstrap leaves exclusive workspace creation to the actual snapshot owner
       captures += 1;
       capturedOwner = context.lifetime;
       if (captures === 1) {
-        await assert.rejects(fsp.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
+        await assert.rejects(phaseFs.lstat(f.workspaceRoot), (error) => error.code === "ENOENT");
       }
       return captureInputs(options, context);
     },

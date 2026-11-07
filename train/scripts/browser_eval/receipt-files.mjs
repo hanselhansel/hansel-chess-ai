@@ -10,7 +10,7 @@
 // identical guards and is never a noop or second ledger. Read-only:
 // nothing here writes, signals or upgrades evidence.
 
-import { promises as fsp } from "node:fs";
+import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertRecord } from "./record-schema.mjs";

@@ -20,7 +20,8 @@
 // -> pure metadata/reader/canonical helpers. Functional runtime input;
 // never a parent, Native or TEST edge.
 
-import { promises as fsp, createReadStream, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
+import { privateFs as fsp, createPrivateReadStream as createReadStream } from "./private-fs.mjs";
 import path from "node:path";
 
 import { parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
@@ -75,7 +76,7 @@ export async function readPythonEnvironmentEvidence({
   }
   const resolvePath = adapters?.resolvePath ?? realpathSync;
   const statFile = adapters?.statFile ?? ((p) => fsp.lstat(p));
-  const createStream = adapters?.createStream ?? ((p) => createReadStream(p));
+  const createStream = adapters?.createStream ?? ((p, options) => createReadStream(p, options));
 
   // ONE small live-resolve closure: every path canonicalization is
   // bracketed by the SAME borrowed handle's assertLive immediately

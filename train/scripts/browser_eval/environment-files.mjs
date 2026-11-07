@@ -1,6 +1,7 @@
 // Shared bounded static filesystem measurements. Construction is pure and
 // borrows the caller's ONE budget/lifetime. No subprocess or parent import.
-import { promises as fsp, createReadStream, realpathSync } from "node:fs";
+import { realpathSync } from "node:fs";
+import { privateFs as fsp, createPrivateReadStream as createReadStream } from "./private-fs.mjs";
 import path from "node:path";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { createBackendReader } from "./process-backend-reader.mjs";
@@ -83,7 +84,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
     }
   }
   const statFile = adapters.statFile ?? ((p) => fsp.lstat(p));
-  const createStream = adapters.createStream ?? ((p) => createReadStream(p));
+  const createStream = adapters.createStream ?? ((p, options) => createReadStream(p, options));
   const resolvePath = adapters.resolvePath ?? realpathSync.native;
   const readdir = adapters.readdir ?? ((p) => fsp.readdir(p));
   const readlink = adapters.readlink ?? ((p) => fsp.readlink(p));

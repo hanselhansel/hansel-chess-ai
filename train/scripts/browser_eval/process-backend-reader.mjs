@@ -50,6 +50,9 @@ export function createBackendReader({
     throw acct("reader options");
   }
 
+  const assertReadLive = handle.assertLive.bind(handle);
+  const streamOptions = Object.freeze({ assertEffectLive: () => assertReadLive("stream effect") });
+
   // The actual clock is rechecked before every IO initiation and the
   // already-issued stat settles at the same entry horizon. The stat
   // receipt is created and registered BEFORE the actual statFile
@@ -111,7 +114,7 @@ export function createBackendReader({
       retainActual(receipt);
       let s;
       try {
-        s = createStream(abs);
+        s = createStream(abs, streamOptions);
       } catch (e) {
         settleStream();
         reject(e);
