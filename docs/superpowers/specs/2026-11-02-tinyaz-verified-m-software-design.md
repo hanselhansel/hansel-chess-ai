@@ -3720,3 +3720,47 @@ protection state. Both old cohorts stay immutable and inconclusive. Continuing
 the requested full 40 games needs reviewed committed source, fresh committed
 check/parity/preflight and a separate Root execution release. The fixed M,
 24-hour comparison budget, schedule, visits and analysis method are unchanged.
+
+
+## Isolated same-major runtime qualification (2026-11-07)
+
+Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40
+acknowledged completed games and 15/20 pairs before shutdown hung. It was
+contained by one supervisor TERM after 39,588.493 seconds. The command and
+both pipes closed after intervention; the known supervisor/collector tuples
+are gone and inspector listener absent. `final.json` and `completion.json`
+are absent. This is an incomplete, intervention-qualified attempt, not a
+sealed inconclusive/2 result or valid final receipt graph. No analysis is
+eligible. Its actual same-process async filesystem stall remains UNKNOWN.
+
+The Node 24.4.1 figure in the original environment inspection is recorded
+observation, not a fixed patch requirement. The existing environment capture
+binds the actual executable path, resolved binary hash and version. Official
+Node 24.22.2 LTS is qualified as a controlled same-major environment workaround
+for both arms, not a proved fix for the old native filesystem stall. No source
+or algorithm, errno whitelist, physical-debt waiver, observer retry, new
+framework or version-enforcement behavior is introduced. The original
+issued-open/physical-close requirements remain unchanged.
+
+The official isolated Node 24.22.2 LTS distribution is qualified as a
+same-major environment workaround. It is not a causal repair of the old
+runtime stall. Fresh same-root real promise/callback lstat and the frozen
+footprint scan naturally closed. On unchanged `6ff0128` source, app tests
+191+184, typecheck, Python 58+19 and the serial 719-case harness passed.
+All 14 Native actors had actual exit, BOTH pipe closes and settlement.
+The short archived full-CLI normal/cap controls passed with natural exit 0/2,
+including genuine-fault cases; they do not establish multi-hour closure.
+No runtime enforcement, dependency install or algorithm change was added.
+
+The [owning runtime procedure](../../../train/scripts/browser_eval/README.md#isolated-node-runtime-qualification-2026-11-07)
+pins official archive and extracted binary hashes, verifies before execution,
+and uses an isolated absolute Node-home with explicit binary/PATH selection.
+The [experiment ledger](../../experiments/tinyaz-software-plan.md#incomplete-6ff0128-attempt-and-runtime-qualification-2026-11-07)
+binds the incomplete freeze and qualification limitations. Protected historical
+Section 3 stays byte-exact; prior receipts/model bytes are never rewritten.
+Review/publication, fresh preparation with the actual runtime CommonIdentity,
+and fresh committed check, 13-case parity and preflight must precede ONE new
+full 40-game attempt under a separate Root release. Model M, 24-hour phase
+ceiling, all shorter limits, 64 visits, openings, schedule, tolerances and
+statistical method remain unchanged. No score-based selection or automatic
+retry. Earlier sealed cohorts and this incomplete evidence stay immutable.

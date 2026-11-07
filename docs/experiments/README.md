@@ -1,6 +1,17 @@
 # Tinyaz local software verification
 
-Latest full-cohort attempt: committed `17d2ff8` naturally exited 2 at 6/40
+Latest attempt (2026-11-07): `6ff0128` reached 30/40 acknowledged games and
+15/20 pairs, then shutdown hung. One supervisor TERM closed the command and
+both pipes; final/completion records remain absent. It is incomplete and
+intervention-qualified, with no valid final graph or eligible analysis.
+The async filesystem cause remains UNKNOWN. Official isolated Node 24.22.2
+passed the 719-case/Native qualification as an environment workaround.
+See the [ledger](tinyaz-software-plan.md#incomplete-6ff0128-attempt-and-runtime-qualification-2026-11-07)
+and [exact runtime procedure](../../train/scripts/browser_eval/README.md#isolated-node-runtime-qualification-2026-11-07).
+One fresh full cohort requires reviewed publication, fresh runtime-bound
+preparation/check/parity/preflight and a separate controller release.
+
+Historical 17d2ff8 attempt: committed `17d2ff8` naturally exited 2 at 6/40
 complete games and 3/20 pairs, with `p04-g1` incomplete at 115 plies.
 It remains inconclusive, IPC_INVALID, three faults and invalid Native
 cleanup/accounting. The separate 36-known-tuple gone/reused probe does not
@@ -18,7 +29,7 @@ execution gates. Raw numeric/PGN evidence and actual cleanup decide passage;
 a source change or scripted requested result is not an experiment receipt.
 No comparison is started automatically and no output updates public ratings.
 
-Current operational result (2026-11-06): candidate
+Historical operational result (2026-11-06): candidate
 `583b317d458d361dc218ac3f704fe1f4ec158055` passed fresh committed check,
 thirteen-case browser/Python numeric parity and preflight. Its ONE locked
 comparison against `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec` sealed

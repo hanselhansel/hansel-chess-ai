@@ -200,3 +200,15 @@ readable-census revalidation after a first BSD permission failure. Persistent
 denials, all owned tuple/RSS requirements and the original timing guards
 remain fatal. A fresh full cohort requires reviewed committed source, fresh
 check/parity/preflight and a separate controller execution release.
+
+
+The latest `6ff0128` attempt reached 30/40 acknowledged games and 15/20 pairs,
+then hung in shutdown and required supervisor TERM. Final/completion records
+are absent, so it is incomplete and intervention-qualified, with no eligible
+analysis. The underlying async filesystem/runtime cause remains UNKNOWN.
+Official isolated Node 24.22.2 LTS passed controlled runtime qualification,
+including the 719-case harness and actual Native joins. This is an environment
+workaround, not a demonstrated causal fix. See the [runtime procedure](train/scripts/browser_eval/README.md#isolated-node-runtime-qualification-2026-11-07)
+and [preserved attempt](docs/experiments/tinyaz-software-plan.md#incomplete-6ff0128-attempt-and-runtime-qualification-2026-11-07).
+Fresh runtime-bound preparation/check/parity/preflight and a separate controller
+release remain required before one fresh full cohort.

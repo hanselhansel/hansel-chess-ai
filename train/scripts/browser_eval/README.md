@@ -1,6 +1,79 @@
 # Browser evaluation harness libraries
 
-## Current full-cohort failure and repair (2026-11-06)
+## Isolated Node runtime qualification (2026-11-07)
+
+Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40
+acknowledged completed games and 15/20 pairs before shutdown hung. It was
+contained by one supervisor TERM after 39,588.493 seconds. The command and
+both pipes closed after intervention; the known supervisor/collector tuples
+are gone and inspector listener absent. `final.json` and `completion.json`
+are absent. This is an incomplete, intervention-qualified attempt, not a
+sealed inconclusive/2 result or valid final receipt graph. No analysis is
+eligible. Its actual same-process async filesystem stall remains UNKNOWN.
+
+The official isolated Node 24.22.2 LTS distribution is qualified as a
+same-major environment workaround. It is not a causal repair of the old
+runtime stall. Fresh same-root real promise/callback lstat and the frozen
+footprint scan naturally closed. On unchanged `6ff0128` source, app tests
+191+184, typecheck, Python 58+19 and the serial 719-case harness passed.
+All 14 Native actors had actual exit, BOTH pipe closes and settlement.
+The short archived full-CLI normal/cap controls passed with natural exit 0/2,
+including genuine-fault cases; they do not establish multi-hour closure.
+No runtime enforcement, dependency install or algorithm change was added.
+
+Node patch version is recorded environment evidence, not a hardcoded runtime
+requirement. `environment.mjs` captures `process.execPath`, its resolved binary
+SHA256 and `process.version` in CommonIdentity. Existing npm/CLI scripts still
+use the selected executable/PATH; they do not enforce 24.22.2. Both source arms
+must use the same qualified runtime and dependencies. Do not reuse old-runtime
+preparation or phase receipts.
+
+Official sources: [24.22.2 release and signed checksum text](https://raw.githubusercontent.com/nodejs/nodejs.org/main/apps/site/pages/en/blog/release/v24.22.2.md)
+and [darwin-arm64 archive](https://nodejs.org/dist/v24.22.2/node-v24.22.2-darwin-arm64.tar.gz).
+The archive is 53,068,959 bytes, SHA256
+`aa9549349e47dffaa42dcf95d6e06ade8c4bdafc980979883b88767670df385a`.
+The extracted `bin/node` is 122,564,432 bytes, SHA256
+`b6fb419f0f43bb2fbca273700294dd2f3b685a64b60e8417c295f47646a70e4a`.
+Verify archive bytes before extraction/execution. Do not overwrite Homebrew,
+system Node or another cache. Example isolated acquisition and selection:
+
+```sh
+mkdir -p "$HOME/Library/Caches/tinyaz-node-qualification" &&
+TINYAZ_NODE_CACHE=$(mktemp -d "$HOME/Library/Caches/tinyaz-node-qualification/24.22.2.XXXXXX") &&
+curl --fail --location --proto '=https' --output "$TINYAZ_NODE_CACHE/node.tar.gz" https://nodejs.org/dist/v24.22.2/node-v24.22.2-darwin-arm64.tar.gz &&
+printf '%s  %s\n' aa9549349e47dffaa42dcf95d6e06ade8c4bdafc980979883b88767670df385a "$TINYAZ_NODE_CACHE/node.tar.gz" | shasum -a 256 -c - &&
+tar -xzf "$TINYAZ_NODE_CACHE/node.tar.gz" -C "$TINYAZ_NODE_CACHE" &&
+export TINYAZ_NODE_HOME="$TINYAZ_NODE_CACHE/node-v24.22.2-darwin-arm64" &&
+export PATH="$TINYAZ_NODE_HOME/bin:$PATH" &&
+"$TINYAZ_NODE_HOME/bin/node" --version &&
+"$TINYAZ_NODE_HOME/bin/node" "$TINYAZ_NODE_HOME/lib/node_modules/npm/bin/npm-cli.js" test &&
+"$TINYAZ_NODE_HOME/bin/node" "$TINYAZ_NODE_HOME/lib/node_modules/npm/bin/npm-cli.js" run typecheck
+```
+
+Use `"$TINYAZ_NODE_HOME/bin/node" train/scripts/browser_eval/cli.mjs ...` for
+the existing operational commands below, retaining the same PATH for child
+commands. Keep the absolute Node-home fixed throughout preparation and the
+new workspace's prerequisite/cohort chain. Retain download URL, official
+checksum source, archive/binary hashes, actual Node/uv/V8 versions and loaded
+shared-library provenance. The qualified binary reports Node 24.22.2,
+uv 1.52.1 and V8 13.6.233.17-node.63. Its direct dynamic links are system
+CoreFoundation, Security, libc++ and libSystem; the actual loaded-object list
+is separately retained. Signature text provenance was preserved; checksum
+matching is not an independent PGP-signature verification claim.
+
+The acquisition/qualification receipts are in
+`/Users/hansel/Library/Caches/tinyaz-node-qualification/node24.22.2-20261107-77b65dbc-2cfe-4ac4-8834-6a222f856823/`.
+The full report is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/node24-runtime-qualification-report.md`.
+Review/publication, fresh preparation with the actual runtime CommonIdentity,
+and fresh committed check, 13-case parity and preflight must precede ONE new
+full 40-game attempt under a separate Root release. Model M, 24-hour phase
+ceiling, all shorter limits, 64 visits, openings, schedule, tolerances and
+statistical method remain unchanged. No score-based selection or automatic
+retry. Earlier sealed cohorts and this incomplete evidence stay immutable.
+
+
+## Historical full-cohort failure and repair (2026-11-06)
 
 Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2
 at 6/40 complete games, 3/20 complete pairs and one incomplete game. Its

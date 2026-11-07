@@ -46,6 +46,40 @@ Run changed-area tests, full required checks, and final code-to-doc comparison. 
 
 ## Task 3: Execute and verify all 40 games
 
+### Incomplete 6ff0128 attempt and runtime qualification
+
+Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40
+acknowledged completed games and 15/20 pairs before shutdown hung. It was
+contained by one supervisor TERM after 39,588.493 seconds. The command and
+both pipes closed after intervention; the known supervisor/collector tuples
+are gone and inspector listener absent. `final.json` and `completion.json`
+are absent. This is an incomplete, intervention-qualified attempt, not a
+sealed inconclusive/2 result or valid final receipt graph. No analysis is
+eligible. Its actual same-process async filesystem stall remains UNKNOWN.
+
+The official isolated Node 24.22.2 LTS distribution is qualified as a
+same-major environment workaround. It is not a causal repair of the old
+runtime stall. Fresh same-root real promise/callback lstat and the frozen
+footprint scan naturally closed. On unchanged `6ff0128` source, app tests
+191+184, typecheck, Python 58+19 and the serial 719-case harness passed.
+All 14 Native actors had actual exit, BOTH pipe closes and settlement.
+The short archived full-CLI normal/cap controls passed with natural exit 0/2,
+including genuine-fault cases; they do not establish multi-hour closure.
+No runtime enforcement, dependency install or algorithm change was added.
+
+Keep the 3,581-file incomplete freeze and all prior evidence immutable.
+Document the checksum-verified official archive, binary identity, isolated
+Node-home and explicit PATH/Node usage in existing contracts. Source remains
+unchanged; there is no version enforcement or causal-fix claim. Compare the
+final docs against actual qualification/commands, commit this green docs-only
+change, and obtain scoped source/documentation review before publication.
+Review/publication, fresh preparation with the actual runtime CommonIdentity,
+and fresh committed check, 13-case parity and preflight must precede ONE new
+full 40-game attempt under a separate Root release. Model M, 24-hour phase
+ceiling, all shorter limits, 64 visits, openings, schedule, tolerances and
+statistical method remain unchanged. No score-based selection or automatic
+retry. Earlier sealed cohorts and this incomplete evidence stay immutable.
+
 ### Concrete 17d2ff8 failure and source repair
 
 The committed attempt naturally exited 2 after 5172.471 seconds at 6/40

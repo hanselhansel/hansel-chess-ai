@@ -1,7 +1,8 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State (2026-11-06):** Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2 after 5172.471 seconds at 6/40 complete games, 3/20 pairs and one incomplete game. It remains inconclusive, IPC_INVALID, three faults, invalid Native cleanup/accounting and no eligible analysis. The concrete permission/heartbeat cascade is under source repair. A fresh full cohort follows green review/publication, fresh prerequisite gates and separate controller release. The 24-hour budget, model, schedule and statistical method stay unchanged.
+- **State (2026-11-07):** `6ff0128` is incomplete and intervention-qualified at 30/40 acknowledged games and 15/20 pairs. Final/completion absent, no eligible analysis. Official isolated Node 24.22.2 is qualified as an environment workaround; runtime cause UNKNOWN. Reviewed publication and fresh runtime-bound prerequisites plus a separate controller release gate the next full attempt.
+- **Historical 17d2ff8 state (2026-11-06):** Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2 after 5172.471 seconds at 6/40 complete games, 3/20 pairs and one incomplete game. It remains inconclusive, IPC_INVALID, three faults, invalid Native cleanup/accounting and no eligible analysis. The concrete permission/heartbeat cascade is under source repair. A fresh full cohort follows green review/publication, fresh prerequisite gates and separate controller release. The 24-hour budget, model, schedule and statistical method stay unchanged.
 - **Historical first-cohort state (preserved):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result exists. Hansel subsequently authorized one fresh full cohort after repair, with a 24-hour ceiling; the Task2 amendment below records that separate authorization.
 - **Historical state before C4b execution (preserved):** Runtime implementation exists and every earlier stage below is accepted: C1 and C2a on their fix branches, the C3a/C3b/C3c runtime (latest known runtime base `87d3c5b410bf07fdfc4f324a0a0b50f6813d073f`) and the C2b Python verification at `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`. C4a1's pure-JS browser-evaluation evidence libraries are accepted tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`: Sol's prepared-5 `npm run test:browser-harness` gate exited 0 with 138/138 cases, zero fail/skip/cancel and no warnings, `git diff --check` exited 0, all 33 frozen hashes stayed unchanged, both independent Sol 6.1-Max reviews returned ACCEPTABLE, and the final verdict is `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`. The final functional-input union and comparison candidate are not yet frozen: real native cleanup/identity bindings, C4a2 capture/supervisor wiring, harness integration and the final candidate freeze remain pending. The source-feature commit and its ref proof are recorded externally after Sol performs them; no SHA is invented here. Source-feature Git publication is distinct from prohibited new model/weight publication. C4a2's native supervision and watchdog stack on `feat/tinyaz-native-supervision` is verified at the whole-JS boundary by the 2026-11-05 actual 352/352 serial receipt (current-verification paragraph in the C4a2 section); C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison remain open. No comparison, training, model publication, deployment, bot or strength result exists.
 - **Historical C0/C1/C2a checkpoint (2026-11-02, preserved verbatim):** C0 documentation baseline committed at `8e23a787771fd74a723a52aa8941aaa38de9adf8`; fresh baseline captured. C1 is implemented and verified in this change on `fix/tinyaz-test-fixtures` (verification base `0f5c5f72e1bbd0d760f7176a5308a205715aba5b`): Sol's full `npm test` passed 191/191 application script cases then 39/39 core cases and `npm run typecheck` exited 0 on that snapshot. The coordinator accepted the executable change, both documentation corrections and the static doc review, with the eight frozen executable hashes verified unchanged. The four upstream authoring checks remain unavailable without real `GROK_TEMPLATE_ROOT` input. C1 is committed at `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` on `fix/tinyaz-test-fixtures`. Earlier push attempts hit GitHub TCP timeouts and a read-only connector then found no remote branch; the coordinator pushed the same commit at about 2026-11-02T01:02Z, and `git ls-remote` plus the GitHub connector now confirm `f67ba10d2da6065aeccb54bf6af6af4e370b0c97` at `refs/heads/fix/tinyaz-test-fixtures`, so C1 is local verified and remote published. C2a's comment/inventory packet passed Sol's static gates with verdict `ACCEPTED_FOR_METADATA_FINALIZATION` and is implemented and verified in this change on `fix/tinyaz-contract-inventories`, built on that unchanged base; the containing commit supplies its closure.
@@ -10,6 +11,52 @@
 - **Functional control source:** `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`.
 - **Integration branch:** `feat/tinyaz-browser-harness` (initial documentation branch: `chore/egm-bootstrap-tinyaz`). Never commit to main.
 - **First sealed candidate:** the comparison used committed `583b317d458d361dc218ac3f704fe1f4ec158055` against fixed baseline `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`. Later documentation or any exit-only repair cannot replace those experimental inputs. WORKTREE receipts remain separate. No retraining, model publication, deployment, live-bot action or eligible strength result.
+
+## Incomplete 6ff0128 attempt and runtime qualification (2026-11-07)
+
+Candidate `6ff0128b1ccff3f807098f883d915d743c93ef53` reached 30/40
+acknowledged completed games and 15/20 pairs before shutdown hung. It was
+contained by one supervisor TERM after 39,588.493 seconds. The command and
+both pipes closed after intervention; the known supervisor/collector tuples
+are gone and inspector listener absent. `final.json` and `completion.json`
+are absent. This is an incomplete, intervention-qualified attempt, not a
+sealed inconclusive/2 result or valid final receipt graph. No analysis is
+eligible. Its actual same-process async filesystem stall remains UNKNOWN.
+
+The last persisted checkpoint was `p16-g1-c34`, 40 total plies. Store accounting
+and the footprint scan were pending; both newly issued promise/callback lstat
+controls also stayed pending in that instance. A fresh sibling using the same
+old binary/root completed both and a real scan. No source-level dependency
+cycle, errno cause, Node bug or historical retained-handle repair is proven.
+The later runtime qualification changes environment only, for both arms.
+
+Freeze under `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/`:
+`task-3-incomplete-handoff-6ff0128.json` SHA256
+`10dbfcd16fb1999fed7aaa685fdf75a5a282c39d11ee2d358dbb66a0a9f01039`;
+`task-3-incomplete-evidence-6ff0128-manifest.json` SHA256
+`8ea57e4e819346b32c7a99ca1422ac2fed0e2145cd435ca799f233fecfd438b7`.
+The independently verified manifest binds 3,581 regular files, 53,273,733 bytes,
+plus 30 external refs and explicit final/completion absences. Known-tuple and
+listener closure after containment never repairs canonical cleanup proof.
+
+The official isolated Node 24.22.2 LTS distribution is qualified as a
+same-major environment workaround. It is not a causal repair of the old
+runtime stall. Fresh same-root real promise/callback lstat and the frozen
+footprint scan naturally closed. On unchanged `6ff0128` source, app tests
+191+184, typecheck, Python 58+19 and the serial 719-case harness passed.
+All 14 Native actors had actual exit, BOTH pipe closes and settlement.
+The short archived full-CLI normal/cap controls passed with natural exit 0/2,
+including genuine-fault cases; they do not establish multi-hour closure.
+No runtime enforcement, dependency install or algorithm change was added.
+
+The [owning README](../../train/scripts/browser_eval/README.md#isolated-node-runtime-qualification-2026-11-07)
+records the official archive/binary hashes and isolated invocation procedure.
+Review/publication, fresh preparation with the actual runtime CommonIdentity,
+and fresh committed check, 13-case parity and preflight must precede ONE new
+full 40-game attempt under a separate Root release. Model M, 24-hour phase
+ceiling, all shorter limits, 64 visits, openings, schedule, tolerances and
+statistical method remain unchanged. No score-based selection or automatic
+retry. Earlier sealed cohorts and this incomplete evidence stay immutable.
 
 ## Preserved full-cohort failure and Native repair (2026-11-06)
 
