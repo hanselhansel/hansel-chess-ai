@@ -87,6 +87,44 @@ at P. Private validated P plumbing is implementation of the accepted proof fence
 not another clock or wider stop window. Test the real cleanup/periodic-queue route,
 both mode orders and actual delayed normal collector reap beyond P but before C.
 
+### Concrete three-port listener-proof repair
+
+The freshly committed cf1 check naturally closed inconclusive2 with one cleanup
+fault. All11 application assertions and7 other required checks passed. Listener
+proof entered at cleanup+4180ms, leaving320ms before P. Preserve its360-file
+freeze and unverified cleanup; only the persisted supervisor tuple was later
+proven gone, not global workload absence. No comparison was launched.
+
+A bounded actual Native control reproduced LSOF_UNAVAILABLE settle with three
+genuinely registered then closed ports. Serial port1 settled131.378ms, port2
+248.738ms, and port3's exit/BOTHpipes arrived357.232ms, after320ms. All7actors
+actually closed. This supports a port-query critical-path repair, not a host-load
+attribution or any historical-latency claim.
+
+Preserve Current81's mandatory sequential PER-LIVE-PID queries. The canonical
+per-port rule requires every separate registered-port proof, not physical serial
+execution. Under the SAME captured P/borrowed handle/genuine registrar and scope,
+run independent port-query bodies with at most THREE active at once, matching
+the actual two Vite ports plus Chromium RPC case without unbounded spawning.
+Keep every individual gated helper registration, fixed argv/exec transition,
+strict parsing/exit semantics, exact exec-slot consumption, physical exit/BOTH
+pipes and final fresh-holder/declared-port/loopback/unexpected checks. No port
+batching/skips/data reuse/new clock/deadline/queue or proof authority. Preserve
+deterministic result association and every issued body's actual ownership.
+On error/expiry, do not issue further effects; never fabricate completion or
+discard pending helpers. If a shared existing slot is not concurrency-safe,
+surface the exact dependency before weakening it.
+
+Sol High writes a causal regression, bounded port-only implementation and
+negative expiry/failure/ownership checks, with docs and any necessary declared
+whole-block capacity split before creation. Prove the same actual three-port
+control succeeds within320ms with all helpers really closed. Run affected whole
+owners, required full serial/Native and current short CLI cap on frozen bytes;
+carry unrelated checks only with exact input equality. Inspect code-to-doc diff
+and commit green for a fresh scoped source review. No scoring phase or new
+check retry before reviewed publication and another Root release. M, all
+scientific settings, P/C, sample gaps and other limits stay unchanged.
+
 Add bounded first-fault decision-now/sample-start/age/class diagnostics through
 the existing shared fault/lifetime owner, including periodic resource failures.
 Keep1000ms freshness and full-tree/start coverage unchanged; age is not scan
@@ -180,3 +218,19 @@ Verify exactly 40 complete games/20 complete pairs, identity-bound legal PGNs, z
 The accepted failure-only containment amendment is implemented and locally green. Final serial harness736/736, app191+184, typecheck and Python58+19 passed. All14 real Native actor exit/BOTHpipe receipts settled; the reviewed actual-Native short archived cap naturally exited2 with zero faults and valid cleanup/accounting. Preserve the preceding734/736 failure, repaired Vite test-owner scan/close ordering, and UNKNOWN cause of that run's fatal616.296667ms Native interval. Exact scope, TDD receipts, source/input hashes and code-to-doc/immutable audit are in `failed-cleanup-implementation-report.md` in the SDD workspace. Independent implementation review, publication and fresh committed prerequisites plus a separate Root full40 release remain OPEN. No push or scoring execution occurred; no historical latency/global-FS cause is claimed fixed.
 
 I1 scoped correction checkpoint (2026-11-07): causal real periodic-queue RED is fixed with validated private ordinaryDeadlineMonoMs=P on the SAME stop flow/C handle, including the top-level partial-start caller. Positive collector physical reap after P remains allowed when ordinary settlement was timely; delayed-timer receipt checks prevent late prerequisite success. Whole owners85/85, final changed owner19/19, refrozen full740/740 and current-byte actual-Native short cap2 passed with actual closure. Preserve the739/740 miss and unknown original proof/accounting cause; do not attribute it to the P timer or claim scheduling repair. Full implementation report is appended in the SDD workspace. Scoped I1 re-review, publication and new prerequisite/full40 release remain pending.
+
+
+### Listener-query local implementation checkpoint, 2026-11-07
+
+Declared whole-block listener leaf and bounded THREE-port overlap are implemented
+with sequential live-PID queries unchanged. Causal serial320ms RED is preserved;
+the same actual Native three-port control completed in94ms, all7 actors physically
+closed. Covering owners122/122, frozen full serial747/747 and actual-Native short
+archived CLI cap2 passed with real exit/BOTHpipe/lifetime receipts. Full Native
+14 actors physically settled, original500ms/P/C limits and4MiB unchanged. Carried
+app/typecheck/Python have178 exact executed-input hashes. Protected23/Section3/M,
+old cohorts and the360-file cf1 check freeze remain exact. The original sealed
+failed query and historical causes stay UNKNOWN; old cleanup remains unverified.
+See SDD listener-query-implementation-report.md. Independent scoped source review,
+publication and a new Root release before fresh check/parity/preflight/full40
+remain OPEN. No push, fresh check retry or scoring execution occurred.

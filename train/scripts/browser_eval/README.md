@@ -276,12 +276,13 @@ included); the three Python sources stay exactly
 | `process-horizon.mjs` | 144 | `assertNativeHorizon`, `createNativeHorizon`, `bindProcessHorizon` |
 | `process-lsof-fields.mjs` | 149 | `parseLsofResult`, `lsofError` |
 | `process-lsof-io.mjs` | 335 | `createLsofChildIO` |
-| `process-lsof-test-fixtures.mjs` | 160 | `lsofFixtureOut`, `createLsofGateFixture`, `finishLsofFixture`, `createListenerProofFixture` |
+| `process-lsof-test-fixtures.mjs` | 161 | `lsofFixtureOut`, `createLsofGateFixture`, `finishLsofFixture`, `createListenerProofFixture` |
 | `process-lsof.mjs` | 342 | `parseLsofResult`, `createLsofQueries` |
 | `process-monitor-test-fixtures.mjs` | 142 | `monitorReadyOptions`, `monitorBootstrapScript`, `createMonitorFixture`, `startMonitorFixture` |
 | `process-observation.mjs` | gate-enforced | `readProcessInspections`, `readHelperReadyInspection`, `readLiveWorkloadPids`, `createProcessObservation` |
 | `process-ownership.mjs` | 310 | `createOwnership` |
-| `process-proof.mjs` | 398 | `createProcessProofs` |
+| `process-proof.mjs` | 294 | `createProcessProofs` |
+| `process-listeners.mjs` | 149 | `createProcessListenerProof` |
 | `process-runtime.mjs` | 398 | `realProcessClock`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `createProcessRuntime` |
 | `process-stop.mjs` | 214 | `createProcessStop` |
 | `process-transport.mjs` | 397 | `createCollectorTransport` |
@@ -572,7 +573,7 @@ platform fakes isolated, no pass/Native/phase claim.
 | [process-runtime.mjs](./process-runtime.mjs) | `createProcessRuntime`, `createProcessLifetimeOwner`, `createProcessOperationCapture`, `realProcessClock` | Whole collector lifecycle (spawn, bootstrap, first observation, lsof composition, sampling tick, teardown, stop/reap) over the monitor's ONE shared state and borrowed authorities. Pure/lazy factories. R4 (declared before use): hosts `createProcessLifetimeOwner` (the moved `ownOperation` factory) and the ONE pre-spawn collector physical receipt; the whole stop flow delegates to process-stop.mjs. `createProcessOperationCapture({clock, nowMonoMs, queue, readBounds}) -> frozen {captureOperationBound, op}` is declared before its future use: the WHOLE existing 42-line capture/`op` block moves from `processes.mjs` preserving comments, guards and layout over the SAME `clock`/`queue`, pure construction invoking no callback, timer, queue or IO; `readBounds()` is the facade-owned armed/brand guard returning `{constructorDeadlineMs, laterDeadlineMs}`, strict deadline capture and BudgetHandle construction delegate to existing process-budget.mjs with `createBudgetHandle` for handle creation over the SAME queue (`queue.track` acquisitions belong to `createProcessLifetimeOwner`, never this capture factory), and the monotonic STOPPING rejection stays on facade ORDINARY `op` entry around `factory.op` — not inside `readBounds`/`captureOperationBound` — so a repeated stop may still validate and min-narrow after stopping; no public monitor-key change, no second owner/clock/queue, and the `{start, stopAndReap}` roster stays unchanged. C4b-09 (declared before use): the private nullable trusted `authority.verifyExpectedBackend` is awaited after real awaitReady and genuine proveBootstrap, before every ownUid/ready/lsof/timer/first-cycle/start commit, on the SAME start h and `ownOperation` retainer — constructor stays pure, roster unchanged. Capacity decision 50 (declared before use): `realProcessClock` is an additional private module export receiving the WHOLE existing seven-line default `realClock` object (`{setTimeout, clearTimeout, setInterval, clearInterval, nowMonoNs: () => process.hrtime.bigint().toString()}`) moved whole from `processes.mjs` — pure uninvoked declaration, no freezing, second clock, origin or roster change; the facade imports it as `realClock` and passes the SAME object via existing `config.clock`. |
 | [process-horizon.mjs](./process-horizon.mjs) | `createNativeHorizon`, `bindProcessHorizon`, `assertNativeHorizon` | Module exists — earlier PLANNED wording and its line counts are dated declarations. Pure branded one-shot/min-only reader+writer and synchronous `queue.narrowAll` subscription — ALL live listeners run, then the FIRST thrown value (null/undefined included) is rethrown. Corrective 62 (dated before-implementation declaration): EXACT3 roster adds pure private `assertNativeHorizon(owner) -> void` over the SAME OWNERS WeakMap — genuine owner returns void; primitive/null/forged/spread/proxy reject with PROCESS_HORIZON owner-brand detail BEFORE any owner property read/effect. Identity checker only, never clock/pairing/cleanup proof. No timer/clock/process/IO. Functional runtime input. |
 | [process-stop.mjs](./process-stop.mjs) | `createProcessStop` | created (before-creation declaration dated). Whole Native stop flow `{stopAndReap, teardownCollector}` over the same runtime state/clock/authority; collector-last ordering preserved. Functional runtime input. |
-| [process-proof.mjs](./process-proof.mjs) | `createProcessProofs` | Native bootstrap/root/probe/signal/listener IO proof over the monitor's ownership/protocol/transport state through explicit callbacks. |
+| [process-proof.mjs](./process-proof.mjs) | `createProcessProofs` | Native bootstrap/root/probe/signal IO proof over the monitor's ownership/protocol/transport state; listener block delegates to process-listeners.mjs with the same callbacks. |
 | [workspace-footprint.mjs](./workspace-footprint.mjs) | `createFootprintObserver`, `describeFootprintFailure` | Async whole-workspace allocated-charge observer for the store callback. |
 | [process-budget.mjs](./process-budget.mjs) | `createBudgetHandle`, `captureDeadlineMs`, `waitHandle`, `sleepHandle`, `pollHandle`, `createBoundedQueue` | Sole handle/wait/queue leaf: one narrow-only mutable BudgetHandle authority, captured horizons and bounded waits/queue; pure leaf, no IO. |
 | [process-observation.mjs](./process-observation.mjs) | `createProcessObservation`, `readProcessInspections` | Complete bounded RSS coverage cycle, native/supervisor timing checks, safe aggregate admission with private peak-RSS/limit flags, current-observation projection, and the shared inspectPids wire wrapper (diagnostic move 22). |
@@ -1170,9 +1171,10 @@ widening protected-root authority.
   `signal` and returns the actual outcome; the collector re-reads the
   tuple natively immediately before `os.kill`.
 - `queryListeners(scopeRunId) -> Promise<{listeners, unexpected}>`
-  runs one gated `owned-pids` query over every captured workload PID
-  of the scope plus one gated `port` query per registered port, each
-  under the original remaining deadline. A proven empty holder set is
+  freshly classifies the captured workload, then runs one sequential gated
+  `owned-pids` query per remaining live PID. These finish before separate
+  registered-port queries overlap in groups of at most THREE, each under
+  the SAME local listener-operation handle and original remaining deadline. A proven empty holder set is
   valid absence, not a failure. Every reported holder PID is then
   *freshly inspected*: a holder is a listener only when its fresh
   native tuple exactly equals a retained owned workload tuple of that
@@ -1357,7 +1359,9 @@ rechecking `assertLive` at each claimed success:
   ID, sends `signal` and returns the real outcome.
 - `queryListenersScoped(scopeRunId, handle, {retainActual} = {}) ->
   Promise<{listeners, unexpected}>` runs the captured-PID and
-  per-port gated queries under the borrowed handle — forwarding
+  per-port gated queries through the private process-listeners.mjs block,
+  with sequential live-PID gates before at most THREE separate port bodies
+  under the borrowed handle — forwarding
   `retainActual` into the lsof options so each gate's deferred
   child/pipe receipt is registered before its spawn — then freshly
   inspects every distinct holder PID through `enqueue` on the SAME
@@ -1376,6 +1380,21 @@ rechecking `assertLive` at each claimed success:
   its pinned interpreter (`pre-transition`), a mismatched tuple or
   third image is `unexpected`, and a fast post-ack exit is `gone`
   (the documented legal case).
+
+### process-listeners.mjs
+
+Private whole listener-proof leaf. createProcessListenerProof receives the
+original ownership/enqueue/inspect/ownUid/requireHealthy/lsofQueries/acct
+references. It creates no queue, registry, clock, process or alternate proof.
+The parent retains the same six-method roster. Each port has its own fixed
+gated invocation and strict result; Promise.allSettled joins every issued
+body before the first original fault is rethrown. Results are assembled in
+registration order before the unchanged fresh-holder projection. On first
+fault only the local listener operation handle min-expires, cancelling fresh
+queued effects while adopted gates still close and real receipts stay owned.
+Collector C and unrelated handles remain independent. The single exec slot
+is synchronously consumed per exact frame before another authorization;
+_lastGate remains a last-completed diagnostic, never per-query authority.
 
 ### process-budget.mjs
 
@@ -7303,6 +7322,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/process-budget.mjs",
   "train/scripts/browser_eval/process-framing.mjs",
   "train/scripts/browser_eval/process-horizon.mjs",
+  "train/scripts/browser_eval/process-listeners.mjs",
   "train/scripts/browser_eval/process-lsof-fields.mjs",
   "train/scripts/browser_eval/process-lsof-io.mjs",
   "train/scripts/browser_eval/process-lsof.mjs",
@@ -9505,3 +9525,41 @@ phase acceptance.
 I1 Native diagnostic capacity declaration before use (2026-11-07): the test-only normal-case leaf receives the existing parent private `isIdentity` function through ctx instead of declaring its exact duplicate. No predicate/authority change or new owner. Its formal cleanup captures original start/C/P and same-clock return-decision time, and attaches bounded16,384-character topProof plus the original monitor fault/detail to the unchanged proof assertion. Failed-run diagnostics do not change cleanup, sampling, proof or the combined4MiB Native budget.
 
 I1 verification (2026-11-07): real periodic admission at+4250 now upgrades the same pending normal flow at P; ordinary settlement before P still allows real collector exit/BOTHpipes at+4750<C. Private validation, min-only P joins, delayed timer/late receipt, actual withheld pipe debt and top-level partial-start binding are covered. Covering owners85/85 then final changed owner19/19 passed. Final refrozen serial gate740/740 and current-byte actual-Native short cap naturally closed with14 full-gate actors exited/BOTHpipes/settled and cap exit2/zero faults/valid cleanup. Preserve the preceding739/740 failure: normal collector teardown finished before P; the original accounting/proof fault was not captured, and the548.116708ms adjacent periodic wire-reply gap does not prove queue or host cause. Added bounded test-only proof/fault/timing assertion diagnostics retain future evidence without changing the assertion, original500ms rule or production scheduling. Exact history/receipts remain in the implementation report. Scoped I1 re-review/publication and fresh execution release remain pending.
+
+### Listener port-overlap capacity declaration (2026-11-07)
+
+Declared before creation: process-listeners.mjs is the whole listener-proof
+block moved from process-proof.mjs. createProcessListenerProof receives the
+SAME ownership/enqueue/inspect/ownUid/requireHealthy/lsofQueries/acct refs and
+returns queryListenersScoped. No new queue, clock, registry or monitor API.
+Sequential single-live-PID gates finish before separate registered-port bodies
+overlap, at most THREE at once under the SAME listener-operation handle and
+actual registrar. Results retain registration order. First failure min-expires
+only that local handle, cancels fresh admission, preserves the original error
+and joins every issued public outcome. Physical child/BOTHpipe/fd3 receipts
+stay acquired until genuine settlement; mandatory adopted-gate close remains
+allowed. Collector C, global horizon and unrelated handles are independent.
+_lastGate is diagnostic only. Runtime union is110; Python helper union stays3.
+
+TEST-only listener-query.test.mjs covers the causal320ms miss, bounded port
+concurrency, ordered complete results, first fault/expiry and genuine gated
+physical ownership. Existing createListenerProofFixture gains optional awaited
+onPortQuery(port,opts) supplying strict-parser input and awaits the existing
+onQuery callback for held sequential-PID controls. Public fixture roster stays
+unchanged. Test paths remain excluded from functional runtime inputs.
+
+Verification:9 whole owners122/122 and frozen full serial747/747 passed.
+The same actual Native three-port320ms control completed in94ms. All7 actors
+exited/BOTHpipes/settled with no query/stop fault and194206 combined bytes.
+Full-gate14 Native actors also exited/BOTHpipes/settled, combined1702662 bytes
+under4MiB; errors[], original proof order and deliberate EOF case retained.
+The current-byte actual-Native archived CLI cap naturally exited2 for planned
+PHASE_TIMEOUT, zero faults, verified cleanup/accounting and actual driver/
+collector exit0/BOTHpipes. Its private controlled SDK/body/8s phase/original5s
+cleanup qualification remains explicit. App191+184/typecheck/Python58+19 are
+carried solely on178 unchanged executed-input hashes. Source/test max399.
+Exact TDD, commands, hashes, failed evidence and code-to-doc audit are in the
+SDD workspace listener-query-implementation-report.md. Independent source
+review, publication and a fresh Root execution release remain OPEN. This does
+not identify the original sealed query index, fix old proof, or establish any
+historical sampling/filesystem/host cause. No phase or push occurred.

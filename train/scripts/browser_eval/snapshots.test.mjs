@@ -121,11 +121,11 @@ async function manifestFor(t, f, result) {
 }
 
 test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 109);
+  assert.equal(RUNTIME_PATHS.length, 110);
   assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
-  for (const name of ["snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
+  for (const name of ["process-listeners", "snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
     assert.equal(RUNTIME_PATHS.includes(`train/scripts/browser_eval/${name}.mjs`), true);
   }
   const isTestPath = (name) => /\.test\.mjs$|(?:^|[/-])test-|README/.test(name);

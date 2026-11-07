@@ -122,7 +122,7 @@ export const createListenerProofFixture = ({ script = {} } = {}) => {
   const lsof = {
     queryOwnedPids: async (pids, opts) => {
       calls.push({ kind: "owned", pids: [...pids], opts });
-      if (script.onQuery) script.onQuery(ownership);
+      if (script.onQuery) await script.onQuery(ownership);
       const rows = [];
       for (const pid of pids) {
         const r = script.queryResults?.[pid] ??
@@ -133,7 +133,8 @@ export const createListenerProofFixture = ({ script = {} } = {}) => {
     },
     queryPort: async (port, opts) => {
       calls.push({ kind: "port", port, opts });
-      const r = script.portResults?.[port] ??
+      const r = (script.onPortQuery ? await script.onPortQuery(port, opts) : undefined) ??
+        script.portResults?.[port] ??
         { exitCode: 1, stdout: "", stderr: "" };
       return { rows: parseLsofResult(r).rows };
     },

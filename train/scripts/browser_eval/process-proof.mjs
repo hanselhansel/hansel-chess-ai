@@ -8,12 +8,13 @@
 // invented verdict. Deadline capture/budget helpers live in
 // process-budget.mjs and the RSS cycle/projection/inspectPids wire
 // wrapper in process-observation.mjs; this owner does the native IO proof only.
+import { createProcessListenerProof } from "./process-listeners.mjs";
 import { realpathSync } from "node:fs";
 import { resolvePythonProcessImage } from "./process-backend-reader.mjs";
-import { readHelperReadyInspection, readLiveWorkloadPids, readProcessInspections } from "./process-observation.mjs";
-import { copyDeep, eq, identityKey, isAbs, isIdentity, isObj, isPid, strNE } from "./protocol-values.mjs";
+import { readHelperReadyInspection, readProcessInspections } from "./process-observation.mjs";
+import { copyDeep, eq, isAbs, isIdentity, isObj, isPid, strNE } from "./protocol-values.mjs";
 
-const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
+
 
 const acct = (detail) => {
   const e = new Error(`ACCOUNTING_UNAVAILABLE ${detail}`);
@@ -243,115 +244,9 @@ export function createProcessProofs({
     return res.outcome;
   };
 
-  // Listener proof under the caller's absolute deadline: ONE queued
-  // fresh liveness classification over the captured workload tuples —
-  // a cached-gone PID never reaches the lsof gate — then one gated
-  // owned-pids query PER remaining live PID plus one gated port query
-  // per registered port (which always runs, even for a gone owner),
-  // then ONE fresh native inspection of every distinct holder PID. A
-  // holder is a listener only when its fresh tuple exactly equals a
-  // retained owned workload tuple of the scope and any declared port
-  // owner matches as a full tuple: stale livePids/PID membership is
-  // never proof, a reused PID with a new start tuple stays unexpected,
-  // and no holder is adopted or signalled. A proven empty holder set
-  // is valid absence.
-  const queryListenersScoped = async (
-    scopeRunId,
-    handle,
-    { retainActual } = {},
-  ) => {
-    requireHealthy();
-    const lsof = lsofQueries();
-    if (lsof === null || lsof === undefined) throw acct("lsof gate");
-    const registered = ownership.portsForScope(scopeRunId);
-    const workload = ownership.workloadIdentities(scopeRunId);
-    const allRows = [];
-    if (workload.length > 0) {
-      handle.assertLive("listener deadline");
-      const livePids = await enqueue(
-        () => readLiveWorkloadPids(workload, handle, { inspect, uid: ownUid() }),
-        handle,
-      );
-      for (const pid of livePids) {
-        handle.assertLive("listener deadline");
-        allRows.push(
-          ...(await lsof.queryOwnedPids([pid], { remainingMs: handle.remainingMs(), scopeRunId, budget: handle, retainActual })).rows,
-        );
-      }
-    }
-    for (const p of registered) {
-      handle.assertLive("listener deadline");
-      allRows.push(
-        ...(
-          await lsof.queryPort(p.port, {
-            remainingMs: handle.remainingMs(),
-            scopeRunId,
-            budget: handle,
-            retainActual,
-          })
-        ).rows,
-      );
-    }
-    const holderPids = [...new Set(allRows.map((r) => r.pid))];
-    const freshTuples = new Map();
-    if (holderPids.length > 0) {
-      // This query runs UNQUEUED while its nested lsof registrations
-      // enqueue on the same chain, so the final holder inspection must
-      // also ride the SAME queue with the SAME borrowed handle.
-      const rows = await enqueue(
-        () => inspect(holderPids, handle),
-        handle,
-      );
-      for (const ins of rows) {
-        freshTuples.set(
-          ins.pid,
-          ins.state === "live" ? ins.process.identity : null,
-        );
-      }
-    }
-    const ownedTuples = new Set(
-      ownership
-        ._ownedRows()
-        .filter((r) => r.workload && r.scopeRunId === scopeRunId)
-        .map((r) => identityKey(r.identity)),
-    );
-    const listeners = [];
-    const unexpected = [];
-    const seen = new Set();
-    for (const row of allRows) {
-      const key = `${row.address}|${row.port}|${row.pid}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      const declared = registered.find(
-        (p) => p.port === row.port && p.address === row.address,
-      );
-      const loopback = LOOPBACK.has(row.address);
-      const holder = freshTuples.get(row.pid);
-      const ownedHolder =
-        holder != null && ownedTuples.has(identityKey(holder));
-      const declaredMatch =
-        declared === undefined ||
-        (holder != null && eq(declared.ownerIdentity, holder));
-      if (loopback && ownedHolder && declaredMatch) {
-        listeners.push(copyDeep(row));
-        continue;
-      }
-      const reason =
-        row.address === "*"
-          ? "wildcard"
-          : !loopback
-            ? "nonloopback"
-            : declared !== undefined && !declaredMatch
-              ? "holder-mismatch"
-              : "holder-not-owned";
-      unexpected.push({ listener: copyDeep(row), reason });
-    }
-    // The unqueued path may reach success with no awaited request at
-    // all (empty workload and ports), so the shared handle is rechecked
-    // on the actual clock before the projection is claimed.
-    handle.assertLive("listener deadline");
-    return { listeners, unexpected };
-  };
+  const queryListenersScoped = createProcessListenerProof({
+    ownership, enqueue, inspect, ownUid, requireHealthy, lsofQueries, acct,
+  });
 
   // The lsof exec-gate's private transition evidence: one fresh native
   // read of the same authorized tuple. The pinned interpreter image

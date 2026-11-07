@@ -59,6 +59,7 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/process-budget.mjs",
   "train/scripts/browser_eval/process-framing.mjs",
   "train/scripts/browser_eval/process-horizon.mjs",
+  "train/scripts/browser_eval/process-listeners.mjs",
   "train/scripts/browser_eval/process-lsof-fields.mjs",
   "train/scripts/browser_eval/process-lsof-io.mjs",
   "train/scripts/browser_eval/process-lsof.mjs",

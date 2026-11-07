@@ -40,7 +40,7 @@ const realClock = {
   nowMonoNs: () => process.hrtime.bigint().toString(),
 };
 
-// One persistent owner performs sequential legal queries under the
+// One persistent owner performs independently gated legal queries under the
 // run-global ID and gate authorities. `resolvePath` feeds the shared
 // process-image resolver: the venv invocation stays the spawn argv
 // while the resolved PROCESS image — the framework payload under a
