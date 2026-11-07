@@ -3827,3 +3827,24 @@ executed refs. Exact commands/TDD/input hashes and immutable audit are in the
 SDD listener-query-implementation-report.md. No historical cause/old proof is
 promoted. Independent implementation review/publication and fresh Root release
 remain required before another prerequisite or scoring run.
+
+
+Listener-query I1 effect-boundary binding (2026-11-07): a fulfilled registration
+wait can resume after sibling failure min-expires the SAME local listener
+handle. process-lsof.mjs must recheck that handle after registration resumes,
+before authorization/slot consumption and at authorized fd3 issuance. Earlier
+wait success is never later-effect authority. Mandatory empty gate close stays
+permitted, and all actual child/BOTHpipe/fd3 receipts remain acquired. No new
+clock, queue, API, concurrency, timing or scientific rule. The existing listener
+test owner records a causal real bounded-queue/validator/handle regression for
+this gap, preserving the original first failure and true physical settlement.
+Protected Section3 stays byte-exact.
+
+I1 verification checkpoint: causal fulfilled-wait RED is green with zero
+authorization/consumption/exec-frame effects after local handle cancellation,
+original first failure and mandatory empty closes/physical debts retained.
+Affected owners73/73, final listener8/8, frozen full748/748,14-actor Native
+closure, same three-port118ms/320ms control and current-byte actual-Native
+natural cap2 passed. Timing/concurrency/P/C/protected inputs remain unchanged.
+Exact evidence/report pin is appended in the SDD listener implementation report.
+Independent scoped I1 re-review, publication and fresh Root release stay OPEN.

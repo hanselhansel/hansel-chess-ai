@@ -115,6 +115,14 @@ On error/expiry, do not issue further effects; never fabricate completion or
 discard pending helpers. If a shared existing slot is not concurrency-safe,
 surface the exact dependency before weakening it.
 
+Independent review reproduced a resumed-registration cancellation gap: the
+bounded wait may fulfill while live, then a sibling expires the listener handle
+before the gate's later continuation. Recheck the SAME borrowed handle after
+registration resumes, before authorization/slot consumption and at fd3 exec-frame
+issuance. Preserve mandatory empty gate close and all physical receipts. Add the
+genuine queue/validator/handle regression for this fulfilled-wait gap; the older
+unresolved-registration case alone is insufficient. No authority/timing change.
+
 Sol High writes a causal regression, bounded port-only implementation and
 negative expiry/failure/ownership checks, with docs and any necessary declared
 whole-block capacity split before creation. Prove the same actual three-port
@@ -234,3 +242,16 @@ failed query and historical causes stay UNKNOWN; old cleanup remains unverified.
 See SDD listener-query-implementation-report.md. Independent scoped source review,
 publication and a new Root release before fresh check/parity/preflight/full40
 remain OPEN. No push, fresh check retry or scoring execution occurred.
+
+
+Listener I1 local correction checkpoint (2026-11-07): the actual fulfilled-
+registration/late-continuation RED is fixed by3 SAME-handle effect guards in
+process-lsof.mjs. No slot/frame after sibling cancellation; mandatory empty
+close and all physical debt remain. Whole affected owners73/73, final listener
+8/8, final frozen748/748 plus14 actual Native actor joins, same three-port
+118ms/320ms control and current-byte natural actual-Native CLI cap2 passed.
+178 carried input refs,23 protected refs/Section3/M and all old evidence are
+exact. Source/test remains below400; no new owner/API/clock/timing/settings.
+Round0 report and review RED are pinned; append-only implementation report
+records exact commands/closure/limits. Scoped I1 re-review, publication and new
+Root release before prerequisites/cohort remain OPEN. No push or phase.

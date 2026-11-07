@@ -5,6 +5,14 @@ import { createListenerProofFixture, createLsofGateFixture, finishLsofFixture } 
 import { identity } from "./supervision-test-fixtures.mjs";
 import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
 
+import { createProcessListenerProof } from "./process-listeners.mjs";
+import { createLsofQueries } from "./process-lsof.mjs";
+import { createBoundedQueue, createBudgetHandle } from "./process-budget.mjs";
+import { createOwnership } from "./process-ownership.mjs";
+import { createProcessLifetimeOwner } from "./process-runtime.mjs";
+import { createProtocolValidator } from "./supervisor-protocol.mjs";
+import { fakeClock, fakeChild } from "./supervision-test-fixtures.mjs";
+
 const flush = () => new Promise((resolve) => setImmediate(resolve));
 const empty = () => ({ exitCode: 1, stdout: "", stderr: "" });
 const held = () => {
@@ -192,5 +200,83 @@ test("three concurrent genuine gates each consume their exact exec slot and phys
   } finally {
     env.children.forEach((c) => finishLsofFixture(c, "", 1));
     await result.catch(() => {}); await lifetime.whenSettled(); budget.dispose(); f.handle.dispose();
+  }
+});
+
+
+test("fulfilled registration cannot authorize fd3 after sibling cancellation before continuation", async () => {
+  const clock = fakeClock();
+  const handle = createBudgetHandle({ deadlineMonoMs: clock.nowMs() + 320, clock, nowMonoMs: clock.nowMs });
+  const queue = createBoundedQueue({ clock, nowMonoMs: clock.nowMs });
+  const lifetime = createWatchdogLifetime();
+  const operation = createProcessLifetimeOwner({ queue, retainActual: lifetime.retainActual })(handle);
+  const validator = createProtocolValidator({ runId: "R1" });
+  const protocol = {
+    ...validator,
+    authorizeExecGate: (...args) => {
+      events.push({ kind: "authorize", live: isLive() });
+      return validator.authorizeExecGate(...args);
+    },
+    accept: (...args) => {
+      events.push({ kind: "consume", live: isLive() });
+      return validator.accept(...args);
+    },
+  };
+  const ownership = createOwnership({ runId: 'R1' });
+  ownership.registerRoot({ identity: identity(100), kind: 'browser', expectedExecutable: '/x', scopeRunId: 'R1' });
+  for (const port of [8000,8001,8002,8003]) ownership.registerPort({ address: '127.0.0.1', port, ownerIdentity: identity(100), scopeRunId: 'R1' });
+  const first = new Error('original sibling query failure');
+  let rejectSibling;
+  const siblingFailure = new Promise((_, reject) => { rejectSibling = reject; });
+  siblingFailure.catch(() => {});
+  const events = [], children = [];
+  const isLive = () => { try { handle.assertLive('inspect live'); return true; } catch { return false; } };
+  const lq = createLsofQueries({
+    runId: 'R1', protocol, pythonExecutable: '/py', helperPath: '/h.py', clock, resolvePath: (p) => p,
+    registerHelper: (input, h) => {
+      const pending = queue.enqueue(() => ({ identity: identity(input.pid) }), h);
+      if (input.pid === 5000) pending.then(() => { events.push({ kind: 'registration-public-settled' }); rejectSibling(first); });
+      return pending;
+    },
+    signalHelper: (input, h) => queue.enqueue(() => { events.push({kind:'signal'}); return {outcome:'sent'}; }, h),
+    proveTransition: (input, h) => queue.enqueue(() => { events.push({kind:'transition'}); return 'live-transition'; }, h),
+    spawnImpl: (file, argv) => {
+      const c = fakeChild({ pid: 5000 + children.length });
+      const originalEnd = c.fd3.end;
+      c.fd3.end = (...args) => {
+        events.push({ kind: 'fd3-end', pid: c.pid, hasFrame: typeof args[0] === 'string', live: isLive() });
+        return originalEnd(...args);
+      };
+      children.push(c);
+      events.push({kind:'spawn', pid:c.pid});
+      return c;
+    },
+  });
+  handle.onExpire(() => events.push({ kind: 'listener-expired' }));
+  const query = createProcessListenerProof({
+    ownership, enqueue: queue.enqueue,
+    inspect: async (pids) => pids.map((pid) => ({ pid, state: 'gone' })),
+    ownUid: () => 501, requireHealthy: () => {}, acct: (tag) => new Error(tag),
+    lsofQueries: () => ({
+      queryOwnedPids: lq.queryOwnedPids,
+      queryPort: (port, opts) => port === 8001 ? siblingFailure : lq.queryPort(port, opts),
+    }),
+  });
+  const result = query('R1', handle, { retainActual: operation.retainActual });
+  const observed = result.then(() => null, (error) => error);
+  try {
+    const error = await observed;
+    assert.equal(error, first);
+    assert.equal(children.length, 2);
+    const late = events.filter((event) => event.kind === 'fd3-end' && event.hasFrame && !event.live);
+    assert.ok(events.findIndex((v) => v.kind === "registration-public-settled") < events.findIndex((v) => v.kind === "listener-expired"));
+    assert.ok(events.some((v) => v.kind === "fd3-end" && !v.hasFrame && !v.live), "mandatory empty closes still issue");
+    assert.equal(events.filter((v) => ["authorize", "consume"].includes(v.kind)).length, 0);
+    assert.equal(late.length, 0, 'an authorized fd3 exec frame must never issue after the first sibling failure expired the listener handle');
+  } finally {
+    for (const child of children) { child.exit(1); child.stdout.emitClose(); child.stderr.emitClose(); }
+    operation.finish();
+    await lifetime.whenSettled();
+    assert.equal(children.length, 2);
   }
 });

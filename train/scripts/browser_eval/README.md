@@ -277,7 +277,7 @@ included); the three Python sources stay exactly
 | `process-lsof-fields.mjs` | 149 | `parseLsofResult`, `lsofError` |
 | `process-lsof-io.mjs` | 335 | `createLsofChildIO` |
 | `process-lsof-test-fixtures.mjs` | 161 | `lsofFixtureOut`, `createLsofGateFixture`, `finishLsofFixture`, `createListenerProofFixture` |
-| `process-lsof.mjs` | 342 | `parseLsofResult`, `createLsofQueries` |
+| `process-lsof.mjs` | 349 | `parseLsofResult`, `createLsofQueries` |
 | `process-monitor-test-fixtures.mjs` | 142 | `monitorReadyOptions`, `monitorBootstrapScript`, `createMonitorFixture`, `startMonitorFixture` |
 | `process-observation.mjs` | gate-enforced | `readProcessInspections`, `readHelperReadyInspection`, `readLiveWorkloadPids`, `createProcessObservation` |
 | `process-ownership.mjs` | 310 | `createOwnership` |
@@ -794,6 +794,12 @@ the physical receipt settles AND `finishFlow` completes) and
 `scopeRunId` (the caller's requested registration scope, default the
 parent `runId`). `handle.assertLive` gates `resolvePath` and
 `spawnImpl`, so an already-spent bound never launches the wrapper.
+After registration's wait resumes, the gate rechecks the SAME borrowed
+handle before authorization, again before exact slot consumption and before
+evaluating io.writeGate(frame). A fulfilled wait is not admission authority
+for its later continuation. Sibling cancellation cannot authorize/send fresh
+exec work in that gap. The mandatory empty close in finally stays allowed,
+and every adopted child/BOTHpipe/fd3 receipt stays owned until real settlement.
 One original deadline bounds spawn, native
 registration, gate authorization, the fd-3 write, transition
 observation, output, drain and reap — never a fresh per-stage or
@@ -829,8 +835,10 @@ same handle — there is no raw `kill` anywhere, and an unsettled
 handle retains unproven evidence rather than faking a reap. The
 private `_lastGate()` seam returns the last query's
 `{queryId, identity, transition, exitCode, reaped}` evidence.
-Queries serialize through the one persistent owner with run-global
-query IDs.
+Each query has a unique run-global ID and synchronously consumes its exact
+validator exec slot. Live-PID bodies remain sequential; the listener caller
+may overlap at most THREE independent registered-port bodies. _lastGate is
+diagnostic only, never per-query proof authority.
 
 The gate delegates ONE wrapper child's complete physical lifecycle to
 `process-lsof-io.mjs#createLsofChildIO` (lsof child-IO readable
@@ -9563,3 +9571,28 @@ SDD workspace listener-query-implementation-report.md. Independent source
 review, publication and a fresh Root execution release remain OPEN. This does
 not identify the original sealed query index, fix old proof, or establish any
 historical sampling/filesystem/host cause. No phase or push occurred.
+
+
+Listener I1 effect-boundary correction declared before execution (2026-11-07):
+process-lsof.mjs rechecks the SAME borrowed handle after registration resumes,
+before exact slot consumption and at authorized fd3 issuance. No handle/clock/
+API/concurrency change. Mandatory empty close and actual receipts remain.
+Existing listener-query.test.mjs adds the real bounded-queue/validator/handle/
+operation/WatchdogLifetime fulfilled-registration continuation regression.
+The original unresolved-registration case remains; it cannot establish this
+distinct fulfilled-wait gap. Original source/review/control evidence is retained.
+
+Listener I1 verification: the genuine fulfilled-registration continuation RED
+observed one late authorized frame. Same-handle register/exec/fd3 guards now
+produce zero authorization/consumption/frame effects in that gap, retain the
+original sibling failure, allow mandatory empty closes and join actual debts.
+Affected7 whole owners73/73 and final listener8/8 passed. Final frozen serial
+748/748 and actual14-actor Native physical closure passed; same three-port
+Native control completed118ms within320ms, all7 actors physically joined.
+Current-byte actual-Native controlled CLI cap naturally exited2, fault0 and
+verified cleanup/accounting with actual driver/collector exit0/BOTHpipes.
+Original500ms/P/C/4MiB and all scientific limits remain. Source349/test282.
+App/typecheck/Python carry solely on178 unchanged executed refs. Round0
+report/receipts and review RED are preserved; exact history is appended to
+listener-query-implementation-report.md. Scoped I1 re-review/publication/new
+Root execution release remain OPEN. No historical cause or old proof promoted.

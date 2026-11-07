@@ -205,6 +205,9 @@ export function createLsofQueries({
         ),
         "register",
       );
+      // A fulfilled wait can resume after a sibling expires this SAME
+      // handle. Its earlier success is not fresh effect authority.
+      handle.assertLive("register deadline");
       if (io.snapshot().exited) {
         throw lsofError("gate exited before authorization");
       }
@@ -223,6 +226,7 @@ export function createLsofQueries({
         query: copyDeep(query),
       };
       const frame = `${JSON.stringify(gateMsg)}\n`;
+      handle.assertLive("exec deadline");
       protocol.accept(
         "exec-gate",
         "s2c",
@@ -234,6 +238,9 @@ export function createLsofQueries({
       // so write failures, backpressure and the finish settlement all
       // reach the same handle — and that issued outcome is itself a
       // required input of the deferred physical receipt.
+      // Guard BEFORE evaluating writeGate, not its already-issued wait.
+      // The mandatory empty close in finally remains unconditional.
+      handle.assertLive("fd3 deadline");
       await race(io.writeGate(frame), "fd3");
       // The permitted same-tuple pinned-Python to pinned-lsof
       // transition is observed through the monitor's fresh native
