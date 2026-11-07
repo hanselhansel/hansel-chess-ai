@@ -290,6 +290,12 @@ test("an interrupted pending start leaves no fabricated running or final records
   const startEntry = new Promise((resolve) => {
     resolveStartEntry = resolve;
   });
+  const origStop = monitor.stopAndReap;
+  const stops = [];
+  monitor.stopAndReap = function (options) {
+    stops.push({ ...options });
+    return origStop.call(this, options);
+  };
   const origStart = monitor.start;
   monitor.start = function (...startArgs) {
     try {
@@ -303,6 +309,7 @@ test("an interrupted pending start leaves no fabricated running or final records
     p = run();
     await startEntry;
     assert.ok(monitorCalls.includes("monitor.start"));
+    const stopAt = clk.nowMonoMs();
     w.requestStop("REQUESTED");
     // The first-stop latch is synchronous — the original stop fence is
     // admitted while the genuine start gate is still held: one real
@@ -315,6 +322,8 @@ test("an interrupted pending start leaves no fabricated running or final records
     const res = await drain(clk, p);
     assert.equal(res.status, "inconclusive");
     assert.equal(res.exitCode, 2);
+    assert.deepEqual(stops, [{ deadlineMonoMs: stopAt + 5000,
+      ordinaryDeadlineMonoMs: stopAt + 4500 }]);
     // The genuine incomplete drain ran: no running record, no final,
     // no completion and no seal were ever fabricated.
     const names = (
@@ -323,6 +332,7 @@ test("an interrupted pending start leaves no fabricated running or final records
     assert.deepEqual(names, ["events.jsonl", "manifest.json"]);
   } finally {
     monitor.start = origStart;
+    monitor.stopAndReap = origStop;
     // Unconditional and idempotent: the first stop, the original start
     // gate release and ALL queued callback/childexit plus BOTH
     // close/disconnect facts land BEFORE joining the original run —

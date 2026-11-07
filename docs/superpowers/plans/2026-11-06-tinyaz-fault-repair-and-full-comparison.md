@@ -75,6 +75,18 @@ failure latch that also upgrades a pending normal stop. Validate before effects,
 min-narrow the original handle, never repeat teardown or restore eligibility.
 Already-settled calls join unchanged without new IO or retroactive result edits.
 
+Independent implementation review found one integration gap: a periodic sample
+admitted before normal stop can leave the monitor's actual ordinary drain pending
+until C, so the caller never reaches failure upgrade at P. Bind that prerequisite's
+decision to the captured P within the SAME cached flow and original stop handle.
+If actual ordinary drain remains unproven at P, latch failure and initiate the
+once-only teardown before C. Actual drain/physical receipts remain enrolled.
+If ordinary drain already settled and normal teardown started, allow its physical
+reap through C; do not downgrade merely because the whole stop promise is pending
+at P. Private validated P plumbing is implementation of the accepted proof fence,
+not another clock or wider stop window. Test the real cleanup/periodic-queue route,
+both mode orders and actual delayed normal collector reap beyond P but before C.
+
 Add bounded first-fault decision-now/sample-start/age/class diagnostics through
 the existing shared fault/lifetime owner, including periodic resource failures.
 Keep1000ms freshness and full-tree/start coverage unchanged; age is not scan
@@ -166,3 +178,5 @@ Verify exactly 40 complete games/20 complete pairs, identity-bound legal PGNs, z
 ### Approved failed-cleanup implementation checkpoint (2026-11-07)
 
 The accepted failure-only containment amendment is implemented and locally green. Final serial harness736/736, app191+184, typecheck and Python58+19 passed. All14 real Native actor exit/BOTHpipe receipts settled; the reviewed actual-Native short archived cap naturally exited2 with zero faults and valid cleanup/accounting. Preserve the preceding734/736 failure, repaired Vite test-owner scan/close ordering, and UNKNOWN cause of that run's fatal616.296667ms Native interval. Exact scope, TDD receipts, source/input hashes and code-to-doc/immutable audit are in `failed-cleanup-implementation-report.md` in the SDD workspace. Independent implementation review, publication and fresh committed prerequisites plus a separate Root full40 release remain OPEN. No push or scoring execution occurred; no historical latency/global-FS cause is claimed fixed.
+
+I1 scoped correction checkpoint (2026-11-07): causal real periodic-queue RED is fixed with validated private ordinaryDeadlineMonoMs=P on the SAME stop flow/C handle, including the top-level partial-start caller. Positive collector physical reap after P remains allowed when ordinary settlement was timely; delayed-timer receipt checks prevent late prerequisite success. Whole owners85/85, final changed owner19/19, refrozen full740/740 and current-byte actual-Native short cap2 passed with actual closure. Preserve the739/740 miss and unknown original proof/accounting cause; do not attribute it to the P timer or claim scheduling repair. Full implementation report is appended in the SDD workspace. Scoped I1 re-review, publication and new prerequisite/full40 release remain pending.

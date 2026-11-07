@@ -13,21 +13,13 @@
 // clocks, fake Native, raw/group kills or post-stop probes.
 import assert from "node:assert/strict";
 import { createCleanupController } from "./watchdog-cleanup.mjs";
-
-// Private EXACT copy of the suite's local pure identity predicate —
-// N01 keeps the suite's own predicate/assertions; this is a copy
-// input, never an undeclared export.
-const isIdentity = (t) =>
-  t !== null && typeof t === "object" &&
-  Number.isSafeInteger(t.pid) && t.pid > 0 &&
-  typeof t.startSec === "string" && /^\d+$/.test(t.startSec) &&
-  Number.isSafeInteger(t.startUsec) && t.startUsec >= 0 && t.startUsec < 1e6;
+import { cleanupProofEnd } from "./watchdog-cleanup-context.mjs";
 
 export async function runNativeNormalCases(ctx) {
   const {
     h, monitor: m1, ready, lifetime, clock, bounds,
     runId: RUN_ID, nestedRunId: NESTED, order, normal,
-    until, within, fixtureMeta, recOf, assertSettledChild,
+    until, within, fixtureMeta, recOf, assertSettledChild, isIdentity,
   } = ctx;
   const now = clock.nowMonoMs;
   const groupEnd = bounds.deadlineMonoMs;
@@ -374,16 +366,20 @@ export async function runNativeNormalCases(ctx) {
   // tuple and port at the original bounds, settleWorkloadHandles joins
   // every direct handle BEFORE the collector-last reap.
   const ctlTop = createCleanupController({ monitor: m1, clock, runId: RUN_ID });
+  const topStart = now();
   const topProof = await ctlTop.run({
     phase: "check", scope: "phase-workload", scopeRunId: RUN_ID,
     expectedFinalizer: ready.supervisor, supervisor: ready.supervisor,
     deadlineMonoMs: groupEnd,
     settleWorkloadHandles: ({ deadlineMonoMs }) =>
       Promise.all([h.settleHandles(RUN_ID, { deadlineMonoMs }), h.settleHandles(NESTED, { deadlineMonoMs })]).then(() => undefined),
-    cleanupStartMonoMs: now(),
+    cleanupStartMonoMs: topStart,
   });
+  const decisionAt = now();
   normal.formalDone = true;
-  assert.equal(topProof.verified, true);
+  const topCleanupEnd = Math.min(topStart + 5000, groupEnd);
+  assert.equal(topProof.verified, true, JSON.stringify({ topProof, monitorFault: m1.fault(),
+    start: topStart, P: cleanupProofEnd(topStart, topCleanupEnd, "phase-workload"), C: topCleanupEnd, decisionAt }).slice(0, 16384));
   assert.deepEqual(topProof.survivorIdentities, []);
   assert.deepEqual(topProof.listenersRemaining, []);
   assert.equal(topProof.accountingValid, true);

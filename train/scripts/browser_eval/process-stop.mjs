@@ -33,6 +33,8 @@ export function createProcessStop({ state, clock, authority }) {
     !isObj(state) ||
     !isObj(clock) ||
     typeof clock.clearInterval !== "function" ||
+    typeof clock.setTimeout !== "function" ||
+    typeof clock.clearTimeout !== "function" ||
     !isObj(authority) ||
     typeof authority.op !== "function" ||
     typeof authority.ownOperation !== "function" ||
@@ -119,13 +121,20 @@ export function createProcessStop({ state, clock, authority }) {
     try {
       // Validate and snapshot the stop-only form before any latch/clock effects.
       let failure = false;
+      let ordinaryEnd;
       let numeric;
       if (options != null) {
         if (!isObj(options)) throw acct("stop options");
         const keys = Object.getOwnPropertyNames(options);
         failure = keys.includes("failureContainment");
+        const hasOrdinaryEnd = keys.includes("ordinaryDeadlineMonoMs");
         const deadlineMonoMs = options.deadlineMonoMs;
-        if (!keys.includes("deadlineMonoMs") || keys.length !== (failure ? 2 : 1) ||
+        ordinaryEnd = hasOrdinaryEnd ? options.ordinaryDeadlineMonoMs : undefined;
+        const allowed = ["deadlineMonoMs", ...(failure ? ["failureContainment"] : []),
+          ...(hasOrdinaryEnd ? ["ordinaryDeadlineMonoMs"] : [])];
+        if (!keys.includes("deadlineMonoMs") || keys.length !== allowed.length ||
+          keys.some((key) => !allowed.includes(key)) ||
+          (hasOrdinaryEnd && (!Number.isSafeInteger(ordinaryEnd) || ordinaryEnd < 0 || ordinaryEnd > deadlineMonoMs)) ||
           Object.getOwnPropertySymbols(options).length !== 0 ||
           !Number.isFinite(deadlineMonoMs) || deadlineMonoMs < 0 ||
           (failure && options.failureContainment !== true)) throw acct("stop options");
@@ -137,6 +146,7 @@ export function createProcessStop({ state, clock, authority }) {
         const flow = state.stopFlow;
         flow.handle.narrow(bound);
         authority.queue.narrowAll(bound);
+        flow.fenceOrdinary(ordinaryEnd);
         if (failure) flow.upgrade();
         return flow.promise;
       }
@@ -155,7 +165,22 @@ export function createProcessStop({ state, clock, authority }) {
       const actualStopSettlement = ordinaryDrain.then(() => collectorPhysicalAfterDrain());
       lifetime.retainActual(actualStopSettlement);
       if (releaseHorizonAfter !== null) releaseHorizonAfter(actualStopSettlement);
-      const flow = { handle: h, promise: null, settled: false, failed: false, sent: false, upgrade: null };
+      const flow = { handle: h, promise: null, settled: false, failed: false, sent: false,
+        upgrade: null, fenceOrdinary: null };
+      let ordinaryProven = false;
+      let ordinaryDecision = Infinity;
+      let ordinaryTimer = null;
+      const clearOrdinaryTimer = () => {
+        if (ordinaryTimer !== null) clock.clearTimeout(ordinaryTimer);
+        ordinaryTimer = null;
+      };
+      ordinaryDrain.then(() => {
+        // Actual settlement observed at/after P cannot beat a delayed timer.
+        if (ordinaryDecision !== Infinity && !flow.sent && !flow.failed &&
+          !flow.settled && authority.nowMonoMs() >= ordinaryDecision) flow.upgrade();
+        ordinaryProven = true;
+        clearOrdinaryTimer();
+      });
       const sendOnce = () => {
         if (flow.sent) return;
         h.assertLive("teardown deadline");
@@ -163,11 +188,25 @@ export function createProcessStop({ state, clock, authority }) {
         teardownSend(h);
       };
       flow.upgrade = () => {
+        clearOrdinaryTimer();
         if (!flow.failed) {
           flow.failed = true;
           authority.markFault(unproven("failed cleanup containment"));
         }
         try { sendOnce(); } catch { /* A spent/failed send never invents closure. */ }
+      };
+      // P decides only the actual ordinary prerequisite. The SAME collector
+      // handle/reap stays at C after a timely normal teardown was issued.
+      flow.fenceOrdinary = (end) => {
+        if (end === undefined || end >= ordinaryDecision || ordinaryProven ||
+          flow.sent || flow.failed || flow.settled) return;
+        clearOrdinaryTimer();
+        ordinaryDecision = end;
+        if (authority.nowMonoMs() >= end) flow.upgrade();
+        else ordinaryTimer = clock.setTimeout(() => {
+          ordinaryTimer = null;
+          if (!ordinaryProven && !flow.sent && !flow.settled) flow.upgrade();
+        }, end - authority.nowMonoMs());
       };
       // Associate the one flow before any frame/callback can reenter stop.
       flow.promise = Promise.resolve().then(async () => {
@@ -191,8 +230,9 @@ export function createProcessStop({ state, clock, authority }) {
           authority.markFault(unproven("collector reap"));
           throw unproven("collector reap");
         }
-      }).finally(() => { flow.settled = true; lifetime.finish(); });
+      }).finally(() => { flow.settled = true; clearOrdinaryTimer(); lifetime.finish(); });
       state.stopFlow = flow;
+      flow.fenceOrdinary(ordinaryEnd);
       if (failure) flow.upgrade();
       return flow.promise;
     } catch (error) {

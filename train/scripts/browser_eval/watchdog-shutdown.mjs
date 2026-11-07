@@ -146,7 +146,8 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
       // call and no fabricated tuple or cancellation.
       if (timing.cleanupRemainingMs() > 0) {
         teardown = boundedCleanup(
-          stage("cleanup.monitor", () => monitor.stopAndReap({ deadlineMonoMs: state.cleanupEnd })),
+          stage("cleanup.monitor", () => monitor.stopAndReap({ deadlineMonoMs: state.cleanupEnd,
+            ...(config.selftestPhase ? {} : { ordinaryDeadlineMonoMs: proofEnd }) })),
           "monitor-reap",
         ).catch((e) => control.recordFault(e));
       } else {

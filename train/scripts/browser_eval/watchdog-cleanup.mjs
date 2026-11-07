@@ -152,7 +152,8 @@ export function createCleanupController({
       if (snap.scope !== "phase-workload" || collectorAttempted) return;
       if (remaining() <= 0) unproven("collector window exhausted");
       collectorAttempted = true;
-      const options = failed ? { deadlineMonoMs: absEnd, failureContainment: true } : { deadlineMonoMs: absEnd };
+      const options = { deadlineMonoMs: absEnd, ordinaryDeadlineMonoMs: proofEnd,
+        ...(failed ? { failureContainment: true } : {}) };
       await stage("cleanup.monitor", () => monitor.stopAndReap(options));
     };
     let eventFaults = 0;

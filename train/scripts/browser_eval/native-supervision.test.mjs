@@ -170,7 +170,7 @@ test("native supervision serial group", { timeout: 60000 }, async () => {
     await runNativeNormalCases({
       h, monitor: m1, ready, lifetime, clock, bounds,
       runId: RUN_ID, nestedRunId: NESTED, order, normal,
-      until, within, fixtureMeta, recOf, assertSettledChild,
+      until, within, fixtureMeta, recOf, assertSettledChild, isIdentity,
     });
 
     // ============ Phase 5 — N07: real WD blocked-heartbeat ============

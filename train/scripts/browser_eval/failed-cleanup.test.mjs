@@ -110,7 +110,8 @@ test("stop validates before effects and settled joins cannot rewrite success", a
   await startMonitorFixture(env);
   const C = env.clock.nowMs() + 500;
   for (const bad of [{ deadlineMonoMs: C, failureContainment: false }, { deadlineMonoMs: Infinity },
-    { deadlineMonoMs: C, extra: true }, { failureContainment: true }]) {
+    { deadlineMonoMs: C, extra: true }, { failureContainment: true },
+    ...[undefined, NaN, -1, C + 1, 1.5].map((ordinaryDeadlineMonoMs) => ({ deadlineMonoMs: C, ordinaryDeadlineMonoMs }))]) {
     await assert.rejects(env.monitor.stopAndReap(bad), (e) => e.code === "ACCOUNTING_UNAVAILABLE");
     assert.equal(env.fixture.written.some((f) => f.type === "shutdown"), false);
     assert.equal(env.monitor.fault(), null);
@@ -120,6 +121,9 @@ test("stop validates before effects and settled joins cannot rewrite success", a
   assert.equal((await result).exitCode, 0);
   const priorFault = env.monitor.fault();
   assert.equal(env.monitor.stopAndReap({ deadlineMonoMs: C, failureContainment: true }), result);
+  assert.equal(env.monitor.stopAndReap({ deadlineMonoMs: C, ordinaryDeadlineMonoMs: C - 100 }), result);
+  await assert.rejects(env.monitor.stopAndReap({ deadlineMonoMs: C, ordinaryDeadlineMonoMs: C + 1 }),
+    (e) => e.code === "ACCOUNTING_UNAVAILABLE");
   assert.deepEqual(env.monitor.fault(), priorFault);
 });
 test("failure upgrade narrows the first handle; withheld stderr stays owned past public expiry", async (t) => {
@@ -199,4 +203,142 @@ for (const window of [500, 250]) test(`inherited ${window}ms window fails proof 
     (e) => e.code === "CLEANUP_UNPROVEN");
   assert.deepEqual(calls, ["stopAndReap"]);
   assert.equal(clk.nowMonoMs(), start);
+});
+
+import { createCleanupController } from "./watchdog-cleanup.mjs";
+for (const pendingSample of [true, false]) test(`normal collector stop preserves P/C: pending ordinary=${pendingSample}`, async (t) => {
+  const script = monitorBootstrapScript();
+  const owner = createWatchdogLifetime();
+  const env = createMonitorFixture({ script, lifetime: owner });
+  const { monitor, clock, fixture } = env;
+  const actualExit = fixture.exit;
+  const facts = { exit: false, stdout: false, stderr: false };
+  fixture.child.once("exit", () => { facts.exit = true; });
+  fixture.child.stdout.once("close", () => { facts.stdout = true; });
+  fixture.child.stderr.once("close", () => { facts.stderr = true; });
+  const turns = async () => { for (let i = 0; i < 8; i += 1) await turn(); };
+  let release;
+  const held = new Promise((resolve) => { release = resolve; });
+  let observed;
+  let proof;
+  let done = false;
+  let entered = false;
+  let normalTeardown = false;
+  const stopCalls = [];
+  t.after(async () => {
+    release(); actualExit(0); clock.advance(10000); await turns();
+    if (observed) await observed;
+    await owner.whenSettled(); env.cleanup();
+  });
+  await startMonitorFixture(env);
+  if (!pendingSample) fixture.exit = () => { normalTeardown = true; };
+  fixture.child.stdin.once("finish", () => actualExit(2));
+  const start = clock.nowMs();
+  const C = start + 5000;
+  const P = C - 500;
+  const cleanup = createCleanupController({ monitor: { ...monitor, stopAndReap(options) {
+    stopCalls.push({ at: clock.nowMs(), options: structuredClone(options) });
+    return monitor.stopAndReap(options);
+  } }, clock: { ...clock, nowMonoMs: clock.nowMs }, runId: "R1", lifetime: owner });
+  const actual = cleanup.run({ phase: "check", scope: "phase-workload", scopeRunId: "R1",
+    supervisor: monitor._ready().supervisor, expectedFinalizer: monitor._ready().supervisor,
+    cleanupStartMonoMs: start, deadlineMonoMs: C,
+    settleWorkloadHandles: async () => { entered = true; await held; } });
+  observed = actual.then((value) => { proof = value; done = true; });
+  for (let i = 0; i < 16; i += 1) { clock.advance(250); await turns(); }
+  assert.equal(entered, true);
+  assert.equal(monitor.fault(), null);
+  const samplesBefore = fixture.written.filter((f) => f.type === "sample").length;
+  script.muteSample = pendingSample;
+  clock.advance(250); await turns();
+  assert.equal(fixture.written.filter((f) => f.type === "sample").length, samplesBefore + 1);
+  release(); await turns();
+  assert.equal(stopCalls.length, 1);
+  assert.equal(stopCalls[0].at, start + 4250);
+  assert.equal(stopCalls[0].options.deadlineMonoMs, C);
+  assert.equal(stopCalls[0].options.failureContainment, undefined);
+  clock.advance(250); await turns();
+  if (pendingSample) {
+    assert.equal(fixture.child.stdin.ended, true, "P must upgrade the SAME normal flow to wire containment");
+    assert.deepEqual(facts, { exit: true, stdout: true, stderr: true });
+    assert.equal(monitor.fault().code, "CLEANUP_UNPROVEN");
+    clock.advance(500); await turns();
+    await observed;
+    assert.equal(proof.verified, false);
+    assert.equal(proof.accountingValid, false);
+  } else {
+    assert.equal(normalTeardown, true, "ordinary prerequisite settled and normal teardown was issued before P");
+    assert.equal(done, false, "collector physical reap still has its original C opportunity");
+    assert.deepEqual(facts, { exit: false, stdout: false, stderr: false });
+    assert.equal(monitor.fault(), null);
+    clock.advance(250); actualExit(0); await turns();
+    await observed;
+    assert.equal(proof.verified, true);
+    assert.equal(proof.accountingValid, true);
+  }
+  assert.equal(stopCalls.length, 1);
+  assert.equal(fixture.written.filter((f) => f.type === "shutdown").length +
+    (fixture.child.stdin.ended === true ? 1 : 0), 1);
+  assert.deepEqual(facts, { exit: true, stdout: true, stderr: true });
+  await owner.whenSettled();
+});
+
+test("cached ordinary P can narrow without extending or narrowing collector C", async (t) => {
+  const script = monitorBootstrapScript();
+  const owner = createWatchdogLifetime();
+  const env = createMonitorFixture({ script, lifetime: owner });
+  const { monitor, fixture, clock } = env;
+  let stopObserved;
+  let workObserved;
+  t.after(async () => {
+    fixture.exit(0); clock.advance(10000);
+    await Promise.all([stopObserved, workObserved]); await owner.whenSettled(); env.cleanup();
+  });
+  await startMonitorFixture(env);
+  script.muteSample = true;
+  workObserved = monitor.sample().catch(() => {}); await turn();
+  const now = clock.nowMs();
+  const C = now + 500;
+  fixture.child.stdin.once("finish", () => { fixture.child.exit(0); fixture.child.stdout.emitClose(); });
+  const stop = monitor.stopAndReap({ deadlineMonoMs: C, ordinaryDeadlineMonoMs: now + 400 });
+  let publicSettled = false;
+  stopObserved = stop.catch((e) => { publicSettled = true; assert.equal(e.code, "CLEANUP_UNPROVEN"); });
+  assert.equal(monitor.stopAndReap({ deadlineMonoMs: C, ordinaryDeadlineMonoMs: now + 100 }), stop);
+  assert.equal(monitor.stopAndReap({ deadlineMonoMs: C, ordinaryDeadlineMonoMs: now + 300 }), stop);
+  clock.advance(100); await turn();
+  assert.equal(fixture.child.stdin.ended, true);
+  assert.equal(publicSettled, false, "P must not expire the original collector handle");
+  let settled = false;
+  owner.whenSettled().then(() => { settled = true; });
+  clock.advance(200); await turn();
+  assert.equal(settled, false, "missing stderr remains real debt after the narrowed P");
+  fixture.child.stderr.emitClose(); await owner.whenSettled(); await stopObserved;
+  assert.equal(monitor.fault().code, "CLEANUP_UNPROVEN");
+});
+
+import { sampleReply } from "./supervision-test-fixtures.mjs";
+test("a late actual ordinary settlement cannot beat a delayed P timer", async (t) => {
+  const script = monitorBootstrapScript();
+  const owner = createWatchdogLifetime();
+  const env = createMonitorFixture({ script, lifetime: owner });
+  let work;
+  let observed;
+  t.after(async () => {
+    env.fixture.exit(0); env.clock.advance(10000);
+    await Promise.all([work, observed]); await owner.whenSettled(); env.cleanup();
+  });
+  await startMonitorFixture(env);
+  script.muteSample = true;
+  work = env.monitor.sample().catch(() => {}); await turn();
+  const request = env.fixture.written.findLast((frame) => frame.type === "sample");
+  const now = env.clock.nowMs();
+  const stop = env.monitor.stopAndReap({ deadlineMonoMs: now + 500, ordinaryDeadlineMonoMs: now + 100 });
+  let result;
+  observed = stop.then((value) => { result = { value }; }, (error) => { result = { error }; });
+  env.clock.jumpWithoutTimers(150);
+  env.fixture.emit(sampleReply({ ...request, script }));
+  await work; await observed;
+  assert.equal(result.error?.code, "CLEANUP_UNPROVEN");
+  assert.equal(env.monitor.fault().code, "CLEANUP_UNPROVEN");
+  assert.equal(env.fixture.written.filter((frame) => frame.type === "shutdown").length, 1);
 });
