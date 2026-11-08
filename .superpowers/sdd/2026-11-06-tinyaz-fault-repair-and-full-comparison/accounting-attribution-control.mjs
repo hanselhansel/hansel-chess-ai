@@ -19,6 +19,7 @@ import {
 import {
   createAttributionObserver,
   requireFullNativeWindow,
+  attributionVerdict,
 } from "../../../train/scripts/browser_eval/native-attribution-observer.mjs";
 import { PYTHON_EXECUTABLE } from "../../../train/scripts/browser_eval/schema-constants.mjs";
 
@@ -301,14 +302,13 @@ async function main() {
     outer.dispose();
     const snapshot = h?.snapshot() ?? null,
       diagnostics = observer?.result() ?? null;
-    if (
-      diagnostics?.failed ||
-      diagnostics?.lateEffects > 0 ||
-      diagnostics?.pendingCalls > 0 ||
-      snapshot?.bytes.overflow
-    ) {
-      fault(new Error("attribution diagnostic failure/late effect/overflow"));
-    }
+    const finalFacts = {
+      cleanupProof,
+      monitorFault: monitor?.fault() ?? null,
+      snapshot,
+      diagnostics,
+    };
+    for (const failure of attributionVerdict({ primary, ...finalFacts }).failures) fault(failure);
     report = {
       kind: "accounting-attribution",
       qualification: "ONE fixed non-scoring body; no historical cause inference",
@@ -353,7 +353,7 @@ async function main() {
       serialized = JSON.stringify(report);
     }
     process.stdout.write(serialized + "\n");
-    process.exitCode = primary === null ? 0 : 1;
+    process.exitCode = attributionVerdict({ primary, ...finalFacts }).exitCode;
   }
 }
 await main();

@@ -328,3 +328,35 @@ all caught errors remain separate. Max source review plus new exclusive Root GO
 precede ONE attribution run; neither outcome authorizes a repair/full40 retry.
 Exact temporal declarations, source/control hashes, actual PURE process/pipe/file
 closure and direct code-to-doc audit: SDD accounting-attribution-implementation-report.md.
+
+
+Attribution scoped review round1 declaration BEFORE use/creation (2026-11-08):
+existing TEST-only native-attribution-observer.mjs adds pure attributionVerdict
+({primary,cleanupProof,monitorFault,snapshot,diagnostics})->{exitCode,failures}.
+The actual standalone control uses this shared helper: genuine negative cleanup,
+final sticky monitor, fixture errors/overflow and observer failure/late/pending
+facts cannot pass, even with successful cached stop. Original first fault and
+all actual drains remain; this is no production proof authority.
+Declare native-attribution-verdict.test.mjs BEFORE creation: PURE genuine cleanup
+controller/fake clock negative result + cached stop, genuine fixture callback
+failure/sticky monitor and held-rejection timing controls. Existing test cases
+stay whole. Rejected/fulfilled original Promises share the same contained
+settlement timestamp/sum/max logic; original Promise/rejection identity remains.
+Runtime111/protected23/M/Section3/helpers/clocks/tolerances unchanged; no Native
+execution/control/full suite/phase/push until scoped review and new Root GO.
+
+
+Attribution review round1 implementation checkpoint: I1 shared pure verdict is
+called by the actual standalone control and requires verified cleanup/accounting,
+no final sticky monitor, no genuine fixture errors/overflow and clean observer
+facts. Successful cached physical stop cannot turn a negative proof into pass.
+All original negative facts remain recorded; the existing first-primary latch
+and actual drains are unchanged. I2 has ONE contained result-settlement path for
+fulfilled/rejected ORIGINAL Promises, retaining timestamp/dispatch sum/exact max
+and pending crossings, with identical rejection reason/Promise identity.
+Causal PURE RED reproduced4 gaps; corrected focused5/5 passed. Existing397-line
+owner is unchanged; new declared verdict owner is201 lines, helper322, control359.
+No real Native/control/full serial/scoring execution. Runtime111/protected23/M/
+Section3/helpers/90/60/55+5/P/C/4MiB/250/500/1000 stay exact. Round1 evidence and
+append-only report are under the SDD attribution implementation report. Scoped
+re-review and a separate exclusive Root GO remain required before execution.

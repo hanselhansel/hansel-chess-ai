@@ -114,42 +114,34 @@ export function createAttributionObserver({ nowNs, workEndMonoMs = null }) {
         }
       }
     });
+    const settle = (rejected, result) =>
+      safe(() => {
+        const bin = binFor(name);
+        bin.settled++;
+        if (rejected) bin.rejected++;
+        if (returned !== undefined) {
+          const settled = stamp(),
+            duration = settled - returned;
+          add(bin, "dispatchNs", duration);
+          if (bin.maximumDispatch === null || duration > BigInt(bin.maximumDispatch.durationNs)) {
+            bin.maximumDispatch = {
+              startNs: start?.toString() ?? null,
+              returnNs: returned.toString(),
+              settledNs: settled.toString(),
+              durationNs: duration.toString(),
+            };
+          }
+        }
+        pending.delete(id);
+        if (!rejected) onValue?.(result);
+      });
     if (!threw && value instanceof Promise) {
       safe(() => {
-        // Observe, never replace or await ahead of the original caller.
+        // Same timing path for BOTH outcomes. Observe, never replace the caller's Promise.
         Promise.prototype.then.call(
           value,
-          (result) => {
-            safe(() => {
-              const bin = binFor(name);
-              bin.settled++;
-              if (returned !== undefined) {
-                const settled = stamp(),
-                  duration = settled - returned;
-                add(bin, "dispatchNs", duration);
-                if (
-                  bin.maximumDispatch === null ||
-                  duration > BigInt(bin.maximumDispatch.durationNs)
-                ) {
-                  bin.maximumDispatch = {
-                    startNs: start?.toString() ?? null,
-                    returnNs: returned.toString(),
-                    settledNs: settled.toString(),
-                    durationNs: duration.toString(),
-                  };
-                }
-              }
-              pending.delete(id);
-              onValue?.(result);
-            });
-          },
-          () => {
-            safe(() => {
-              binFor(name).settled++;
-              binFor(name).rejected++;
-              pending.delete(id);
-            });
-          },
+          (result) => settle(false, result),
+          () => settle(true),
         );
       });
     } else
@@ -283,4 +275,48 @@ export function createAttributionObserver({ nowNs, workEndMonoMs = null }) {
     pendingCalls: pending.size,
   });
   return Object.freeze({ observeChild: wire, instrumentFs, flush, restoreAfter, result });
+}
+
+// TEST-only qualification from genuine final facts, not a Native proof authority.
+// Do not choose/replace the caller's original primary; return every negative fact.
+export function attributionVerdict({
+  primary = null,
+  cleanupProof,
+  monitorFault,
+  snapshot,
+  diagnostics,
+}) {
+  const failures = [];
+  const fail = (code, message, cause) => failures.push({ code, message, cause });
+  if (monitorFault !== null && monitorFault !== undefined) {
+    fail(
+      monitorFault.code ?? "ACCOUNTING_UNAVAILABLE",
+      monitorFault.detail ?? "sticky monitor fault",
+      monitorFault,
+    );
+  }
+  if (!snapshot || !Array.isArray(snapshot.errors)) {
+    fail("ATTRIBUTION_FIXTURE", "fixture diagnostic evidence unavailable", snapshot);
+  } else {
+    for (const error of snapshot.errors)
+      fail("ATTRIBUTION_FIXTURE", `fixture ${error.where}: ${error.text}`, error);
+  }
+  if (cleanupProof?.verified !== true || cleanupProof?.accountingValid !== true) {
+    fail(
+      "CLEANUP_UNPROVEN",
+      "attribution requires an actually verified cleanup/accounting proof",
+      cleanupProof,
+    );
+  }
+  if (snapshot?.bytes?.overflow !== false)
+    fail("ATTRIBUTION_OUTPUT", "original output accountant unavailable/overflow", snapshot?.bytes);
+  if (
+    !diagnostics ||
+    diagnostics.failed !== false ||
+    diagnostics.lateEffects !== 0 ||
+    diagnostics.pendingCalls !== 0
+  ) {
+    fail("ATTRIBUTION_OBSERVER", "observer failure/late effect/unsettled observation", diagnostics);
+  }
+  return { exitCode: primary === null && failures.length === 0 ? 0 : 1, failures };
 }
