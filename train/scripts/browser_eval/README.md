@@ -9845,8 +9845,8 @@ pending/protocol/onInbound/onStartup/failOnce/makeError/decoder/runId references
 No new state owner/queue/validation authority. Preserve original receiver,
 ready->onInbound->pending-resolution order, synchronous reentry and all late/
 malformed faults. Existing framer receives runId DATA to timestamp its original
-push callback without listener replacement. Runtime DAG: privateFs/framing/
-observation/lifetime -> accounting-trace; transport -> existing framing, no backedge.
+push callback without listener replacement. Runtime DAG: privateFs/transport/
+framing/observation/lifetime -> accounting-trace; transport -> existing framing, no backedge.
 
 First relevant accounting trace uses existing lifetime's phase/selftest scope
 bits, no global emitted latch. Original first-cause marker is attempted FIRST
