@@ -360,3 +360,32 @@ No real Native/control/full serial/scoring execution. Runtime111/protected23/M/
 Section3/helpers/90/60/55+5/P/C/4MiB/250/500/1000 stay exact. Round1 evidence and
 append-only report are under the SDD attribution implementation report. Scoped
 re-review and a separate exclusive Root GO remain required before execution.
+
+
+Attribution scoped setup correction I3, round2 (declared before use, 2026-11-08):
+existing TEST-only native-attribution-observer.mjs exports attributionHarnessOptions
+({controlUrl,runId,pythonExecutable,evidenceRoot,lifetime,observeChild})->constructor
+options. Actual standalone control and PURE real-control-URL regression share
+this exact option builder, with no mirrored recordRoot/helper/fixture mapping.
+Normalize ONLY file-URL-derived recordRoot structurally; genuine isAbs remains
+strict, with a negative trailing-slash assertion. Existing native-attribution-
+verdict.test.mjs gains this whole construction/settlement case, no new owner/path.
+Constructor/group clock capture remains AFTER setup. Previous actual invocation
+was FAILED_SETUP/options, NOT a latency nonreproduction; all evidence remains
+sealed. Runtime111/protected23/M/Section3/helpers/timing/science unchanged. No new
+Native execution/control/full suite/phase/push without review and new Root GO.
+
+
+Attribution I3 round2 checkpoint: the ONE actual f1b908a diagnostic was FAILED_SETUP
+(native-harness options) after copying the tree, before group/Native/body stages;
+not a timing nonreproduction. Its natural1/15.533674917s and physical command/
+pipe/file closure remain sealed, GO consumed. Pure real-call URL configuration
+regression reproduced the same genuine constructor error before the fix. Shared
+actual option assembly now normalizes ONLY URL-derived recordRoot with structural
+path.resolve, no filesystem resolution/contract waiver. Strict trailing-slash
+rejection and constructor-after-setup clock remain. Covering20/20 +syntax-only0
+pass; actual diagnostic is NOT rerun. Helper346/test249/control359, no new path/
+owner; prior I1/I2 cases unchanged. Runtime111/protected23/M/Section3/helpers/
+90/60/55+5/P/C/4MiB/250/500/1000 remain exact. Round2 report appended in the SDD;
+scoped f1b908a..HEAD review and separate new Root GO are required before execution.
+Historical415.45925ms attribution remains UNKNOWN. No push or scoring phase.

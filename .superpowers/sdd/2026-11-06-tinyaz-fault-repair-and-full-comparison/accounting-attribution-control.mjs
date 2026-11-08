@@ -20,10 +20,10 @@ import {
   createAttributionObserver,
   requireFullNativeWindow,
   attributionVerdict,
+  attributionHarnessOptions,
 } from "../../../train/scripts/browser_eval/native-attribution-observer.mjs";
 import { PYTHON_EXECUTABLE } from "../../../train/scripts/browser_eval/schema-constants.mjs";
 
-const REPO = fileURLToPath(new URL("../../../", import.meta.url));
 const FREEZE = fileURLToPath(
   new URL(
     "./task-3-failure-freeze-3c9a9c6-20261107T234839429Z-2be771b1-8bac-4207-960a-d6a57669fdb3/",
@@ -156,16 +156,16 @@ async function main() {
     assert.equal(bytes, 52866136);
     requireFullNativeWindow(originalEnd, now());
     const runId = `accounting-attribution-${process.pid}`;
-    h = createNativeTestHarness({
-      runId,
-      recordRoot: REPO,
-      pythonExecutable: PYTHON_EXECUTABLE,
-      helperPath: path.join(REPO, "train/scripts/browser_eval/process-macos.py"),
-      fixtureEntry: path.join(REPO, "train/scripts/browser_eval/native-fixture.mjs"),
-      evidenceRoot: out,
-      lifetime,
-      observeChild: (...args) => observer.observeChild(...args),
-    });
+    h = createNativeTestHarness(
+      attributionHarnessOptions({
+        controlUrl: import.meta.url,
+        runId,
+        pythonExecutable: PYTHON_EXECUTABLE,
+        evidenceRoot: out,
+        lifetime,
+        observeChild: (...args) => observer.observeChild(...args),
+      }),
+    );
     assert.ok(h.bounds.deadlineMonoMs <= originalEnd, "unchanged full60s must fit original90s");
     observer = createAttributionObserver({
       nowNs: () => process.hrtime.bigint().toString(),

@@ -199,3 +199,51 @@ test("clean actual-shaped facts pass and a prior primary remains failed", () => 
   const primary = Object.freeze({ same: "original first" });
   assert.equal(attributionVerdict({ ...healthy(), primary }).exitCode, 1);
 });
+
+import { attributionHarnessOptions } from "./native-attribution-observer.mjs";
+import { PYTHON_EXECUTABLE } from "./schema-constants.mjs";
+import { isAbs } from "./protocol-values.mjs";
+
+test("real control-module URL shares actual constructor options and strict path contract", async () => {
+  const owner = createWatchdogLifetime();
+  let calls = 0,
+    h = null;
+  const options = attributionHarnessOptions({
+    controlUrl: new URL(
+      "../../../.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/accounting-attribution-control.mjs",
+      import.meta.url,
+    ),
+    runId: "unit",
+    pythonExecutable: PYTHON_EXECUTABLE,
+    evidenceRoot: "/unit/evidence",
+    lifetime: owner,
+    observeChild: () => {
+      calls++;
+    },
+  });
+  try {
+    h = createNativeTestHarness(options);
+    for (const key of [
+      "recordRoot",
+      "pythonExecutable",
+      "helperPath",
+      "fixtureEntry",
+      "evidenceRoot",
+    ]) {
+      assert.equal(isAbs(options[key]), true, key);
+    }
+    assert.equal(Object.isFrozen(h), true);
+    assert.equal(Object.keys(h).length, 12);
+    assert.equal(calls, 0);
+    assert.deepEqual(h.snapshot().handles, []);
+    assert.throws(
+      () => createNativeTestHarness({ ...options, recordRoot: options.recordRoot + "/" }),
+      /native-harness options/,
+    );
+    assert.equal(h.bounds.deadlineMonoMs - h.bounds.startedMonoMs, 60000);
+    assert.equal(h.bounds.workEndMonoMs - h.bounds.startedMonoMs, 55000);
+  } finally {
+    if (h !== null) await h.finish();
+    await owner.whenSettled();
+  }
+});

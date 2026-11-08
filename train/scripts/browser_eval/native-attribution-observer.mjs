@@ -1,3 +1,5 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 // TEST-only observations. Original operations/Promises/listeners/debts are authority.
 // Aggregates are diagnostic data, never validity, cancellation or physical proof.
 export function requireFullNativeWindow(outerEndMs, nowMs) {
@@ -319,4 +321,26 @@ export function attributionVerdict({
     fail("ATTRIBUTION_OBSERVER", "observer failure/late effect/unsettled observation", diagnostics);
   }
   return { exitCode: primary === null && failures.length === 0 ? 0 : 1, failures };
+}
+
+// The actual standalone constructor configuration is shared with PURE controls.
+export function attributionHarnessOptions({
+  controlUrl,
+  runId,
+  pythonExecutable,
+  evidenceRoot,
+  lifetime,
+  observeChild,
+}) {
+  const recordRoot = path.resolve(fileURLToPath(new URL("../../../", controlUrl)));
+  return {
+    runId,
+    recordRoot,
+    pythonExecutable,
+    helperPath: path.join(recordRoot, "train/scripts/browser_eval/process-macos.py"),
+    fixtureEntry: path.join(recordRoot, "train/scripts/browser_eval/native-fixture.mjs"),
+    evidenceRoot,
+    lifetime,
+    observeChild,
+  };
 }
