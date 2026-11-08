@@ -6,6 +6,7 @@
 // the parent's ONE shared state, bounds, real clock, constants and
 // observe helpers by reference — never a second owner, registry,
 // queue, counter or clock — and imports Node builtins only.
+// Trusted sync observeChild runs only after adoption; failures are diagnostics.
 // getAdmission() is invoked ONLY inside admitted runtime methods and
 // handlers and always returns the ONE already-composed admission leaf;
 // factory construction performs no IO, timer, process, spawn, fork,
@@ -204,6 +205,15 @@ export function createNativeFixtureIO({ inputs, state, bounds, clock, constants,
       }
     });
   };
+  const observed = (child, rec) => {
+    try {
+      inputs.observeChild?.(child, Object.freeze({ kind: rec.kind, monitorRunId: rec.monitorRunId,
+        queryId: rec.queryId, physicalSettlement: rec.receipt.promise, retainDiagnostic: retainEntry }));
+    } catch (error) {
+      try { recordError("child observer", error); } catch { state.overflow = true; }
+    }
+    return child;
+  };
   const adopt = (partial) => {
     const receipt = deferred();
     lifetime.retainActual(receipt.promise);
@@ -275,7 +285,7 @@ export function createNativeFixtureIO({ inputs, state, bounds, clock, constants,
     }
     attachChild(rec, child);
     if (cls.kind === "lsof") armFd3(rec);
-    return child;
+    return observed(child, rec);
   };
 
   // forkImpl delegates UNCHANGED to real fork after the admission
@@ -306,7 +316,7 @@ export function createNativeFixtureIO({ inputs, state, bounds, clock, constants,
       throw e;
     }
     attachChild(rec, child);
-    return child;
+    return observed(child, rec);
   };
 
   // Bounded private wait on a closed inbound type: a latched malformed

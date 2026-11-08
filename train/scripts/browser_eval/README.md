@@ -9667,3 +9667,86 @@ native/OS cause and historical retained handle remain UNKNOWN. Full commands,
 failed evidence, hashes, physical receipts and direct code-to-doc audit are in
 SDD private-fs-implementation-report.md. Independent review/publication/new Root
 release remain OPEN before fresh prerequisites/ONE full40; no push/phase here.
+
+
+### TEST-only accounting attribution declaration, 2026-11-08
+
+Declared BEFORE creation/use. createNativeTestHarness accepts optional trusted
+observeChild(child,meta)->undefined (function or omitted/null only), validated
+before clock/IO. It threads by captured reference to existing native-fixture-io.
+The frozen returned12 roster is unchanged. After genuine adoption, lifecycle
+listeners and fd3 setup, each actual spawned/forked child is observed once before
+return. Frozen meta is exactly {kind,monitorRunId,queryId,physicalSettlement,retainDiagnostic};
+physicalSettlement is the SAME prearmed exit+BOTHpipe receipt Promise, no resolver
+or new debt/proof. Observer errors mark existing diagnostic failure, preserve
+original operation outcome and never settle physical debt. Absent is unchanged.
+
+New TEST-only native-attribution-observer.mjs exports createAttributionObserver
+and requireFullNativeWindow. It owns transparent per-call entry/return/settlement
+and raw stdout.emit(data) dispatch observations, original this/args/value/throw/
+Promise identity, fixed4MiB combined byte accounting and restoration only after
+actual settlement. Raw FileHandle/OwnedFile close ownership stays with genuine
+owners. Wrapping emit preserves exact listener identities/removal/relative order;
+no protocol-accept time is relabeled as an actual write or kernel arrival.
+Observer failure invalidates diagnostics, never replaces an operation result.
+The pure60s-within-original90s admission helper is data-only, no clock/timer.
+New native-attribution.test.mjs is PURE held/error/receiver/Promise/listener/
+ownership/bound/overflow coverage, fake child event sources and genuine Native
+fixture IO/lifetime factories; no real spawn/Native/browser/model/phase.
+
+Standalone .superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/
+accounting-attribution-control.mjs is TEST-only, importing genuine unchanged
+Store/Footprint/OwnedFile/monitor/cleanup plus the trusted fixture/observer. It
+captures original90s before setup, no-follow copies the sealed3361-file tree,
+admits original60s group only with60s remaining, retains55s work/5s cleanup,
+P/C/TERM+2/KILL+4,250/500ms Native/1000ms footprint-start and shared4MiB. One scan
+then ordinary313-byte writeOnce and313-byte append-sink open/append/close, with
+all normal reserve/reconcile scans retained. No retry/stress/scoring. Actual
+allocation, all child output, pending debts and raw closure remain truthful.
+Neither this entry nor new TEST owners joins the unchanged runtime111/helpers3.
+No actual Native/control execution until reviewed separate Root GO. Strict
+3c9 gap rejection remains intended;415.45925ms historical remainder UNKNOWN.
+
+TEST attribution accounting binding before use: retainDiagnostic is the SAME
+existing retainEntry function, diagnostic data only, no resolver/proof/debt.
+Every FS call is measured; count/sum/max/pending plus exact maximum span are
+flushed between actual wire boundaries through that ONE original4MiB accountant.
+No per-file trace flood, second output budget, lost child bytes or silent overflow.
+
+TEST-only late-effect binding before use: createAttributionObserver may capture
+workEndMonoMs once as DATA. It never rejects or delays the genuine operation.
+Non-close calls beginning at/after that fence increment late-effect diagnostics
+(first/last exact span) and invalidate the control; mandatory close still runs.
+Control gates admission/before+after each fixed Store operation, retains all
+already-admitted body continuations and never turns late settlement into pass.
+
+
+Attribution implementation checkpoint: validated optional observer is threaded
+through the SAME constructor/IO owner; returned12 facade unchanged. Metadata
+borrows physicalSettlement and retainDiagnostic by identical original references.
+PURE covering owners42/42 and final14/14 pass, all processes/pipes/raw files joined.
+Standalone SDD control is syntax-checked only, NOT executed; actual Native and
+full suite containing Native remain withheld pending Max review + Root GO.
+Runtime111/protected23/M/Section3 and old failure seals remain exact. Source/test
+max399; Native IO398, constructor389, observer286, pure test397, control359.
+The declaration-before-creation.json receipt binds all3 earlier declaration doc
+hashes and absent paths; diagnostic-accounting-before-use.json binds the same
+accountant extension. Derived doc copies are explicitly reconstructed later and
+hash-match those prior digests; they are not claimed contemporaneous copies.
+
+After review and explicit Root GO ONLY, the standalone usage is:
+`<qualified-node> <SDD>/accounting-attribution-control.mjs --execute-reviewed <canonical-temp-parent>/tinyaz-accounting-attribution-<unique>`.
+Output must be an exclusive direct temp child, outside old workspaces/freeze.
+Outer90s starts before setup; original60s Native group admits only with its full
+window remaining. Already-admitted genuine Store bodies drain; no fresh control
+operation/Native proof after fences, every observed late non-close effect fails
+diagnostics, mandatory closes stay owned. Report includes actual initial charge,
+original monitor fault plus all caught errors and exact max/pending spans.
+Protocol-accept time and raw stdout dispatch/return remain distinct; periodic
+runCycle resumption is not directly exposed. The standalone JSON cannot attest
+its own future command/pipe exit: external owner must prove natural closure,
+raw-file joins and the original90s bound. Diagnostic overhead is measured within
+call spans. A fresh3361-file tree does NOT recreate long-run heap/owned-registry/
+engine state. Green or rejected control cannot establish historical cause.
+All code/evidence limits and source/doc comparison are in the SDD
+accounting-attribution-implementation-report.md. No production repair/push/cohort.

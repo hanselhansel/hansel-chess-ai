@@ -298,3 +298,33 @@ protected23/Section3/M and all old attempts exact. Full report: SDD private-fs-
 implementation-report.md. Native/OS root cause stays UNKNOWN. Fresh independent
 source review, publication and Root release before fresh committed check/parity/
 preflight/ONE full40 remain OPEN. No push or real phase occurred.
+
+
+### Bounded accounting attribution implementation, 2026-11-08
+
+Strict3c9 sample rejection is intended; historical415.45925ms remainder unlocalized.
+Declare BEFORE creation/use TEST-only native-attribution-observer.mjs,
+native-attribution.test.mjs and SDD accounting-attribution-control.mjs. Add the
+validated optional child observer to existing fixture construction only, after
+real adoption/attach and before return, preserving frozen12 facade and SAME
+physical Promise. Transparent method/emit observation preserves this/args/arbitrary
+throw/original Promise/listener identity; diagnostic errors/overflow never change
+actual outcomes or release debt. Restore only after actual settlement.
+Run meaningful PURE held/error/ownership/bounds/overflow controls, compare direct
+code/doc diff and commit locally. No actual Native/control/full suite containing
+Native until fresh review and separate Root GO. Original90/60/55+5/4MiB, P/C,
+2s/4s/250/500/1000 and all M/science/runtime/protected inputs remain. The standalone
+one-body fresh-tree control preserves genuine Store reserve/reconcile scans and
+all physical joins. No production fix/backend change/retry/full40 authorization.
+
+
+Attribution local checkpoint: same-owner TEST-only child seam, diagnostic observer
+and standalone entry implemented; PURE covering42/42, final14/14, syntax only0.
+No actual Native/control, full Native suite, model/browser/cohort or push occurred.
+Frozen12/runtime111/protected23/Section3/M/failure evidence exact, max399. Fixed
+body uses full reserve/reconcile scans and genuine admitted-body drains; late
+non-close effects/actual late closure cannot pass. Original monitor fault and
+all caught errors remain separate. Max source review plus new exclusive Root GO
+precede ONE attribution run; neither outcome authorizes a repair/full40 retry.
+Exact temporal declarations, source/control hashes, actual PURE process/pipe/file
+closure and direct code-to-doc audit: SDD accounting-attribution-implementation-report.md.

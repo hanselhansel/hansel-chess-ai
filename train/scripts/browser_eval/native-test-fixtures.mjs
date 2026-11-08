@@ -1,7 +1,7 @@
 // native-test-fixtures.mjs — TEST-only harness parent owner for the
 // real Native supervision group. Sole export
 // createNativeTestHarness({runId,recordRoot,pythonExecutable,
-// helperPath,fixtureEntry,evidenceRoot,lifetime}); `lifetime` is a
+// helperPath,fixtureEntry,evidenceRoot,lifetime,observeChild?}); `lifetime` is a
 // REQUIRED genuine createWatchdogLifetime owner minted by the caller
 // BEFORE harness/monitor/Store/Recorder/WD and shared EXACTLY —
 // brand-asserted before any debt, never a fallback or second owner.
@@ -84,7 +84,7 @@ const sizeOf = (v) => {
   }
 };
 
-export function createNativeTestHarness({ runId, recordRoot, pythonExecutable, helperPath, fixtureEntry, evidenceRoot, lifetime }) {
+export function createNativeTestHarness({ runId, recordRoot, pythonExecutable, helperPath, fixtureEntry, evidenceRoot, lifetime, observeChild = null }) {
   if (
     !strNE(runId) ||
     ![recordRoot, pythonExecutable, helperPath, fixtureEntry, evidenceRoot].every(isAbs)
@@ -93,6 +93,7 @@ export function createNativeTestHarness({ runId, recordRoot, pythonExecutable, h
   }
   if (lifetime === undefined || lifetime === null) throw fail("lifetime");
   assertWatchdogLifetime(lifetime);
+  if (observeChild !== null && typeof observeChild !== "function") throw fail("child observer");
   const nowMonoMs = () => Number(process.hrtime.bigint() / 1_000_000n);
   const Gstart = nowMonoMs();
   const bounds = Object.freeze({
@@ -193,7 +194,7 @@ export function createNativeTestHarness({ runId, recordRoot, pythonExecutable, h
     }
   };
 
-  const inputs = Object.freeze({ runId, recordRoot, pythonExecutable, helperPath, fixtureEntry, evidenceRoot, lifetime });
+  const inputs = Object.freeze({ runId, recordRoot, pythonExecutable, helperPath, fixtureEntry, evidenceRoot, lifetime, observeChild });
   const constants = Object.freeze({ FIXTURE_MS, FIXTURE_BOUND_MS, ADMIT_MS, MAX_BYTES, MAX_LIST, DIRECT_MODES, MODES, ARGV_FLAGS, COMMON, INBOUND_EXTRA });
   const observe = Object.freeze({ fail, isObj, nodeImagePath, recordError, room, retainEntry, selectMonitor, assignScope });
 

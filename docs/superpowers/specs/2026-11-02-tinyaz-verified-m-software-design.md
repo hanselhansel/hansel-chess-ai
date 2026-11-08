@@ -3915,3 +3915,39 @@ mitigation is private FS backend choice, no cause/freshness/limit waiver. Exact
 failed receipts, commands and final code-to-doc comparison are recorded in SDD
 private-fs-implementation-report.md. Review/publication/new execution release
 remain OPEN; no actual phase or push occurred.
+
+
+### TEST-only attribution interfaces declared before creation/use, 2026-11-08
+
+Root permits diagnostics only, not a production repair or authority change.
+Existing fixture constructor privately accepts validated optional observeChild;
+IO invokes once after real adoption/attach/fd3 and before returning the same child.
+Frozen meta {kind,monitorRunId,queryId,physicalSettlement,retainDiagnostic} borrows the SAME genuine
+prearmed physical Promise; frozen12-member facade and production111/helpers3
+unchanged. Failure marks diagnostics only, preserving original outcomes/debts.
+Declared new TEST-only native-attribution-observer.mjs (createAttributionObserver,
+requireFullNativeWindow), native-attribution.test.mjs (pure coverage) and standalone
+SDD accounting-attribution-control.mjs. Complete binding is owning README's
+TEST-only accounting attribution declaration. All files<400, no new production
+hook/queue/clock/deadline/proof/debt. Preserve originals and protectedSection3.
+90/60/55+5/4MiB,250/500ms,1000ms freshness, P/C and2s/4s stay exact. Source review
+and separate exclusive Root release precede any actual Native/control run.
+
+TEST attribution accounting binding before use: retainDiagnostic is the SAME
+existing retainEntry function, diagnostic data only, no resolver/proof/debt.
+Every FS call is measured; count/sum/max/pending plus exact maximum span are
+flushed between actual wire boundaries through that ONE original4MiB accountant.
+No per-file trace flood, second output budget, lost child bytes or silent overflow.
+
+
+Attribution implementation checkpoint: TEST-only seam/observer/pure owner and
+standalone SDD entry implemented; returned12 and runtime111 unchanged. Pure42/42,
+final14/14 and syntax-only control pass with natural process/BOTHpipe/raw closure.
+Native/control execution is NOT performed or authorized by these results. Same
+original retainEntry accounts every diagnostic/child byte; aggregated spans retain
+exact maxima and pending crossings. Admit fixed Store stages under original55s;
+actual admitted bodies/mandatory closes drain unchanged, observed late non-close
+effects fail diagnostics, no new per-syscall rejection/proof authority. Preserve
+90/60/55+5/4MiB, P/C,2s/4s,250/500/1000 and all protected/scientific inputs.
+Source review and separate Root execution release remain required. Full report
+and temporal declaration receipts are in the SDD attribution implementation report.
