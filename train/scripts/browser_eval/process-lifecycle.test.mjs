@@ -355,8 +355,13 @@ test("strict root-image rejection retains both distinctive suffixes in the full 
       return true;
     });
     reportStoppedFault(owner, "phase", primary);
-    const raw = lines.at(-1);
-    const marker = JSON.parse(raw.slice("TINYAZ_AWAIT ".length));
+    const markers = lines.map((raw) => ({ raw, row: JSON.parse(raw.slice("TINYAZ_AWAIT ".length)) }));
+    const originals = markers.filter(({ row }) => row.stage === "ordinary.fault");
+    assert.equal(originals.length, 1, "one original fault marker, independent of diagnostic tail");
+    const { raw, row: marker } = originals[0];
+    const trace = markers.filter(({ row }) => row.stage === "accounting.trace");
+    assert.ok(trace.length > 0, "the documented timing packet follows the original cause");
+    assert.ok(trace.every((entry) => markers.indexOf(entry) > markers.indexOf(originals[0])));
     assert.ok(Buffer.byteLength(raw) <= 256);
     assert.equal(marker.code, "ACCOUNTING_UNAVAILABLE");
     assert.equal(marker.detail, `expected=${expected.slice(-36)} actual=${actual.slice(-36)}`);

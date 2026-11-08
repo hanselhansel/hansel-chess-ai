@@ -9908,3 +9908,25 @@ changes. Current literal rosters were also corrected108 documented ->111 actual
 prior entries ->112 with this new leaf: fixture-numeric, watchdog-cleanup-context
 and watchdog-faults were pre-existing omissions, not new runtime behavior. Dated
 historical rosters and protectedSection3 are preserved.
+
+
+### Runtime trace round1 TEST-only checkpoint, 2026-11-08
+
+Reviewed4925be4 full gate FAILED792/793, natural1/104.440s; actual command,
+BOTHpipes/rawfiles/journal joined,385 inputs exact. Its genuine Native14 PASSED
+with real exit/BOTHpipes/settlement and collector exits0/0/2. These are separate
+facts; no full-gate success or successor cap/phase is claimed. Frozen handoff
+c10bbe8157e62f6952044b51e7898269ea536cc45794eb2770c898aa9db0f75e and manifest
+4832d8f47170c35dfd955ab767fbdbc430040e2fd6b1ab89cbdd13f426175d06 remain exact.
+
+Sole failure was process-lifecycle's stale lines.at(-1) selector: the original
+registration code+message assertions passed, while the final accounting.trace
+row intentionally has no original code. The test now selects the UNIQUE
+ordinary.fault by stage and requires it to precede accounting.trace. Original
+exact code/message, BOTH distinctive suffixes,256B/no-adoption/real-stop/owner-
+settlement checks remain. Whole PURE lifecycle8/8 passed naturally0/0.320s with
+BOTHpipes/rawfiles joined. Runtime112 and original guards/science/debt untouched.
+Scoped review and separate Root execution release remain required. No Native,
+full-suite, cap/control/browser/model/phase was run for this TEST-only correction.
+Historical415.45925ms cause remains UNKNOWN. Round1 evidence/report is appended
+to runtime-accounting-trace-report.md; original report prefix/receipts preserved.
