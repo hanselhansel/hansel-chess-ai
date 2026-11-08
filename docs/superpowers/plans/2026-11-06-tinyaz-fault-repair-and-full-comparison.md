@@ -389,3 +389,96 @@ owner; prior I1/I2 cases unchanged. Runtime111/protected23/M/Section3/helpers/
 90/60/55+5/P/C/4MiB/250/500/1000 remain exact. Round2 report appended in the SDD;
 scoped f1b908a..HEAD review and separate new Root GO are required before execution.
 Historical415.45925ms attribution remains UNKNOWN. No push or scoring phase.
+
+
+### Runtime passive accounting trace declaration BEFORE creation/use, 2026-11-08
+
+Declare ONE private runtime accounting-trace.mjs: createAccountingTrace({nowNs})
+and default accountingTrace, pure scalar storage, no clock at construction.
+Frozen internal API fsBegin(op),fsReturn(id,rejected),fsDeliver(id),raw(runId),
+frame(runId),wire(requestId,stage,value),cycle(existingDiagnostic,requestId),
+packet(error,remainingMarkerBudget),stats(). Fixed64 FS pending slots,8 recent
+one-second completion buckets with scalar immediate/delivery maxima,16 request
+records,8 raw-run slots and8 failed-cycle records. Whitelisted operation/ID/
+timestamp/boolean/count scalars only, no buffers/paths/FDs/promises/resources.
+Eviction/unavailable/truncated/pending facts explicit; never debt/proof authority.
+Clocks/data/output failures are contained, original outcomes/guards/call order
+remain. No healthy log IO, new worker/timer/queue/wire/flag/recovery or authority.
+Runtime union111->112; Python helpers3 and execution helpers6 unchanged.
+
+PrivateFs records inside its EXISTING immediate syscall and one completed-result
+turn for both outcomes, raw files and bounded stream operations. Transport records
+actual write/backpressure/throw, raw callback, complete-frame, original validated
+reply boundaries keyed original requestIds. Existing failed-cycle scalars/Ns are
+copied before original throw without another validity-clock read or changed guard.
+No absolute Python/Node clock subtraction, ownership or cause inferred from overlap.
+
+Capacity move declared BEFORE use: the WHOLE existing transport onFrame group
+delegates to existing process-framing.mjs createCollectorFrameHandler over SAME
+pending/protocol/onInbound/onStartup/failOnce/makeError/decoder/runId references.
+No new state owner/queue/validation authority. Preserve original receiver,
+ready->onInbound->pending-resolution order, synchronous reentry and all late/
+malformed faults. Existing framer receives runId DATA to timestamp its original
+push callback without listener replacement. Runtime DAG: privateFs/framing/
+observation/lifetime -> accounting-trace; transport -> existing framing, no backedge.
+
+First relevant accounting trace uses existing lifetime's phase/selftest scope
+bits, no global emitted latch. Original first-cause marker is attempted FIRST
+and must return successfully before trace output. Bounded selected scalar lines
+use SAME64-marker x256-byte total budget, no new allowance/required IO/join.
+Process-wide FS overlap, partial/window loss, missing timing and nonzero overhead
+are explicit. Protected wholeSection3/model/science/timing/ownership remain exact.
+
+Declare PURE accounting-trace.test.mjs and accounting-trace-io.test.mjs before
+creation, runtime-excluded. Genuine monitor/first-fault missing-evidence RED,
+transport/framer, original500/1000 guards, fulfilled/rejected delivery, capacity,
+clock/output errors, pending/held ownership and independent nested-owner scope
+controls precede local commit/review. No Native/full serial/cap/phase execution
+until separate reviewed Root release. Prior short control was bounded green
+NONREPRODUCTION only; historical415.45925ms cause remains UNKNOWN.
+
+
+### Runtime accounting trace implemented, pending source review
+
+The passive implementation is present. Runtime roster112 and both literal docs
+rosters agree; helpers3/execution helpers6 stay unchanged. Genuine first-fault
+RED closed1 because the timing packet was absent. Covering PURE gate184/184
+closed0 with both pipes/rawfiles, including unchanged500ms/1000ms guards. One
+intermediate sweep failed on unsorted new runtime membership and a legacy111
+expectation; corrected roster order/count only. All evidence remains retained.
+
+Healthy capture performs scalar bookkeeping only. Immediate spans bracket the
+existing privateFs issue function, including its original guard/resource
+bookkeeping, not a measured kernel syscall. Delivery stamps run inside the SAME
+completed-result callback before its original resolve/reject. Raw is the stdout
+push callback that completed the frame (last fragment, not kernel/first-byte
+arrival); full is complete-frame entry; valid is successful validator return;
+resolve precedes the original pending resolver. Synchronous replies can validate
+BEFORE write returns. PythonNs is a Python-local duration only.
+
+Output stage accounting.trace is best effort after the original accounting
+cause. Up to12 selected lines use the remaining ORIGINAL64x256 budget; budget
+loss, unavailable clocks and evicted data remain explicit. Only one maximum per
+kind/completion-second is retained in8 buckets, so a missing overlapping maximum
+cannot prove absence. Diagnostic pending is not physical debt. Ambiguous cycle
+matches stay missing. Retained Store age-exceeded start/decision milliseconds
+can select a Node-origin window without refreshing its1000ms validity clock.
+Process-wide FS overlap and residual durations do not identify a cause; capture
+has nonzero unquantified overhead. No healthy log IO or extra mandatory output.
+
+No actual Native/full serial/cap/phase/comparison was run for this change. Source
+review, serialized current-byte Native validation, publication, fresh committed
+prerequisites and a separate Root execution GO remain required. Historical
+415.45925ms attribution and underlying OS cause remain UNKNOWN. This change
+collects evidence and does not repair or qualify any old attempt. Report and raw
+commands/closure/immutable audit: runtime-accounting-trace-report.md in the SDD.
+
+
+Final safety control: correlation copies the original nextRid result at its
+UNCHANGED argument-evaluation position. It never reads a new injected reply
+requestId accessor outside diagnostic containment. Focused genuine observation/
+Watchdog/trace owners28/28 pass after the accessor RED; no guard or message
+changes. Current literal rosters were also corrected108 documented ->111 actual
+prior entries ->112 with this new leaf: fixture-numeric, watchdog-cleanup-context
+and watchdog-faults were pre-existing omissions, not new runtime behavior. Dated
+historical rosters and protectedSection3 are preserved.

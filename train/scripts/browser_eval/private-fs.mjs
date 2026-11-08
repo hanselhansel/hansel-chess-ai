@@ -3,10 +3,12 @@
 // Existing raw/close receipts remain authority. This is resource storage only,
 // not a second debt ledger, clock, deadline, request queue or runtime switch.
 import fs from "node:fs";
+import { accountingTrace } from "./accounting-trace.mjs";
 import { Readable } from "node:stream";
 
 const resources = new Set();
-const completed = (issue) => {
+const completed = (op, issue) => {
+  const traceId = accountingTrace.fsBegin(op);
   let failed = false;
   let result;
   try {
@@ -15,9 +17,11 @@ const completed = (issue) => {
     failed = true;
     result = error;
   }
+  accountingTrace.fsReturn(traceId, failed);
   return new Promise((resolve, reject) => {
     try {
       setImmediate(() => {
+        accountingTrace.fsDeliver(traceId);
         if (failed) reject(result);
         else resolve(result);
       });
@@ -48,20 +52,20 @@ const rawFile = (file, flags, mode) => {
     get fd() {
       return entry.state === "closed" ? -1 : entry.fd;
     },
-    stat: (...args) => completed(() => fs.fstatSync(usable(), ...args)),
+    stat: (...args) => completed("fd.stat", () => fs.fstatSync(usable(), ...args)),
     read: (buffer, offset, length, position) =>
-      completed(() => ({
+      completed("fd.read", () => ({
         bytesRead: fs.readSync(usable(), buffer, offset, length, position),
         buffer,
       })),
     write: (buffer, offset, length, position) =>
-      completed(() => ({
+      completed("fd.write", () => ({
         bytesWritten: fs.writeSync(usable(), buffer, offset, length, position),
         buffer,
       })),
-    sync: () => completed(() => fs.fsyncSync(usable())),
+    sync: () => completed("fd.sync", () => fs.fsyncSync(usable())),
     close: () =>
-      completed(() => {
+      completed("fd.close", () => {
         if (entry.state === "closed") return;
         const fd = usable();
         try {
@@ -95,10 +99,10 @@ for (const name of [
   "rename",
   "readFile",
 ]) {
-  privateFs[name] = (...args) => completed(() => fs[`${name}Sync`](...args));
+  privateFs[name] = (...args) => completed(`fs.${name}`, () => fs[`${name}Sync`](...args));
 }
-privateFs.realpath = (...args) => completed(() => fs.realpathSync.native(...args));
-privateFs.open = (...args) => completed(() => rawFile(...args));
+privateFs.realpath = (...args) => completed("fs.realpath", () => fs.realpathSync.native(...args));
+privateFs.open = (...args) => completed("fs.open", () => rawFile(...args));
 
 // Cold byte delivery with a real immediately-opened descriptor. The reader's
 // existing receipt is armed before this factory; every fresh read uses its
@@ -141,7 +145,7 @@ export function createPrivateReadStream(file, options = {}) {
     read() {
       if (this.destroyed || entry.state !== "open" || entry.readTask !== null) return;
       const buffer = Buffer.allocUnsafe(64 * 1024);
-      entry.readTask = completed(() => {
+      entry.readTask = completed("stream.read", () => {
         try {
           guard?.();
           return fs.readSync(entry.fd, buffer, 0, buffer.length, null);
@@ -189,7 +193,7 @@ export function createPrivateReadStream(file, options = {}) {
           finish(false);
           return;
         }
-        completed(() => {
+        completed("stream.close", () => {
           try {
             fs.closeSync(entry.fd);
           } catch (cause) {
@@ -219,7 +223,7 @@ export function createPrivateReadStream(file, options = {}) {
   });
   entry.stream = stream;
   resources.add(entry);
-  opened = completed(() => {
+  opened = completed("stream.open", () => {
     try {
       guard?.();
       entry.openIssued = true;

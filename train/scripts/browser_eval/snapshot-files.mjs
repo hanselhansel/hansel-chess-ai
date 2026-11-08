@@ -13,6 +13,7 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/fixtures/browser-openings.json",
   "train/fixtures/browser-parity.json",
   "train/fixtures/browser-protocol.json",
+  "train/scripts/browser_eval/accounting-trace.mjs",
   "train/scripts/browser_eval/artifact-completion-failure.mjs",
   "train/scripts/browser_eval/artifact-completion.mjs",
   "train/scripts/browser_eval/artifact-files.mjs",

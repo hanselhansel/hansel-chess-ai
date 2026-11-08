@@ -1,3 +1,5 @@
+import { accountingTrace } from "./accounting-trace.mjs";
+
 // watchdog-lifetime.mjs is the supervisor's actual referenced-lifetime
 // and deferred physical-debt owner. retainActual registers real debt
 // synchronously BEFORE its issuer invokes the actual callback/IO and
@@ -18,7 +20,7 @@
 
 const OWNERS = new WeakMap();
 const AWAIT_LABELS = new Set([
-  "supervisor.fault", "cleanup.run", "cleanup.event", "cleanup.term", "cleanup.kill",
+  "accounting.trace", "supervisor.fault", "cleanup.run", "cleanup.event", "cleanup.term", "cleanup.kill",
   "cleanup.listeners", "cleanup.workload", "cleanup.monitor",
   "shutdown.ordinary", "shutdown.admission", "shutdown.resource",
   "shutdown.driver-reap", "shutdown.driver-scope", "shutdown.lifetime",
@@ -131,9 +133,23 @@ function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineM
     }
     state.markerCount += 1;
     state.reportAwaitStage(line);
+    return true;
   } catch {} finally {
     state.reporting = false;
   }
+}
+
+// Same lifetime/scope and original marker budget. Pure data, after first cause.
+function emitAccountingTrace(state, scope, error) {
+  if (state.traceScopes.has(scope) || state.reporting) return;
+  state.reporting = true;
+  let packet;
+  try { packet = accountingTrace.packet(error, 64 - state.markerCount); }
+  catch {} finally { state.reporting = false; }
+  if (!packet?.length) return;
+  state.traceScopes.add(scope);
+  for (const detail of packet) emitMarker(state, scope, "accounting.trace",
+    state.observationCount++, "rejected", { detail });
 }
 
 // Passive descriptive observation only. The issued object and every original
@@ -173,13 +189,15 @@ export function reportStoppedFault(owner, scope, error) {
   if (!state || state.reporting || !state.reportAwaitStage || state.markerCount >= 64) {
     return;
   }
-  emitMarker(state, scope, "ordinary.fault", state.observationCount++, "rejected", error);
+  if (emitMarker(state, scope, "ordinary.fault", state.observationCount++, "rejected", error))
+    emitAccountingTrace(state, scope, error);
 }
 
 // Earliest shared fault, including resource persistence; descriptive only.
 export function reportSupervisorFault(owner, scope, error) {
   const state = OWNERS.get(owner);
-  if (state) emitMarker(state, scope, "supervisor.fault", state.observationCount++, "rejected", error);
+  if (state && emitMarker(state, scope, "supervisor.fault", state.observationCount++, "rejected", error))
+    emitAccountingTrace(state, scope, error);
 }
 
 // Private Recorder classification only. The SAME marker budget/guard is used;
@@ -288,6 +306,7 @@ export function createWatchdogLifetime({ createHold = defaultReferencedHold, rep
     reporting: false,
     markerCount: 0,
     observationCount: 0,
+    traceScopes: new Set(),
   };
 
   // The single hold is reused while any debt exists and is created

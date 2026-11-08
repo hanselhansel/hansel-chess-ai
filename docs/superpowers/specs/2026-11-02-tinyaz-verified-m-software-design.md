@@ -564,6 +564,9 @@ Do not change runtime auth defaults, missing-file handling, environment preceden
 | Create | `./train/scripts/browser_eval/private-fs.mjs` | Declared before creation: shared harness-private default filesystem backend, sole exports privateFs and createPrivateReadStream. Metadata/path methods and raw FD stat/read/write/sync/close invoke actual Node synchronous FS immediately within caller prearmed/guarded issuance; completed value/original throw delivers through one setImmediate, never deferred fresh FS. Same Promise APIs, no clock/deadline/queue/debt authority. Cold bounded Readable uses emitClose:false; only actual close success or proven never-issued open emits physical close. Ambiguous open/close remains strongly retained/unknown; after ambiguous close never reuse integer FD for another operation. Private stream accepts captured assertEffectLive for each fresh read and bounded delivery; mandatory close remains allowed. One raw-resource storage Set, no new receipt ledger; existing issueActual/OwnedFile remains authority. Functional runtime union111, helpers unchanged. |
 | Create | `./train/scripts/browser_eval/private-fs.test.mjs` | TEST-only default sync syscall/fair delivery, original errors, real FD and ambiguous-close/reuse safety, cold stream/guard/close controls. Excluded from runtime. |
 | Create | `./train/scripts/browser_eval/private-fs-phase.test.mjs` | TEST-only causal unavailable async-pool Store/Recorder/footprint/receipt controls and complete runtime import closure. Existing async injected fixture bodies/results/errors remain; interception targets the same shared privateFs facade instead of Node's global provider. Excluded from runtime. |
+| Create | `./train/scripts/browser_eval/accounting-trace.mjs` | Passive bounded scalar accounting timing data; exact declaration in runtime passive accounting trace addendum. Functional runtime112, no authority/IO/timer. |
+| Create | `./train/scripts/browser_eval/accounting-trace.test.mjs` | PURE genuine first-fault/data/capacity/nested-owner controls, runtime excluded. |
+| Create | `./train/scripts/browser_eval/accounting-trace-io.test.mjs` | PURE private FS/transport/held/error boundary controls, runtime excluded. |
 | Create | `./train/scripts/browser_eval/artifact-files.mjs`                    | Corrective 57 (declared before use — not yet implemented): the WHOLE OwnedFile owner — `isFileHandle`, the genuine-OwnedFile identity/receipt WeakMap, the ONE strong raw-resource `{handle,owned}` Set, `openActual` and `ownedFileCloseReceipt` with their full comments — delegates to the planned artifact-owned-file.mjs `createOwnedFileOperations({issueActual,storeFail})` leaf below (IDENTICAL returned references re-exported under the same names; `OwnedFile.close` becomes the private MAX2-total-raw-attempts cached flow joining the SAME prearmed `closeDebt`, superseding the earlier instant-reject-then-outer-retry wording, and an issued-open rejection/unadoptable return joins its OWN prearmed `closeDebt` before error), per the [corrective-57 private contract](#corrective-57-private-contract-declared-before-creationuse). Corrective 55 (declared before use — not yet implemented): the ArtifactFiles-private strong raw-resource `{handle,owned}` Set (add raw resource immediately after open resolves BEFORE shape validation, pin the minted OwnedFile on the same entry, remove ONLY after actual raw close success with the SAME `settleClose`/`closeDebt`) and the WHOLE `normRel` -> existing `schema-primitives.isRelPath` delegation (FIRST empty/type `STORE_PATH` priority/message and all path checks preserved) are specified in the [corrective-55 private contract](#corrective-55-private-contract-declared-before-creationuse). Confined paths, durable atomic file primitives and bounded streaming artifact hashing/inventory. artifact-store.mjs retains queue/reservation/lane/seal ownership and re-exports the read APIs unchanged. Root48 (declarations recorded before use): gains the shared tracked-IO leaves `issueActual(retainActual, issueThunk) -> Promise<T>` (deferred RAW-effect receipt registered through `retainActual` BEFORE `issueThunk` is invoked inside try/catch — the receipt fulfills on the actual fulfilled-or-thrown result while the original value/error stays on the operation channel; a registrar throw issues nothing, an unobserved/ambiguous issued operation never gets synthetic fulfillment and it does NOT settle an open-handle debt), `openActual(retainActual, issueOpenThunk) -> Promise<OwnedFile>` (pre-arms a SEPARATE real-close debt before the raw open, adopts the returned FileHandle immediately before validation; `OwnedFile` exposes only tracked `stat/read/write/sync/close` methods — every call uses `issueActual`, a fulfilled open retires only the raw receipt never the close debt, rejected close retains debt plus original fault, definite no-open may retire the never-opened debt while ambiguous creation cannot, repeated close after proven actual close is idempotent), and optional private `io` on `confined(root,rel,name,io?)`/`tempIn(dir,base,io?)`/`dirSync(dir,io?)`/`hashFileRef(abs,rel,io?)`/`writeAtomic(abs,bytes,io?)` — `writeAll` may consume an OwnedFile write without double-registering the same syscall; existing callers/default behavior stay valid and unsupported-directory-sync policy never fabricates closure. R4 corrective (declarations recorded before use): one more private export `ownedFileCloseReceipt(genuineOwnedFile) -> Promise<void>` returns the SAME already-existing close-debt promise via the module-private WeakMap that binds only genuine constructor-produced OwnedFile — forged/spread/proxy aliases reject, it creates no receipt/queue/clock/ledger/status/resolver and never resolves the debt itself, the OwnedFile method roster stays exactly stat/read/write/sync/close, only actual close success fulfills the receipt and the first error stays sticky; raw-open registration/issuance state is retained internally so only an internally observed pre-issuance/no-resource path may retire never-opened debt — a generic raw-open rejection or missing returned handle is NOT no-creation proof, with no caller flag, error-code-only certificate, fake close or permission bypass. |
 | Create | `./train/scripts/browser_eval/artifact-owned-file.mjs` | Corrective 57 (declared before creation — PLANNED, not yet created): the WHOLE OwnedFile owner extracted from artifact-files.mjs under ONE pure factory `createOwnedFileOperations({issueActual,storeFail}) -> frozen {openActual,ownedFileCloseReceipt}` — TWO trusted ArtifactFiles function bindings validated/captured at pure construction and never invoked there (no callback/IO/clock/queue/timer/hold/ledger); ArtifactFiles instantiates it ONCE and re-exports the IDENTICAL returned references under the same names, signatures `openActual(retainActual,issueOpenThunk)`/`ownedFileCloseReceipt(genuineOwnedFile)` and the exact `stat`/`read`/`write`/`sync`/`close` OwnedFile roster unchanged. The leaf owns `isFileHandle`, the genuine-OwnedFile identity/receipt WeakMap, the ONE strong raw-resource `{handle,owned}` Set, the arming/pinning order and the universal `OwnedFile.close` cached flow of at most TWO total raw-close attempts per handle joined by every repeated/concurrent/outer-retry call to the SAME prearmed `closeDebt` (the earlier instant-reject-then-outer-retry wording superseded, preserved history); an issued-open rejection or unadoptable return retains its cause and awaits the SAME acquisition's `closeDebt` before error — never a completed-leaf failure, no new ledger/counter/clock/queue/scoped registrar/global barrier/resolver/status and no extra retry time/grace. The complete private contract is the [corrective-57 private contract](#corrective-57-private-contract-declared-before-creationuse). Functional runtime input; never TEST or a BackendPython helper. |
 | Create | `./train/scripts/browser_eval/artifact-store.mjs`                       | Corrective 57 (declared before use — not yet implemented): inside the delegated completion trio the WHOLE first-primary/containment/failure-recovery/held-safe flow further delegates to the planned artifact-completion-failure.mjs `createCompletionFailureMethods` leaf over seven borrowed context bindings, and the universal OwnedFile physical-close boundary is the planned artifact-owned-file.mjs `createOwnedFileOperations` leaf, per the [corrective-57 private contract](#corrective-57-private-contract-declared-before-creationuse). Corrective 55 (declared before use — not yet implemented): the three prepared-completion transaction methods delegate ONCE to the frozen trio returned by `createStoreCompletionMethods` in artifact-completion.mjs over the exact 18-field `completionContext` with the synchronous `sealPhaseCore` factoring; the complete private contract is the [corrective-55 private contract](#corrective-55-private-contract-declared-before-creationuse). Confined async artifact IO inside the workspace: atomic writeOnce/append/replace sinks, ephemeral deletion, phase sealing, logical-byte ArtifactRefs and cumulative whole-workspace footprint admission under the fixed ordinary/final reserve split; delegate path/durable-file/inventory primitives to artifact-files.mjs. No process, model or browser operation. Root48 (declarations recorded before creation/use): `createArtifactStore({workspaceRoot,readFootprint,monotonicNow,lifetime})` gains the optional trusted `lifetime` member — absent, the Store creates its OWN real default `createWatchdogLifetime()`; supplied, the brand-checked EXACT owner is retained before any IO and its `retainActual` becomes the frozen storeContext/ActualIO registrar for every operational sink, confined metadata, OwnedFile, raw syscall, completion preparation/publication, mandatory accounting and full readback — no noop fallback, mutable replacement or unjoined default debt ledger. Private `artifactStoreLifetime(store) -> LifetimeOwner` returns only the genuine WeakMap association, rejecting forged/unassociated objects and creating no handle/IO. The Store privately mints the opaque `storeOwner` token validated by `completion-publication.mjs` on every mutation, owns the exact methods `prepareCompletion({phaseDirectory,bytes}) -> Promise<PreparedCompletion>` (resolves only after actual temp close/accounting, still-live safe transaction associated, NO caller retainFinalizerUntil callback — the constructor owner is used), `publishPreparedCompletion(prepared,preparedVerification) -> Promise<{completionRef,verified}>` (paired single-use token, fresh canonical memo/readback/accounting/seal inside ONE owned outer queue operation) and `containPreparedCompletion(prepared,cause) -> Promise<FailedPublication>` (idempotent only for the SAME already-contained failed capability; preserves actual failed/partial bytes in the EXACT original temp, restores a matching canonical file without overwriting unknown data, required sync and fresh canonical-absence proof before failure-safe hold release — `FailedPublication` is descriptive `{failedTemporaryPath,failedTemporaryRef}` plus the retained primary error, never a receipt/status/proof). The transaction `safeSettlement` deferred is registered through the SAME owner's `retainFinalizerUntil` BEFORE any prepare/verify/publish effect; every raw effect and SEPARATE actual-close debt is prearmed before its issue, and only genuine immutable sealed publication or complete actual preseal containment fulfills it — a caught verifier rejection alone never does. Functional runtime input. |
@@ -1409,6 +1412,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/fixtures/browser-openings.json",
   "train/fixtures/browser-parity.json",
   "train/fixtures/browser-protocol.json",
+  "train/scripts/browser_eval/accounting-trace.mjs",
   "train/scripts/browser_eval/artifact-completion-failure.mjs",
   "train/scripts/browser_eval/artifact-completion.mjs",
   "train/scripts/browser_eval/artifact-files.mjs",
@@ -1436,6 +1440,7 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/environment-python.mjs",
   "train/scripts/browser_eval/environment.mjs",
   "train/scripts/browser_eval/final-integrity.mjs",
+  "train/scripts/browser_eval/fixture-numeric.mjs",
   "train/scripts/browser_eval/fixture.html",
   "train/scripts/browser_eval/fixture.mjs",
   "train/scripts/browser_eval/identity-schema.mjs",
@@ -1497,10 +1502,12 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/stats.mjs",
   "train/scripts/browser_eval/supervisor-protocol.mjs",
   "train/scripts/browser_eval/watchdog-admission.mjs",
+  "train/scripts/browser_eval/watchdog-cleanup-context.mjs",
   "train/scripts/browser_eval/watchdog-cleanup.mjs",
   "train/scripts/browser_eval/watchdog-config.mjs",
   "train/scripts/browser_eval/watchdog-driver-actual.mjs",
   "train/scripts/browser_eval/watchdog-driver.mjs",
+  "train/scripts/browser_eval/watchdog-faults.mjs",
   "train/scripts/browser_eval/watchdog-lifetime.mjs",
   "train/scripts/browser_eval/watchdog-operations.mjs",
   "train/scripts/browser_eval/watchdog-ordinary.mjs",
@@ -4012,3 +4019,96 @@ owner; prior I1/I2 cases unchanged. Runtime111/protected23/M/Section3/helpers/
 90/60/55+5/P/C/4MiB/250/500/1000 remain exact. Round2 report appended in the SDD;
 scoped f1b908a..HEAD review and separate new Root GO are required before execution.
 Historical415.45925ms attribution remains UNKNOWN. No push or scoring phase.
+
+
+### Runtime passive accounting trace declaration BEFORE creation/use, 2026-11-08
+
+Declare ONE private runtime accounting-trace.mjs: createAccountingTrace({nowNs})
+and default accountingTrace, pure scalar storage, no clock at construction.
+Frozen internal API fsBegin(op),fsReturn(id,rejected),fsDeliver(id),raw(runId),
+frame(runId),wire(requestId,stage,value),cycle(existingDiagnostic,requestId),
+packet(error,remainingMarkerBudget),stats(). Fixed64 FS pending slots,8 recent
+one-second completion buckets with scalar immediate/delivery maxima,16 request
+records,8 raw-run slots and8 failed-cycle records. Whitelisted operation/ID/
+timestamp/boolean/count scalars only, no buffers/paths/FDs/promises/resources.
+Eviction/unavailable/truncated/pending facts explicit; never debt/proof authority.
+Clocks/data/output failures are contained, original outcomes/guards/call order
+remain. No healthy log IO, new worker/timer/queue/wire/flag/recovery or authority.
+Runtime union111->112; Python helpers3 and execution helpers6 unchanged.
+
+PrivateFs records inside its EXISTING immediate syscall and one completed-result
+turn for both outcomes, raw files and bounded stream operations. Transport records
+actual write/backpressure/throw, raw callback, complete-frame, original validated
+reply boundaries keyed original requestIds. Existing failed-cycle scalars/Ns are
+copied before original throw without another validity-clock read or changed guard.
+No absolute Python/Node clock subtraction, ownership or cause inferred from overlap.
+
+Capacity move declared BEFORE use: the WHOLE existing transport onFrame group
+delegates to existing process-framing.mjs createCollectorFrameHandler over SAME
+pending/protocol/onInbound/onStartup/failOnce/makeError/decoder/runId references.
+No new state owner/queue/validation authority. Preserve original receiver,
+ready->onInbound->pending-resolution order, synchronous reentry and all late/
+malformed faults. Existing framer receives runId DATA to timestamp its original
+push callback without listener replacement. Runtime DAG: privateFs/framing/
+observation/lifetime -> accounting-trace; transport -> existing framing, no backedge.
+
+First relevant accounting trace uses existing lifetime's phase/selftest scope
+bits, no global emitted latch. Original first-cause marker is attempted FIRST
+and must return successfully before trace output. Bounded selected scalar lines
+use SAME64-marker x256-byte total budget, no new allowance/required IO/join.
+Process-wide FS overlap, partial/window loss, missing timing and nonzero overhead
+are explicit. Protected wholeSection3/model/science/timing/ownership remain exact.
+
+Declare PURE accounting-trace.test.mjs and accounting-trace-io.test.mjs before
+creation, runtime-excluded. Genuine monitor/first-fault missing-evidence RED,
+transport/framer, original500/1000 guards, fulfilled/rejected delivery, capacity,
+clock/output errors, pending/held ownership and independent nested-owner scope
+controls precede local commit/review. No Native/full serial/cap/phase execution
+until separate reviewed Root release. Prior short control was bounded green
+NONREPRODUCTION only; historical415.45925ms cause remains UNKNOWN.
+
+
+### Runtime accounting trace implemented, pending source review
+
+The passive implementation is present. Runtime roster112 and both literal docs
+rosters agree; helpers3/execution helpers6 stay unchanged. Genuine first-fault
+RED closed1 because the timing packet was absent. Covering PURE gate184/184
+closed0 with both pipes/rawfiles, including unchanged500ms/1000ms guards. One
+intermediate sweep failed on unsorted new runtime membership and a legacy111
+expectation; corrected roster order/count only. All evidence remains retained.
+
+Healthy capture performs scalar bookkeeping only. Immediate spans bracket the
+existing privateFs issue function, including its original guard/resource
+bookkeeping, not a measured kernel syscall. Delivery stamps run inside the SAME
+completed-result callback before its original resolve/reject. Raw is the stdout
+push callback that completed the frame (last fragment, not kernel/first-byte
+arrival); full is complete-frame entry; valid is successful validator return;
+resolve precedes the original pending resolver. Synchronous replies can validate
+BEFORE write returns. PythonNs is a Python-local duration only.
+
+Output stage accounting.trace is best effort after the original accounting
+cause. Up to12 selected lines use the remaining ORIGINAL64x256 budget; budget
+loss, unavailable clocks and evicted data remain explicit. Only one maximum per
+kind/completion-second is retained in8 buckets, so a missing overlapping maximum
+cannot prove absence. Diagnostic pending is not physical debt. Ambiguous cycle
+matches stay missing. Retained Store age-exceeded start/decision milliseconds
+can select a Node-origin window without refreshing its1000ms validity clock.
+Process-wide FS overlap and residual durations do not identify a cause; capture
+has nonzero unquantified overhead. No healthy log IO or extra mandatory output.
+
+No actual Native/full serial/cap/phase/comparison was run for this change. Source
+review, serialized current-byte Native validation, publication, fresh committed
+prerequisites and a separate Root execution GO remain required. Historical
+415.45925ms attribution and underlying OS cause remain UNKNOWN. This change
+collects evidence and does not repair or qualify any old attempt. Report and raw
+commands/closure/immutable audit: runtime-accounting-trace-report.md in the SDD.
+
+
+Final safety control: correlation copies the original nextRid result at its
+UNCHANGED argument-evaluation position. It never reads a new injected reply
+requestId accessor outside diagnostic containment. Focused genuine observation/
+Watchdog/trace owners28/28 pass after the accessor RED; no guard or message
+changes. Current literal rosters were also corrected108 documented ->111 actual
+prior entries ->112 with this new leaf: fixture-numeric, watchdog-cleanup-context
+and watchdog-faults were pre-existing omissions, not new runtime behavior. Dated
+historical rosters and protectedSection3 are preserved.

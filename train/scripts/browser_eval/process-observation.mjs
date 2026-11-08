@@ -1,3 +1,4 @@
+import { accountingTrace } from "./accounting-trace.mjs";
 // process-observation.mjs owns the fixed-point RSS observation owner
 // extracted from processes.mjs under the budget/observation split
 // decision: the complete bounded coverage cycle, the native-duration
@@ -213,10 +214,11 @@ export function createProcessObservation({
     requireHealthy();
     const startedNs = nowNs();
     const found = new Map();
+    let requestId; // Diagnostic copy of the original allocator result, not reply data.
     let res = await send(
       "sample",
       { owned: ownership.ownedIdentities(), inspectPids: [], probes: [] },
-      nextRid("sample"),
+      (requestId = nextRid("sample")),
       handle,
     );
     let nativeDurationNs = 0n;
@@ -247,7 +249,7 @@ export function createProcessObservation({
           inspectPids: [],
           probes: [],
         },
-        nextRid("sample"),
+        (requestId = nextRid("sample")),
         handle,
       );
     }
@@ -277,6 +279,7 @@ export function createProcessObservation({
         nativeDurationMs: Number(nativeDurationNs) / 1e6,
         coverageRounds, stickyPresent: stickyFault !== null,
       };
+      accountingTrace.cycle(diagnostic, requestId);
       throw acct(`sample interval ${JSON.stringify(diagnostic)}`);
     }
     // The commit is the success point: a late callback can never beat

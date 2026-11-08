@@ -12,7 +12,8 @@
 import { TextDecoder } from "node:util";
 
 import { pollHandle, waitHandle } from "./process-budget.mjs";
-import { createCollectorFramer } from "./process-framing.mjs";
+import { accountingTrace } from "./accounting-trace.mjs";
+import { createCollectorFramer, createCollectorFrameHandler } from "./process-framing.mjs";
 
 const MAXFRAME = 1048576;
 const MAX_PENDING_WRITES = 256;
@@ -86,61 +87,17 @@ export function createCollectorTransport({
     }
   };
 
-  const onFrame = (bytes) => {
-    if (bytes.length === 0) {
-      failOnce(tErr("blank frame"));
-      return;
-    }
-    if (bytes.length + 1 > MAXFRAME) {
-      failOnce(tErr("frame bytes"));
-      return;
-    }
-    let msg;
-    try {
-      msg = JSON.parse(decoder.decode(bytes));
-    } catch {
-      failOnce(tErr("frame decode"));
-      return;
-    }
-    // The pending entry stays owned until BOTH the same-handle
-    // actual-clock check and protocol acceptance succeed: a late
-    // acknowledgement arriving after its request expired can never be
-    // admitted into protocol state, and the failure rejects the actual
-    // send/proof promise together with its public wrapper instead of
-    // leaving a stranded waiter.
-    const p = pending.get(msg.requestId);
-    if (p) {
-      try {
-        p.handle.assertLive("reply deadline");
-      } catch {
-        failOnce(tErr("reply deadline"));
-        return;
-      }
-    }
-    try {
-      protocol.accept("collector", "c2s", msg, bytes.length + 1);
-    } catch (e) {
-      failOnce(e);
-      return;
-    }
-    if (msg.type === "ready" && msg.stage === "startup") {
-      readyMsg = msg;
-      return;
-    }
-    onInbound(msg);
-    if (p) {
-      pending.delete(msg.requestId);
-      p.unsub();
-      p.resolve(msg);
-    }
-  };
+  const onFrame = createCollectorFrameHandler({
+    pending, protocol, onInbound, onStartup: (msg) => { readyMsg = msg; },
+    failOnce, makeError: tErr, decoder, runId,
+  });
 
   // The bounded LF byte-assembly delegates to the framer owner: every
   // oversize/truncated condition routes back through the transport's
   // single failure latch, and isFailed stops all further framing once
   // the wire is doomed.
   const framer = createCollectorFramer({
-    onFrame,
+    onFrame, runId,
     onFault: (detail) => failOnce(tErr(detail)),
     isFailed: () => failed,
   });
@@ -214,7 +171,12 @@ export function createCollectorTransport({
       }
       // write(false) already accepted this frame into the stream's own
       // buffer; drain resumes with the NEXT frame, never a replay.
-      if (child.stdin.write(item.buf) === false) {
+      accountingTrace.wire(item.requestId, "write");
+      let writable;
+      try { writable = child.stdin.write(item.buf); }
+      catch (error) { accountingTrace.wire(item.requestId, "throw"); throw error; }
+      accountingTrace.wire(item.requestId, "return", writable);
+      if (writable === false) {
         child.stdin.once("drain", resumeWrite);
         return;
       }
@@ -239,7 +201,7 @@ export function createCollectorTransport({
       Buffer.byteLength(frame, "utf8"),
     );
     seqOut += 1;
-    writeQueue.push({ buf: Buffer.from(frame, "utf8"), handle });
+    writeQueue.push({ buf: Buffer.from(frame, "utf8"), handle, requestId });
     drain();
   };
 
