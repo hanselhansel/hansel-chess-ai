@@ -4134,3 +4134,36 @@ Scoped review and separate Root execution release remain required. No Native,
 full-suite, cap/control/browser/model/phase was run for this TEST-only correction.
 Historical415.45925ms cause remains UNKNOWN. Round1 evidence/report is appended
 to runtime-accounting-trace-report.md; original report prefix/receipts preserved.
+
+
+### Runtime trace actual validation checkpoint, 2026-11-08 (docs only)
+
+On unchanged4df7eb0 runtime/source, the full serial gate is GREEN793/793,
+0fail/cancel/skip/todo. Parent natural0/103.716679208s; BOTHpipes/rawfiles/journal
+joined. Genuine Native14 actual exits+BOTHpipes+settled, expected collector0/0/2,
+errors[], valid ordering and1,646,307B<4MiB.387 inputs exact. Handoff
+runtime-trace-native-gate-4df7eb0-2/completed-handoff.json SHA
+ec53fd964e1340d6e04170a1f41304301aae77649aa919fbf460a2ad41fec97b; manifest
+55e1ae209c96f7a2b907cbe9809f991854a0805bbccb830cf00cbc35362be0e2. Sealing
+separately closed0/0.392524458s. Prior4925 gate remains FAILED792/793 with its
+separate NativePASS;4df7eb0 is the TEST selector correction.
+
+Controlled cap only: wrapper natural0/7.378600833s; CLI38750 natural2 planned
+PHASE_TIMEOUT; driver38752+collector38751 exit0/no signal/BOTHpipes. Fault0,
+cleanup verified/accounting true, analysis ineligible,45total markers (22entered/
+fulfilled pairs +1accepted cleanup), all lifetime/body joins accepted. Original controlled8s/5s and unused20s containment;
+forced false.235files/2,622,012B frozen,392 inputs exact; sealing separately
+closed0/1.448705583s. Handoff runtime-trace-cap-4df7eb0-1-owner/completed-handoff.json
+SHA0f47ccde823676999d10878510bd319c97a6f2c3e37d22c3eac0ec842e157e8f; manifest
+d0f04f808e7f65543cba4af16488f289ed756af06d83775a10876793c4a49c81. Seven application
+checks intentionally failed under the controlled SDK/body/input-reopen setup.
+This is genuine CLI/Native/Recorder/Watchdog/driver cleanup closure evidence,
+NOT a primary browser/model/check/parity/preflight/comparison or strength pass.
+
+Runtime112/protected23/M/helpers/versions/dependencies/science/all original limits
+are exact. App/typecheck/Python carry ONLY178 unchanged executed refs. Old3c9
+31/40 remains invalid,415.45925ms cause UNKNOWN;43d5f33 short diagnostic remains
+bounded NONREPRODUCTION and f1 setup remains FAILED_SETUP. Passive trace collects
+evidence; no backend repair is claimed. No new workload ran for this docs-only
+checkpoint. Publication, fresh committed check/parity/preflight, new Root full40
+release and final whole-change/task review remain OPEN. No push or phase launch.
