@@ -137,3 +137,12 @@ export const closureInput = ({ facts, final, completion, eventsRef, finalEvent, 
   finalEvent,
   checkpoints,
 });
+
+// Task6 equivalence seams are IDENTICAL existing scripted factory references.
+// Their original owned teardown remains the caller's responsibility.
+export {
+  createMonitorFixture as strictMonitorFixture,
+  monitorBootstrapScript as strictBootstrapScript,
+  startMonitorFixture as startStrictMonitor,
+} from "./process-monitor-test-fixtures.mjs";
+export { setupRun as strictWatchdogRun } from "./watchdog-run-test-fixtures.mjs";

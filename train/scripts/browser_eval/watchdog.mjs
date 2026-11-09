@@ -2,6 +2,7 @@
 // Runtime, operations, records and shutdown retain their existing ownership;
 // Native/proof/driver resources remain owned by their dedicated modules.
 // Every first stop captures and narrows the original cleanup bound once.
+import { createWatchdogResourceChecks } from "./watchdog-verdict-policy.mjs";
 import { createWatchdogFaultRecorder } from "./watchdog-faults.mjs";
 import { copyDeep } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
@@ -102,18 +103,6 @@ export function createWatchdog(options) {
   const { faults, recordFault } = createWatchdogFaultRecorder({ nowNs,
     lifetime: capabilities.lifetime, scope: config.selftestPhase ? "selftest" : "phase" });
 
-  // The sticky Native overage flag: a retained historical observed fact —
-  // never a fresh sample — checked before ordinary admission, before a
-  // finish may be admitted and again after cleanup before finalization.
-  const rssExceeded = () => {
-    try {
-      const mo = monitor.lastObservation();
-      return mo !== null && mo.rssLimitExceeded === true;
-    } catch {
-      return false;
-    }
-  };
-
   // The ONE original cleanup horizon: captured exactly once at the first
   // failure stop OR the admitted normal finish, capped by the original
   // phaseEnd. Repeated getters never make a fresh now+5000 window.
@@ -177,6 +166,13 @@ export function createWatchdog(options) {
     }
     resolveWake();
   };
+  const { rssExceeded, stopFinishOnOverage } = createWatchdogResourceChecks({
+    monitor,
+    state,
+    recordFault,
+    latchStop,
+    makeError: fail,
+  });
   const requestStop = (reason) => latchStop(reason);
   const stopped = () => state.stopReq !== null;
   const admissionOpen = () =>
@@ -192,31 +188,7 @@ export function createWatchdog(options) {
   // reason, captures the same original cleanup bound once and wakes the run.
   // A late finish after any stop or driver close is ignored.
   const noteFinish = (msg) => {
-    const mo = monitor.lastObservation();
-    if (mo !== null && mo.rssLimitExceeded === true) {
-      const e = fail("RESOURCE_RSS", `peak ${mo.peakRssBytes}`);
-      // Retain the actual separate current/peak/flag/time/verdict for the
-      // rapid high -> lower -> finish race through the existing resource
-      // lane — the fault detail alone never replaces real observations.
-      const rssBytes = Number.isSafeInteger(mo.rssBytes) ? mo.rssBytes : null;
-      const peakRssBytes = Number.isSafeInteger(mo.peakRssBytes) ? mo.peakRssBytes : null;
-      const accountingValid = mo.accountingValid === true;
-      const atMonoNs = mo.atMonoNs !== undefined ? `${mo.atMonoNs}` : null;
-      recordFault(e);
-      latchStop(e.code);
-      if (state.records !== null) {
-        void state.records
-          .recordEvent("resource", {
-            rssBytes,
-            peakRssBytes,
-            rssLimitExceeded: true,
-            accountingValid,
-            atMonoNs,
-          })
-          .catch(recordFault);
-      }
-      return;
-    }
+    if (stopFinishOnOverage()) return;
     if (!admissionOpen()) return;
     if (capabilities.finalIntegrity !== null && !capabilities.finalIntegrity.isComplete()) {
       recordFault(fail("FINAL_INTEGRITY", "finish without completed own scan"));

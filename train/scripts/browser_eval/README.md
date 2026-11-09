@@ -1218,7 +1218,7 @@ widening protected-root authority.
 stopAndReap}` owns the WHOLE collector lifecycle extracted from
 `processes.mjs` under the readable-runtime split decision. The
 factory is pure and lazy: no spawn, timer, await or IO runs at
-construction. `config` carries the monitor's fixed inputs `{runId,
+construction. As of Task6 it delegates the whole start/collectorArgv group to `createProcessStart`, over the same references and error factories; tick and stop ownership remain here. `config` carries the monitor's fixed inputs `{runId,
 pythonExecutable, helperPath, protocol, clock, spawnImpl,
 recordRoot}`; `state` is the monitor's ONE shared mutable lifecycle
 object `{child, transport, lsof, readyEvidence, ownUid, timer,
@@ -2287,7 +2287,7 @@ the literal `FIXED_LIMITS.timing.heartbeatGapMs` (2000 ms) expires the
 run even while registration stays stalled; `monitor.start` is tracked
 through `state.monitorStartAttempted` before it is awaited so an
 interrupted start still reaches genuine teardown without a fabricated
-running tuple. The resource interval checks the Native `lastObservation`
+running tuple. As of Task6 the whole resource interval delegates to `armResourcePolling`, retaining the same capabilities/state/timing/control and original error factory. The resource interval checks the Native `lastObservation`
 independently of any awaited footprint scan (a stuck walk can never
 mask stale accounting or the sticky `rssLimitExceeded` flag), retains
 the actual current `rssBytes`/`peakRssBytes`/sticky-flag facts through
@@ -10469,8 +10469,8 @@ the caller's responsibility. The v1-only Recorder staging guards remain active.
 
 ### Current Task5 TEST fixture API contract (review fix round1)
 
-`separate-verdicts-test-fixtures.mjs` exports the five functions below. They build
-synthetic data only. They launch no process, own no monitor/Store/lifetime, write
+`separate-verdicts-test-fixtures.mjs` exports the five Task5 functions below. These five build
+synthetic data only. Task6 additionally re-exports four existing scripted factories, documented in the Task6 API section below. They launch no process, own no monitor/Store/lifetime, write
 no file, and relax no production validator. They cannot establish a genuine v2
 workspace, publication, parent, Native observation, cleanup, cohort or passage.
 `ref`, identity/environment values and model input inventories come from the
@@ -10506,3 +10506,35 @@ The earlier intervened fixture control establishes child72128 TERM followed by c
 Re-review accepted I1, I2, I3 and I5; I4 remained open because the monitor-start bound allowed an earlier checkpoint to borrow a later-origin episode's future duration. The local correction now clips each available retained episode at capture and uses only conservative retained-neighbor interval bounds for dropped ordinal ranges. Missing episode details remain unavailable; no history, policy or schema is reconstructed. Genuine earlier completed maxima and genuine open/completed checkpoints with66/70-episode final rings remain accepted. The exact600ms-to900ms later-origin forgery rejects. The focused suite is59/59; final typecheck and invariant evidence accompany the round2 report. Fresh independent scoped re-review remains pending before Task6.
 
 Only the pure graph checker, its existing resource-quality test owner and affected documentation change. Strictv1 staging, all prior failed/control evidence and the unavailable separate historical child wait status remain unchanged. There is no Native/browser/model/phase execution or v2 publication/passage claim. Round2 evidence: W/`separate-verdicts-implementation-evidence/fd56d529-e22c-4b6a-a142-d08c6b190ce6/`.
+
+
+### Task6 extraction API and execution clarification (2026-11-10)
+
+Root's Task6 ruling limits this checkpoint to strict-v1 whole-group extraction and same-input characterization. The section9 table's v2 routing, periodic purpose/deadline metadata, quality behavior and running-version changes are eventual Task7 roles. Task6 preserves current tick admission, strict accounting faults, running schemaVersion1, 250ms monitor sampling, 1000ms resource polling and every original bound. Task5 Recorder staging remains active. No v2 runtime success or publication is claimed.
+
+The new private owners are declared before creation:
+
+- `createProcessStart({config,state,authority,stopOwner,tick,makeAccountingError,makeCleanupError}) -> start`. Pure capture over the identical runtime references and original error factories. `start(options?)` returns the original asynchronous readiness/first-cycle result or original error; it holds the same handle/lifetime, collector physical receipt, bootstrap/backend/stop fences and teardown path. Construction runs no callback or IO. No second state, queue, allocator, clock or lifetime.
+- `armResourcePolling({capabilities,state,timing,control,makeError}) -> undefined`. Called once at the existing post-driver-start arm point. Borrows the identical clock, monitor, footprint, io registrar and original runtime error factory. Installs the original1000ms interval in the existing timing.timers set; retains the same state.resourceTask promise until its actual finally. Native projection/event/error order and no-overlap guard are unchanged. Exceptions propagate exactly as before; it owns no stop authority.
+- `createWatchdogResourceChecks({monitor,state,recordFault,latchStop,makeError}) -> frozen {rssExceeded,stopFinishOnOverage}`. Pure capture. `rssExceeded()` preserves the original catch-false sticky projection getter. `stopFinishOnOverage()` reads the original finish-boundary projection, returns false for no retained cap, otherwise records the original RESOURCE_RSS error, invokes the same synchronous latch, emits the original captured resource payload and returns true. Getter throws and original callbacks retain their behavior. It owns no state, ledger, timer or stop latch.
+
+The existing TEST fixture owner adds only identical re-exports `strictMonitorFixture`, `strictBootstrapScript`, `startStrictMonitor`, `strictWatchdogRun` from the existing scripted factories, with their existing signatures/returns/errors/teardown unchanged. These equivalence seams do not create another verifier or owner. New monitor/watchdog test owners exercise genuine strict-v1 lifecycle and protocol behavior before extraction and unchanged afterward. Controlled actual child/pipe facts are released before joining the genuine lifetime; watchdog fixtures preserve their existing explicit writer/body/driver closure.
+
+
+### Task6 current API details and checkpoint (2026-11-10)
+
+The three extraction factories accept trusted internal references. They add no public monitor/Watchdog keys and no independent validation or proof authority. `createProcessRuntime` keeps its original options guard and `{start,stopAndReap}` return; `createWatchdog` keeps `{run,requestStop}`. The original error factories are borrowed unchanged, preserving error codes, messages and thrown values. No new catch converts a failed or missing observation to success. `rssExceeded` keeps its existing catch-false projection behavior; `stopFinishOnOverage` preserves the original uncaught getter path and synchronous fault/latch/event ordering.
+
+`createProcessStart` receives `config` with the original runId, pythonExecutable, helperPath, protocol, clock and spawnImpl; mutable `state` is the identical monitor lifecycle object. It borrows the original authority functions and objects, including `op`, `ownOperation`, `enqueue`, proofs, runCycle, registerHelper, signalHelper, proveTransition, markFault, optional verifyExpectedBackend and retainSupervisorActual. `stopOwner` is the original createProcessStop result, `tick` is the identical interval callback, and the two error arguments are the original acct/unproven functions. It returns the original async `start(options?)` function directly, without a wrapper. Options remain the existing absolute deadline input to authority.op. Ready evidence is copied on success. Duplicate/spent/stopping/bootstrap/backend failures and failed reap preserve the original error and physical-debt behavior. The collector receipt is armed before spawn and fulfilled only by actual exit plus both output closes; public expiry never retires it.
+
+`armResourcePolling` borrows the existing capabilities.clock/monitor/footprint/io, shared state, timing.timers, control.recordFault/latchStop/faultEvent and original runtime fail factory. It returns undefined. Its one interval retains captured actual RSS fields in the v1 resource payload. Missing/invalid accounting or retained cap follows the same original synchronous fault then latch then resource/fault-event dispatch. A live resourceTask prevents overlap; actual footprint settlement clears that exact shared slot, and workspace overflow/errors follow the same authority. The initial footprint scan, shutdown join, clocks, original cleanup end and latch remain in their original owners. The function does not catch a lastObservation getter throw that the original raw interval did not catch.
+
+`createWatchdogResourceChecks` borrows the identical monitor/shared state and original facade recordFault/latchStop/fail callbacks. Its frozen return methods retain the original semantics: `rssExceeded()` returns the original sticky boolean (false on getter error); `stopFinishOnOverage()` returns true only after handling the retained cap branch and false otherwise. The caller immediately returns when true; it retains ordinary admission, integrity checks, finish copy, cleanup capture/narrow, freeze and wake on the original noteFinish path. The handled branch intentionally records an in-memory fault and resource event without adding faultEvent, matching the original v1 branch. Record-event rejection still goes to the original recordFault. No sample or resource event constitutes physical cleanup proof.
+
+The four TEST re-exports preserve function identity, signatures and original failures: `strictMonitorFixture({script={},wrapper,collectorChild=null,getDeadlineMonoMs=null,lifetime=undefined}={})` returns the existing scripted env (clock, fixture, monitor, dir, wrappers, spawns, deadline getter, collectorPid, images, cleanup). `strictBootstrapScript()` returns the existing mutable supervisor/collector inspection script. `startStrictMonitor(env)` invokes the real monitor start with its existing deadline getter, emits the scripted ready envelope and advances its fake clock10ms, resolving undefined or propagating start failure. `strictWatchdogRun(t,{monitorScript={},rows=[],driverScript={},faultGate=null,finalIntegrity=null}={})` returns the original owned `{clk,env,driver,monitor,monitorCalls,journal,w,run,dispose}`. These are scripted collaborators with real protocol/queue/Recorder/cleanup owners, never Native/process proof. Their existing teardown remains mandatory: controlled exit/BOTH closes precede the genuine monitor lifetime join; watchdog disposal supplies owned child/callback facts, joins bodies, closes the actual Recorder and removes its owned workspace. No validator is relaxed.
+
+Before production extraction the two new owners characterized strict-v1 behavior10/10. The first attempt closed7/10 because new assertions incorrectly expected ACCOUNTING_UNAVAILABLE instead of the transport's IPC_INVALID on expiry, passed/0 despite the fixture's empty check claims, and a fault event absent from original noteFinish's cap branch. Those expectations were corrected against unchanged owner control flow; no production defect was manufactured or changed. Raw failure is retained. Identical characterization source/fixture inputs then passed after extraction within the final six-owner suite43/43; qualified typecheck exited0. Both successful commands captured actual exit0 and both pipe closes, with source stable throughout. Whole moved groups compare exactly (poll indentation and handled-return plumbing only). All nine changed source/test files are below400 readable lines; existing tests, protected23/M and whole Section3 remain unchanged.
+
+Evidence: W/`separate-verdicts-implementation-evidence/46cb8caf-2b51-4294-b63e-9073fce7f4ac/`; full command/closure/hash/cost and final code-to-doc comparison in W/`v2-task-6-report.md`. This is local scripted equivalence, with no actual Native/browser/model/phase run, v2 publication, cohort or strength claim. Root's fresh independent scoped review remains a separate gate before Task7; operational v1 and Task5 Recorder staging remain active.
+
+Functional-closure staging: the three new runtime imports are not yet captured by `snapshot-files.mjs` (authorized Task9 scope). Local strict-v1 source equivalence is tested; archived CLI/phase qualification is unavailable at this checkpoint until Task9 captures every new runtime import and later gates pass. No source-stage result is a runtime release.
