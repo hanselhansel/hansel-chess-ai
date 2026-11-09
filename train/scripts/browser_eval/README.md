@@ -10121,3 +10121,37 @@ tamper fail closed. Static file/OS capture is NOT Native readiness or cap closur
 The earlier55ce actual fullserial812/812+Native14 remains separate from its
 failed pre-driver cap. Runtime114/protected23/M/six execution helpers/Section3
 unchanged. Actual Native/cap/phase remains withheld for scoped review+Root GO.
+
+
+### Closed terminal-identity verification checkpoint, 2026-11-09
+
+Verified candidate d2551ae9642ac730510d85a4ba93c348a73ce26d. Full serial gate
+814/814 passed,0 failures/cancelled/skipped/todo; parent natural0/94.424246875s,
+BOTHpipes/rawfiles/journal joined. ActualNative14 all exit+BOTHpipes+settled,
+expected collector0/0/2, errors[], shared output975744B below4MiB. Gate final
+sealing separately closed0/0.35615s. W/terminal-gone-native-gate-d2551ae-20261109T041529832Z-8b6d5efb-5095-4e89-bb52-fe23c7eb29ae/completed-handoff.json
+SHA74f0a0d567dd9fb7b0267767852b7b3cb1a5d23659cdde3fbcb124d1c951135e;
+completed-evidence-manifest.json SHAccb7a8533228b1cedc7c78a0f748062e3677dab3fd6fa82e60f72d80e9ef241c.
+
+Controlled CAP wrapper89343 natural0/7.493634375s; actual archived CLI89347
+natural2/PHASE_TIMEOUT, fault0, BOTHpipes joined. Driver89349+collector89348
+actualexit0/no signals/BOTHpipes; cleanup verified+accountingtrue,
+analysisEligiblefalse, no containment.45 markers:22entered/22fulfilled/1accepted,
+0rejected. All465 input/seal refs exact. Separate bookkeeping BEFORE handoff
+1.357513917s; final sealing externally closed0, no extra duration inferred.
+W/terminal-gone-cap-d2551ae-1-owner/completed-handoff.json
+SHAe112ea8759cb0e2807617dbd70419c74f5393a85b8b51457b54cf779b72db8ac;
+completed-evidence-manifest.json SHA85ceac3f47117e686c41907c5249779df32678566f98be90a91b9352151e0ebb.
+This proves controlled SDK/body/input-reopen+genuine CLI/Native/Recorder/Watchdog/
+driver closure only. Seven app checks intentionally failed in this controlled
+setup. It is NOT a real primary check, browser/model/parity/cohort or score pass.
+
+Prior failed812/811 gate and failed55ce pre-driver CAP remain FAILED with their
+separate Native/collector facts. Old66 eight-game and3c nine-hour31-game attempts
+remain ineligible; known38gone observations do not repair old cleanup. Historical
+88834/415ms/OS causes UNKNOWN. No old result promotion or ELO/strength refresh.
+Runtime114, all TEST sources/deps, protected23/M/Section3/pins/six execution helpers
+unchanged. This checkpoint changes documentation only; no tests/workload rerun.
+MinorM3 introductory comment remains deferred without a source edit. Fresh
+committed actualcheck/parity/preflight and separate Root full40 GO remain OPEN.
+Publication is a separate Root action. All original limits/science remain exact.
