@@ -116,3 +116,10 @@ original real-S snapshot/self-play cases as deferred coverage and is never
 imported or run here. Training, gauntlets, the binary fetch helper, UCI
 sessions, promotion, and bot launches are operational workflows. They were
 not run as documentation checks.
+
+
+## Accepted separate-verdicts direction (2026-11-10)
+
+Hansel approved the reviewed `tinyaz-separate-verdicts-v2` amendment and Sol High implementation. The [accepted canonical contract](../../docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md#accepted-separate-verdicts-v2-contract-2026-11-10) and [Tasks 4-14](../../docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md#task-4-accepted-contract-and-before-use-declarations) declare the prospective work. V2 implementation and runtime validation remain pending; current operational code remains strict v1. The fc30765 attempt remains incomplete at 6/40 acknowledged games and 3/20 pairs, with no eligible analysis and unproven Native cleanup/accounting. All earlier failed cohorts remain ineligible. M weights remain unchanged. No fresh strength or Elo result is claimed. Fresh scoped reviews, whole-change review, Root runtime/candidate/policy releases, strict prerequisites and one separately released fresh full40 remain required.
+
+Future v2 uses the same check/preflight/compare aliases and parity wrapper with the explicit protocol argument `--protocol train/fixtures/browser-protocol-v2.json`. Until implemented, do not invoke this prospective path. After implementation, an aggregate exit2 can carry graph-verified eligible strength and inconclusive resources only for a complete valid comparison. Inspect separate strength, phase/closure resource verdicts and authoritative completion/owner closure; a wrapper exit0 is readback success, not experiment passage. Keep all original shorter bounds and strict parent admission. The [owning declarations](browser_eval/README.md#accepted-separate-verdicts-v2-declarations-before-creation-2026-11-10) define the exact file/API scope.

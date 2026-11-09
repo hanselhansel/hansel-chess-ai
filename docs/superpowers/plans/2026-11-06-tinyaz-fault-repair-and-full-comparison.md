@@ -822,3 +822,300 @@ The optional PURE frame diagnostic measures synthetic scaling, not historical
 cause or Native closure. The next architectural direction awaits the user; no
 amendment is approved. This is a docs-only checkpoint; runtime tests were not
 rerun. A valid full 40-game result and whole-change final review remain open.
+
+
+### V2 execution constraints and common acceptance
+
+This prospective plan implements approved amendment SHA256 `e78f19e33659fe31eb4472a558189022eea0f865422cdcc78040a1ef429df041`; approval receipt SHA256 `8ec6ff43316d0bfd44b8b8a758b5c1669d0138e938089c0041d9840c9c6105ff`. The accepted canonical amendment takes versioned precedence over the old Global Constraints' continuous-adjacent-gap and aggregate-pass prerequisites only for explicit v2 compare periodic quality. V1 behavior remains strict. It does not weaken scientific identity, Native/transport/filesystem/proof/cleanup/Store/graph/cap failures or any bound. Task 3 stays incomplete until a valid fresh full40 result. No failed cohort is reused.
+
+Execution is serialized by Root. Every task depends on the previous green commit and fresh scoped Max source/specification/quality review before its successor; implementation fixes and review are separate states. Root owns review dispatch. No implementer delegates. Every task updates affected owning README/API/usage and accepted design/status/checklist documents in the same green change, performs a direct final code-to-doc/diff comparison, keeps source/tests below400 readable lines, audits protected23/M/whole Section3, commits locally on `feat/tinyaz-browser-harness`, and reports exact checks, receipts, gaps and commit. No adjacent refactor, new dependency, training, merge or deploy. Root may publish only a reviewed candidate at the explicit publication stage.
+
+Each task's writable subset is its table below plus the seven shared documentation paths listed in Task4 (except Task13, which has no tracked writes). Table paths follow approved section9: unprefixed paths are relative to `train/scripts/browser_eval/`, `/` means repository root, and `W/` means the SDD workspace. Tables preserve the approved section9 eventual change envelope; each task narrative limits the exact phased symbol/action. C means first creation only; later listed reuse modifies that same owner without recreating it. Where the next task explicitly reuses an already introduced owner, only its stated symbol/action is authorized. Read existing tests without edits; the approved new TEST leaves own new controls. New semantic REDs must exercise genuine owners through controlled seams, not missing imports or tests mirroring constants. GREEN means causal cases plus relevant whole owners pass on frozen inputs with actual bodies, process exit, BOTH pipe closes, raw files and journal settlement. Preserve failed gates; no automatic retry or fabricated closure. V2 remains fail-closed and operational default v1 until the complete integration exists.
+
+All runtime commands below are FUTURE, UNRUN in Task4. Qualified Node/Python descriptors come from the current fc30765 safety/runtime records and must be freshly reattested by Root before execution. Runtime/input bytes cannot change during any Native or phase command; all other local agents/process activity stays quiescent while Root is sole executor/poller. Do not feed an unreviewed Native owner through any implicit package glob.
+
+```sh
+TINYAZ_NODE="/Users/hansel/Library/Caches/tinyaz-node-qualification/node24.22.2-20261107-77b65dbc-2cfe-4ac4-8834-6a222f856823/node-v24.22.2-darwin-arm64/bin/node"
+TINYAZ_NPM_CLI="/Users/hansel/Library/Caches/tinyaz-node-qualification/node24.22.2-20261107-77b65dbc-2cfe-4ac4-8834-6a222f856823/node-v24.22.2-darwin-arm64/lib/node_modules/npm/bin/npm-cli.js"
+TINYAZ_VERIFY_BIN="$PWD/train/.venv/bin"
+PATH="$TINYAZ_VERIFY_BIN:/Users/hansel/Library/Caches/tinyaz-node-qualification/node24.22.2-20261107-77b65dbc-2cfe-4ac4-8834-6a222f856823/node-v24.22.2-darwin-arm64/bin:$PATH"
+```
+
+Use `"$TINYAZ_NODE" --test --test-concurrency=1 --test-timeout=90000` followed by exact reviewed owner paths for each Node harness command. The 90000ms file guard comes from the current accepted Native gate argv; it does not replace original per-operation/Native limits. App commands are `"$TINYAZ_NODE" "$TINYAZ_NPM_CLI" run test:scripts`, `"$TINYAZ_NODE" "$TINYAZ_NPM_CLI" run test:core`, and `"$TINYAZ_NODE" "$TINYAZ_NPM_CLI" run typecheck` under that PATH. Never substitute `npm test` for distinct stage evidence. Current `test:browser-harness` is an implicit glob containing actual Native and is withheld until Task11.
+
+Required isolated Python commands: `"$TINYAZ_VERIFY_BIN/python" -I -B train/scripts/browser_eval/process-macos.test.py`, `"$TINYAZ_VERIFY_BIN/python" -I -B train/scripts/browser_eval/process-macos-wire.test.py`, `"$TINYAZ_VERIFY_BIN/python" -I -B train/scripts/browser_eval/terminal-identity.test.py`. Also retain the project's standalone verification sequence with `PYTHONPATH=train/src "$TINYAZ_VERIFY_BIN/python"` and each exact `train/scripts/test_encode.py`, `train/scripts/test_lichess_split.py`, `train/scripts/test_climb_loop.py`, `train/scripts/test_engine_uci.py`, `train/scripts/test_challenge_rotator.py`, `train/scripts/test_mcts.py` path from train/scripts/README.md. No `test_climb_real_regressions.py`, training entry, browser/model phase or network work belongs to Task10. Python Native-module tests use scripted ABI/kernel/clock collaborators; they are not actual Native execution.
+
+
+## Task 4: Accepted contract and before-use declarations
+
+DOCS ONLY checkpoint, dependent on Hansel's bound approval. Append the faithful accepted canonical projection and all before-use declarations. Record approved direction separately from unimplemented v2 and old failed history. RED is the preexisting absence of accepted projection, complete declarations and executable Tasks4-14; GREEN is exact normative projection/prefix proof, all63 map paths assigned, local links/anchors, seven-file diff and protected hashes. Static reads/hash/diff only, no runtime import/test/Native/browser/model/network. Root independently reviews the one local docs commit; W/v2-task-4-report.md records limits.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| M `/README.md` | Current direction/proposal vs approval vs implementation vs fresh run; separate authoritative verdict/exit usage. |
+| M `/train/scripts/README.md` | Versioned command/protocol and nonzero eligible semantics, original bounds. |
+| M `/train/scripts/browser_eval/README.md` | Complete APIs/state/schemas/allowlist/runtime union, limits, compatibility, handoff and before-use TEST declarations. |
+| M `/docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md` | Append approved amendment and exact file map only after user approval; preserve earlier historical requirements. |
+| M `/docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md` | Buildable phased tasks, test ownership and final code/doc comparison gates. |
+| M `/docs/experiments/tinyaz-software-plan.md` | Preserve failed cohorts; record proposed/approved/implemented/verified/released results separately. |
+| M `/docs/experiments/README.md` | Update experiment index pointer/status only, without a strength claim. |
+
+
+## Task 5: Pure policy, closed schema, identity, ledger and verdict foundations
+
+Dependency: reviewed Task4. Implement pure closed constants/selection/binding, exact schema2 dispatch and identity, resource ledger and reducers. Move the whole v1 immutable RECORD_FIELDS unchanged, without circular validator imports. Add semantic RED/GREEN controls in resource-quality.test.mjs and separate-verdicts-records.test.mjs with TEST-only fixtures: exact500ms/500ms+1ns, bootstrap seed,64-detail ring/65+ episodes, counters/chronology/1024B and65536B overflow; all verdict truth-table rows, closed unknown/missing/version/policy fields and v1 unchanged readback. Run both exact new owners plus record-schema.test.mjs and canonical-json.test.mjs and typecheck. Pure helpers cannot supply IO/publication/Native authority; operational default stays v1 and incomplete v2 fails closed.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `evaluation-policy.mjs` | Pure closed policy constants/fixture selection/version compatibility. Exports V2_POLICY, policyForProtocol, assertPolicyBinding. No IO/state. |
+| C `resource-quality.mjs` | Pure ledger transitions/checks for section6. Exports createResourceQuality; monitor owns its only instance. Same clock facts passed as data, no timers/IO. |
+| C `verdicts-v2.mjs` | Pure closed schemas/reducers for strength, phase/closure resource and aggregate status. Exports assertVerdicts, deriveVerdicts. Imports only schema primitives/constants/policy, never record-schema or stats; no writer, Native or statistical recomputation. |
+| C `record-fields.mjs` | Move the whole immutable v1 RECORD_FIELDS declaration unchanged from record-schema; exports RECORD_FIELDS only. Both version validators import this leaf, never each other. |
+| C `record-schema-v2.mjs` | Complete closed v2 record validators, reusing primitive/environment validators and record-fields without weakening v1. Exports assertRecordV2. |
+| C `receipt-verdicts-v2.mjs` | Pure v2 graph coherence/reducer equality and resource snapshot reconciliation. Exports verifyVerdictClosure. No file/Native IO or publication authority. |
+| M `record-schema.mjs` | Explicit v1/v2 dispatch, move unchanged v1 fields to record-fields for exact v2 construction; old branch keeps literals/coherence. |
+| M `identity-schema.mjs` | Exact CommonIdentity dispatch: absent policy=v1 only, exact v2 policy shape=v2; fixture binding; environment/backend validators unchanged. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `resource-quality.test.mjs` | Pure exact boundary/counter/ring/chronology/overflow tests from section10. |
+| C `separate-verdicts-records.test.mjs` | Genuine Recorder/Store/prepared publication/graph v2 controls and v1 readback rejection controls. |
+
+
+## Task 6: Whole start, resource and RSS extractions with v1 equivalence
+
+Dependency: reviewed Task5. Extract whole existing collectorArgv/start, resource polling and RSS projection/retention groups into the three declared owners on identical config/state/authority/stopOwner/monitor/record/fault/latch references. No second queue/lifetime/ledger/stop owner, no changed cadence or behavior. RED/GREEN first add v1 equivalence assertions to the new separate-verdicts-monitor.test.mjs and separate-verdicts-watchdog.test.mjs using current strict-v1 cases and exact function/reference/debt behavior. Run those new owners plus process-lifecycle.test.mjs, process-observation.test.mjs, watchdog-resource.test.mjs and watchdog-cleanup.test.mjs; typecheck and readable-line audit. Keep existing tests intact. Reuse the Task5 TEST fixture owner only for these controlled equivalence seams.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `process-runtime-start.mjs` | Whole existing start/collectorArgv group extracted from process-runtime on the same config/state/authority/stopOwner references; exports createProcessStart. No second lifetime/queue. |
+| C `watchdog-resource-policy.mjs` | Whole resource-poll group plus v2 projection routing extracted from watchdog-runtime; exports armResourcePolling with borrowed timing/control/state/capabilities. No new stop owner/timer cadence. |
+| C `watchdog-verdict-policy.mjs` | Whole RSS boundary projection/retention group extracted from watchdog; exports createWatchdogResourceChecks using same monitor/records/fault/latch bindings. No stop, state or ledger ownership. |
+| M `process-runtime.mjs` | Delegate whole start; tick selects private periodic purpose and captures its original admitted end before enqueue, keeps sampling after quality loss, retains actual tickQueued ownership. |
+| M `watchdog.mjs` | Delegate RSS checks, use typed hard fault/quality boundary, preserve single latchStop and original captureCleanupBound. |
+| M `watchdog-runtime.mjs` | Delegate resource group; hard invalid/missing facts stop, compare periodic quality records without stop; write policy-correct running version. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `separate-verdicts-monitor.test.mjs` | Genuine monitor/observation/protocol causal tests, no Native or browser claims. |
+| C `separate-verdicts-watchdog.test.mjs` | Actual watchdog stop/finish/cleanup, sticky cap, pending and physical-debt controls. |
+
+
+## Task 7: Monitor quality, current proof, sticky cap and stopping-fence split
+
+Dependency: reviewed Task6. Integrate approved compare-only typed periodic classification, strict bootstrap seed, rolling complete/timely references and frozen coverage origin. Capture original numeric minimum admitted-end metadata before enqueue, including fractional1000.25ms and later narrowing. Implement sticky observed cap, stopping fence/tail, late-drop guard, post-fence already-issued positive-cap retention and synchronous nested-prefix capture/readback with truthful parent debt. Reuse process-runtime.mjs, watchdog.mjs, watchdog-runtime.mjs, watchdog-resource-policy.mjs, watchdog-verdict-policy.mjs and Task5 ledger/fixture owners solely for this policy wiring. Causal RED/GREEN in new monitor/terminal/watchdog owners must cover all section10 monitor/deadline/tick/terminal/cap/prefix/fence controls: idle501ms with no getter, Python-only501ms, age-only loss, gap recovery without coverage repair, held actual tick, strict noncompare/bootstrap, hard error/EOF/permission, timely-after-gap versus untimely/cap terminal admission, exact birth/reappearance/listeners, pending child/parent pipes, missing/stale/current proof, late/expired/queued-not-issued replies, synchronous prefix no IO/timer/queue mutation and later parent cap/fault. Run these three new owners plus process-observation.test.mjs, processes.test.mjs, terminal-identity.test.mjs, terminal-consumers.test.mjs, watchdog-resource.test.mjs and watchdog-cleanup.test.mjs; run isolated terminal-identity.test.py and typecheck. No real Native.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `resource-quality.mjs` | Pure ledger transitions/checks for section6. Exports createResourceQuality; monitor owns its only instance. Same clock facts passed as data, no timers/IO. |
+| C `process-runtime-start.mjs` | Whole existing start/collectorArgv group extracted from process-runtime on the same config/state/authority/stopOwner references; exports createProcessStart. No second lifetime/queue. |
+| C `watchdog-resource-policy.mjs` | Whole resource-poll group plus v2 projection routing extracted from watchdog-runtime; exports armResourcePolling with borrowed timing/control/state/capabilities. No new stop owner/timer cadence. |
+| C `watchdog-verdict-policy.mjs` | Whole RSS boundary projection/retention group extracted from watchdog; exports createWatchdogResourceChecks using same monitor/records/fault/latch bindings. No stop, state or ledger ownership. |
+| M `processes.mjs` | createProcessMonitor policy/phase binding; hardFault vs coverage states; same-state observation commit; private periodic purpose, original admitted-end metadata captured before enqueue; resource snapshot exposure and scope-validated synchronous _captureResourcePrefix with original-C/parent-bound freshness guards and no queue/horizon effect. |
+| M `process-observation.mjs` | runCycle classification, actual rolling completion, timely terminal admission, separate peaks, bootstrap seed/counters, age/tail/stopping guards, guard-observed lateDrops, narrowly retained post-fence positive cap and typed observation. |
+| M `process-accounting.mjs` | Forward exact borrowed policy/state refs and immutable original admitted-end metadata alongside the same runCycle handle; mark only thrown hard failures, not returned periodic quality data. |
+| M `process-runtime.mjs` | Delegate whole start; tick selects private periodic purpose and captures its original admitted end before enqueue, keeps sampling after quality loss, retains actual tickQueued ownership. |
+| M `process-stop.mjs` | Capture sampling fence/end/tail once; prevent late success while retaining eligible already-issued positive caps through actual drain; retain original drain/teardown/physical proof. |
+| M `watchdog.mjs` | Delegate RSS checks, use typed hard fault/quality boundary, preserve single latchStop and original captureCleanupBound. |
+| M `watchdog-runtime.mjs` | Delegate resource group; hard invalid/missing facts stop, compare periodic quality records without stop; write policy-correct running version. |
+| M `watchdog-shutdown.mjs` | Final cap/quality snapshots, exact cached nested prefix selection through cleanup.readResourcePrefix, typed intent propagation and authoritative verified outcome projection after cleanup. |
+| M `watchdog-cleanup.mjs` | Current timely snapshot predicate separated from coverage continuity only for v2 compare; capture actual fence-bound quality without granting proof; nested branch invokes synchronous _captureResourcePrefix after its actual child-scope proof and before original C, caches it once and exposes private readResourcePrefix for finalization. |
+| M `watchdog-records.mjs` | composeIntent carries supervisor-owned resource facts, preserves all hard stops; final snapshot comes from real monitor closure or exact cached nested prefix, no driver substitution; preserve truthful selftest parent-pending attribution and explicit selftest-prefix verdict scope. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `separate-verdicts-monitor.test.mjs` | Genuine monitor/observation/protocol causal tests, no Native or browser claims. |
+| C `separate-verdicts-terminal.test.mjs` | Timely-after-gap versus untimely terminal admission and unchanged proofs/listeners tests. |
+| C `separate-verdicts-watchdog.test.mjs` | Actual watchdog stop/finish/cleanup, sticky cap, pending and physical-debt controls. |
+
+
+## Task 8: Recorder, closed facts, graph, prerequisites and paired eligibility
+
+Dependency: reviewed Task7. Keep the sole Recorder/Store/state/queue and prepared publication sequence. Compile scientific closed facts independently before resource aggregate degradation, append mandatory final-resource-evidence before events close, bind final/completion/closure graph and strict v2 parents. Math and stats.mjs remain unchanged. Reuse record-schema.mjs, record-schema-v2.mjs, verdicts-v2.mjs, receipt-verdicts-v2.mjs and TEST fixture/records owner only for this integration. Genuine Store/Recorder/graph causal RED/GREEN must include full40 quality-only eligible/inconclusive2, partial cohort/no inference, all fatal/cap/cleanup/Store/graph negatives, missing final snapshot, forged/reset/ring/counter/chronology/peak/pending facts, failed prepared publication/no authoritative eligibility, strict parent resource admission, exact selftest-prefix scope and eventual parent closure. Run separate-verdicts-records.test.mjs plus artifact-store.test.mjs, record-evidence.test.mjs, records-finalization.test.mjs, completion-publication.test.mjs, record-schema.test.mjs, prerequisites.test.mjs and pgn-evidence.test.mjs; typecheck. Only controlled scientific fixtures, no model/match execution.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `verdicts-v2.mjs` | Pure closed schemas/reducers for strength, phase/closure resource and aggregate status. Exports assertVerdicts, deriveVerdicts. Imports only schema primitives/constants/policy, never record-schema or stats; no writer, Native or statistical recomputation. |
+| C `record-schema-v2.mjs` | Complete closed v2 record validators, reusing primitive/environment validators and record-fields without weakening v1. Exports assertRecordV2. |
+| C `receipt-verdicts-v2.mjs` | Pure v2 graph coherence/reducer equality and resource snapshot reconciliation. Exports verifyVerdictClosure. No file/Native IO or publication authority. |
+| M `record-schema.mjs` | Explicit v1/v2 dispatch, move unchanged v1 fields to record-fields for exact v2 construction; old branch keeps literals/coherence. |
+| M `records.mjs` | Head version from manifest, append final supervisor resource event before writer close; keep sole recorder/state/queue and post-stop evidence lane. |
+| M `record-evidence.mjs` | Head version from validated manifest, capture resource snapshot and graph-bound closure facts with existing verifier/lifetime. |
+| M `record-inputs.mjs` | Version-aware intent validation; canonical detached copies include supervisor resource evidence; reject driver verdict injection. |
+| M `record-finalization.mjs` | Keep v1 functions; v2 closed-facts strength/resources reduction before aggregate status, correct cleanup proof validation and final/completion construction. |
+| M `record-finalizer.mjs` | Supply final verdicts to v2 completion; existing final/prepared-token/graph/readback sequence unchanged. |
+| M `pgn-summary.mjs` | Separate frozen-game evidence validation from aggregate-resource status only in explicit v2; preserve science checks and stats formulas. |
+| M `receipt-verification.mjs` | Dispatch new pure coherence verification after real graph reads; bind version/policy/final/completion/evidence and parent closure; old verifier semantics unchanged. |
+| M `prerequisites.mjs` | Explicit v2 parent rules section7; same live-identity probe and receipt graph; read old graphs without cross-version admission. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `separate-verdicts-records.test.mjs` | Genuine Recorder/Store/prepared publication/graph v2 controls and v1 readback rejection controls. |
+
+
+## Task 9: Explicit fixture, snapshot, reopen, driver, CLI and Python parity selection
+
+Dependency: reviewed Task8. Add exact prospective v2 fixture without editing v1 bytes; append only approved runtime leaves/fixture to the functional union, excluding TEST leaves. Bind explicit protocolPath/evaluationPolicy through fresh-process capture, final remeasurement and independent reopen, manifest/monitor/driver hello/start and verified CLI projection before SDK work. Reuse evaluation-policy.mjs and identity-schema.mjs plus TEST fixture owner solely for selection/version binding. Causal RED/GREEN separate-verdicts-compat.test.mjs covers both fixtures present, v1/v2 same-selected roundtrips, missing/unknown/mixed/wrong path/hash/policy/version, forged driver verdict/summary, full selected-path forwarding and strict Python parity admission. Run the new compat owner plus phase-fixtures.test.mjs, snapshots.test.mjs, run.test.mjs, driver-ipc.test.mjs, supervisor-protocol-native.test.mjs and record-schema.test.mjs; required isolated Python and typecheck. The protocol-native filename is scripted validator work, not real Native. No actual CHECK/PARITY/browser/model phase.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `evaluation-policy.mjs` | Pure closed policy constants/fixture selection/version compatibility. Exports V2_POLICY, policyForProtocol, assertPolicyBinding. No IO/state. |
+| M `identity-schema.mjs` | Exact CommonIdentity dispatch: absent policy=v1 only, exact v2 policy shape=v2; fixture binding; environment/backend validators unchanged. |
+| M `phase-fixtures.mjs` | validateProtocolFixture exact v2 branch; opening/schedule/scientific validators unchanged. |
+| M `snapshot-identity.mjs` | Explicit protocolPath/evaluationPolicy signature/defaults from section8; assembleSnapshotIdentity includes policy only for exactly selected v2, correct protocol ref/digest. |
+| M `snapshots.mjs` | Policy-aware capture/final remeasurement/reopen; forward explicit protocolPath/evaluationPolicy into every identity reconstruction and requested path into independent reopen. |
+| M `snapshot-reopen.mjs` | inspectReopenedInputs validates requested selection against workspace schema/policy/selected ref and actual fixture bytes, passes both selected arguments into independent assembleSnapshotIdentity; retain genuine fresh-process environment/byte rechecks. |
+| M `snapshot-files.mjs` | Append exact new runtime leaves and v2 fixture to functional closure; preserve all original paths/order; exclude TEST leaves. |
+| M `run.mjs` | Closed --protocol selection supports exact v1/v2 paths; bootstrap compares selected current/frozen bytes and runSupervisor forwards own.protocolPath explicitly to reopenInputs, no arbitrary path or implicit v1 fallback for v2. |
+| M `run-supervisor.mjs` | makeManifest version/policy, create monitor with phase/policy, pass expected driver protocol binding and final outcome fields. |
+| M `run-driver.mjs` | Read selected archived protocol path from identity, validate v2 policy/manifest before SDK work; bind bridge version. |
+| M `supervisor-protocol.mjs` | Optional expected evaluationPolicy/recordSchemaVersion, default strict v1, private ctx binding for driver only. |
+| M `driver-protocol.mjs` | Exact versioned hello/start fields, prevent mismatch before start; existing fault/sequence/ordinary barriers unchanged. |
+| M `driver-bridge.mjs` | Bind hello/start version/policy against validated manifest; preserve untrusted PhaseResult and finish/close contracts. |
+| M `driver-bridge-wire.mjs` | Strict versioned start envelope check only; same callbacks/waits/debts/STOP logic. |
+| M `cli.mjs` | Verified v2 JSON projection and existing exitCode; exact syntax unchanged, no relaxed flag. |
+| C `/train/fixtures/browser-protocol-v2.json` | Section8 exact fixture, same science/limits, prospective policy; v1 fixture never edited. |
+| M `/train/scripts/check_browser_parity.py` | Recognize exact v2 fixture path, workspace/manifest version/policy binding before archive exec, same original90s and byte checks. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `separate-verdicts-compat.test.mjs` | Exact v1/v2 fixture/schema/identity/driver/prereq/CLI/parity controls, including fresh-process capture/reopen with both fixtures present, selected-policy roundtrips and every mixed/missing/wrong path/hash/policy negative. |
+
+
+## Task 10: V2 operator, readback, inert release and complete scripted validation
+
+Dependency: reviewed Task9. Create only new operator/readback/owner-controls/template; preserve all six old helper bytes and receipts. Bind exact v2 runtime/protocol/candidate/safety identities, fresh helper-compatible UUID roots, actual closure separately from unchanged raw ownerSucceeded, exit2 readback and graph-verified eligible/inconclusive semantics. Template stays PREPARATION_ONLY with candidate/safety/runtime/path/hash null until Root release. RED/GREEN synthetic ownCommand controls prove exit0/2/7, missing pipe/raw/journal, sink and manager failures, root collisions/mixed releases and missing graph cannot claim eligibility. Run the new separate-verdicts-owner-controls-v2.mjs directly with qualified Node as a SCRIPTED control, not a phase. Its exact argv/inputs must be reviewed before use; it must not auto-launch another phase. Reuse separate-verdicts-test-fixtures.mjs and separate-verdicts-compat.test.mjs only for operator binding/causal tests. Then run the complete explicit SCRIPTED owner roster below serially, app test:scripts/test:core, typecheck and required Python commands. Actual Native owners are withheld for Task11 and Root GO. Runtime commands must be owned with actual closure receipts; no implicit glob.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `separate-verdicts-compat.test.mjs` | Exact v1/v2 fixture/schema/identity/driver/prereq/CLI/parity controls, including fresh-process capture/reopen with both fixtures present, selected-policy roundtrips and every mixed/missing/wrong path/hash/policy negative. |
+| C `W/separate-verdicts-owned-command-v2.mjs` | New explicit v2 release loader/operator derived from task-3-owned-command.mjs. Same original constraints/branch/input safety, count-only owner and one-cohort claim; exact v2 protocol path, policy and runtime binding; reuse unchanged ownCommand. Preserve raw ownerSucceeded, derive ownerClosureVerified from actual joins/bytes/journal/no-intervention/no-manager-errors. Run exit2 still receives readback; eligible evidence requires the v2 verifier, never ownerSucceeded. No automatic next phase; use exact fresh helper-compatible roots from section9. |
+| C `W/separate-verdicts-verify-phase-v2.mjs` | New readback derived from task-3-verify-phase.mjs using frozen v2 verifyReceipt, exact version/policy/runtime/release/completion identity and physical verifier lifetime. Output final/closure verdicts, authoritativeGraphVerified, ownerClosureVerified, scientificEvidenceEligible; verifier exit0 means successful readback only, experiment exit remains separate. Missing graph cannot produce eligible output. |
+| C `W/separate-verdicts-owner-controls-v2.mjs` | New operator tests using unchanged task-3-control-child.mjs and ownCommand under exact fresh task-3-owner-controls-<UUID>/<case> roots; prove child exit0/2/7 and missing pipe/raw/journal/manager failure semantics; synthetic final graphs cannot be called Native/cohort proof. |
+| C `W/separate-verdicts-release-v2.template.json` | Inert PREPARATION_ONLY template. Exact old release keys with schemaVersion2 plus evaluationPolicy, protocolRef and runtimeIdentity. protocolRef is actual v2 fixture ref; runtimeIdentity is exact Node/Python descriptors from safety/CommonIdentity. Candidate/safety/runtime/path/hash values remain null until future controller release. Hash-bind exactly new operator/verifier/controls plus unchanged task-3-stream.mjs/task-3-process-owner.mjs/task-3-control-child.mjs. No old release accepted. |
+
+### Task10 exact scripted owner command (future, reviewed frozen inputs only)
+
+The current77-file inventory has76 scripted owners and one actual Native owner. `native-attribution.test.mjs` and `native-attribution-verdict.test.mjs` use fake child events/no-spawn constructor controls; `supervisor-protocol-native.test.mjs` uses the real validator with scripted records. They stay scripted. Add the six new scripted owners explicitly. Do not silently replace this roster with a glob.
+
+```sh
+"$TINYAZ_NODE" --test --test-concurrency=1 --test-timeout=90000 \
+  train/scripts/browser_eval/accounting-trace-io.test.mjs \
+  train/scripts/browser_eval/accounting-trace.test.mjs \
+  train/scripts/browser_eval/artifact-store.test.mjs \
+  train/scripts/browser_eval/await-stage.test.mjs \
+  train/scripts/browser_eval/browser-transitions.test.mjs \
+  train/scripts/browser_eval/browser.test.mjs \
+  train/scripts/browser_eval/canonical-json.test.mjs \
+  train/scripts/browser_eval/checks.test.mjs \
+  train/scripts/browser_eval/cli-shutdown.test.mjs \
+  train/scripts/browser_eval/completion-publication.test.mjs \
+  train/scripts/browser_eval/driver-bridge-lifecycle.test.mjs \
+  train/scripts/browser_eval/driver-bridge.test.mjs \
+  train/scripts/browser_eval/driver-diagnostics.test.mjs \
+  train/scripts/browser_eval/driver-ipc.test.mjs \
+  train/scripts/browser_eval/environment-files.test.mjs \
+  train/scripts/browser_eval/environment.test.mjs \
+  train/scripts/browser_eval/failed-cleanup.test.mjs \
+  train/scripts/browser_eval/final-integrity.test.mjs \
+  train/scripts/browser_eval/fixture-transform.test.mjs \
+  train/scripts/browser_eval/listener-query.test.mjs \
+  train/scripts/browser_eval/match.test.mjs \
+  train/scripts/browser_eval/native-attribution-verdict.test.mjs \
+  train/scripts/browser_eval/native-attribution.test.mjs \
+  train/scripts/browser_eval/page-arm.test.mjs \
+  train/scripts/browser_eval/pgn-evidence.test.mjs \
+  train/scripts/browser_eval/pgn-summary.test.mjs \
+  train/scripts/browser_eval/phase-fixtures.test.mjs \
+  train/scripts/browser_eval/phase-runners.test.mjs \
+  train/scripts/browser_eval/prerequisites-evidence.test.mjs \
+  train/scripts/browser_eval/prerequisites.test.mjs \
+  train/scripts/browser_eval/private-fs-phase.test.mjs \
+  train/scripts/browser_eval/private-fs.test.mjs \
+  train/scripts/browser_eval/process-backend-reader.test.mjs \
+  train/scripts/browser_eval/process-backend-setup.test.mjs \
+  train/scripts/browser_eval/process-backend.test.mjs \
+  train/scripts/browser_eval/process-budget.test.mjs \
+  train/scripts/browser_eval/process-lifecycle.test.mjs \
+  train/scripts/browser_eval/process-lsof-fields.test.mjs \
+  train/scripts/browser_eval/process-lsof-io.test.mjs \
+  train/scripts/browser_eval/process-lsof.test.mjs \
+  train/scripts/browser_eval/process-observation.test.mjs \
+  train/scripts/browser_eval/process-ownership.test.mjs \
+  train/scripts/browser_eval/process-transport.test.mjs \
+  train/scripts/browser_eval/processes.test.mjs \
+  train/scripts/browser_eval/receipt-publication.test.mjs \
+  train/scripts/browser_eval/record-cleanup-diagnostics.test.mjs \
+  train/scripts/browser_eval/record-evidence.test.mjs \
+  train/scripts/browser_eval/record-lifecycle.test.mjs \
+  train/scripts/browser_eval/record-schema.test.mjs \
+  train/scripts/browser_eval/records-finalization.test.mjs \
+  train/scripts/browser_eval/records.test.mjs \
+  train/scripts/browser_eval/reference-child.test.mjs \
+  train/scripts/browser_eval/run.test.mjs \
+  train/scripts/browser_eval/server.test.mjs \
+  train/scripts/browser_eval/snapshots.test.mjs \
+  train/scripts/browser_eval/stats.test.mjs \
+  train/scripts/browser_eval/supervisor-protocol-lifecycle.test.mjs \
+  train/scripts/browser_eval/supervisor-protocol-native.test.mjs \
+  train/scripts/browser_eval/supervisor-protocol.test.mjs \
+  train/scripts/browser_eval/terminal-consumers.test.mjs \
+  train/scripts/browser_eval/terminal-identity.test.mjs \
+  train/scripts/browser_eval/watchdog-boundaries.test.mjs \
+  train/scripts/browser_eval/watchdog-cleanup.test.mjs \
+  train/scripts/browser_eval/watchdog-driver-boundaries.test.mjs \
+  train/scripts/browser_eval/watchdog-evidence-boundaries.test.mjs \
+  train/scripts/browser_eval/watchdog-finish-ordering.test.mjs \
+  train/scripts/browser_eval/watchdog-integrity-selftest.test.mjs \
+  train/scripts/browser_eval/watchdog-integrity.test.mjs \
+  train/scripts/browser_eval/watchdog-native-fault.test.mjs \
+  train/scripts/browser_eval/watchdog-prior-evidence.test.mjs \
+  train/scripts/browser_eval/watchdog-records.test.mjs \
+  train/scripts/browser_eval/watchdog-resource.test.mjs \
+  train/scripts/browser_eval/watchdog-selftest-evidence.test.mjs \
+  train/scripts/browser_eval/watchdog.test.mjs \
+  train/scripts/browser_eval/workspace-footprint-directory.test.mjs \
+  train/scripts/browser_eval/workspace-footprint.test.mjs \
+  train/scripts/browser_eval/resource-quality.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-monitor.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-terminal.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-records.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-watchdog.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-compat.test.mjs
+```
+
+
+## Task 11: Root-released serial harness and genuine Native controls
+
+Dependency: Task10 green plus fresh scoped source/code-doc Max review and a separate Root control-execution GO bound to exact frozen runtime/candidate/inputs. Only Root executes/polls; all others quiescent. Implement/review the declared genuine separate-verdicts-native.test.mjs using existing native fixture/lifetime factories and a transparent bounded TEST Node delivery delay on one periodic reply. Keep actual transport/validator/receipt and original Native60s/55s work/5s cleanup,10s actor/4MiB bounds. Do not claim delay is fake Native timing or historical repair. Run one full explicit serial owner command formed from the Task10 exact roster plus `train/scripts/browser_eval/native-supervision.test.mjs` and `train/scripts/browser_eval/separate-verdicts-native.test.mjs`, same qualified Node --test --test-concurrency=1 --test-timeout=90000. Require original actual Native14 receipt inventory plus every new actor real exit/BOTHpipe/body/descriptor settlement and strict/cap controls. Then one reviewed current-byte archived CLI controlled cap under unchanged controlled operator constraints, genuine Native/environment and actual closure. Root pins the exact controlled-cap argv in its future GO from actual current helper interfaces; do not guess one now or invoke an old v1 release against v2. Preserve original guard bounds, all failed evidence and cap exit2 semantics. No automatic retry, synthetic join, actual scoring/prerequisite phase or cohort proof.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| C `separate-verdicts-native.test.mjs` | Genuine Native short controls using existing native fixture/lifetime factories; original bounds and actors' receipts. |
+
+
+## Task 12: Whole-change fresh review, warning triage and publication candidate
+
+Dependency: Task11 actual gates and fresh scoped Max review. Root dispatches fresh Max whole-change source/spec/code-doc review from original `a74c988ec9688f1b6880443b34d4c7a06831590b` through the new candidate, independently of prior scoped reviews. Triage original deferred Minor M1/M2 warning findings and M3 introductory-comment finding explicitly; preserve deliberate warning controls and avoid source rewrites absent an actionable defect. A bounded fix wave may touch only the specific approved section9 owners named by Root in that wave brief (subset of Tasks5-11, no added file); require causal RED/GREEN, affected owners and a fresh review before refreezing. Final diff/code-doc/line-cap/protected audit, green local commit and Root-reviewed feature publication candidate are distinct gates. Document results in the seven shared docs and fresh W evidence; no full40 release follows automatically.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| M `/README.md` | Current direction/proposal vs approval vs implementation vs fresh run; separate authoritative verdict/exit usage. |
+| M `/train/scripts/README.md` | Versioned command/protocol and nonzero eligible semantics, original bounds. |
+| M `/train/scripts/browser_eval/README.md` | Complete APIs/state/schemas/allowlist/runtime union, limits, compatibility, handoff and before-use TEST declarations. |
+| M `/docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md` | Append approved amendment and exact file map only after user approval; preserve earlier historical requirements. |
+| M `/docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md` | Buildable phased tasks, test ownership and final code/doc comparison gates. |
+| M `/docs/experiments/tinyaz-software-plan.md` | Preserve failed cohorts; record proposed/approved/implemented/verified/released results separately. |
+| M `/docs/experiments/README.md` | Update experiment index pointer/status only, without a strength claim. |
+
+
+## Task 13: Fresh runtime/candidate/policy release, strict parents and one full40
+
+Dependency: reviewed/published Task12 candidate, Root fresh qualified runtime/candidate/policy release. No tracked source/config/test writes. Only fresh generated release/handoff/receipt artifacts within approved section9 roots and one new external v2 workspace. Root sole executor releases CHECK, then PARITY, then PREFLIGHT separately through the new exact v2 operator and verifies each actual closed graph with same-policy/identity, passed0 and phase/closure resource passed. Use unchanged phase aliases/CLI syntax with explicit --protocol train/fixtures/browser-protocol-v2.json; parity uses train/.venv/bin/python train/scripts/check_browser_parity.py with that explicit selection under qualified PATH. The future v2 release/GO pins the exact reviewed argv and fresh paths before IO. No old owner/release/receipt/prerequisite reuse. Only after all strict parents pass does Root separately release ONE new 40-game/20-pair/64-visit compare. Earlier user authorization already permits comparison after repair; Root releases are operational gates, not new design approval. Preserve24h and all shorter original watchdog/cap/cleanup guards. Count-only progress, no partial outcomes/PGN inference or tuning. Require actual final/completion graph, original-input equality and actual owner closure before paired-sign-cp95-v1 analysis. An exit2 eligible/inconclusive cohort requires v2 graph readback/ownerClosureVerified, never ownerSucceeded. Failed/interrupted/unsealed work stays ineligible. No automatic retry, new cohort or Task3 completion without valid full40.
+
+No tracked-file write allowlist. Generated artifacts use only the approved section9 fresh roots.
+
+## Task 14: Actual result documentation, handoff and feature publication
+
+Dependency: Task13 authoritative result or explicit failed-gate handoff. Update actual result/status/receipt pointers, separate strength/phase-resource/closure-resource/aggregate/exit and scope, gap count/max, observed/admitted peak, exact policy/candidate/runtime and real exit/BOTHpipe/rawfile/journal/cleanup closure. Describe partial counts only as descriptive and retain old failures. Final direct code-to-doc comparison against approved v2 and actual implementation, final protected23/M/wholeSection3 audit and fresh Max review, then green result-doc commit and Root-authorized feature publication/handoff. No merge, deploy or retraining. Task3 and the full40 objective remain incomplete without a valid full40 result; no absolute Elo claim.
+
+| Action/path | Symbol, action and rationale (approved section9) |
+| --- | --- |
+| M `/README.md` | Current direction/proposal vs approval vs implementation vs fresh run; separate authoritative verdict/exit usage. |
+| M `/train/scripts/README.md` | Versioned command/protocol and nonzero eligible semantics, original bounds. |
+| M `/train/scripts/browser_eval/README.md` | Complete APIs/state/schemas/allowlist/runtime union, limits, compatibility, handoff and before-use TEST declarations. |
+| M `/docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md` | Append approved amendment and exact file map only after user approval; preserve earlier historical requirements. |
+| M `/docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md` | Buildable phased tasks, test ownership and final code/doc comparison gates. |
+| M `/docs/experiments/tinyaz-software-plan.md` | Preserve failed cohorts; record proposed/approved/implemented/verified/released results separately. |
+| M `/docs/experiments/README.md` | Update experiment index pointer/status only, without a strength claim. |

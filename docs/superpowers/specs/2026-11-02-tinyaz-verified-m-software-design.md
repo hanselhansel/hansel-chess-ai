@@ -4460,3 +4460,351 @@ The optional PURE frame diagnostic measures synthetic scaling, not historical
 cause or Native closure. The next architectural direction awaits the user; no
 amendment is approved. This is a docs-only checkpoint; runtime tests were not
 rerun. A valid full 40-game result and whole-change final review remain open.
+
+
+## Accepted separate-verdicts v2 contract (2026-11-10)
+
+Accepted projection of W/`separate-verdicts-proposed-amendment.md`, SHA256 `e78f19e33659fe31eb4472a558189022eea0f865422cdcc78040a1ef429df041` (340 lines). W is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison`. Approval: W/`separate-verdicts-approval.json`, SHA256 `8ec6ff43316d0bfd44b8b8a758b5c1669d0138e938089c0041d9840c9c6105ff`, authority `APPROVED_CONTRACT_AND_SOL_HIGH_IMPLEMENTATION`, client 2026-11-10 Asia/Singapore. The original proposal, approval, readiness and review artifacts are immutable. Only heading depth and obsolete authoring/approval-status metadata are projected below. Normative policy choices remain exact.
+
+**Active policy precedence:** this accepted prospective v2 amendment controls its explicitly versioned exceptions to earlier strict v1 adjacent-gap, cleanup-currentness and aggregate-pass/analysis coupling. All other historical requirements remain active. Existing code still implements strict v1. Approval and declarations do not imply v2 implementation, runtime validation, publication or a fresh result. Old failed cohorts remain ineligible. The complete preexisting canonical prefix, including protected whole Section 3, remains byte-for-byte unchanged.
+
+## Accepted amendment: separate strength and resource verdicts
+
+2026-11-09. Sol High author. **APPROVED CONTRACT AND SOL HIGH IMPLEMENTATION, 2026-11-10 (Asia/Singapore).** Implementation pending. No operational runtime or cohort release.
+Base: `ec782cf875e469cf43095b0d8388c6f2f4ce20ef`, branch `feat/tinyaz-browser-harness`.
+W: `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison`.
+Binding brief: W/`separate-verdicts-design-brief.md`, SHA256 `162aea907fae4aa926d5e99c972b9d323f620ac414bfca1e8bd3afcd649cb203`.
+Hansel approved this reviewed amendment and Sol High implementation. The immutable proposal and approval receipt retain their historical bytes.
+
+### 1. Decision, scope and precedence
+
+Introduce prospective policy `tinyaz-separate-verdicts-v2`, records schema 2, selected only by a new immutable protocol fixture.
+A full scientifically valid comparison may have eligible strength analysis and inconclusive resource coverage.
+An inconclusive resource verdict never becomes a resource pass or an entire-run pass.
+Only comparison periodic-sampling cadence quality becomes nonfatal. CHECK, PARITY, PREFLIGHT and nested selftest retain strict sampling admission.
+Every identity, science, Native/backend/permission/transport, Store, filesystem, budget, proof, physical-cleanup and final-graph failure remains fatal.
+This amendment supersedes v1's coupling of periodic quality to scientific eligibility, v1's adjacent-gap condition for terminal admission in v2 compare, and v1's aggregate-pass prerequisite for compare analysis, only as specified below.
+It does not amend the directory-retirement rules, baseline treatment, statistics, resource caps or any deadline.
+V1 requirements and evidence retain their exact historical meanings. No old run is reinterpreted.
+
+The model remains M, 9,706,840 bytes, SHA256 `b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee`.
+Baseline stays `bb76439ea7bb4ae84bf15fe1276d75dc336d3cec`, with controlled-delivery-plus-ready exact-M normalization only.
+Preserve protected assets, training modules, no retraining, 40 fresh games, 20 color pairs, 64 actual completed root visits, openings/seeds/schedule, raw EP/history and draws.
+Preserve `paired-sign-cp95-v1`, no partial inference, prior-cohort reuse, rating or absolute Elo claim.
+Preserve readiness 30s, command 90s, comparison 24h, cleanup C=min(start+5s,inherited end), TERM+2s, KILL+4s, ordinary P=C-500ms and nested selftest P=C.
+Preserve RSS >4GiB and workspace >256MiB stop conditions, 250ms nominal polling, 500ms coverage target, 1000ms footprint freshness, existing frame/output bounds and final reserve.
+No secondary Cookies/RunningChromeVersion scan repair or quadratic-validator optimization belongs to this change.
+
+### 2. Why the current coupling requires a contract change
+
+`process-observation.mjs:createProcessObservation.runCycle` uses lastValidNs for adjacent coverage, rejects before updating observation/terminal/peak, and throws ACCOUNTING_UNAVAILABLE.
+`process-accounting.mjs` latches every rejection; `processes.mjs:requireHealthy` then blocks proofs and `process-runtime.mjs:tick` stops scheduling.
+`projectObservation`, watchdog resource polling and cleanup all use accountingValid for different questions.
+`record-finalization.mjs:resolveAnalysisEligible` and `pgn-summary.mjs:deriveFinalGameEvidence` require aggregate passed, even for a complete scientific cohort.
+Closed record/identity/fixture schemas reject additive fields. Changing labels alone cannot implement separation.
+
+The fc30765 failure remains 6/40 acknowledged games, 3/20 pairs, absent final/completion, unproven Native cleanup and ineligible analysis.
+Its 715.836458ms cycle gap and separate invalid filesystem accounting remain valid v1 failures.
+The trace localizes wall time but does not establish its historical algorithm/CPU/GC/host cause. Separation is a changed measurement policy, not a causal repair.
+
+### 3. One monitor, four distinct facts
+
+Retain the same monitor, ownership registry, request allocator, serialized queue, transport, clock, BudgetHandles and actual-settlement lifetime.
+Create no second monitor, sidecar authority or alternate ownership census. New leaves below are pure policy/compilation helpers or same-reference extractions.
+Monitor construction gains optional `evaluationPolicy` and `phase`; omitted means strict v1. Operational v2 passes both from its validated manifest; mismatches reject before IO.
+The closed policy object is exactly `{policyId:"tinyaz-separate-verdicts-v2",recordSchemaVersion:2,softPhase:"compare"}`.
+Only a private periodic tick in a successfully started compare monitor can request soft treatment. Public sample(), bootstrap, proofs, listeners, signals and cleanup requests cannot select it.
+
+The monitor keeps these distinct values:
+
+| Fact | Definition and transition |
+| --- | --- |
+| hardFault | Existing first sticky fault, original code/detail/time, never cleared. requireHealthy and hasAccountingFault consult only this. |
+| coverageLost | Sticky whole-run boolean, initially false, set by any observed 500ms coverage/freshness loss. Never clears, including cleanup. |
+| lastCoverageQualifiedNs | Last completion qualifying the continuous chain before its first loss. Initial timely bootstrap establishes it; after loss it freezes forever. This replaces v2's use of lastValidNs for continuity. |
+| lastCompleteNs | Actual admitted bootstrap completion, then actual Node completion of the newest structurally complete, handle-live periodic cycle before the stopping fence. May advance after a gap. It is a rolling local reference, never evidence of restored continuity. |
+| lastTimelyNs | Actual admitted timely bootstrap completion, then the newest current-cycle-timely full observation before the stopping fence. It may recover after a gap; it does not clear coverageLost. |
+| retained observation | Actual current complete RSS, timestamp, timing quality, admitted-timely flag, peak and sticky overage. No stale/fault projection overwrites these facts. |
+
+On the initial successful strict bootstrap observation, atomically seed lastCoverageQualifiedNs=lastCompleteNs=lastTimelyNs to its actual admitted finishedNs; completedCycles=timelyCycles=1 and peaks/overage use its real sum. startedNs is the actual bootstrap cycle start, not timer construction or ready-envelope time. gapCount/causeCounts are zero only if bootstrap met the original strict first-cycle checks; otherwise start fails hard. Bootstrap admission cannot manufacture periodic quality loss or success.
+Observer age and the first periodic adjacent interval both use this seeded completion even when no lastObservation getter was called. A timely bootstrap at T, idle501ms and fast first periodic completion after T+501ms necessarily records loss; the later cycle start is never a replacement origin.
+For v1, all original APIs/semantics remain unchanged. For v2, lastObservation() keeps accountingValid meaning current timely observation with no hard fault and age<=500ms while sampling.
+It additionally returns exact fields `coverageContinuous`, `snapshotComplete`, `cycleTimely`, `lastCoverageQualifiedNs`, `lastCompleteNs`, `lastTimelyNs`, `resourceQuality`.
+Invalid accountingValid alone is no longer a compare periodic hard-fault classification. Consumers must use typed resourceQuality and the original fault channel.
+`resourceQuality` is an immutable snapshot of the sole monitor's ledger defined in section 6. Its read may note current observer age using the original clock, without IO or resetting timestamps.
+
+### 4. Exact periodic classification and ongoing sampling
+
+A periodic cycle uses its original borrowed handle, the same full current-UID census, bounded fixpoint rounds, full-tuple sample/gone partition and safe whole-union sum.
+Capture Node startedNs and finishedNs on its original clock, and each Python local started/finished pair separately. Never subtract Python absolute time from Node time.
+Structural failure, malformed/negative/reversed timestamps, unsafe/noninteger sums, incomplete union or unresolved fixpoint is hard.
+A whole structurally valid cycle is current-cycle timely iff every Python local duration<=500ms AND Node finished-started<=500ms AND its original handle is live at commit.
+For periodic coverage compute adjacentNs=finishedNs-previous lastCompleteNs, seeded by bootstrap. A successfully started monitor with null lastCompleteNs is a hard state error, never a fallback to this cycle start.
+Coverage qualifies only if adjacentNs<=500ms, current cycle timely, no observer-age loss was recorded and no hard fault exists.
+These are separate predicates: a fast cycle after a long idle gap may mint current proof facts without repairing run coverage.
+
+Machine-readable quality causes are exactly `PERIODIC_COMPLETION_GAP`, `PERIODIC_NATIVE_DURATION`, `PERIODIC_OBSERVER_AGE`.
+The first means Node adjacentNs>500ms or Node cycle duration>500ms; the second means a valid Python local duration>500ms; the third means actual Node now-lastCompleteNs>500ms while sampling is active.
+Python-local duration >500ms is explicitly soft ONLY for an otherwise complete periodic compare reply under a live original handle.
+Observer-age-only loss is explicitly sticky coverage loss. It is a pending quality state, not permission to treat missing data as a complete sample.
+Before a current pending reply resolves, retain `pending:true`; issue no replacement cycle, preserve the original tick handle, heartbeat/work bounds and physical debt.
+If the original operation expires, reply never arrives, collector exits unexpectedly, or structural validation fails, latch the original hard fault and stop. There is no extra grace or timeout.
+A stale retained snapshot without an in-flight request does not fabricate a reply. The existing next tick may issue under its normal original bound; inability to do so is hard.
+At most one tick remains queued/in flight until its actualSettled receipt fulfills, including after public expiry. Coverage loss never releases that queue slot early.
+After a soft complete cycle, advance lastCompleteNs to its actual finishedNs and keep polling. Never compare every future cycle to frozen lastCoverageQualifiedNs.
+A later fast cycle updates lastTimelyNs and timely observation/proof admission, while coverageLost and every earlier quality counter remain sticky.
+
+Classify at the producing predicate, not by parsing Error.message. Soft results are discriminated data, never ACCOUNTING_UNAVAILABLE exceptions.
+`createProcessAccounting.runCycle` marks every thrown exception hard; only a returned typed periodic quality result avoids markFault.
+A generic ACCOUNTING_UNAVAILABLE, unknown reason, getter exception or unexpected shape is hard. No catch-all downgrade is allowed.
+Bootstrap and non-compare use the original strict checks; no relaxed policy can accidentally spread through a shared helper.
+
+### 5. Terminal identities, caps and cleanup after loss
+
+Retain the sole Node terminal set and every ownership/discovery/history entry. Existing exact-birth facts remain immutable; same PID/new birth has no terminal hit.
+Check every reply against previously admitted terminal facts before ownership updates. Keep per-cycle staged-gone contradiction checks across coverage rounds.
+For v2 compare, commit new terminal facts only from a structurally complete current-cycle-timely observation on the still-live original handle, with no hardFault.
+A prior coverage gap does not prevent this fresh admission; current-cycle untimeliness does. A Python flush, stale reply, single inspection, partial round or cap/fault rejection cannot mint terminal facts.
+Untimely complete periodic cycles may retain valid discovery rows for the existing ownership union, but discard their staged terminal candidates. Resample unresolved/live tuples on later cycles.
+Current complete/timely cycles can recover future terminal admission. No identity proof is inferred from coverageLost, an old RSS value or permission failure.
+Existing terminal no-action hits still require scope/health/live-handle guards. Every actual signal retains fresh exact Native identity verification immediately before kill.
+New roots, numeric-PID inspection, new births and every registered listener/port retain their existing fresh checks, including ports whose historical owner is terminal.
+
+A structurally complete handle-live periodic cycle supplies trustworthy observed RSS even when timing quality fails.
+Update a separately named `observedPeakRssBytes` across ALL such complete cycles, including untimely ones; never label it a verified bound on an unobserved interval.
+Retain `peakRssBytes` as the original maximum across current-cycle-timely admitted observations. It survives gaps/faults, as does observedPeak.
+Set rssLimitExceeded when either a complete sum or either retained peak is >4294967296, including section5's narrow already-issued post-fence positive-cap retention. Equality is allowed. Lower samples and invalid projections never clear it.
+Cap-positive evidence takes precedence over timing quality. It is retained even if the same cycle cannot mint terminal facts. A cap-positive cycle mints no new terminal facts.
+The existing watchdog's 1s Native poll, ordinary-admission, finish-admission and post-cleanup checks all consult the sticky flag and observedPeak.
+No ordinary admission or finish after a known overage can succeed; the first watchdog control boundary latches RESOURCE_RSS and original cleanup. No new timer is introduced.
+Malformed/partial/unsafe sums never become cap-negative evidence. They hard-abort with unavailable resource accounting.
+
+Before collector shutdown, cleanup requires an actual current-cycle-timely observation whose real age<=500ms, plus all original identity/listener/physical proofs by P.
+Coverage continuity is not the CleanupProof.accountingValid predicate in v2 compare; fresh current evidence and hard-fault absence are. It remains the predicate in strict v1/non-compare.
+If no such current observation is available, cleanup fails by its original end. No extra sample-only allowance, retry window, permission-as-gone or substitute join.
+Periodic quality during cleanup is retained until the sampling fence. A timely cycle may establish current freshness without restoring resource pass.
+At the exact existing stopAndReap stopping fence, close the coverage interval and record its actual timestamp; a >500ms tail since lastCompleteNs loses coverage.
+After that fence, no new sampling cycle, ordinary request/proof or timer is allowed; the existing authorized shutdown/EOF and mandatory close/drain actions remain permitted under their original bounds. Work merely queued but not actually issued cannot issue later. For an already-issued pre-fence periodic request, finish existing structural/full-union/safe-sum validation and recheck its same original handle on the actual clock during required drain. A complete still-live sum >4GiB updates ONLY observedPeakRssBytes and sticky rssLimitExceeded, even after the fence; it cannot update peakRssBytes, lastObservation, completion/timely counters, clocks, coverage, terminal facts or freshness. A below-cap result grants no post-fence cap-negative evidence or other success.
+A fully validated live post-fence commit attempt returns typed fenced-observation data so fence rejection alone is not a new hard fault; the existing actual body still settles through the same queue/lifetime. Malformed, incomplete, expired or failed-wire work retains its original hard fault and cannot supply cap evidence. Retain only the observation-guard lateDrops specified in section6.
+Required drain must incorporate every eligible already-issued positive-cap update before the mandatory final resource snapshot and closed-facts verdict compilation. A cap discovered after all40games or after finish admission still sets resource failed and strength ineligible, with RESOURCE_RSS retained; it does not reset cleanup start, widen P/C, reopen admission or launch another request. Missing/unsettled body remains unproven, never a clean cap-negative result.
+Unexpected EOF before authorized teardown is hard. Expected EOF after the actual workload proof/drain and authorized teardown is closure, not a synthetic zero sample or coverage gap.
+Failed-proof teardown preserves missing-proof status, first fault and every physical debt. Collector receipt retires only on real exit plus BOTH output closes.
+P/C, TERM/KILL, driver SDK/body/callback/IPC closure, actual queue drain, fd closes, listener scope and finalizer identity requirements remain unchanged.
+
+### 6. Bounded resource evidence and independently checked reducers
+
+Every v2 phase final has a closed `resourceEvidence` object, owned by the existing monitor/Watchdog/Recorder path:
+`{schemaVersion:2,policyId,runId,phase,monitorRunId,closureKind,startedNs,coverageEndNs,lastCoverageQualifiedNs,lastCompleteNs,lastTimelyNs,coverageLost,pending,completedCycles,timelyCycles,gapCount,causeCounts,maxGapNs,firstGap,lastGap,details,detailsDropped,lateDrops,observedPeakRssBytes,peakRssBytes,rssLimitExceeded,hardReasons}`.
+Ordinary phases use monitorRunId=runId and closureKind=monitor-stop. Nested selftest shares the preflight monitor: record runId/phase identify the selftest, monitorRunId identifies the parent, closureKind=selftest-prefix and startedNs is the actual parent monitor start. No second ledger, reset or collector-stop claim. The graph binds the nested owner/supervisor; this exception exists only for watchdog-selftest.
+Private monitor API `_captureResourcePrefix({scopeRunId,deadlineMonoMs}) -> resourceEvidence` is synchronous and available only for the already bound `${parentRunId}:watchdog-selftest` of a v2 preflight monitor. The nested cleanup controller calls it after its actual child-scope survivor/listener/workload settlement proof, before completing its original P=C cleanup. Validate exact scope/policy and finite original nested C first, then assert actual now<C and the already current parent bound, no hard fault, strict continuous coverage, and current-cycle-timely observation with real age<=500ms. No queue operation, wait, IO, new BudgetHandle, timer or parent-horizon write occurs.
+On that same synchronous stack, capture original-clock time and copy the one monitor ledger, closing only the copied prefix tail at that time; coverageEndNs is this actual capture time. Capture pending truthfully from the parent's queued/in-flight periodic observation. Parent timestamps/counters/tail/sampling, original handles, queue admission and physical debts continue untouched; pending describes the known private parent periodic tick, never absence of all other parent work. All actual nested child-scope proof/IO/body/callback/pipe debts must already be settled by original C; the parent-pending exception cannot relabel any child debt. Store this frozen prefix on the nested cleanup controller; private `readResourcePrefix()` returns that same captured value (null before success, never a mutable or newly timed snapshot) for watchdog-shutdown/watchdog-records. No parent collector-stop or global drain is claimed.
+For closureKind=selftest-prefix only, pending=true denotes parent-owned periodic work still retained on the same genuine lifetime; it is not missing nested child-scope settlement. A prefix resource verdict may pass its explicitly bounded strict measured prefix when all nested physical proofs and current coverage/cap facts are valid, even with that pending parent work. This does not certify parent completion or future cap-negative evidence. Standalone readback must display the selftest-prefix scope, pending value and monitorRunId and cannot admit another phase or produce strength inference.
+The eventual PREFLIGHT receipt graph must bind this prefix to the exact parent run/supervisor/manifest and verify full parent actual closure, complete resource evidence and every later fault/cap before preflight passes. A later parent cap, gap, Native fault or missing body prevents parent pass despite the earlier prefix. The nested receipt stores owner identity, not a future parent completion hash, so no circular receipt graph is created. No parent pending work is dropped, marked settled, cancelled or reclassified by capture. Unknown/unattributed parent queued bodies remain unproven parent debt and block parent passage if not actually settled; any unknown nested child body blocks the prefix itself.
+Expired original C, stale/missing current observation, hard fault, invalid scope or failed nested actual proof rejects prefix capture immediately under existing cleanup failure semantics; there is no wait, grace, late capture or horizon reset. No new admission epoch, queue barrier or second scheduling authority is introduced.
+Times/durations are canonical nonnegative decimal nanosecond strings (nullable only for absent observations); counts/bytes are safe nonnegative integers, peaks nullable until first observation.
+The required causeCounts object has exactly the three enum keys in section 4. Each counts cycles/age episodes affected, not messages printed.
+One gap episode starts at the last complete completion (including the bootstrap seed) and ends at the next complete completion or coverageEndNs; adjacent age checks update that episode, never add repeated gaps.
+GapCount counts episodes; a long complete cycle with no earlier age read still creates one. Native-duration-only failure creates one cycle episode even when adjacent duration<=500ms.
+Cause counts count each cause at most once per episode. maxGapNs is the maximum observed episode duration, updated while open and finalized with original boundaries.
+Each detail is exactly `{ordinal,causes,fromNs,detectedNs,toNs,cycleStartedNs,cycleFinishedNs,nativeMaxDurationNs,requestId}`; causes sorted unique, toNs nullable only while open.
+firstGap/lastGap are null only when gapCount=0 and otherwise preserve first/latest exact details; details is empty exactly when gapCount=0. hardReasons is the sorted unique section7 enum, and lateDrops is exactly `{count,first,last}` with null first/last only at count0. details holds the latest 64 episodes; detailsDropped=max(0,gapCount-details.length), with first retained separately.
+No unbounded per-250ms quality event stream. Whole-run counters and maxima are exact; omitted episode details are explicitly unavailable, never represented as absent gaps.
+Record cumulative fixed-size checkpoints through the existing <=1s resource-event lane and one mandatory full final snapshot after all admitted monitor work is fenced/drained (selftest uses its explicitly scoped synchronous prefix capture). Each checkpoint has its actual original capture time.
+Each v2 resource event payload is closed `{rssBytes,peakRssBytes,observedPeakRssBytes,rssLimitExceeded,accountingValid,atMonoNs,qualityCheckpoint}`. qualityCheckpoint is exactly `{capturedNs,completedCycles,timelyCycles,gapCount,causeCounts,maxGapNs,coverageLost,pending,lastCompleteNs,lastTimelyNs,lateDropCount}`; do not repeat the detailed ring every second. Legacy v1 payload stays unchanged.
+lateDrops counts only fully decoded observation commit attempts that actually reach the existing post-fence observation guard. first/latest are exactly `{requestId,observedAtNs,originalEndNs}`, at most two details. observedAtNs is read from the monitor's existing nowMonoNs at that guard, not kernel, transport, frame-entry or first-byte arrival. originalEndNs is the original BudgetHandle deadlineMonoMs copied once into private operation metadata before enqueue by the monitor call/tick/start admission and forwarded with that same handle to runCycle (never reconstructed from a later narrowed handle), serialized as the canonical nonnegative decimal integer equal to mathematical floor(captured numeric deadlineMonoMs *1000000), explicitly including finite fractional-millisecond values (1000.25ms becomes1000250000ns). This evidence-only floor applies after the original numeric minimum selects the captured bound, even when a fractional constructor/getter/call deadline wins; it is not an integer-input requirement or BigInt(milliseconds) conversion. Do not round, normalize or mutate the actual numeric BudgetHandle, current assertLive/narrowing or any operational bound. The metadata conversion is not proof of liveness/expiry and never replaces current handle.assertLive after any genuine narrowing.
+Record an expired attempt only if it actually reaches that guard; retain its original hard expiry. Frames rejected/expired/dropped earlier by transport or the poisoned parser are outside lateDrops and their observation attribution/count is unavailable. Never parse them anew, infer zeros, consult accountingTrace as authority, add a transport timestamp hook or extend a deadline. A live guard-observed post-fence over-cap attempt can both increment lateDrops and retain section5's positive-cap fact, while no dropped observation becomes freshness/terminal/continuity success.
+The mandatory final snapshot is a closed resource-event variant `{kind:"final-resource-evidence",resourceEvidence}` appended before the existing event writer closes. resourceEvidenceRefs for the local verdict is exactly [eventsRef], avoiding a self-reference to final.json; closure refs are the sorted union of graph-bound phase eventsRefs. final.resourceEvidence must equal that final event body.
+A missing mandatory final snapshot, counter regression, ring/count mismatch, impossible chronology, unknown cause, nonfinite value or lost pending body is a hard final-graph failure. A successful monitor-stop snapshot requires the actual admitted-work drain and pending=false; a successful selftest-prefix requires its actual nested scope proofs and exact synchronous capture, with pending permitted only as parent-owned periodic debt under the explicit exception above. A pending/unsettled body cannot be erased by snapshotting, collector EOF or a public timeout; if it prevents original parent closure there is no authoritative eligible parent final. The selftest exception never weakens monitor-stop finalization or another phase prerequisite.
+The graph verifies snapshot monotonicity, first/last/ring/count/max consistency, final snapshot versus last-checkpoint counter equality or monotone extension through the actual closure boundary, policy/run binding, peaks/overage monotonicity including pre-fence-issued positive-cap updates retained during drain, and hashes. The post-fence sample-retention exception changes only observedPeak/overage/lateDrops, never coverageEndNs or the admitted peak/freshness/counters. Actual drain completion still clears pending, and original failures still append hardReasons; neither permits a positive verdict with missing actual settlement. It does not claim reconstructed details for episodes deliberately dropped from the ring.
+Resource storage remains under the original output budget. Each qualityCheckpoint canonical encoding must be <=1024 bytes, and each full resourceEvidence <=65536 bytes; overflow is hard. Worst-case event count is bounded by phase duration and 1s lane; a storage/counter overflow is hard, never silent truncation.
+
+`strengthVerdict` exact schema: `{status,reasons,analysisId,analysisEligible,completedGames,completedPairs,classification}`.
+Status is `eligible|ineligible|not-applicable`; reasons are sorted unique `NOT_COMPARISON|INCOMPLETE_COHORT|SCIENTIFIC_FAULT|IDENTITY_UNPROVEN|CLEANUP_UNPROVEN|RECORDS_UNPROVEN|HARD_STOP|PREREQUISITE_UNPROVEN`.
+analysisId is exactly paired-sign-cp95-v1; counts are supervisor-validated completed games/pairs, not progress text; classification is the existing stats classification or null.
+Compare is eligible iff all40/20 selected PGNs/replays/requests/checks are proven, all scientific checks pass, exact identity/final integrity/physical cleanup/graph/prerequisites are proven, hardFaultCount=0, no stop, and stats admission succeeds.
+Quality gaps alone do not enter hardFaultCount. Noncompare is always not-applicable, analysisEligible=false, classification=null, reasons=[NOT_COMPARISON], regardless phase success.
+An ineligible compare has all applicable reasons, analysisEligible=false, classification=null and no inferential fields. Descriptive counts remain labeled descriptive.
+
+`resourceVerdict` exact schema: `{status,reasons,scope,phaseRunIds,resourceEvidenceRefs}`.
+Status is `passed|failed|inconclusive`; scope is the closed enum `phase|prerequisite-closure|selftest-prefix`; phaseRunIds and evidence refs are sorted, unique and graph-bound.
+Reasons enum: `RSS_CAP|WORKSPACE_CAP|COVERAGE_GAP|NATIVE_UNPROVEN|CLEANUP_UNPROVEN|STORE_UNPROVEN|RECORDS_UNPROVEN|INCOMPLETE_MONITORING|PREREQUISITE_RESOURCE_UNPROVEN`.
+Reducer priority: proven cap breach => failed, even with gaps or missing later proof; else any gap/unproven resource fact => inconclusive; else passed only with full measured coverage and all resource/cleanup/graph evidence proven.
+Retain all reasons, not just the highest-priority one. A science fault may coexist with resource passed if resource evidence and closure are independently complete; aggregate run still cannot pass.
+Each final stores phase resourceVerdict plus `closureResourceVerdict`, using the same schema and the union of its own and verified prerequisite phase evidence. Failed dominates inconclusive dominates passed.
+Both nested selftest resourceVerdict and closureResourceVerdict must use scope=selftest-prefix, with its own phaseRunId/eventsRef and explicit parent monitorRunId in resourceEvidence; they never claim whole-monitor or parent-prerequisite closure. Ordinary final scopes remain phase and prerequisite-closure respectively.
+Scope is per phase runId, never reset per game. Workspace closure never hides a parent gap behind a clean compare. Parent records are not rewritten.
+
+### 7. Fatal matrix, aggregate outcomes and CLI
+
+Hard failure classes are a closed enum: `SCIENCE,IDENTITY,NATIVE,TIMESTAMP,UNION,AGGREGATE,TRANSPORT,BACKEND,PERMISSION,PROOF,STORE,DISK,GRAPH,TIMEOUT,CLEANUP,PHASE_CHECK,ABANDONED`.
+Existing error codes and first-cause diagnostics remain authoritative. At source predicates assign a typed class; unmapped errors classify NATIVE/GRAPH according to the failing boundary and always remain fatal.
+No downstream error-message parsing or caller-supplied soft boolean. Positive resource caps retain RESOURCE_RSS/RESOURCE_WORKSPACE and hard-stop behavior.
+
+| Facts at closure | Strength | Resource | Aggregate / exit / inference |
+| --- | --- | --- | --- |
+| Full40, all scientific/proof/graph facts proven, continuous resource coverage | eligible | passed | passed / 0 / existing paired analysis |
+| Full40, same proofs, only periodic compare quality gaps | eligible | inconclusive COVERAGE_GAP | inconclusive / 2 / existing paired analysis, explicit resource limitation |
+| Full40 or partial, any trustworthy RSS/workspace cap breach | ineligible HARD_STOP | failed cap reason | inconclusive / 2 / none |
+| Missing cleanup/Native/identity/Store/final records or unsettled physical debt | ineligible applicable reasons | inconclusive, unless cap-positive | inconclusive / 2 if sealable, otherwise no authoritative final |
+| Proven scientific/identity/check violation | ineligible SCIENTIFIC_FAULT or IDENTITY_UNPROVEN | independently reduced | failed / 1 / none |
+| Cohort <40/20, interrupted, malformed or missing game evidence | ineligible INCOMPLETE_COHORT/RECORDS_UNPROVEN | independently reduced | inconclusive / 2 / none |
+| Noncompare all checks/proofs/resources pass | not-applicable | passed | passed / 0 / none |
+| Noncompare sampling-quality violation | not-applicable | inconclusive | existing hard stop, inconclusive / 2 / none |
+
+For mixed cases, proven science/identity/check violation selects failed1; otherwise any cap/hard stop/unproven/gap selects inconclusive2; abandoned stays abandoned2 unless a proven violation requires failed1.
+Only complete checks, proven closure and closureResourceVerdict passed permit aggregate passed0. Strength eligibility is independently computed before aggregate resource degradation.
+Unexpected bootstrap/parser/publication errors remain nonzero (existing CLI catch1), with no final success claim. Failed graph publication cannot expose a prepublication eligible object as authoritative.
+CHECK/PARITY/PREFLIGHT parent admission requires v2 same-policy/same-identity receipts, status passed0, all existing checks/cleanup/Native parent probe facts and phase/closure resource passed.
+analysisEligible=false and strength not-applicable are normal for these parents, not rejection conditions. Their strict resource failure stops the chain; no automatic rerun or relaxed fallback.
+The nested heartbeat selftest keeps its expected inconclusive2/HEARTBEAT_TIMEOUT, zero-scored-games and original required checks; prove its strict resource/cleanup evidence separately before preflight passes.
+
+The public phase command syntax/aliases stay unchanged. V2 requires `--protocol train/fixtures/browser-protocol-v2.json` and a fresh workspace; no ignore-resource flag or implicit policy migration.
+The existing W/task-3-process-owner.mjs ownerSucceeded means child exit0 plus physical closure and stays unchanged. It is never scientific eligibility. New v2 operator/readback files below use separate ownerClosureVerified and graph-verified scientificEvidenceEligible, and require both before reporting eligible evidence. Next-phase admission still requires strict parent passed0.
+Archived CLI JSON outcome adds schemaVersion2, policyId, strengthVerdict, resourceVerdict, closureResourceVerdict and completionRef (nullable only without a published receipt).
+An exit2/eligible combination means scientifically eligible comparison with an inconclusive whole run. Scripts must inspect the graph-verified verdicts; do not treat every nonzero as absent scientific evidence or every eligible as run pass.
+Keep TINYAZ_COMPARE_PROGRESS count-only and TINYAZ_RESOURCES diagnostic-only. Neither receives inference or proof authority.
+The operator handoff reports each verdict, scope, gap count/max, observed versus admitted peak, cleanup and actual exit/BOTH-pipe/rawfile/journal closure, plus exact policy/receipt/candidate/runtime identity.
+
+### 8. Prospective closed schemas and compatibility
+
+Create browser-protocol-v2.json, exact v1 protocol fields plus `evaluationPolicy`, with schemaVersion2. All limits/science/schedule/preflight literals stay identical.
+Keep browser-protocol.json bytes and its v1 validator branch unchanged. Existing --protocol v1 stays strict. Unknown version/policy, mixed workspace/fixture or forged softPhase rejects before execution.
+CommonIdentity v2 is exactly the existing closed object plus evaluationPolicy. Its fixture protocol ref points at the new v2 path; all other fixture refs remain unchanged.
+`assembleSnapshotIdentity` gains explicit `protocolPath` and `evaluationPolicy` arguments. Omitted protocolPath is exactly the v1 fixture and omitted evaluationPolicy is exactly null; supplying either v2 selection requires both exact v2 path and exact V2_POLICY. Capture, final remeasurement and independent reopen pass the selection explicitly; inventory membership never chooses a policy.
+`reopenInputs({workspaceRoot,candidate,protocolPath},context)` and `inspectReopenedInputs` take the requested path (omission means v1 for old callers). Read/validate workspace first, derive its version/policy/fixture ref, then require the requested path and actual frozen/current fixture bytes to match that exact declaration before independently assembling identity. Validate selected fixture contents with validateProtocolFixture; policyForProtocol resolves only that validated declared selection. Reopen passes protocolPath/evaluationPolicy explicitly into assembleSnapshotIdentity and requires whole measured identity equality, including the new selection. All final code-to-doc remeasurement through snapshots.mjs uses the same binding. Both fixtures being present is never evidence of selection.
+New workspace, manifest, running, event, final and completion use schemaVersion2. Manifest adds evaluationPolicy; running/event retain their exact fields with version2.
+V2 final is exactly the v1 field set plus `evaluationPolicy,strengthVerdict,resourceVerdict,closureResourceVerdict,resourceEvidence`.
+V2 completion is exactly the v1 field set plus `evaluationPolicy,strengthVerdict,resourceVerdict,closureResourceVerdict`; graph verification requires equality with final and binds resourceEvidence through final's hash.
+`analysisEligible` equals strengthVerdict.analysisEligible for compare, false otherwise. Existing summary paired-analysis fields are present only when that verdict permits them.
+V2 requiredCheckIds remain unchanged; add no nominal resource check that could pass while resourceVerdict is inconclusive.
+V2 CleanupProof fields stay identical but section5 defines its v2 compare accountingValid meaning. Schema/policy binding prevents a v1 consumer reading it under old semantics.
+V1 schema validation and reductions remain available for old readback. V1 final/summary/exit meaning never changes; missing v1 policy does not default to v2.
+New graph dispatch is by explicit record schema and expected identity. All records and parents within a workspace must share version/policy; no v1 receipt can satisfy a v2 prerequisite.
+Old archived helper/source/receipt bytes remain untouched. Do not regenerate, migrate, reseal, overwrite, promote or score prior cohorts. New current-source edits are prospectively archived under new candidate hashes.
+
+Collector Native wire schema/backend identity/helper hashes stay v1 and unchanged. V2 driver hello/start add `recordSchemaVersion:2,evaluationPolicy` as exact bound fields, checked against manifest and CommonIdentity hash.
+The driver protocol constructor receives the expected policy/version from validated setup; v1 retains its old closed envelopes. Native collector envelopes/shape validation do not gain relaxed flags.
+Driver PhaseResult remains an untrusted request with the existing fields. A driver cannot supply final verdicts, quality counters or resource evidence; the supervisor/closed-facts compiler derives them.
+Bridge/driver finish never short-circuits actual close. The same normal FINISH/STOP, actual SDK/body closure, CLOSED, raw callbacks and physical receipts remain required.
+Completion still follows actual close, exact final inputs, final hash, prepared full-graph verification, one-shot publication and fresh readback. Nothing bypasses privateFS or physical ownership.
+
+### 9. Exact future implementation file allowlist
+
+All paths in this table are relative to `train/scripts/browser_eval/` unless prefixed `/` for repository root or `W/` for the plan workspace. C=create, M=modify; no deletes. Generated future artifacts are confined to fresh W/`separate-verdicts-implementation-evidence/<nonce>/` for evidence/releases/handoffs, W/`task-3-owner-controls-<nonce>/` for unchanged ownCommand sink controls (only its case subdirectories and root control-summary.json), and W/`task-3-execution-<candidate7>-<nonce>/` for v2 orchestration compatible with the old naming guards (only phase subdirectories and root execution.json/comparison-claim.json). Nonce is a newly generated UUID, candidate7 is the released commit prefix, phase is exactly check/parity/preflight/compare, and control case is exactly normal/exit2/nonzero/post-spawn-sink-failure. Canonical roots must be absent before exclusive creation; reject collisions and never reopen, overwrite, migrate or extend historical roots. Runtime receipts retain fixed phase paths in a fresh external workspace; every wrapper uses its selected released root explicitly.
+New leaves are mandatory to keep every touched SOURCE/TEST file under400 readable lines. Do not compress statements or move unrelated logic merely to meet the cap.
+
+| Action/path | Exact future change |
+| --- | --- |
+| C `evaluation-policy.mjs` | Pure closed policy constants/fixture selection/version compatibility. Exports V2_POLICY, policyForProtocol, assertPolicyBinding. No IO/state. |
+| C `resource-quality.mjs` | Pure ledger transitions/checks for section6. Exports createResourceQuality; monitor owns its only instance. Same clock facts passed as data, no timers/IO. |
+| C `verdicts-v2.mjs` | Pure closed schemas/reducers for strength, phase/closure resource and aggregate status. Exports assertVerdicts, deriveVerdicts. Imports only schema primitives/constants/policy, never record-schema or stats; no writer, Native or statistical recomputation. |
+| C `record-fields.mjs` | Move the whole immutable v1 RECORD_FIELDS declaration unchanged from record-schema; exports RECORD_FIELDS only. Both version validators import this leaf, never each other. |
+| C `record-schema-v2.mjs` | Complete closed v2 record validators, reusing primitive/environment validators and record-fields without weakening v1. Exports assertRecordV2. |
+| C `receipt-verdicts-v2.mjs` | Pure v2 graph coherence/reducer equality and resource snapshot reconciliation. Exports verifyVerdictClosure. No file/Native IO or publication authority. |
+| C `process-runtime-start.mjs` | Whole existing start/collectorArgv group extracted from process-runtime on the same config/state/authority/stopOwner references; exports createProcessStart. No second lifetime/queue. |
+| C `watchdog-resource-policy.mjs` | Whole resource-poll group plus v2 projection routing extracted from watchdog-runtime; exports armResourcePolling with borrowed timing/control/state/capabilities. No new stop owner/timer cadence. |
+| C `watchdog-verdict-policy.mjs` | Whole RSS boundary projection/retention group extracted from watchdog; exports createWatchdogResourceChecks using same monitor/records/fault/latch bindings. No stop, state or ledger ownership. |
+| M `processes.mjs` | createProcessMonitor policy/phase binding; hardFault vs coverage states; same-state observation commit; private periodic purpose, original admitted-end metadata captured before enqueue; resource snapshot exposure and scope-validated synchronous _captureResourcePrefix with original-C/parent-bound freshness guards and no queue/horizon effect. |
+| M `process-observation.mjs` | runCycle classification, actual rolling completion, timely terminal admission, separate peaks, bootstrap seed/counters, age/tail/stopping guards, guard-observed lateDrops, narrowly retained post-fence positive cap and typed observation. |
+| M `process-accounting.mjs` | Forward exact borrowed policy/state refs and immutable original admitted-end metadata alongside the same runCycle handle; mark only thrown hard failures, not returned periodic quality data. |
+| M `process-runtime.mjs` | Delegate whole start; tick selects private periodic purpose and captures its original admitted end before enqueue, keeps sampling after quality loss, retains actual tickQueued ownership. |
+| M `process-stop.mjs` | Capture sampling fence/end/tail once; prevent late success while retaining eligible already-issued positive caps through actual drain; retain original drain/teardown/physical proof. |
+| M `watchdog.mjs` | Delegate RSS checks, use typed hard fault/quality boundary, preserve single latchStop and original captureCleanupBound. |
+| M `watchdog-runtime.mjs` | Delegate resource group; hard invalid/missing facts stop, compare periodic quality records without stop; write policy-correct running version. |
+| M `watchdog-shutdown.mjs` | Final cap/quality snapshots, exact cached nested prefix selection through cleanup.readResourcePrefix, typed intent propagation and authoritative verified outcome projection after cleanup. |
+| M `watchdog-cleanup.mjs` | Current timely snapshot predicate separated from coverage continuity only for v2 compare; capture actual fence-bound quality without granting proof; nested branch invokes synchronous _captureResourcePrefix after its actual child-scope proof and before original C, caches it once and exposes private readResourcePrefix for finalization. |
+| M `watchdog-records.mjs` | composeIntent carries supervisor-owned resource facts, preserves all hard stops; final snapshot comes from real monitor closure or exact cached nested prefix, no driver substitution; preserve truthful selftest parent-pending attribution and explicit selftest-prefix verdict scope. |
+| M `record-schema.mjs` | Explicit v1/v2 dispatch, move unchanged v1 fields to record-fields for exact v2 construction; old branch keeps literals/coherence. |
+| M `identity-schema.mjs` | Exact CommonIdentity dispatch: absent policy=v1 only, exact v2 policy shape=v2; fixture binding; environment/backend validators unchanged. |
+| M `records.mjs` | Head version from manifest, append final supervisor resource event before writer close; keep sole recorder/state/queue and post-stop evidence lane. |
+| M `record-evidence.mjs` | Head version from validated manifest, capture resource snapshot and graph-bound closure facts with existing verifier/lifetime. |
+| M `record-inputs.mjs` | Version-aware intent validation; canonical detached copies include supervisor resource evidence; reject driver verdict injection. |
+| M `record-finalization.mjs` | Keep v1 functions; v2 closed-facts strength/resources reduction before aggregate status, correct cleanup proof validation and final/completion construction. |
+| M `record-finalizer.mjs` | Supply final verdicts to v2 completion; existing final/prepared-token/graph/readback sequence unchanged. |
+| M `pgn-summary.mjs` | Separate frozen-game evidence validation from aggregate-resource status only in explicit v2; preserve science checks and stats formulas. |
+| M `receipt-verification.mjs` | Dispatch new pure coherence verification after real graph reads; bind version/policy/final/completion/evidence and parent closure; old verifier semantics unchanged. |
+| M `prerequisites.mjs` | Explicit v2 parent rules section7; same live-identity probe and receipt graph; read old graphs without cross-version admission. |
+| M `phase-fixtures.mjs` | validateProtocolFixture exact v2 branch; opening/schedule/scientific validators unchanged. |
+| M `snapshot-identity.mjs` | Explicit protocolPath/evaluationPolicy signature/defaults from section8; assembleSnapshotIdentity includes policy only for exactly selected v2, correct protocol ref/digest. |
+| M `snapshots.mjs` | Policy-aware capture/final remeasurement/reopen; forward explicit protocolPath/evaluationPolicy into every identity reconstruction and requested path into independent reopen. |
+| M `snapshot-reopen.mjs` | inspectReopenedInputs validates requested selection against workspace schema/policy/selected ref and actual fixture bytes, passes both selected arguments into independent assembleSnapshotIdentity; retain genuine fresh-process environment/byte rechecks. |
+| M `snapshot-files.mjs` | Append exact new runtime leaves and v2 fixture to functional closure; preserve all original paths/order; exclude TEST leaves. |
+| M `run.mjs` | Closed --protocol selection supports exact v1/v2 paths; bootstrap compares selected current/frozen bytes and runSupervisor forwards own.protocolPath explicitly to reopenInputs, no arbitrary path or implicit v1 fallback for v2. |
+| M `run-supervisor.mjs` | makeManifest version/policy, create monitor with phase/policy, pass expected driver protocol binding and final outcome fields. |
+| M `run-driver.mjs` | Read selected archived protocol path from identity, validate v2 policy/manifest before SDK work; bind bridge version. |
+| M `supervisor-protocol.mjs` | Optional expected evaluationPolicy/recordSchemaVersion, default strict v1, private ctx binding for driver only. |
+| M `driver-protocol.mjs` | Exact versioned hello/start fields, prevent mismatch before start; existing fault/sequence/ordinary barriers unchanged. |
+| M `driver-bridge.mjs` | Bind hello/start version/policy against validated manifest; preserve untrusted PhaseResult and finish/close contracts. |
+| M `driver-bridge-wire.mjs` | Strict versioned start envelope check only; same callbacks/waits/debts/STOP logic. |
+| M `cli.mjs` | Verified v2 JSON projection and existing exitCode; exact syntax unchanged, no relaxed flag. |
+| C `/train/fixtures/browser-protocol-v2.json` | Section8 exact fixture, same science/limits, prospective policy; v1 fixture never edited. |
+| M `/train/scripts/check_browser_parity.py` | Recognize exact v2 fixture path, workspace/manifest version/policy binding before archive exec, same original90s and byte checks. |
+| C `separate-verdicts-test-fixtures.mjs` | TEST-only v2 workspace/monitor/clock/scripted transport fixtures, no relaxed verifier. Retain explicit actual debt teardown. |
+| C `resource-quality.test.mjs` | Pure exact boundary/counter/ring/chronology/overflow tests from section10. |
+| C `separate-verdicts-monitor.test.mjs` | Genuine monitor/observation/protocol causal tests, no Native or browser claims. |
+| C `separate-verdicts-terminal.test.mjs` | Timely-after-gap versus untimely terminal admission and unchanged proofs/listeners tests. |
+| C `separate-verdicts-records.test.mjs` | Genuine Recorder/Store/prepared publication/graph v2 controls and v1 readback rejection controls. |
+| C `separate-verdicts-watchdog.test.mjs` | Actual watchdog stop/finish/cleanup, sticky cap, pending and physical-debt controls. |
+| C `separate-verdicts-compat.test.mjs` | Exact v1/v2 fixture/schema/identity/driver/prereq/CLI/parity controls, including fresh-process capture/reopen with both fixtures present, selected-policy roundtrips and every mixed/missing/wrong path/hash/policy negative. |
+| C `separate-verdicts-native.test.mjs` | Genuine Native short controls using existing native fixture/lifetime factories; original bounds and actors' receipts. |
+| C `W/separate-verdicts-owned-command-v2.mjs` | New explicit v2 release loader/operator derived from task-3-owned-command.mjs. Same original constraints/branch/input safety, count-only owner and one-cohort claim; exact v2 protocol path, policy and runtime binding; reuse unchanged ownCommand. Preserve raw ownerSucceeded, derive ownerClosureVerified from actual joins/bytes/journal/no-intervention/no-manager-errors. Run exit2 still receives readback; eligible evidence requires the v2 verifier, never ownerSucceeded. No automatic next phase; use exact fresh helper-compatible roots from section9. |
+| C `W/separate-verdicts-verify-phase-v2.mjs` | New readback derived from task-3-verify-phase.mjs using frozen v2 verifyReceipt, exact version/policy/runtime/release/completion identity and physical verifier lifetime. Output final/closure verdicts, authoritativeGraphVerified, ownerClosureVerified, scientificEvidenceEligible; verifier exit0 means successful readback only, experiment exit remains separate. Missing graph cannot produce eligible output. |
+| C `W/separate-verdicts-owner-controls-v2.mjs` | New operator tests using unchanged task-3-control-child.mjs and ownCommand under exact fresh task-3-owner-controls-<UUID>/<case> roots; prove child exit0/2/7 and missing pipe/raw/journal/manager failure semantics; synthetic final graphs cannot be called Native/cohort proof. |
+| C `W/separate-verdicts-release-v2.template.json` | Inert PREPARATION_ONLY template. Exact old release keys with schemaVersion2 plus evaluationPolicy, protocolRef and runtimeIdentity. protocolRef is actual v2 fixture ref; runtimeIdentity is exact Node/Python descriptors from safety/CommonIdentity. Candidate/safety/runtime/path/hash values remain null until future controller release. Hash-bind exactly new operator/verifier/controls plus unchanged task-3-stream.mjs/task-3-process-owner.mjs/task-3-control-child.mjs. No old release accepted. |
+| M `/README.md` | Current direction/proposal vs approval vs implementation vs fresh run; separate authoritative verdict/exit usage. |
+| M `/train/scripts/README.md` | Versioned command/protocol and nonzero eligible semantics, original bounds. |
+| M `/train/scripts/browser_eval/README.md` | Complete APIs/state/schemas/allowlist/runtime union, limits, compatibility, handoff and before-use TEST declarations. |
+| M `/docs/superpowers/specs/2026-11-02-tinyaz-verified-m-software-design.md` | Append approved amendment and exact file map only after user approval; preserve earlier historical requirements. |
+| M `/docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md` | Buildable phased tasks, test ownership and final code/doc comparison gates. |
+| M `/docs/experiments/tinyaz-software-plan.md` | Preserve failed cohorts; record proposed/approved/implemented/verified/released results separately. |
+| M `/docs/experiments/README.md` | Update experiment index pointer/status only, without a strength claim. |
+
+The v2 operator returns experiment exit0 only for graph-verified aggregate passed with actual closure, exit2 for sealed aggregate inconclusive/abandoned with actual closure (including eligible/inconclusive), and exit1 for failed graph/bootstrap/manager/closure or proven scientific violation. Its readback command is separately owned and exit0 only proves readback. A wrapper exit never creates or suppresses a verdict.
+Existing helper/Python Native bytes, protected/model/train files, dependencies, package scripts and existing v1 fixture are outside the write allowlist.
+Existing tests stay intact; new scoped tests exercise both versions. If an existing frozen test factory needs alteration or an unforeseen file becomes necessary, amend this allowlist before use.
+No edits to stats.mjs are needed: v2 passes scientific hardFaultCount/stoppedEarly/cleanupVerified into its existing closed eligibility interface after independent scientific reduction.
+No edits to pgn-format/match rules or collector-protocol are needed. Statistical formulas and native partition checking are unchanged.
+
+### 10. Tests first, buildable implementation phases and release gates
+
+1. After explicit implementation approval, pin the approved amendment hash and declare its exact file map/APIs/TEST seams in owning README/canonical plan before creation/use. Preserve clean baseline and protected hashes.
+   Add causal failing pure v2 tests in the new leaves, then implement policy/closed schemas/ledger/reducers. V1 remains the executable default; focused tests/typecheck must pass before a green commit.
+2. Extract the named whole start/resource/RSS groups without behavior changes. Prove v1 equivalence and <400 lines, then commit that green change with docs.
+3. Implement monitor split and v2 compare-only periodic quality classification behind explicit policy; all operational producers still select strict v1 until integration. Pass causal monitor/terminal/physical-debt tests and commit with docs.
+4. Integrate v2 schemas, closed-facts compiler, graph, parent admission and analysis; add fixture/capture/driver/CLI/parity wiring last. Each green increment keeps v1 runnable, v2 fail-closed until its full path is present; commit after each green change.
+5. Validate the new v2 operator/readback/template and exit2 owner controls without changing any v1 helper/source/receipt. Serially run complete current-byte scripted harness, app tests, typecheck and required Python tests in the recorded runtime. Preserve every failed gate and actual command/BOTH-pipe/rawfile/journal closure. No concurrent runtime/input mutation.
+6. After scoped fresh source review and a separate control-execution release, run the new genuine Native short controls and actual archived CLI controlled cap. Require original bounds and each actor's real exit/BOTH-pipe/body/descriptor receipts. A fake test join never closes a Native gate.
+7. Complete whole-change fresh code/document review, source/protected hash audit and exact final code-to-doc comparison. Resolve all findings, then review/commit/publish candidate separately as authorized. No implicit full40 release.
+8. Only after explicit future runtime/candidate/policy release: fresh CHECK, PARITY, PREFLIGHT in one new v2 workspace, all parents resource passed, then one separately released fresh full40. Preserve count-only monitoring, actual final/completion graph and clean closure. No old preparation/cohort reuse.
+
+Required causal cases include all truth-table rows and these specific negatives/edges:
+
+- Exactly500ms accepted; 500ms+1ns lost. First bootstrap gap remains hard. Timely bootstrap seeds timestamps/counters/peaks; without any getter, idle501ms then fast first periodic completion records the entire bootstrap-to-completion gap and cannot use cycle start as origin. Periodic Python501ms complete reply is soft only in v2 compare; reversed/invalid Python timestamps hard everywhere.
+- Long scheduling gap then fast complete cycle, slow Node cycle, native-only duration, age-only gap and repeated age reads produce exact distinct counters/episode merging; no future rejection loop against frozen continuity time.
+- Gap then fast/fast cycles retain resource inconclusive, fresh terminal admission recovers, old lastCoverageQualifiedNs stays unchanged; two runs/phases cannot share or reset ledgers.
+- Complete untimely gone/new discoveries do not mint terminal facts; fresh next complete timely cycle can. Exact terminal reappearance, same PID/new birth and staged cross-round contradiction retain original fatal/ownership behavior.
+- Already-issued pre-fence periodic reply crosses stopping fence: safe live complete RSS4294967297 updates observedPeak/overage before actual drain/final compiler, strips strength even after40games, while admitted peak/clocks/counters/terminal/coverageEnd remain frozen. Below-cap grants no post-fence success; expired/malformed/never-issued replies retain original failure/no-IO behavior.
+- Untimely complete RSS4294967297 causes stop and records observedPeak; later low value or malformed projection cannot clear cap. RSS4294967296 alone does not stop. Missing/unsafe/incomplete sums never prove under-cap.
+- Fractional constructor, later-getter and call deadlines each win the original numeric minimum in separate controls:1000.25ms serializes as1000250000ns. Later narrowing changes the genuine numeric handle/assertLive outcome while the captured original metadata stays immutable; diagnostic floor never changes deadlines, grants liveness or proves expiry.
+- Held reply during coverage loss keeps the one original operation/tick actual debt; original90s/horizon expiry hard-stops, late reply cannot commit or open another tick, narrowed deadlines cannot widen. Heartbeat/work caps still win earlier when applicable.
+- Quality-only compare does not call latchStop or poison protocol ordinary admission; each hard fault, EOF, permission, malformed frame, backend mismatch and unknown ACCOUNTING_UNAVAILABLE does. Noncompare quality retains hard stop.
+- Cleanup after gap requires fresh <=500ms current sample and every Native/listener/driver proof. Missing current sample, withheld actual pipe/body/close, late proof, ancestor change and stale/invalid footprint remain hard/unproven at original P/C.
+- Expected teardown EOF is distinguished from premature EOF; open tail and cleanup-period gaps persist. Post-fence decoded live/expired commit attempts use actual guard observedAtNs and admission-end units; unknown failed-wire chunks never increment this narrow counter or become zero-arrival claims. No accountingTrace/transport hook/parser-after-poison authority.
+- Nested prefix with an in-flight/queued parent tick captures pending:true and scope=selftest-prefix synchronously after actual nested child proof, preserves the same parent handle/queue/lifetime debt and starts no wait/IO/timer. Strict fresh<=500ms/current cap facts are required. Parent later completes normally, returns an over-cap sample, faults, or never settles: only the first can support parent passage, and every later fault/cap/debt remains in the final parent graph. Standalone prefix readback never certifies parent completion. Pre-fence cap-positive reply returned after the prefix still fails the eventual parent. Unknown queued parent body remains unproven until actual settlement and cannot be hidden by the prefix; unknown/missing child body blocks prefix proof. Expired C, stale snapshot and missing child pipe/body reject immediately; no late capture or parent horizon mutation.
+- Fresh-process capture/reopen v1 and v2 with both fixture files present reconstruct identical selected identities; wrong requested path, missing policy, mutated fixture/hash, version mismatch or inferred selection reject. Operator sink-control and orchestration roots satisfy unchanged helper patterns, reject existing-root collisions and leave all historical bytes intact.
+- 65+ episodes: exact total/cause counters/max/first/latest, 64 details, truthful detailsDropped; no 250ms record growth. Pending final evidence, reset counters, forged times, ring order and lost cap all fail graph verification.
+- Full40 quality-only graph produces eligible/inconclusive2 with unchanged stats; incomplete/malformed/scientific/cleanup/Store faults strip inference. Noncompare not-applicable still admits valid strict parents; selftest expected-stop exception remains exact.
+- V1 byte fixtures/old readback preserve previous results; old v1 parser rejects schema2/policy extra fields. Unknown/mixed versions, v1 parent in v2, wrong protocol hash, forged driver policy/summary/verdict and changed final graph fail closed.
+- Genuine Native control uses real collector/proofs/cleanup with a transparent TEST-only bounded Node delivery delay on one periodic reply, plus strict-control and cap controls. Keep the same transport/validator/actual receipt; delay is not fake Native timing or new production timeout. Do not use the control as a cohort result.
+
+### 11. Costs, alternatives, limits and approval boundary
+
+Cost: wider schema/CLI/graph maintenance and explicit version dispatch; two peak meanings; bounded quality evidence and more test paths. Storage is charged to existing caps, and graph checking adds work under existing budgets.
+Strongest counterargument: intermittent loss could conceal a resource cap between observations, so eligible strength must never imply resource compliance. Any science dependence on unseen Native state would still invalidate strength.
+This proposal accepts that limitation only for cadence-quality evidence, with original scientific identity and actual cleanup proof preserved. A cap observed after loss still stops the run.
+Alternative1: keep strict v1 and measure/optimize the quadratic checker. It preserves one verdict but does not separate measurement objectives or establish the historical cause.
+Alternative2: enlarge500ms or command/cleanup bounds. Rejected here because it changes timing limits and still entangles science and resource quality.
+Alternative3: drop RSS monitoring after a gap or attach an advisory sidecar. Rejected because it loses cap-positive evidence and creates an unsealed alternate authority.
+The unknown secondary filesystem confirmation can still prevent a future v2 cohort. This amendment neither solves it nor permits a waiver.
+No fresh implementation/run has occurred. Detailed choices, exact versioning, compare-only scope and recovered timely admission are approved by the bound final reviewed amendment.
+Amendment approval and implementation authorization are complete. Verified implementation, fresh scoped code/document reviews, whole-change review and separate Root runtime/candidate/policy execution releases remain open.
