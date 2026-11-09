@@ -628,3 +628,27 @@ proposal/review/report prefixes remain immutable and ineligible. Historical88834
 cause stays UNKNOWN; no causal/score/strength or completed40 claim. Fresh Max
 source review and separate Root operational releases/publication/fresh committed
 prerequisites remain OPEN. No push/main/merge or new experiment is authorized.
+
+
+### Terminal identity round1 TEST expectation checkpoint, 2026-11-09
+
+The a8f1880 full gate remains FAILED812tests/811pass/1fail, natural1/92.484007666s;
+BOTHpipes/rawfiles/journal closed,412 inputs exact. Its separate genuine Native14
+PASS has real exits/BOTHpipes/settlement, expected collector0/0/2,errors[] and
+966,386B output. No overall gate or new cap/phase success is claimed. Failed
+handoff f4c897a70f65c59aef2518d6dd076cabbe82f8bf21aedffe46a2ca56f79078ba and
+manifest94788c0b6d634df460e8ae5df58ddcc439e666ce6d64b0ce875d42050a7e71fa remain immutable.
+
+Sole failure was accounting-trace's stale prefix-order assertion. Approved
+runCycle first reads full historical ownership to seed admitted terminal gone
+counts, then reads it for the unresolved/live request partition. These are
+memory reads, not extra Native queries. Issued nextRid stays AFTER request
+partition evaluation and BEFORE send; the original coverage check reads ownership
+again. The fixture now asserts EXACT full sequence owned/owned/nextRid/send/owned,
+not a sliced prefix. Zero injected reply-accessor reads and all original
+ACCOUNTING_UNAVAILABLE/message/deadline checks remain. Runtime behavior unchanged.
+Whole affected PURE trace/IO/observation/terminal owners39/39 passed naturally0/
+0.404s with BOTHpipes/rawfiles joined. No Native/fullsuite/cap/control/browser/
+model/phase was run for this TEST-only correction. Scoped Max review and fresh
+Root operational release remain required. Original source/report prefix and
+all old gate/cohort/probe seals remain exact; historical88834 cause UNKNOWN.

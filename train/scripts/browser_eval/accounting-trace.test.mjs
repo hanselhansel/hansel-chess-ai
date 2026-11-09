@@ -203,6 +203,8 @@ test("diagnostic correlation uses issued requestId without reading an injected r
   try {
     await assert.rejects(observer.runCycle(handle), (error) => error.code === "ACCOUNTING_UNAVAILABLE" &&
       error.message.startsWith("ACCOUNTING_UNAVAILABLE sample interval "));
-    assert.equal(reads, 0); assert.deepEqual(order.slice(0, 3), ["owned", "nextRid", "send"]);
+    assert.equal(reads, 0);
+    // Full terminal-history seed, Native partition, allocator/send, then coverage.
+    assert.deepEqual(order, ["owned", "owned", "nextRid", "send", "owned"]);
   } finally { handle.dispose(); assert.equal(timer.pendingTimeouts(), 0); }
 });
