@@ -97,7 +97,7 @@ export function v2Graph(overrides = {}) {
     ...head,
     ...verdicts,
     evaluationPolicy: V2_POLICY,
-    stopReason: null,
+    stopReason: facts.stoppedEarly ? (phase === "watchdog-selftest" ? "HEARTBEAT_TIMEOUT" : "TEST_STOP") : null,
     requiredChecks: REQUIRED_CHECK_IDS[phase].map((id) => ({ id, status: "passed", evidence: [] })),
     unplannedFaultCount: facts.hardFaultCount,
     analysisEligible: verdicts.strengthVerdict.analysisEligible,

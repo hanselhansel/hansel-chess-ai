@@ -45,7 +45,11 @@ const count = (v) => {
   nat(v + 1);
   return v + 1;
 };
-const strFields = (names) => Object.fromEntries(names.split(" ").map((name) => [name, "strNE"]));
+const fieldSpec = (names, type = "strNE") => Object.fromEntries(names.split(" ").map((name) => [name, type]));
+const CHECKPOINT_FIELDS =
+  "completedCycles timelyCycles gapCount causeCounts maxGapNs coverageLost pending lastCompleteNs lastTimelyNs".split(
+    " ",
+  );
 const counts = () => Object.fromEntries(CAUSES.map((c) => [c, 0]));
 const causes = (v) => {
   if (!Array.isArray(v) || v.length === 0) fail("gap causes");
@@ -84,17 +88,11 @@ export function assertQualityCheckpoint(v) {
   shape(
     v,
     {
-      capturedNs: "strNE",
-      completedCycles: "nat",
-      timelyCycles: "nat",
-      gapCount: "nat",
+      ...fieldSpec("capturedNs maxGapNs lastCompleteNs lastTimelyNs"),
+      ...fieldSpec("completedCycles timelyCycles gapCount lateDropCount", "nat"),
       causeCounts: "obj",
-      maxGapNs: "strNE",
       coverageLost: "bool",
       pending: "bool",
-      lastCompleteNs: "str",
-      lastTimelyNs: "str",
-      lateDropCount: "nat",
     },
     "qualityCheckpoint",
   );
@@ -183,6 +181,11 @@ export function assertResourceEvidence(v) {
     if (v.gapCount <= 64 && v.lastGap.toNs !== null && ns(v.maxGapNs) !== knownMax) fail("forged maximum gap");
     if (v.lastCoverageQualifiedNs === null || ns(v.lastCoverageQualifiedNs) !== ns(v.firstGap.fromNs))
       fail("coverage restored after loss");
+  }
+  if (end !== null && v.lastCompleteNs !== null && end - ns(v.lastCompleteNs) > GAP) {
+    const tail = v.lastGap;
+    if (!tail || tail.fromNs !== v.lastCompleteNs || tail.toNs !== v.coverageEndNs || !tail.causes.includes(CAUSES[2]))
+      fail("missing coverage tail");
   }
   for (const c of CAUSES)
     if (v.causeCounts[c] > v.gapCount || (v.gapCount === 0 && v.causeCounts[c] !== 0)) fail("cause total");
@@ -292,7 +295,7 @@ export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
   const inspectCycle = (c) => {
     shape(
       c,
-      { ...strFields("startedNs finishedNs nativeMaxDurationNs requestId"), rssBytes: "nat", handleLive: "bool" },
+      { ...fieldSpec("startedNs finishedNs nativeMaxDurationNs requestId"), rssBytes: "nat", handleLive: "bool" },
       "cycle",
     );
     if (!c.handleLive || ns(c.startedNs) > ns(c.finishedNs) || s.hardReasons.length) fail("cycle admission");
@@ -364,6 +367,7 @@ export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
         (s.lateDrops.last && ns(d.observedAtNs) < ns(s.lateDrops.last.observedAtNs))
       )
         fail("late guard chronology");
+      clockNs = ns(d.observedAtNs);
       if (rssBytes !== null) nat(rssBytes);
       s.lateDrops.count = count(s.lateDrops.count);
       s.lateDrops.first ??= structuredClone(d);
@@ -379,20 +383,15 @@ export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
       return freezeDeep(structuredClone(s));
     },
     checkpoint(at) {
+      if (ns(at) < clockNs || (s.coverageEndNs !== null && ns(at) > ns(s.coverageEndNs)))
+        fail("checkpoint clock boundary");
       const value = {
         capturedNs: at,
-        completedCycles: s.completedCycles,
-        timelyCycles: s.timelyCycles,
-        gapCount: s.gapCount,
-        causeCounts: structuredClone(s.causeCounts),
-        maxGapNs: s.maxGapNs,
-        coverageLost: s.coverageLost,
-        pending: s.pending,
-        lastCompleteNs: s.lastCompleteNs,
-        lastTimelyNs: s.lastTimelyNs,
+        ...Object.fromEntries(CHECKPOINT_FIELDS.map((name) => [name, structuredClone(s[name])])),
         lateDropCount: s.lateDrops.count,
       };
       assertQualityCheckpoint(value);
+      clockNs = ns(at);
       return freezeDeep(value);
     },
   });

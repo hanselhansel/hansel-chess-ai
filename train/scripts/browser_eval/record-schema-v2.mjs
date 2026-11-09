@@ -263,8 +263,9 @@ const VALIDATORS = {
     if (v.summary.pairedAnalysis?.analysisEligible === true && !v.analysisEligible)
       schemaFail("SCHEMA_COHERENCE", "unadmitted paired analysis");
     if (
-      v.status === "passed" &&
-      (v.unplannedFaultCount !== 0 ||
+      (v.status === "passed" || v.strengthVerdict.status === "eligible") &&
+      ((v.strengthVerdict.status === "eligible" && v.stopReason !== null) ||
+        v.unplannedFaultCount !== 0 ||
         !v.requiredChecks.every((c) => c.status === "passed") ||
         v.cleanup.verified !== true ||
         v.cleanup.accountingValid !== true ||

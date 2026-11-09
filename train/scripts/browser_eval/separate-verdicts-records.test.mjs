@@ -37,6 +37,15 @@ import { closedFacts, closureInput, quality, v2Graph, v2Workspace } from "./sepa
 
 const invalid = (f) => assert.throws(f, (e) => /^SCHEMA_/.test(e.code));
 const copy = (value) => JSON.parse(JSON.stringify(value));
+const workspaceForTest = async (t, readRecorder = () => null) => {
+  const env = await makeWorkspace();
+  t.after(async () => {
+    await readRecorder()?.closeIncompleteEvidence();
+    await artifactStoreLifetime(env.store).whenSettled();
+    await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
+  });
+  return env;
+};
 
 test("closed identity rejects mixed/missing/unknown policy, version and fixture selection", () => {
   const ws = v2Workspace();
@@ -114,6 +123,7 @@ test("all fatal-matrix rows reduce independent strength/resource/aggregate outco
     ],
     [{ resourceEvidence: quality({ pending: true }) }, "ineligible", "inconclusive", "inconclusive", 2],
   ];
+  cases.push([{ monitoringComplete: false }, "ineligible", "inconclusive", "inconclusive", 2]);
   cases.push([{ checksPassed: false }, "ineligible", "passed", "inconclusive", 2]);
   cases.push([
     { phase: "check", resourceEvidence: { ...quality({ phase: "check" }), hardReasons: ["SCIENCE"] } },
@@ -142,7 +152,8 @@ test("resource closure unions graph refs and priority without hiding parent gaps
     closedFacts({ phase: "check", resourceEvidence: quality({ phase: "check", gap: true }) }),
   ).resourceVerdict;
   const v = deriveVerdicts(closedFacts({ prerequisiteResources: [parent] }));
-  assert.equal(v.strengthVerdict.status, "eligible");
+  assert.equal(v.strengthVerdict.status, "ineligible");
+  assert(v.strengthVerdict.reasons.includes("PREREQUISITE_UNPROVEN"));
   assert.equal(v.resourceVerdict.status, "passed");
   assert.equal(v.closureResourceVerdict.status, "inconclusive");
   assert.deepEqual(v.closureResourceVerdict.phaseRunIds, ["run-check", "run-compare"]);
@@ -210,6 +221,9 @@ test("pure graph verification requires exact final event, scope, reducer and com
     (g) => (g.finalEvent.kind = "operation"),
     (g) => (g.final.resourceEvidence.pending = true),
     (g) => (g.facts.cleanupProven = false),
+    (g) => (g.final.cleanup.verified = false),
+    (g) => (g.final.cleanup.accountingValid = false),
+    (g) => (g.final.unplannedFaultCount = 1),
   ]) {
     const bad = copy(graph);
     mutate(bad);
@@ -272,12 +286,7 @@ test("selftest prefix explicitly scopes parent pending and cannot claim parent c
 });
 
 test("v1 real Recorder/Store/prepared publication and golden readback preserve bytes and meaning", async (t) => {
-  const env = await makeWorkspace();
-  const owner = artifactStoreLifetime(env.store);
-  t.after(async () => {
-    await owner.whenSettled();
-    await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
-  });
+  const env = await workspaceForTest(t);
   const { completionRef } = await runReceiptPhase({ env, phase: "check" });
   const ev = await verifyReceipt({
     workspaceRoot: env.workspaceRoot,
@@ -324,12 +333,7 @@ test("shared v1 field declaration remains immutable after extraction", () => {
 });
 
 test("v1 Recorder rejects v2 workspace/manifest before any publication", async (t) => {
-  const env = await makeWorkspace();
-  const owner = artifactStoreLifetime(env.store);
-  t.after(async () => {
-    await owner.whenSettled();
-    await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
-  });
+  const env = await workspaceForTest(t);
   const workspace = v2Workspace();
   const manifest = {
     ...fixtureManifest({ workspace, inputs: env.inputs }),
@@ -352,14 +356,8 @@ test("v1 Recorder rejects v2 workspace/manifest before any publication", async (
 });
 
 test("v1 Recorder rejects v2 running before writer admission", async (t) => {
-  const env = await makeWorkspace();
-  const owner = artifactStoreLifetime(env.store);
   let recorder;
-  t.after(async () => {
-    await recorder?.closeIncompleteEvidence();
-    await owner.whenSettled();
-    await fsp.rm(env.workspaceRoot, { recursive: true, force: true });
-  });
+  const env = await workspaceForTest(t, () => recorder);
   const manifest = fixtureManifest({ workspace: env.ws, inputs: env.inputs });
   const cb = verifyCallbacks({ commonIdentity: env.ws.commonIdentity });
   recorder = createPhaseRecorder({
@@ -385,4 +383,15 @@ test("pure graph binds every prerequisite resource snapshot to the declared pare
   Object.assign(g.final, forged);
   Object.assign(g.completion, forged);
   invalid(() => verifyVerdictClosure(g));
+});
+
+test("graph binds ineligible final cleanup and fault facts to the independent reducer input", () => {
+  const graph = closureInput(v2Graph({ completedGames: 6, completedPairs: 3, stats: null }));
+  assert.doesNotThrow(() => verifyVerdictClosure(graph));
+  for (const mutate of [(g) => (g.final.cleanup.verified = false), (g) => (g.final.unplannedFaultCount = 1)]) {
+    const bad = copy(graph);
+    mutate(bad);
+    assert.doesNotThrow(() => assertRecord("final", bad.final));
+    invalid(() => verifyVerdictClosure(bad));
+  }
 });

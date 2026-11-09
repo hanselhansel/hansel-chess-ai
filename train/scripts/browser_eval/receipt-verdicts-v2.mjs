@@ -66,6 +66,21 @@ export function verifyVerdictClosure(input) {
   if (e.closureKind === "monitor-stop" && e.pending) fail("unsettled monitor body");
   if (e.closureKind === "selftest-prefix" && (e.coverageLost || e.hardReasons.length || e.rssLimitExceeded))
     fail("unproven strict prefix");
+  const cleanup = final.cleanup;
+  const cleanupProven =
+    cleanup.verified &&
+    cleanup.accountingValid &&
+    cleanup.expectedFinalizer !== null &&
+    cleanup.survivorIdentities.length === 0 &&
+    cleanup.listenersRemaining.length === 0;
+  eqLiteral(facts.cleanupProven, cleanupProven, "final cleanup facts");
+  eqLiteral(facts.hardFaultCount, final.unplannedFaultCount, "final fault facts");
+  eqLiteral(
+    facts.checksPassed,
+    final.requiredChecks.every((check) => check.status === "passed"),
+    "final check facts",
+  );
+  eqLiteral(facts.stoppedEarly, final.stopReason !== null, "final stop facts");
   if (!Array.isArray(checkpoints)) fail("checkpoint array");
   let previous = null;
   let previousPayload = null;
@@ -76,7 +91,12 @@ export function verifyVerdictClosure(input) {
     if (payload.kind !== undefined) fail("checkpoint/final variant");
     const cp = payload.qualityCheckpoint;
     assertQualityCheckpoint(cp);
+    if (BigInt(cp.maxGapNs) > BigInt(cp.capturedNs) - BigInt(e.startedNs)) fail("checkpoint maximum predates capture");
     if (BigInt(cp.capturedNs) > BigInt(e.coverageEndNs)) fail("checkpoint after sampling fence");
+    for (const episode of [e.firstGap, ...e.details]) {
+      if (episode && episode.ordinal <= cp.gapCount && BigInt(episode.detectedNs) > BigInt(cp.capturedNs))
+        fail("checkpoint predates known gap");
+    }
     if (previous) {
       if (BigInt(cp.capturedNs) < BigInt(previous.capturedNs)) fail("checkpoint chronology");
       extendsCheckpoint(previous, cp);

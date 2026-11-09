@@ -10358,3 +10358,133 @@ Pure policy selection, CommonIdentity/schema2 dispatch, bounded resource ledger,
 The four exact focused owners passed 51/51 on qualified Node24.22.2, and qualified npm typecheck exited0. The real v1 Recorder/Store/prepared-publication/readback control matched baseline completion SHA256 `b3653531e96221121f83253d92ec64dac9e6d637e96665e01abab14e6835632e`. A failed fixture teardown required TERM of its positively owned test child after the90s file guard; its actual coordinator exit1 and BOTH pipe closes are retained. Corrected teardown closes the genuine writer before inherited-owner settlement; subsequent causal RED/GREEN and focused checks closed naturally. These are local pure/scripted controls, with no Native, browser, model, phase or cohort passage claim.
 
 Evidence: W/`separate-verdicts-implementation-evidence/b4d71967-8baf-4ebd-8472-a588dd66fe2a/`. Exact commands, input hashes, local costs, failed gates, intervention and actual exits/pipes are retained there. Root fresh source review is a separate pending gate.
+
+### Current Task5 ledger API contract (review fix round1, 2026-11-10)
+
+This section documents the current pure implementation. It adds no operational
+v2 selection. The monitor integration remains future work. These helpers accept
+data facts. They cannot establish that a sample, handle, process, graph read,
+cleanup, byte measurement or publication occurred.
+
+`createResourceQuality({runId,phase,monitorRunId=runId})` returns a frozen method
+object over one private bounded ledger. `runId` and `monitorRunId` are nonempty
+strings. `phase` is `check|parity|preflight|compare|watchdog-selftest`. Ordinary
+metadata requires equal run/monitor IDs and `closureKind:"monitor-stop"`.
+Selftest metadata requires `runId === monitorRunId + ":watchdog-selftest"` and
+`closureKind:"selftest-prefix"`. This constructor validates that binding. It does
+not capture a real prefix or authorize a second monitor. A real nested prefix
+must still come from the sole parent monitor and its future synchronous proof
+boundary. There is no clock read, timer, IO or lifetime owner in this helper.
+
+Every supplied nanosecond value is an actual string matching
+`0|[1-9][0-9]*`. Counts and bytes are safe nonnegative integers. Times from
+different absolute clock domains must never be subtracted. The method argument
+schemas below are exact closed objects where an object is listed. Methods that
+change the ledger return `undefined`. They do not return an admission or proof
+token. Throwing does not promise transactional rollback; the caller must treat a
+failed transition as hard and must not reuse partially updated state as success.
+
+| Method and arguments | Preconditions, effects and return |
+| --- | --- |
+| `bootstrap(cycle)` | Exactly once, before any admitted cycle and with no hard reason. `cycle` is exactly `{startedNs,finishedNs,nativeMaxDurationNs,rssBytes,requestId,handleLive}`. The three time/duration fields are canonical nanosecond strings; `requestId` is nonempty; `rssBytes` is a safe nonnegative integer; `handleLive` is boolean and must be true. Start must not exceed finish. Both Node duration and native maximum duration must be at most500000000ns. It seeds actual start, all three observation clocks, both cycle counts to1, and both peaks from this cycle. A cap-positive sum sets the sticky cap flag. A slow or invalid bootstrap throws; it never becomes a soft gap. |
+| `complete(cycle)` | Same closed cycle schema. Requires a seeded, unfenced ledger, no hard reason, a live original handle fact, start at or after the last complete completion, and finish at or after the latest observed ledger clock. It admits the complete sum, increments completed count, and updates the rolling complete clock. A timely cycle also advances the timely count/clock and admitted peak. It classifies Node adjacent/duration and native-duration causes, merges an open age episode, and retains observed peak/cap evidence. Coverage qualification advances only before the first loss. It never clears loss, cap, hard reasons or pending. The actual monitor must restrict soft treatment to its private v2 compare periodic path; this pure transition is not that authority. |
+| `noteAge(atNs)` | Requires a seeded, unfenced ledger and a canonical time at or after its latest observed clock. It advances that clock. Age strictly greater than500000000ns since last completion adds/extends the same observer-age episode. Repeated reads merge causes and update maximum duration without adding repeated episodes. It performs no sample and cannot prove a missing reply complete. |
+| `setPending(value)` | Requires a boolean. It copies the same monitor's known queued/in-flight periodic state. It may clear after the genuine admitted-work drain, including after the fence. This setter neither settles nor proves any body, callback, pipe or queue debt. |
+| `close(atNs)` | Requires a seeded, unfenced ledger and time at or after its latest observed clock. It records the exact coverage fence, records a greater-than500ms tail loss, and closes any open age episode. It is one-shot and does not clear pending or prove drain/cleanup. Later ordinary completion and age transitions reject. |
+| `noteLateDrop(d,rssBytes=null)` | `d` is exactly `{requestId,observedAtNs,originalEndNs}` with nonempty request ID and canonical nanosecond strings. Requires an existing fence, observed time at or after it and the latest retained late-drop observation. Records one fully decoded attempt reaching the observation guard, retaining exact first/latest details and total count. It advances the observed clock. Default/null RSS records no cap fact. A supplied RSS must be a safe nonnegative integer; only a sum strictly greater than4294967296 updates observed peak and the sticky cap flag. Lower/equal values grant no cap-negative success. Admitted peak, counters, observation clocks, coverage and fence remain unchanged. The caller must already have performed original-handle/structural/full-union/safe-sum validation before supplying a live positive sum; expired attempts may record attribution with null RSS. This helper does not verify handle liveness. `originalEndNs` is captured original deadline metadata, including the approved fractional-ms floor conversion performed by the monitor, never a new operational deadline. |
+| `markHard(reason)` | Requires one exact section7 hard class: `SCIENCE,IDENTITY,NATIVE,TIMESTAMP,UNION,AGGREGATE,TRANSPORT,BACKEND,PERMISSION,PROOF,STORE,DISK,GRAPH,TIMEOUT,CLEANUP,PHASE_CHECK,ABANDONED`. Stores its sorted unique presence, never clears a reason, and prevents subsequent cycle admission. The monitor retains the authoritative first fault code/detail/time separately. |
+| `snapshot()` | Validates and returns a detached deeply frozen closed `resourceEvidence` value. It does not read time or automatically note current age. Before bootstrap, counts are0, observation clocks/peaks are null and start is the unseeded sentinel `"0"`; this is not an actual monitor-start claim. After bootstrap, start is its supplied real cycle start. A full final must still have the genuine fence, drain and graph proof. Canonical encoding over65536 bytes throws. |
+| `checkpoint(capturedNs)` | Requires a canonical capture at or after the latest observed ledger clock. Before bootstrap the checkpoint validator rejects absent observation evidence. After fencing, capture cannot exceed the fence. It returns a detached deeply frozen closed checkpoint, advances the observed clock on success, and changes no quality counter or coverage fact. The active monitor must call `noteAge` with its actual capture clock first when age must be classified. Thus a capture cannot report a loss or late attempt from a future clock. Canonical encoding over1024 bytes throws. |
+
+The full evidence field set is exactly:
+
+```text
+schemaVersion policyId runId phase monitorRunId closureKind startedNs coverageEndNs
+lastCoverageQualifiedNs lastCompleteNs lastTimelyNs coverageLost pending
+completedCycles timelyCycles gapCount causeCounts maxGapNs firstGap lastGap
+ details detailsDropped lateDrops observedPeakRssBytes peakRssBytes rssLimitExceeded hardReasons
+```
+
+`schemaVersion` is2 and `policyId` is `tinyaz-separate-verdicts-v2`.
+`coverageEndNs` is null before fencing. Observation clocks and peaks are nullable
+only before the first admitted observation. Coverage loss and cap overage are
+sticky booleans. `peakRssBytes` covers timely admitted cycles;
+`observedPeakRssBytes` also retains untimely complete cycles and eligible fenced
+positive sums. Equality at the4GiB cap is permitted. Hard reasons are sorted,
+unique and closed. The exact checkpoint fields are:
+
+```text
+capturedNs completedCycles timelyCycles gapCount causeCounts maxGapNs coverageLost
+pending lastCompleteNs lastTimelyNs lateDropCount
+```
+
+`causeCounts` has exactly `PERIODIC_COMPLETION_GAP`,
+`PERIODIC_NATIVE_DURATION`, and `PERIODIC_OBSERVER_AGE`, each a safe count.
+A gap detail is exactly
+`{ordinal,causes,fromNs,detectedNs,toNs,cycleStartedNs,cycleFinishedNs,nativeMaxDurationNs,requestId}`.
+Its ordinal starts at1; causes are sorted unique enum values. `fromNs` is the
+previous complete completion, `detectedNs` is first detection, and `toNs` is null
+only while open. The cycle tuple/duration/request fields are all null for an
+age-only episode; a completed-cycle episode carries its actual values and ends
+at that cycle finish. The latest64 details are retained, first/latest are retained
+separately, and `detailsDropped=gapCount-details.length`. Counters and maximum
+remain whole-run facts; deliberately dropped episode details are unavailable.
+`lateDrops` is exactly `{count,first,last}`; first/last are null at count0 and
+otherwise have the closed `d` schema above. This is not a transport-arrival log.
+
+`assertResourceEvidence(value)` and `assertQualityCheckpoint(value)` return
+`undefined` on valid data. They enforce closed fields, literals/types, numeric
+bounds, chronology, counters, ring consistency and canonical size limits.
+Evidence validation independently requires a reported observer-age tail when the
+fence exceeds last completion by more than500ms, including after earlier loss.
+The checkpoint validator alone has no episode history; graph reconciliation binds
+its reported gap ordinals to retained final detection times and bounds its maximum
+gap duration by the elapsed interval from the original monitor start. Unknown/missing
+fields or literals throw bounded `SCHEMA_*` errors from the primitive validators;
+ledger admission/coherence/overflow failures use `SCHEMA_COHERENCE`. Unsupported
+canonical values can throw the canonical codec's `CANONICAL_*` errors. No error
+is a soft result. No validator reads a file or grants IO/publication/Native proof.
+
+`deriveVerdicts` requires monitoring completion (including a seeded, fenced, settled
+ordinary evidence snapshot, regardless of a contrary boolean claim) and passed strict prerequisite
+resource verdicts before compare strength may be eligible. A cadence gap in the
+compare's own complete evidence remains the only soft quality case. Eligible
+strength requires all final cleanup/check/fault/stop facts independently of an
+aggregate inconclusive result. `verifyVerdictClosure` binds those facts to final
+fields as well as the verdict bundle, and rejects checkpoints preceding retained
+episode detections. Actual file/hash/identity/Native/closure verification remains
+the caller's responsibility. The v1-only Recorder staging guards remain active.
+
+### Current Task5 TEST fixture API contract (review fix round1)
+
+`separate-verdicts-test-fixtures.mjs` exports the five functions below. They build
+synthetic data only. They launch no process, own no monitor/Store/lifetime, write
+no file, and relax no production validator. They cannot establish a genuine v2
+workspace, publication, parent, Native observation, cleanup, cohort or passage.
+`ref`, identity/environment values and model input inventories come from the
+existing synthetic fixture owner; their hashes/byte counts are test values, not
+measurements of current installed tools or fixture bytes. Real v1 Store/Recorder
+controls live in the test owner and explicitly close writers before awaiting the
+same inherited owner, then remove their owned temporary roots.
+
+| Factory signature | Defaults, construction and return/error contract |
+| --- | --- |
+| `v2Workspace()` | Returns a fresh mutable `{schemaVersion:2,workspaceId:"test-v2",commonIdentity}`. CommonIdentity is a deep copy of the existing v1 synthetic identity plus a copied exact `V2_POLICY`; only its protocol ref path changes to `train/fixtures/browser-protocol-v2.json`. The inherited synthetic ref hash/byte count is not a measurement of a real v2 fixture. This does not write workspace.json. |
+| `quality({phase="compare",runId="run-"+phase,gap=false,cap=false,pending=false}={})` | Constructs a private synthetic pure ledger. Ordinary `monitorRunId` equals runId; selftest uses `"parent"`, requiring explicit `runId:"parent:watchdog-selftest"`. Bootstrap is start0/finish10ns, RSS4, native duration1ns, requestId `"request"`, handleLive true. `gap:true` adds a fast complete cycle at500000010..500000011ns. `cap:true` adds the next1ns cycle with RSS4294967297. It sets pending to the supplied boolean and fences at last completion. Returns the deeply frozen full evidence snapshot. Noncompare gaps exist only for negative tests, never operational soft admission. Invalid binding/values propagate the ledger's bounded errors. No actual clock or sample is created. |
+| `closedFacts(overrides={})` | Uses `overrides.phase ?? "compare"` to select default fields. Run ID defaults to `run-<phase>`, except selftest defaults to `parent:watchdog-selftest`. Returns a mutable closed-facts-shaped object whose resource evidence comes from `quality` and eventsRef from the fixed phase path (`preflight/selftest/events.jsonl` for selftest). Compare defaults are40 games/20 pairs and stats `{analysisEligible:true,classification:"no_detectable_advantage"}`; other phases use0/0 and null stats. `cohortProven,scienceProven,identityProven,cleanupProven,recordsProven,prerequisitesProven,nativeProven,storeProven,monitoringComplete,checksPassed` default true. Workspace cap, stoppedEarly, provenViolation and abandoned default false; hardFaultCount is0. Required parent phases default to passed phase resource verdicts with run IDs `run-<parent>` and synthetic `<parent>/events.jsonl` refs. Overrides spread last verbatim, including null, undefined or unknown fields for negative tests. The factory does not validate overridden proof claims; `deriveVerdicts`/schema/graph consumers must reject invalid or contradictory inputs. |
+| `v2Graph(overrides={})` | Builds `facts=closedFacts(overrides)`, a fresh v2Workspace, synthetic schema2 manifest and the phase's fixed prerequisite declarations. Selftest owner is preflight run `parent` with synthetic supervisor identity. `deriveVerdicts(facts)` supplies the final/completion bundle. Final checks default all passed, cleanup is the synthetic empty-survivor/listener proof with the phase scope and synthetic finalizer, unplannedFaultCount comes from facts, summary is `{}`, and analysis/resource evidence come from the reduction/facts. A stopped selftest has `HEARTBEAT_TIMEOUT`; another stopped fixture has `TEST_STOP`; otherwise stopReason is null. Completion artifacts contain only the synthetic eventsRef, with preflight's synthetic expected selftest metadata when needed. Final event is seq0/resource with the mandatory final-resource-evidence payload; checkpoints starts empty. Returns `{ws,manifest,facts,final,completion,eventsRef,finalEvent,checkpoints}`. Shared references are intentional and mutable where not frozen; tests making independent mutations must detach their copies. The graph is partial synthetic coherence input, not an actual file inventory or prepared publication. Reducer/schema failures propagate. Contradictory overrides may deliberately produce data rejected by the graph verifier. |
+| `closureInput({facts,final,completion,eventsRef,finalEvent,checkpoints})` | Returns exactly those six keys with the same references. It drops ws/manifest and makes no copy, freeze, validation, read or proof. Callers retain responsibility for supplying complete graph-bound data and owned mutation copies. Missing values remain missing inputs for the production validator to reject. |
+
+Fixture arguments must be objects as shown. These convenience factories do not
+catch or translate native JavaScript argument/destructuring errors. `quality`
+ignores unknown option keys and uses ordinary truthiness for `gap`/`cap`; its
+`pending` value reaches the strict boolean ledger setter. Supported callers use
+the documented boolean flags. `closedFacts` deliberately retains arbitrary last
+overrides for negative tests; none of these option behaviors relaxes a production
+closed schema or makes an overridden proof claim authoritative.
+
+### Task5 review fix round1 checkpoint (2026-11-10)
+
+The independent review found five important issues. Local fixes now independently reject a fabricated clean tail over500ms, require eligible-strength cleanup/check/fault/stop coherence even when aggregate status is inconclusive, bind those final facts to reducer input, make incomplete monitoring or nonpassed strict parent resources ineligible, and reject backdated ledger/graph checkpoints (including future maximum durations). The owning browser-evaluation README now documents every current ledger method and all five TEST fixture factories, including argument fields/defaults, admission conditions, returns, errors and proof limits. Prior implementation status and51-test evidence are retained history; the fix suite is56/56 and qualified typecheck exited0. The correction still needs a fresh independent scoped re-review before Task6.
+
+The earlier intervened fixture control establishes child72128 TERM followed by child/coordinator absence, coordinator72127 exit1 and both coordinator pipe closes. A separate child wait status was not captured. That limitation remains explicit; intervention is not natural closure or Native proof. Original raw evidence remains unchanged. Current fix evidence is W/`separate-verdicts-implementation-evidence/5ff32bac-98cf-4d06-ac6d-093c0277675b/`. Strictv1 staging remains active; no operational v2 publication, Native/browser/model/phase execution or fresh cohort result is claimed.

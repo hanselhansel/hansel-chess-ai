@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { verifyVerdictClosure } from "./receipt-verdicts-v2.mjs";
+import { deriveVerdicts } from "./verdicts-v2.mjs";
+import { closedFacts, closureInput, v2Graph } from "./separate-verdicts-test-fixtures.mjs";
 import { createResourceQuality, assertResourceEvidence, assertQualityCheckpoint } from "./resource-quality.mjs";
 
 const make = () => createResourceQuality({ runId: "r", phase: "compare", monitorRunId: "r" });
@@ -122,6 +125,7 @@ test("cap evidence is sticky; fenced positive sum changes no admitted clocks", (
     assert.equal(after[field], before[field]);
   }
   assert.equal(after.lateDrops.count, 1);
+  assert.throws(() => q.checkpoint("12"));
   assert.equal(after.lateDrops.first.originalEndNs, "1000250000");
   q.noteLateDrop({ requestId: "r2", observedAtNs: "14", originalEndNs: "15" }, 1);
   assert.equal(q.snapshot().observedPeakRssBytes, 4294967297);
@@ -191,4 +195,62 @@ test("observer time cannot reverse before a reply or fence; independent ledgers 
   assert.throws(() => a.close("500000010"));
   assert.equal(b.snapshot().coverageLost, false);
   assert.equal(b.snapshot().gapCount, 0);
+});
+
+test("independent readback accepts exactly500ms tail and rejects forged500ms+1ns clean tail", () => {
+  const graph = closureInput(v2Graph());
+  graph.final.resourceEvidence = structuredClone(graph.final.resourceEvidence);
+  graph.final.resourceEvidence.coverageEndNs = "500000010";
+  graph.facts.resourceEvidence = graph.final.resourceEvidence;
+  graph.finalEvent.payload.resourceEvidence = graph.final.resourceEvidence;
+  assert.doesNotThrow(() => assertResourceEvidence(graph.final.resourceEvidence));
+  assert.doesNotThrow(() => verifyVerdictClosure(graph));
+  graph.final.resourceEvidence.coverageEndNs = "500000011";
+  assert.throws(() => assertResourceEvidence(graph.final.resourceEvidence));
+  assert.throws(() => verifyVerdictClosure(graph));
+});
+
+test("ledger rejects backdated capture after observer loss while genuine capture remains valid", () => {
+  const q = seeded();
+  q.noteAge("600000010");
+  assert.throws(() => q.checkpoint("10"));
+  assert.equal(q.checkpoint("600000010").gapCount, 1);
+});
+
+test("graph rejects a checkpoint reporting an episode before its retained detection time", () => {
+  const q = seeded();
+  q.noteAge("600000010");
+  const captured = q.checkpoint("600000010");
+  q.close("600000010");
+  const graph = closureInput(
+    v2Graph({ resourceEvidence: { ...q.snapshot(), runId: "run-compare", monitorRunId: "run-compare" } }),
+  );
+  const payload = {
+    rssBytes: 5,
+    peakRssBytes: 5,
+    observedPeakRssBytes: 5,
+    rssLimitExceeded: false,
+    accountingValid: false,
+    atMonoNs: "600000010",
+    qualityCheckpoint: structuredClone(captured),
+  };
+  graph.checkpoints = [payload];
+  assert.doesNotThrow(() => verifyVerdictClosure(graph));
+  graph.checkpoints[0].atMonoNs = graph.checkpoints[0].qualityCheckpoint.capturedNs = "10";
+  assert.throws(() => verifyVerdictClosure(graph));
+  const futureMax = structuredClone(graph);
+  Object.assign(futureMax.checkpoints[0].qualityCheckpoint, {
+    gapCount: 0,
+    coverageLost: false,
+    causeCounts: { PERIODIC_COMPLETION_GAP: 0, PERIODIC_NATIVE_DURATION: 0, PERIODIC_OBSERVER_AGE: 0 },
+  });
+  assert.throws(() => verifyVerdictClosure(futureMax));
+});
+
+test("unseeded real ledger evidence cannot support strength despite a claimed monitoring-complete flag", () => {
+  const resourceEvidence = { ...make().snapshot(), runId: "run-compare", monitorRunId: "run-compare" };
+  const verdict = deriveVerdicts(closedFacts({ resourceEvidence }));
+  assert.equal(verdict.resourceVerdict.status, "inconclusive");
+  assert.equal(verdict.strengthVerdict.status, "ineligible");
+  assert(verdict.strengthVerdict.reasons.includes("CLEANUP_UNPROVEN"));
 });

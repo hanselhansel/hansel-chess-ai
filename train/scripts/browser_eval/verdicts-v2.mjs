@@ -211,9 +211,9 @@ export function deriveVerdicts(f) {
     if (!f.scienceProven || !f.checksPassed || f.stats === null || !f.stats.analysisEligible)
       sr.push("SCIENTIFIC_FAULT");
     if (!f.identityProven) sr.push("IDENTITY_UNPROVEN");
-    if (!f.cleanupProven || !f.nativeProven || (e.pending && !prefix)) sr.push("CLEANUP_UNPROVEN");
+    if (!f.cleanupProven || !f.nativeProven || rr.includes("INCOMPLETE_MONITORING")) sr.push("CLEANUP_UNPROVEN");
     if (!f.recordsProven || !f.storeProven) sr.push("RECORDS_UNPROVEN");
-    if (!f.prerequisitesProven) sr.push("PREREQUISITE_UNPROVEN");
+    if (!f.prerequisitesProven || parents.some((p) => p.status !== "passed")) sr.push("PREREQUISITE_UNPROVEN");
     if (
       f.hardFaultCount > 0 ||
       e.hardReasons.length > 0 ||
