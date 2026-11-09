@@ -10688,7 +10688,12 @@ throws the existing bounded schema/canonical errors.
 V2 requires `capabilities.clock.nowMonoNs`; it uses that same borrowed exact
 reader for checkpoint capture. Watchdog's default clock now exposes this reader
 from the same hrtime origin; existing operational ms functions are unchanged.
-Missing/invalid v2 reader fails closed, with no synthesized capture timestamp.
+A missing v2 exact reader rejects construction before IO. If the reader later
+becomes missing or invalid, exact resource capture fails closed. The real facade
+records the fault, closes admission and captures the original cleanup bound using
+its unchanged operational nowMonoMs clock and original derived fault/stop timestamp.
+The failed quality reader never owns containment. No ms-derived timestamp is
+substituted into quality evidence and no deadline or clock origin changes.
 The interval remains1000ms and state.resourceTask stays the sole FS body. Quality
 alone records without latching stop; native/footprint/cap failures retain their
 hard path. Closed coverage produces no ordinary checkpoint. Cleanup/shutdown
@@ -10711,3 +10716,71 @@ All temporary roots and collector/operation debts are explicitly closed before
 removal. Existing tests/factories remain unchanged. The Task6 review pronoun now
 explicitly says "These five Task5 functions", so its no-IO claim excludes the
 four re-exported owned scripted factories.
+
+
+### Task7 review-fix component seam declaration (2026-11-10)
+
+Root approved mechanical whole-facade factoring in existing watchdog.mjs.
+Internal `createWatchdogFacade({config,capabilities},runLifecycle=runWatchdogLifecycle)`
+trusts already-captured component inputs and retains the original shared
+state/timing/control/operations/cleanup/lifetime and callback order. Public
+`createWatchdog(options)` performs the exact existing config capture and delegates
+with the original lifecycle default; no new public option or validator bypass.
+The TEST-only lifecycle collaborator may drive real facade admission, fault,
+stop, original cleanup capture and actual owned settlement with controlled IO.
+It cannot establish a normal v2 runtime, Recorder publication, graph or Native
+result. Real Recorder WeakMap ownership and v1-only staging guards remain intact.
+The existing separate-verdicts fixture and watchdog TEST owners own these controls;
+no new file/owner is introduced. Original operational ms timing/containment remain
+on the existing clock origin. Exact ns quality capture must fail closed without
+becoming the fault/stop/cleanup clock or fabricating a quality timestamp.
+
+
+### Task7 review fix round1 (2026-11-10)
+
+Fresh review found two Important facade defects. A resource predicate could
+synchronously latch stop while the caller still returned admission-open. The
+quality timestamp reader could also throw while handling its own failure, before
+fault retention and original cleanup capture. Both paths are corrected: admission
+rechecks the actual stop/finish/driver state after the resource predicate, and
+fault/stop containment uses the original operational clock. The exact reader
+remains strict and is used only for resource evidence. No quality timestamp is
+synthesized and operational deadlines/cleanup windows retain their original values.
+
+The internal whole-facade component seam keeps public createWatchdog config
+capture/default lifecycle unchanged. New controls drive actual facade callbacks,
+operations, validated fork IPC, genuine v1 Recorder ownership, actual cleanup and
+owned exit/BOTH-pipe settlement. They prove no ordinary registration/port issuance
+after hard read failure, and contained invalid/missing exact-reader failures with
+the original captured cleanup bound. These controls are component evidence only;
+they produce no normal v2 runtime, final publication, graph or Native proof.
+
+Causal RED22/25 preceded GREEN25/25. The final authorized nine-owner Node roster
+passed115/115, isolated Python8/8 and qualified typecheck exit0. Actual exit/BOTH
+pipe EOF, raw hashes and frozen inputs are retained at
+W/`separate-verdicts-implementation-evidence/b7adb175-84a8-4a99-96c7-8c7b1f7a6b67/`.
+The initial23/25 exploratory fixture attempt is retained separately. Full fix
+commands, audit and remaining limits are appended to W/`v2-task-7-report.md`.
+Prior failures, approved contract, M/protected23/whole Section3 and v1-only staging
+remain unchanged. Fresh scoped re-review precedes Task8. Task9 archived closure,
+Native controls and all runtime releases remain future gates. No push or release.
+
+
+`facadeQualityControl(failure)` is a TEST-only asynchronous fixture in the existing
+separate-verdicts fixture owner. Supported cases are `hard-read`, `invalid`, and
+`missing`; no other value is a supported control. It returns observed admission
+results, driver frames/registered ports, original cleanup captures, fault events,
+actual shutdown outcome and same-owner settlement observations. It uses the real
+captured facade, operations queue, fork IPC validator/channel, cleanup controller
+and a genuine v1 Recorder/Store association. Only its lifecycle collaborator is
+controlled; the already-captured component inputs are trusted internal references.
+The backing v1 Recorder writes incomplete diagnostic evidence and closes genuine
+sinks; no v2 running/final record or graph is published and no staging guard is
+relaxed. Failure cases keep the invalid exact reader through real containment and
+shutdown; emergency reader restoration occurs only when a failing RED needs test
+teardown. Driver stderr closure is withheld through the actual +2s/+4s stages;
+shutdown must remain pending before that close, then settle without a clock advance.
+The fixture releases controlled driver exit/BOTH pipe/send facts, joins the
+original run and genuine owner, closes incomplete evidence, then removes
+its temporary root. Errors propagate after owned teardown. This cannot qualify a
+normal v2 runtime or attest Native observations.

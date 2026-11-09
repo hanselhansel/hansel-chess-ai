@@ -362,3 +362,25 @@ test("v2 normal stopped-monitor cap check cannot create a new hard stop after cl
     assert.deepEqual(c.stops, []);
   } finally { await f.dispose(); }
 });
+
+import { facadeQualityControl } from "./separate-verdicts-test-fixtures.mjs";
+for (const failure of ["hard-read", "invalid", "missing"]) {
+  test(`v2 real facade contains ${failure} and closes ordinary issuance`, async () => {
+    const f = await facadeQualityControl(failure);
+    assert.equal(f.escaped, null);
+    assert.ok(f.beforeTeardown.stop);
+    assert.ok(f.beforeTeardown.faults > 0);
+    assert.equal(f.beforeTeardown.start, f.triggerAt);
+    assert.equal(f.beforeTeardown.end, f.triggerAt + 5000);
+    assert.equal(f.finalCleanupEnd, f.beforeTeardown.end);
+    assert.deepEqual(f.cleanup, [{ start: f.triggerAt, end: f.triggerAt + 5000 }]);
+    assert.equal(f.frames.some((m) => m.type === "registered"), false);
+    assert.equal(f.registeredPorts.length, 0);
+    assert.deepEqual(f.admissions, failure === "hard-read" ? [false] : []);
+    assert.equal(f.pendingWithoutErr, true);
+    assert.equal(f.settled, true);
+    assert.ok(f.events.some((e) => e.kind === "fault"));
+    assert.equal(f.events.some((e) => e.kind === "resource"), false);
+    assert.equal(f.outcome.exitCode, 2);
+  });
+}

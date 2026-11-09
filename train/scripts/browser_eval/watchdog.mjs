@@ -36,7 +36,11 @@ const OP_CEILING = {
 };
 
 export function createWatchdog(options) {
-  const { config, capabilities } = captureWatchdogRuntimeConfig(options, realClock);
+  return createWatchdogFacade(captureWatchdogRuntimeConfig(options, realClock));
+}
+
+// Internal component seam. Inputs must be captured by the config owner.
+export function createWatchdogFacade({ config, capabilities }, runLifecycle = runWatchdogLifecycle) {
   const { clock, monitor } = capabilities;
   const v2 = config.workspace.schemaVersion === 2;
   if (v2 && typeof clock.nowMonoNs !== "function") throw fail("IPC_INVALID", "v2 clock nowMonoNs");
@@ -77,7 +81,8 @@ export function createWatchdog(options) {
   };
 
   const now = () => clock.nowMonoMs();
-  const nowNs = () => v2 ? BigInt(clock.nowMonoNs()) : BigInt(Math.floor(now() * 1e6));
+  // Original operational containment clock. Exact quality reads may fail.
+  const nowNs = () => BigInt(Math.floor(now() * 1e6));
 
   // The genuine recorder's timed runtime binds ONCE here — purely,
   // before any adapter use and with no clock read at construction: the
@@ -177,15 +182,16 @@ export function createWatchdog(options) {
     makeError: fail,
     evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null,
     phase: config.phase,
-    nowNs,
+    nowNs: () => clock.nowMonoNs(),
   });
   const requestStop = (reason) => latchStop(reason);
   const stopped = () => state.stopReq !== null;
-  const admissionOpen = () =>
-    state.stopReq === null &&
-    !state.driverClosed &&
-    state.finishReq === null &&
-    !rssExceeded();
+  const admissionOpen = () => {
+    if (state.stopReq !== null || state.driverClosed || state.finishReq !== null) return false;
+    if (rssExceeded()) return false;
+    // The resource predicate can synchronously latch a hard stop.
+    return state.stopReq === null && !state.driverClosed && state.finishReq === null;
+  };
 
   // Synchronous finish admission: the sticky overage flag is checked BEFORE
   // the finish may be admitted (a latched overage turns it into a resource
@@ -365,7 +371,7 @@ export function createWatchdog(options) {
   control.finalize = (expected) => shutdownOwner.finalize(expected);
   control.shutdown = () => shutdownOwner.shutdown();
   const run = () =>
-    runWatchdogLifecycle({ config, capabilities, state, timing, control });
+    runLifecycle({ config, capabilities, state, timing, control });
 
   return Object.freeze({ run, requestStop });
 }
