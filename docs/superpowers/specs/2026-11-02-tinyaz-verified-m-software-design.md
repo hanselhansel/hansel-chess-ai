@@ -5363,3 +5363,62 @@ This is scripted component evidence. Fresh independent full Task10 source/spec/
 code-doc review precedes Task11; later runtime/candidate/policy releases remain
 separate. Report: W/v2-task-10-report.md. Final evidence:
 W/separate-verdicts-implementation-evidence/69e23b45-c09e-4f07-a2fe-3db7e5d5e44a/.
+
+
+### Task10 R1 exact root grammar and diagnostic disclosure (2026-11-10)
+
+This supplies the omitted preparation-path interface against unchanged operator
+and control-validator bytes. It changes no accepted e78 requirement or release.
+`candidate` is the released 40-character lowercase hexadecimal commit SHA.
+`candidate7` is exactly `candidate.slice(0, 7)`, with no uppercase or other suffix.
+The three required basenames are exactly:
+
+- Workspace: `tinyaz-v2-<candidate7>-<UUID>`.
+- Orchestration: `task-3-execution-<candidate7>-<UUID>`.
+- Scripted control: `task-3-owner-controls-<UUID>`.
+
+`UUID` has exactly this lowercase hexadecimal, hyphenated UUID v4 grammar:
+`[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}`.
+The third group starts with `4`; the fourth starts with `8`, `9`, `a` or `b`
+(the standard variant). The validators anchor the entire basename with `^`/`$`.
+Uppercase, another UUID version/variant, an omitted segment or an added suffix
+rejects even when a proposed directory is fresh and otherwise canonical.
+
+For release workspace/orchestration values, use absolute normalized paths equal
+to `path.resolve(value)`. Their parents must already exist: joining the realpath
+of the parent to the basename must equal the supplied value. The loader creates
+no parents. `ROOT` is the operator's fixed repository root; `PLAN` is the existing
+directory containing the W operator. The workspace must be outside `ROOT`, never
+under `ROOT/`. Its parent may be another existing canonical external directory.
+The orchestration parent must be exactly `PLAN`. A control root also has parent
+exactly `PLAN`, and that parent's realpath must equal the supplied parent string.
+Its exclusive reservation separately enforces the control basename above.
+
+First `check` requires an absent workspace and exclusively creates the fresh
+orchestration root. Archived input bootstrap creates the fresh workspace under
+its existing exclusive rules. Root reservation/phase/case `mkdir` calls create
+no missing parents and reject collisions; JSON artifacts use exclusive `wx`.
+Control roots are exclusively reserved once, then contain the fixed
+`normal`, `exit2`, `nonzero`, `post-spawn-sink-failure` case directories and root
+control-summary. Existing or historical control roots cannot be extended/reused.
+
+Later manually selected parity/preflight/compare phases reuse the SAME released
+workspace/orchestration roots. They require existing execution.json to match the
+exact release hash, candidate and workspace, an existing workspace directory,
+and the prior strict passed/closed/verified parents. Each new phase directory is
+still created exclusively; compare's one-cohort claim is exclusive. This reuse
+within that bound execution does not permit another bootstrap, repeated phase,
+second cohort or reuse of historical roots. Readback reads the bound existing
+phase and writes its verification artifact exclusively. No next phase launches
+automatically; path conformance supplies no execution authorization.
+
+Retained final scripted stdout contains two deliberate
+`TinyazBookkeepingObserverWarning` messages, code `TINYAZ_BOOKKEEPING_OBSERVER`,
+for controlled optional-observer failures `null` and `undefined` (lines531/533).
+`record-evidence.test.mjs` checks those diagnostics and the unchanged authoritative
+seal. This is expected controlled diagnostic noise; the result remains1019/1019.
+No warning/test/source was silenced or changed. Older warning-source Minor items
+remain for Task12 triage. The historical closure/proof limits and future Native,
+phase, runtime and independent-review gates retain their existing meanings.
+
+Owning contract: [exact v2 root grammar and diagnostics](../../../train/scripts/browser_eval/README.md#task10-r1-exact-root-grammar-and-diagnostic-disclosure-2026-11-10).
