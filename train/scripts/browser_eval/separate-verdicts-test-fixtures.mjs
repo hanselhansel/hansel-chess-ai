@@ -374,3 +374,13 @@ export async function createV2RecorderWorkspace(t) {
   env.inputs = await writeFixtureInputs(env);
   return env;
 }
+
+export function identityVerifierControl(mode, expectedIdentity) {
+  assert.ok(["rejected", "malformed", "mismatched"].includes(mode));
+  const observed = structuredClone(expectedIdentity);
+  observed.candidate.contentSha256 = "a".repeat(64);
+  return async () => {
+    if (mode === "rejected") throw new Error("scripted identity rejection");
+    return mode === "malformed" ? {} : observed;
+  };
+}

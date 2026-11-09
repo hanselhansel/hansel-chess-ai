@@ -90,7 +90,7 @@ export function compileFinalV2(input) {
     cohortProven: recordsProven && completed.length === 40 && completedPairs === 20,
     scienceProven: head.phase !== "compare" ? checksPassed : recordsProven && checksPassed,
     identityProven, cleanupProven: cleanupOk, recordsProven,
-    prerequisitesProven, nativeProven: cleanupOk && !e.hardReasons.some((r) =>
+    prerequisitesProven, nativeProven: identityProven && cleanupOk && !e.hardReasons.some((r) =>
       ["NATIVE", "TIMESTAMP", "UNION", "AGGREGATE", "TRANSPORT", "BACKEND", "PERMISSION", "TIMEOUT",
         "IDENTITY", "PROOF", "CLEANUP"].includes(r)),
     storeProven: !e.hardReasons.some((r) => ["STORE", "DISK"].includes(r)) && !faultsInEvents.some((f) => ["STORE", "GRAPH", "DISK"].includes(f.payload.hardClass) ||

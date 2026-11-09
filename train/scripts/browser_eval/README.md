@@ -10898,7 +10898,12 @@ inherited registrar requirements remain unchanged.
 headFields/commonIdentitySha256/request/claims/requiredChecks/recordedProof,
 identityObservation/expectedIdentity/expectedFinalizer, actual artifactRefs,
 eventsRef/events and verifiedParents. It recomputes identity equality and cleanup
-scope/finalizer/proof equality. Hard fault count is at least the reported count,
+scope/finalizer/proof equality. Resource Native proof also requires the actual
+on-time mandatory identity callback to return an exactly equal valid
+CommonIdentity. Rejection, malformed observation or valid mismatch sets
+NATIVE_UNPROVEN in both phase and closure resource verdicts. They are
+inconclusive unless an observed cap retains failed priority. Hard fault count
+is at least the reported count,
 actual fault-event count and any typed resource hard fault. Known caps, Store
 faults, missing records and every hard class remain fatal to inference.
 Ordinary missing check evidence is unproven; an explicit failed scientific
@@ -11031,3 +11036,47 @@ qualification remains unavailable. Task10 includes the new recorder TEST owner.
 No actual Native/browser/model/match/phase/cohort execution, runtime release,
 publication of a candidate, fresh strength result or old-cohort reclassification
 is claimed. M, protected assets, original bounds and failed history are unchanged.
+
+
+Task8 R1 TEST declaration: `identityVerifierControl(mode,expectedIdentity)`
+returns a controlled async mandatory identity callback. Mode is exactly rejected,
+malformed or mismatched. The callback respectively rejects, returns {}, or
+returns a detached structurally valid CommonIdentity with a changed candidate
+content hash. It is TEST-only and creates no IO, clock, Native or proof authority.
+The genuine Recorder control factory accepts this original callback via
+`options.verifyIdentity`; omission preserves its existing expected-identity
+callback. Continuous coverage/cap cases still use genuine Store/prepared graph,
+publication, fresh readback and the same real writer/owner teardown.
+
+
+### Task8 review fix R1 identity/resource proof (2026-11-10)
+
+The independent review found one Important defect in the prior Task8 compiler:
+continuous monitor evidence and valid cleanup could retain phase/closure resource
+passed when the mandatory identity callback rejected, returned malformed data or
+returned a valid mismatch. The earlier178/178 suite did not cover those
+continuous callback failures; quality-gap identity controls masked the false pass.
+This was implementation drift from the approved missing-identity row, not a
+policy change or permission to interpret old evidence differently.
+
+Resource Native proof now also requires the actual captured on-time valid
+CommonIdentity to equal the expected identity. All three negative callback
+outcomes retain NATIVE_UNPROVEN in both phase and closure resource verdicts.
+Without a cap they are inconclusive; an observed cap keeps failed priority and
+its cap reason alongside NATIVE_UNPROVEN. Scientific/resource separation,
+statistics, Native/clock/budget behavior, producers and v1 output are unchanged.
+
+Genuine continuous Recorder/Store/prepared-publication/fresh-readback controls
+reproduced all six failures (71/77 RED), then passed77/77 focused GREEN. The final
+exact nine-owner roster passed184/184; qualified Node24.22.2 typecheck exited0.
+All commands retain actual process wait, BOTH EOF, closed/fsynced raw files and
+stable source maps. RED/GREEN runtime maps differ only in the compiler. Evidence
+is W/`separate-verdicts-implementation-evidence/5aae4ee1-2455-4620-9de8-41e0ed1d52d5/`;
+W/`v2-task-8-report.md` appends the fix commands, coverage, hashes and limits.
+
+Protected23/M, whole Section3, amendment/approval and the full prior spec prefix
+remain exact. Source/tests stay below400 lines. All old failed evidence, worker
+wait and temporary-root cleanup UNPROVEN limits remain unchanged. No broad
+cleanup or actual Native/browser/model/match/phase execution occurred. Root's
+fresh scoped review remains required before Task9; archive/driver/CLI and later
+execution-release gates remain open. No push, merge or runtime release.

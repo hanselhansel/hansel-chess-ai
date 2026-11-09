@@ -9,7 +9,7 @@ import { verifyReceipt, admitPhase } from "./prerequisites.mjs";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { V2_POLICY } from "./evaluation-policy.mjs";
 import { createResourceQuality } from "./resource-quality.mjs";
-import { createV2RecorderWorkspace as workspace, quality, qualityMonitor, flushQuality, qualitySamples, periodicQuality } from "./separate-verdicts-test-fixtures.mjs";
+import { createV2RecorderWorkspace as workspace, identityVerifierControl, quality, qualityMonitor, flushQuality, qualitySamples, periodicQuality } from "./separate-verdicts-test-fixtures.mjs";
 import { fixtureManifest, fixtureRunning, identity, proof } from "./test-fixtures.mjs";
 import { privateFs } from "./private-fs.mjs";
 
@@ -21,7 +21,7 @@ async function start(env, phase = "check", parents = [], options = {}) {
     owner: options.owner ?? null, prerequisites: parents.map((p) => ({ phase: p.phase, runId: p.runId, completion: p.completionRef })) }),
     schemaVersion: 2, evaluationPolicy: V2_POLICY };
   const recorder = createPhaseRecorder({ store: env.store, workspace: env.ws, manifest,
-    verifyIdentity: async () => options.identityObservation ?? env.ws.commonIdentity,
+    verifyIdentity: options.verifyIdentity ?? (async () => options.identityObservation ?? env.ws.commonIdentity),
     verifyCleanup: options.verifyCleanup ?? (async ({ claimedProof }) => proof(claimedProof.scope, claimedProof.expectedFinalizer)) });
   env.recorders.push(recorder);
   await recorder.writeManifest();
@@ -382,3 +382,17 @@ test("closed v2 intent admits cleanup but no ordinary resource checkpoint", asyn
   assert.equal(v.final.status, "passed");
   assert.equal(admitted, false);
 });
+
+for (const mode of ["rejected", "malformed", "mismatched"]) for (const cap of [false, true]) {
+  test(`continuous identity ${mode} cap=${cap} never grants resource proof`, async (t) => {
+    const env = await workspace(t), f = await start(env, "check", [], {
+      cap, verifyIdentity: identityVerifierControl(mode, env.ws.commonIdentity) });
+    const v = await f.finish();
+    assert.equal(v.final.resourceEvidence.coverageLost, false);
+    for (const verdict of [v.final.resourceVerdict, v.final.closureResourceVerdict]) {
+      assert.equal(verdict.status, cap ? "failed" : "inconclusive");
+      assert.ok(verdict.reasons.includes("NATIVE_UNPROVEN"));
+      if (cap) assert.ok(verdict.reasons.includes("RSS_CAP"));
+    }
+  });
+}
