@@ -119,3 +119,112 @@ export async function createCompatRepo(root) {
   await fs.symlink(await fs.realpath(path.join(SOURCE,"node_modules")),path.join(repoRoot,"node_modules"));
   return repoRoot;
 }
+
+// Task10: real graph owners, explicitly synthetic science/environment/context.
+import { createV2RecorderWorkspace, v2Workspace, quality } from './separate-verdicts-test-fixtures.mjs';
+import { createPhaseRecorder } from './records.mjs';
+import { verifyReceipt } from './prerequisites.mjs';
+import { fixtureManifest, fixtureRunning, identity, proof } from './test-fixtures.mjs';
+import { canonicalBytes, sha256Bytes } from './canonical-json.mjs';
+import { V2_POLICY } from './evaluation-policy.mjs';
+export async function operatorGraph(t, { gap = true, operator }) {
+  const archivedFiles = await Promise.all(RUNTIME_PATHS.map(async name =>
+    ({ path: name, bytes: await fs.readFile(path.join(SOURCE, name)) })));
+  const workspace = v2Workspace();
+  const protocol = archivedFiles.find(file => file.path === operator.PROTOCOL);
+  workspace.commonIdentity.fixtures.protocol = { path: protocol.path,
+    byteLength: protocol.bytes.length, sha256: sha256Bytes(protocol.bytes) };
+  const env = await createV2RecorderWorkspace(t, { workspace, archivedFiles });
+  const start = async (phase, parents = [], options = {}) => {
+    const runId = options.owner ? `${options.owner.runId}:watchdog-selftest` : `run-${phase}`;
+    const manifest = { ...fixtureManifest({ workspace, inputs: env.inputs, phase, runId,
+      owner: options.owner ?? null, prerequisites: parents.map(p =>
+        ({ phase: p.phase, runId: p.runId, completion: p.completionRef })) }),
+      schemaVersion: 2, evaluationPolicy: V2_POLICY };
+    const recorder = createPhaseRecorder({ store: env.store, workspace, manifest,
+      verifyIdentity: async () => workspace.commonIdentity,
+      verifyCleanup: async ({ claimedProof }) => proof(claimedProof.scope, claimedProof.expectedFinalizer) });
+    env.recorders.push(recorder);
+    await recorder.writeManifest();
+    await recorder.writeRunning({ ...fixtureRunning({ manifest }), schemaVersion: 2 });
+    const selftest = phase === 'watchdog-selftest';
+    const intent = { status: selftest ? 'inconclusive' : 'passed', exitCode: selftest ? 2 : 0,
+      stopReason: selftest ? 'HEARTBEAT_TIMEOUT' : null, unplannedFaultCount: 0,
+      analysisEligible: false, summary: selftest ? { scoredGames: 0 } : {},
+      resourceEvidence: quality({ phase, runId, gap: phase === 'compare' && gap }) };
+    const checks = selftest ? [] : manifest.requiredCheckIds.filter(id => id !== 'cleanup')
+      .map(id => ({ id, status: 'passed', evidencePaths: [] }));
+    const finish = async () => {
+      const completionRef = await recorder.finalize({ intent, checks,
+        prerequisites: manifest.prerequisites, expectedSelfTest: options.expectedSelfTest ?? null });
+      return verifyReceipt({ workspaceRoot: env.workspaceRoot, completionRef,
+        expectedIdentity: workspace.commonIdentity });
+    };
+    return { recorder, checks, intent, finish };
+  };
+  const check = await (await start('check')).finish();
+  const parity = await (await start('parity', [check])).finish();
+  const owner = { phase: 'preflight', runId: 'run-preflight', supervisor: identity() };
+  const nested = await (await start('watchdog-selftest', [], { owner })).finish();
+  const preflight = await (await start('preflight', [check, parity], {
+    expectedSelfTest: { completion: nested.completionRef, expectedStopReason: 'HEARTBEAT_TIMEOUT' } })).finish();
+  const f = await start('compare', [check, parity, preflight]);
+  const evidence = await env.store.writeOnce('compare/science.json', canonicalBytes({ synthetic: true }), 'ordinary');
+  for (const check of f.checks) check.evidencePaths = [evidence.path];
+  const games = [];
+  for (let index = 0; index < 40; index += 1) {
+    const pairNumber = Math.floor(index / 2) + 1;
+    const gameNumber = index % 2 + 1;
+    const openingId = `p${String(pairNumber).padStart(2, '0')}`;
+    const gameId = `${openingId}-g${gameNumber}`;
+    const pgn = await f.recorder.appendArtifactChunk({ recordId: gameId, recordSeq: index,
+      artifactId: gameId, path: `compare/games/${gameId}.a.pgn`, mode: 'append',
+      bytes: Buffer.from(`synthetic terminal fixture ${gameId}`), last: true });
+    const fields = { gameId, pairNumber, gameNumber, openingId,
+      candidateColor: (pairNumber % 2 === 1) === (gameNumber === 1) ? 'white' : 'black', result: '1/2-1/2' };
+    const checkpoint = { checkpointId: `${gameId}-c2`, ordinal: 2, slot: 'a', plyCount: 8,
+      initialFen: 'synthetic initial', fen: 'synthetic terminal', pgn };
+    games.push({ ...fields, state: 'complete', stopReason: null, checkpoint });
+    await f.recorder.appendEvent({ kind: 'response', payload: { recordType: 'pgn-checkpoint', ...fields, ...checkpoint } });
+  }
+  f.intent.summary.gameEvidence = { schemaVersion: 1, frozen: true, firstStopReason: null,
+    freezeAtMonoNs: '10', games, diagnostics: [] };
+  const verified = await f.finish();
+  return { env, workspace, archivedFiles, verified };
+}
+
+export async function operatorReadbackFixture(t, { gap = true, operator, controlRoot }) {
+  assert.equal(typeof controlRoot, 'string');
+  const graph = await operatorGraph(t, { gap, operator });
+  const actualRoot = controlRoot;
+  const actualCase = gap ? 'exit2' : 'normal';
+  const owner = JSON.parse(await fs.readFile(path.join(actualRoot, actualCase, 'owner-receipt.json')));
+  assert.equal(operator.ownerClosureVerified(owner), true);
+  assert.equal(owner.exitCode, graph.verified.final.exitCode);
+  const root = await fs.realpath(await fs.mkdtemp(path.join(path.dirname(graph.env.workspaceRoot), 'operator-readback-')));
+  t.after(() => fs.rm(root, { recursive: true }));
+  await fs.mkdir(path.join(root, 'compare'));
+  await fs.copyFile(path.join(actualRoot, actualCase, 'owner-events.jsonl'),
+    path.join(root, 'compare/owner-events.jsonl'));
+  for (const name of ['stdout', 'stderr'])
+    await fs.copyFile(path.join(actualRoot, actualCase, `${name}.log`), path.join(root, 'compare', `${name}.log`));
+  const id = graph.workspace.commonIdentity;
+  const release = { candidate: id.candidate.commit, releaseSha256: 'a'.repeat(64),
+    workspaceRoot: graph.env.workspaceRoot, orchestrationRoot: root,
+    protocolRef: id.fixtures.protocol, runtimeIdentity: { node: id.environment.node, python: id.environment.python.runtime },
+    constraints: { baselineCommit: id.baseline.commit, modelBytes: id.model.byteLength, modelSha256: id.model.sha256 },
+    expected: Object.fromEntries(graph.archivedFiles.map(file => [file.path, sha256Bytes(file.bytes)])) };
+  // Only graph-binding context is synthetic. Actual owner exit/pipes/errors stay exact.
+  const command = { ...owner, candidate: release.candidate, releaseSha256: release.releaseSha256,
+    workspaceRoot: release.workspaceRoot, runtimeIdentity: release.runtimeIdentity,
+    protocolRef: release.protocolRef, evaluationPolicy: V2_POLICY, inputHashesExactAfter: true };
+  const verifierOwner = JSON.parse(await fs.readFile(path.join(actualRoot, 'normal/owner-receipt.json')));
+  await fs.writeFile(path.join(root, 'synthetic-context.json'), JSON.stringify({
+    syntheticOverlayFields: ['candidate', 'releaseSha256', 'workspaceRoot', 'runtimeIdentity',
+      'protocolRef', 'evaluationPolicy', 'inputHashesExactAfter'],
+    originalOwnerReceipt: { path: path.join(actualRoot, actualCase, 'owner-receipt.json'),
+      sha256: sha256Bytes(await fs.readFile(path.join(actualRoot, actualCase, 'owner-receipt.json'))) },
+    verifierOwnerQualification: 'Actual exit0 control receipt composed with actual in-process graph readback. No verifier process launch claimed.',
+    command, release }, null, 2) + '\n', { flag: 'wx' });
+  return { ...graph, release, command, owner, verifierOwner };
+}

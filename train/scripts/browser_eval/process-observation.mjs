@@ -167,7 +167,6 @@ export function createProcessObservation({
       quality.noteLateDrop(d, soft ? rssBytes : null);
       return Object.freeze({ kind: "fenced-observation" });
     }
-    if (current.stopping) throw acct("monitor stopping");
     const { lastValidNs, stickyFault } = current;
     const previousNs = lastValidNs === null ? null : BigInt(lastValidNs);
     const intervalMs =

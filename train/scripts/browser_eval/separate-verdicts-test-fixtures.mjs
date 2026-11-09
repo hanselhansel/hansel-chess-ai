@@ -358,9 +358,9 @@ export async function facadeQualityControl(failure) {
   }
 }
 
-export async function createV2RecorderWorkspace(t) {
+export async function createV2RecorderWorkspace(t, { workspace = v2Workspace(), archivedFiles = [] } = {}) {
   const env = await makeStore();
-  env.ws = v2Workspace(); env.recorders = [];
+  env.ws = workspace; env.recorders = [];
   t.after(async () => {
     const closures = await Promise.allSettled(env.recorders.map((r) => r.closeIncompleteEvidence()));
     await artifactStoreLifetime(env.store).whenSettled();
@@ -370,6 +370,8 @@ export async function createV2RecorderWorkspace(t) {
     }
     await fixtureFs.rm(env.workspaceRoot, { recursive: true, force: true });
   });
+  for (const file of archivedFiles)
+    await env.store.writeOnce(`inputs/harness/${file.path}`, file.bytes, "ordinary");
   await writeWorkspaceOnce({ store: env.store, workspace: env.ws });
   env.inputs = await writeFixtureInputs(env);
   return env;

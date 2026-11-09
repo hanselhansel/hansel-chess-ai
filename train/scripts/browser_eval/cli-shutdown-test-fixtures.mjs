@@ -3,7 +3,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeWorkspace } from "./test-fixtures.mjs";
-import { canonicalBytes } from "./canonical-json.mjs";
+import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { captureSetupBackendIdentity } from "./process-backend.mjs";
 import { createBackendIdentityExpectation } from "./process-backend-reader.mjs";
 import { assertEnvironment } from "./identity-schema.mjs";
@@ -52,10 +52,22 @@ export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null
   const fixtures = path.join(workspaceRoot, "inputs/harness/train/fixtures");
   await fs.mkdir(fixtures, { recursive: true });
   for (const name of ["browser-protocol.json", "browser-parity.json", "browser-openings.json"]) {
-    await fs.copyFile(path.join(repoRoot, "train/fixtures", name), path.join(fixtures, name));
+    if (name === "browser-protocol.json") {
+      const protocol = JSON.parse(await fs.readFile(path.join(repoRoot, "train/fixtures", name), "utf8"));
+      // Match the existing TEST-only short-clock constants hook, before sealing.
+      protocol.limits.timing.phaseMs.check = 8000;
+      await fs.writeFile(path.join(fixtures, name), canonicalBytes(protocol));
+    } else {
+      await fs.copyFile(path.join(repoRoot, "train/fixtures", name), path.join(fixtures, name));
+    }
     await fs.chmod(path.join(fixtures, name), 0o444);
   }
   const workspace = structuredClone(env.ws);
+  const protocolPath = "train/fixtures/browser-protocol.json";
+  const protocolBytes = await fs.readFile(path.join(workspaceRoot, "inputs/harness", protocolPath));
+  workspace.commonIdentity.fixtures.protocol = {
+    path: protocolPath, byteLength: protocolBytes.length, sha256: sha256Bytes(protocolBytes),
+  };
   if (supplied !== null) workspace.commonIdentity.environment =
     await bindCliFixtureNativeEnvironment(supplied, path.join(workspaceRoot, "inputs/harness"));
   workspace.commonIdentity.environment.node.invocationPath = process.execPath;

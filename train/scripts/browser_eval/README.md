@@ -11375,3 +11375,296 @@ by R1. Root fresh scoped re-review, wider Task10 and later Native/CLI/runtime/
 cohort releases remain open. No Native/model/browser/phase/network/push occurred.
 Details append to W/`v2-task-9-report.md`; R1 evidence is
 W/`separate-verdicts-implementation-evidence/aa689799-eac0-4fdb-9a51-fabc1b4e01c7/`.
+
+
+### Task10 before-use operator TEST declaration (2026-11-10)
+
+The new v2 W operator/readback/owner-controls and inert template are prospective
+operator code. They reuse the immutable ownCommand and stream/child helpers.
+They do not authorize execution. Owner controls have one explicit command,
+`<qualified-node> W/separate-verdicts-owner-controls-v2.mjs --controls
+W/task-3-owner-controls-<fresh-UUID>`, optionally `--red-v1-closure` for the
+causal legacy-success RED. Roots are canonical absent UUID directories, created
+exclusively; collisions reject. Exactly normal/exit2/nonzero/sink cases may run.
+The unchanged child accepts0/7. Exit2 uses Root's approved fixed eval module:
+record real eval argv, adapt process.argv to the unchanged child's exit0 argv,
+await that body's import, assert its exit0, then request natural exit2.
+No body/import failure is masked. Sink recovery stays in unchanged ownCommand.
+
+The existing TEST-only createV2RecorderWorkspace(t,options={}) gains optional
+`workspace` (default v2Workspace()) and `archivedFiles` (default empty array).
+Each archived file is `{path,bytes}` with a repository-relative runtime path and
+Buffer bytes. It writes each once through the genuine Store below inputs/harness,
+then writes the selected workspace and ordinary fixture inputs. It resolves the
+same environment object; Store/write/schema failures reject with existing errors.
+Existing teardown still closes every Recorder, joins the actual Store lifetime,
+then removes only its owned temporary tree. These options supply scripted
+identity/runtime bytes for graph binding, never environment or Native proof.
+
+The already authorized compat-fixtures helper owns new operator graph constructors
+and binding scenarios used only by compat.test. They copy released runtime bytes
+into the temporary workspace, build real Recorder/Store prerequisite/selftest/
+compare publications, and invoke the actual new frozen readback function.
+Scientific game/check/cleanup/environment facts remain synthetic collaborators.
+No production verifier substitution, phase, Native helper or inference runs.
+The component graph can test eligible/inconclusive2 handling but establishes no
+actual cohort result. Missing graphs and mutated release/runtime/policy/exit/raw
+bindings must reject, and all helper debt teardown remains mandatory.
+
+
+### Task10 Root mechanical TEST grouping clarification (2026-11-10)
+
+This supersedes only the preceding Task10 TEST placement description.
+The83 ordinary scripted roster retains every pre-Task10 compat case unchanged,
+without importing ignored W code or requiring control receipts/environment.
+The explicit W owner-controls command owns the operator-binding and both real
+graph/readback positive/negative cases after its four just-created child receipts.
+It passes an explicit controlRoot and exact imported operator/readback modules.
+No tests skip, no extra child or phase launches, and no W import occurs in the
+ordinary compat helper. The minimal after(callback) registrar collects existing
+factory teardown callbacks and actually awaits all of them before success.
+It provides no alternate lifetime or physical proof.
+
+`operatorGraph(t,{gap=true,operator})` resolves `{env,workspace,archivedFiles,
+verified}` after genuine Store/Recorder parent, scoped selftest and40 synthetic
+game publications/readback. The explicit operator supplies the exact selected
+protocol constant. Actual runtime bytes are read from this checkout and written
+once as archivedFiles. All scientific/cleanup/environment collaborators remain
+synthetic. Store/schema/read/verification failures reject with original errors.
+
+`operatorReadbackFixture(t,{gap=true,operator,controlRoot})` requires explicit
+controlRoot, consumes unchanged normal/exit2 owner receipts/raw/journal bytes,
+creates an owned temporary compare readback directory, and resolves the graph
+fields plus `{release,command,owner,verifierOwner}`. Release/command identity
+context is explicitly synthetic; exit/pipes/errors are copied from the actual
+control receipt. The separate original receipt path/hash and exact overlay fields
+are written in exclusive synthetic-context.json. verifierOwner is the actual
+normal exit0 control receipt composed with actual in-process graph readback.
+This does not claim that its process executed the verifier. Original receipts
+are unchanged. Missing files, invalid closure/exit and any IO/assertion failure
+reject. Caller awaits genuine factory teardown callbacks and temp-tree cleanup.
+These are component eligibility/decision controls, not Native or cohort proof.
+
+The allowed evidence-only nonce/run-gate.py owns one explicitly listed command
+per invocation, preserving failed attempts, actual wait/BOTH EOF/raw-file and
+journal fsync/close, and full before/after maps including newW4+old6 and itself.
+It inherits environment except safe documented explicit overrides, adds no
+kill, retry, time limit or phase authority, and requires Root's static GO.
+
+
+Task10 before-use ownership clarification: run-gate input maps also bind its
+static-review.json configuration authority and manager/runtime bytes. Raw writes
+loop over actual returned counts, retain observed versus written counts, and
+check physical file size. Sink/journal event errors remain manager errors while
+the normal read/drain/wait continues. No failed sink becomes eligible even when
+all child streams later close. Exceptional unreadable-pipe, selector or wait
+errors may leave actual child settlement unproven; the receipt records that
+failure, never invents EOF/wait or sends signals to recover it. The manager has
+no timeout/kill/retry authority. Every registered graph teardown is attempted
+serially even after body/earlier-teardown failure; all failures are retained in
+a final AggregateError, and no success summary is emitted for that command.
+
+
+### Task10 post-gate repair declaration (Root, before use, 2026-11-10)
+
+The original83-owner gate failed1010/1018. Seven old CLI-shutdown scenarios
+used synthetic protocol refs for real copied bytes. The strict pre-SDK production
+ref guard remains correct. One delayed-P strict-v1 case exposed an unintended
+Task7 primary-fault-order change. Accepted e78 compatibility preserves v1's exact
+historical meaning; the later README strengthened-fence qualification did not
+authorize changing that first-fault order. Original evidence remains failed.
+
+Only these three additional repair owners are admitted before use:
+- cli-shutdown-test-fixtures.mjs binds its workspace CommonIdentity protocol ref
+  to the actual copied v1 relative path, raw byte length and SHA256 before writing
+  workspace/control data. Its arguments, returned paths, all modes/hooks and
+  synthetic Native/environment proof limits stay unchanged. No v2 extension.
+- failed-cleanup.test.mjs changes only the final delayed-P case to a labelled
+  +50/+150 pair over the same real monitor/wire/lifetime. C=+500/P=+100 stays
+  unchanged. Both public samples reject across the existing return fence. +50
+  proves actual on-time ordinary drain and no spurious first accounting fault.
+  +150 retains public CLEANUP_UNPROVEN, first sticky CLEANUP_UNPROVEN and one
+  shutdown. All actual waits/teardown remain; earlier tests stay byte-exact.
+- process-observation.mjs removes only the unconditional current.stopping throw
+  after the existing quality-fence branch, after causal paired RED. The complete
+  v2 fence/cap-positive block remains byte-exact. Strict-v1 interval, first sticky
+  fault, live-handle, original commit/drain and P/C checks retain their meaning.
+  processes.call's public return/admission/queue/actual-debt guards stay untouched.
+
+StageA prepares only fixture and paired TEST, observer unchanged, then requires
+a new Root GO for focused scripted CLI GREEN and paired cleanup causal RED.
+StageB follows actual RED/closure, removes only the named observer line, and
+requires another Root GO for focused cleanup GREEN, one fresh83 roster and one
+fresh W-control GREEN with fresh helper-compatible UUID and archive-byte pins.
+No original legacy RED or already-passing app/core/Python repetition is implied.
+No additional source/path, Native/public archived-CLI cap/phase/cohort/runtime or
+publication release is granted. All prior commands/configs/maps/failures remain.
+
+
+Task10 second CLI-fixture alignment (Root, before use): StageA focused CLI
+remains FAILED2/9 after actual-ref correction, now at the existing TEST clock
+versus protocol-literal mismatch. The same allowed fixture helper will serialize
+ONLY its temporary v1 protocol limits.timing.phaseMs.check as8000 before readonly
+sealing and raw-length/SHA binding. This matches the existing exact synthetic8s
+schema-constants preload hook. Repository v1 fixture, production constants,
+validators, policy selector and all hooks stay byte-exact. All other protocol
+fields stay equal to the repository fixture. These scripted short-clock cases
+establish lifecycle behavior, not an unchanged-fixture or actual phase/Native
+qualification. The genuine driver still validates exact selected bytes/version/
+policy and the existing synthetic limits. Earlier failed gates remain failed.
+
+
+Task10 final paired-TEST scheduling seam (Root, before use): the final +50/+150
+controls alone wrap the existing collector stdin.write. Only a decoded outgoing
+shutdown write defers the ORIGINAL write to queueMicrotask with exact args,
+this and callback; all other writes execute immediately. The original scripted
+child/validator still supplies exit and BOTH closes, and the original owner is
+actually joined. This removes impossible same-stack OS-exit reentry before
+transport ended=true. It adds no timer, grace, production transport/global
+fixture change or alternate settlement. All public-fence/+150 first-cleanup/
+once-shutdown/P100/C500 expectations remain. No Native proof follows.
+
+The corrected final TEST must itself run causal RED on the frozen old observer
+profile d6f0d018, then after actual closure restore only its missing line to the
+fixed profile1b39ab94 for focused GREEN, whole83 and fresh W GREEN. Profiles
+differ in exactly that one unconditional postreply stopping throw; the full v2
+fenced block remains exact. Each command requires Root's exact reviewed source
+profile/argv/inputs GO, preserves failures and has no automatic retry. Previously
+passing9/9 CLI and app/core/Python stages remain separate results, not rerun
+solely for this final TEST-only scheduling correction.
+
+
+### Task10 local scripted integration checkpoint (2026-11-10)
+
+Prospective v2 operator/readback/inert-template integration is locally GREEN.
+The final exact83-owner scripted roster passed1019/1019, zero skips/cancelled;
+fresh W controls passed four real child cases, both real closed-graph cases and
+all binding/physical negatives. Same final paired TEST bytes give18/20 causal
+RED on the old observer and20/20 GREEN after the single-line v1 restoration.
+RED/GREEN maps differ only in that observer; the full534-byte v2 fence block
+and all public return/admission/queue/live-handle/P/C guards remain unchanged.
+The existing v1 postreply completion/drain order is restored. Public samples
+still cannot return ordinary success across the stopping fence.
+
+The focused scripted CLI owner passed9/9. Its temporary v1 protocol alone uses
+the existing synthetic8s check clock, with exact actual-byte ref binding.
+Repository fixtures, production validators/constants/policy and hooks stay exact.
+App test:scripts191/191, core184/184, typecheck and isolated Python58+19+8 plus
+the six required standalone Python commands passed on unchanged dependencies.
+Root explicitly retained those results without unnecessary repeats.
+
+Original1010/1018 roster failure, StageA CLI2/9 and cleanup18/20 RED, StageB
+cleanup19/20 failure and all raw evidence remain retained. The final TEST-only
+shutdown-write microtask seam preserves original args/this/callback, validator,
+exit/BOTH closes and actual lifetime. It fixes impossible same-stack fake-exit
+reentry in that pair, with no production transport or global fixture edit.
+
+Every final command retains actual child wait, BOTH EOF/raw-file/journal closure
+and stable560 inputs. Seven subsequent result-doc appends intentionally differ
+from those frozen maps; execution-source/TEST/helper/runtime pins remain current.
+The original owner-green outer-tool relay wait remains UNPROVEN; its primary
+Node/control-child receipts are positive and separate. The final fresh W command
+and outer wait are retained. Previous Task8 worker-wait/temporary-root cleanup
+UNPROVEN limits and all failed cohorts remain unchanged.
+
+W/separate-verdicts-release-v2.template.json stays PREPARATION_ONLY, with release
+candidate/safety/Node/Python/workspace/orchestration values and script hashes
+null. Its exact protocol ref and fixed constraints remain present. No actual Native, real
+environment/public archived CLI cap, CHECK/PARITY/PREFLIGHT/COMPARE, model phase,
+training, measured scoring, network/install, push/merge/deploy or next phase ran.
+This is scripted component evidence. Fresh independent full Task10 source/spec/
+code-doc review precedes Task11; later runtime/candidate/policy releases remain
+separate. Report: W/v2-task-10-report.md. Final evidence:
+W/separate-verdicts-implementation-evidence/69e23b45-c09e-4f07-a2fe-3db7e5d5e44a/.
+
+
+### V2 preparation operator APIs and IO (Task10)
+
+W/separate-verdicts-owned-command-v2.mjs exports ROOT, PLAN, PHASES, SCRIPTS,
+PROTOCOL, POLICY and RELEASE_KEYS. PHASES is exactly check/parity/preflight/compare.
+PROTOCOL is train/fixtures/browser-protocol-v2.json; POLICY is the closed approved
+v2 policy. SCRIPTS binds exactly the three new W executables plus unchanged
+task-3-stream/process-owner/control-child. The six old helper bytes remain exact.
+
+sha(file), json(file) and fileRef(file,rel=file) synchronously read/hash/parse
+local bytes; fileRef returns {path,byteLength,sha256}. write(file,value) writes
+indented JSON plus newline exclusively (wx); errors propagate without overwrite.
+assertScriptBindings(bindings) requires exactly SCRIPTS and exact current hashes.
+assertRuntime(runtimeIdentity) requires exact Node/Python descriptor key sets,
+actual invocation/real paths and hashes, current Node executable/version, the
+selected project Python3.11.14 executable/prefix and its process-image hash.
+
+loadRelease(file) synchronously resolves metadata and returns the release plus
+{releasePath,releaseSha256,expected}; it starts no phase. It requires GO, schema2,
+/root, valid approval time, exact closed old keys plus evaluationPolicy,protocolRef,
+runtimeIdentity, branch/candidate/constraints, exact current protocol ref, six
+script bindings, and canonical helper-compatible UUID roots. It binds the safety
+file hash/head/branch/root, same runtimeIdentity, safe relative input maps, every
+functional runtime/protected mandatory input, newW4 and all old6 safety pins.
+PREPARATION_ONLY, old/mixed releases, null/missing/extra/mismatched bindings and
+filesystem/JSON/assertion failures reject. No authorization is inferred from a
+fixture, an old receipt or a template.
+
+currentInputs(r) returns {actual,errors,exact,utc}, retaining missing-file errors
+and null hashes. assertReleasedInputs(r) additionally checks runtime, actual Git
+HEAD/feature branch/clean status and M byte length, returning that snapshot. Git
+reads have their existing10s/4MiB bounds. assertPrior(r,phase) reads the prior
+result/decision/verification/readback-owner records, requires same release and
+identity, actual owner/readback closure, strict passed0 resource/closure/check/
+cleanup facts, plus the existing13-case parity contract. Actual phase prerequisite
+admission separately re-verifies its full graph/live finalizer facts.
+
+ownerClosureVerified(command) is a pure structural closure predicate over actual
+spawn/exit, BOTH ended/closed pipes, closed/fsynced raw files and exact counts,
+closed/fsynced journal, no signals/intervention/manager errors. It never rewrites
+old ownerSucceeded, whose exit0 meaning remains exact. operatorDecision(command,
+readback,verifierOwner) is a pure projection called after actual owned readback.
+It requires closure, unchanged inputs, successful separately owned exit0 readback
+and matching graph/candidate/release/workspace/experiment exit. It returns
+{ownerClosureVerified,authoritativeGraphVerified,scientificEvidenceEligible,
+operatorExitCode}. Missing/failed graph/closure gives1 and no eligibility. A
+readback object alone is not proof; production supplies the actual verifier's
+output after its owner has closed. Tests label synthetic context composition.
+
+Future explicit invocation is <released-node> W/separate-verdicts-owned-command-v2.mjs
+--run <one-phase> <controller-release.json>. Check reserves absent external
+workspace/orchestration roots; later manual phases bind the same execution and
+strict passed parents. Compare claims one cohort exclusively. It owns the exact
+qualified Node/npm or Python command, preserves its raw exit and ownerSucceeded,
+then owns a separate readback command even after exit2. Per-phase exclusive
+artifacts include inputs-before/after/after-readback.json, result.json, readback/
+owner artifacts, verification.json and decision.json. No automatic next phase.
+Wrapper0 requires graph-passed aggregate0 and closure; sealed graph-backed
+inconclusive/abandoned2 can preserve independent scientific eligibility; failure
+returns1. A second comparison/root collision cannot overwrite an earlier cohort.
+
+W/separate-verdicts-verify-phase-v2.mjs exports readPhase(r,phase,command). This
+read-only Promise validates exact command/release/runtime/protocol/policy/exit
+bindings, hashes every frozen runtime input before imports, checks actual raw
+byte lengths/hashes and process/pipe journal events, then imports that frozen
+verifyReceipt. Its single actual verifier lifetime owns explicit asynchronous
+raw/workspace/completion/graph reads and is awaited on both success and error.
+It binds workspace2, CommonIdentity, candidate/baseline/M, exact selected ref and
+Node/Python descriptors, final/completion/phase/version/policy and experiment
+exit. No partial eligible result returns on rejection.
+
+The result retains final,closure,completionRef,workspace/run IDs, exact release/
+policy/runtime identity, strength/resource/closureResourceVerdict, cleanup and
+resource gap/max/observed-versus-admitted peak fields. resourceScope reports the
+resourceEvidence closureKind; actual verdict scope remains in each verdict. It
+adds authoritativeGraphVerified,ownerClosureVerified,scientificEvidenceEligible,
+actualVerifierOwnerSettled,experimentExitCode and readbackOnly. Only verified
+eligible strength plus actual closure can set scientificEvidenceEligible.
+Future --verify <phase> <release> writes exclusive verification.json after fresh
+input rechecks. Its natural exit0 means successful readback only, including
+experiment exit2; it never launches a phase or promotes synthetic evidence.
+
+The explicit W owner-controls command takes --controls <fresh-UUID-root>, with
+optional --red-v1-closure for its genuine legacy-success causal RED. It reserves
+only allowed case roots and root control-summary.json. It exercises unchanged
+ownCommand/child bytes, actual0/2/7/sink recovery, pure negative projections and
+both genuine Store/Recorder/frozen-graph cases. The minimal after(callback)
+registrar attempts all teardown callbacks serially, aggregates body/teardown
+failures and emits no success on failure. Exact helper contracts/side effects
+and synthetic environment/science/context limits are declared above. Neither
+these controls nor the ordinary83 roster has actual Native/cohort authority.

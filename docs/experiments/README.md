@@ -346,3 +346,47 @@ by R1. Root fresh scoped re-review, wider Task10 and later Native/CLI/runtime/
 cohort releases remain open. No Native/model/browser/phase/network/push occurred.
 Details append to W/`v2-task-9-report.md`; R1 evidence is
 W/`separate-verdicts-implementation-evidence/aa689799-eac0-4fdb-9a51-fabc1b4e01c7/`.
+
+
+### Task10 local scripted integration checkpoint (2026-11-10)
+
+Prospective v2 operator/readback/inert-template integration is locally GREEN.
+The final exact83-owner scripted roster passed1019/1019, zero skips/cancelled;
+fresh W controls passed four real child cases, both real closed-graph cases and
+all binding/physical negatives. Same final paired TEST bytes give18/20 causal
+RED on the old observer and20/20 GREEN after the single-line v1 restoration.
+RED/GREEN maps differ only in that observer; the full534-byte v2 fence block
+and all public return/admission/queue/live-handle/P/C guards remain unchanged.
+The existing v1 postreply completion/drain order is restored. Public samples
+still cannot return ordinary success across the stopping fence.
+
+The focused scripted CLI owner passed9/9. Its temporary v1 protocol alone uses
+the existing synthetic8s check clock, with exact actual-byte ref binding.
+Repository fixtures, production validators/constants/policy and hooks stay exact.
+App test:scripts191/191, core184/184, typecheck and isolated Python58+19+8 plus
+the six required standalone Python commands passed on unchanged dependencies.
+Root explicitly retained those results without unnecessary repeats.
+
+Original1010/1018 roster failure, StageA CLI2/9 and cleanup18/20 RED, StageB
+cleanup19/20 failure and all raw evidence remain retained. The final TEST-only
+shutdown-write microtask seam preserves original args/this/callback, validator,
+exit/BOTH closes and actual lifetime. It fixes impossible same-stack fake-exit
+reentry in that pair, with no production transport or global fixture edit.
+
+Every final command retains actual child wait, BOTH EOF/raw-file/journal closure
+and stable560 inputs. Seven subsequent result-doc appends intentionally differ
+from those frozen maps; execution-source/TEST/helper/runtime pins remain current.
+The original owner-green outer-tool relay wait remains UNPROVEN; its primary
+Node/control-child receipts are positive and separate. The final fresh W command
+and outer wait are retained. Previous Task8 worker-wait/temporary-root cleanup
+UNPROVEN limits and all failed cohorts remain unchanged.
+
+W/separate-verdicts-release-v2.template.json stays PREPARATION_ONLY, with release
+candidate/safety/Node/Python/workspace/orchestration values and script hashes
+null. Its exact protocol ref and fixed constraints remain present. No actual Native, real
+environment/public archived CLI cap, CHECK/PARITY/PREFLIGHT/COMPARE, model phase,
+training, measured scoring, network/install, push/merge/deploy or next phase ran.
+This is scripted component evidence. Fresh independent full Task10 source/spec/
+code-doc review precedes Task11; later runtime/candidate/policy releases remain
+separate. Report: W/v2-task-10-report.md. Final evidence:
+W/separate-verdicts-implementation-evidence/69e23b45-c09e-4f07-a2fe-3db7e5d5e44a/.

@@ -317,28 +317,51 @@ test("cached ordinary P can narrow without extending or narrowing collector C", 
 });
 
 import { sampleReply } from "./supervision-test-fixtures.mjs";
-test("a late actual ordinary settlement cannot beat a delayed P timer", async (t) => {
-  const script = monitorBootstrapScript();
-  const owner = createWatchdogLifetime();
-  const env = createMonitorFixture({ script, lifetime: owner });
-  let work;
-  let observed;
-  t.after(async () => {
-    env.fixture.exit(0); env.clock.advance(10000);
-    await Promise.all([work, observed]); await owner.whenSettled(); env.cleanup();
+// Paired strict-v1 compatibility controls. Actual queued body, same original P/C.
+for (const elapsed of [50, 150]) {
+  test(`actual ordinary settlement at +${elapsed}ms retains delayed-P priority`, async (t) => {
+    const script = monitorBootstrapScript();
+    const owner = createWatchdogLifetime();
+    const env = createMonitorFixture({ script, lifetime: owner });
+    const originalWrite = env.fixture.child.stdin.write;
+    env.fixture.child.stdin.write = function (...args) {
+      if (JSON.parse(String(args[0]).trim()).type === "shutdown") {
+        queueMicrotask(() => originalWrite.apply(this, args));
+        return true;
+      }
+      return originalWrite.apply(this, args);
+    };
+    let work;
+    let observed;
+    t.after(async () => {
+      env.fixture.exit(0); env.clock.advance(10000);
+      await Promise.all([work, observed]); await owner.whenSettled(); env.cleanup();
+    });
+    await startMonitorFixture(env);
+    assert.equal(env.monitor.fault(), null);
+    script.muteSample = true;
+    let sampleResult;
+    work = env.monitor.sample().then((value) => { sampleResult = { value }; },
+      (error) => { sampleResult = { error }; });
+    await turn();
+    const request = env.fixture.written.findLast((frame) => frame.type === "sample");
+    const now = env.clock.nowMs();
+    const stop = env.monitor.stopAndReap({ deadlineMonoMs: now + 500, ordinaryDeadlineMonoMs: now + 100 });
+    let result;
+    observed = stop.then((value) => { result = { value }; }, (error) => { result = { error }; });
+    env.clock.jumpWithoutTimers(elapsed);
+    env.fixture.emit(sampleReply({ ...request, script }));
+    await work; await observed;
+    assert.equal(sampleResult.value, undefined, "ordinary success cannot cross the public return fence");
+    assert.equal(sampleResult.error?.code, "ACCOUNTING_UNAVAILABLE");
+    if (elapsed === 150) {
+      assert.equal(result.error?.code, "CLEANUP_UNPROVEN");
+      assert.equal(env.monitor.fault().code, "CLEANUP_UNPROVEN");
+    } else {
+      assert.equal(result.error, undefined);
+      assert.equal(env.monitor.fault(), null, "on-time actual drain cannot invent a first accounting fault");
+    }
+    assert.equal(env.fixture.written.filter((frame) => frame.type === "shutdown").length, 1);
+    await owner.whenSettled();
   });
-  await startMonitorFixture(env);
-  script.muteSample = true;
-  work = env.monitor.sample().catch(() => {}); await turn();
-  const request = env.fixture.written.findLast((frame) => frame.type === "sample");
-  const now = env.clock.nowMs();
-  const stop = env.monitor.stopAndReap({ deadlineMonoMs: now + 500, ordinaryDeadlineMonoMs: now + 100 });
-  let result;
-  observed = stop.then((value) => { result = { value }; }, (error) => { result = { error }; });
-  env.clock.jumpWithoutTimers(150);
-  env.fixture.emit(sampleReply({ ...request, script }));
-  await work; await observed;
-  assert.equal(result.error?.code, "CLEANUP_UNPROVEN");
-  assert.equal(env.monitor.fault().code, "CLEANUP_UNPROVEN");
-  assert.equal(env.fixture.written.filter((frame) => frame.type === "shutdown").length, 1);
-});
+}
