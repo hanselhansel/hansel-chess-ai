@@ -10155,3 +10155,53 @@ unchanged. This checkpoint changes documentation only; no tests/workload rerun.
 MinorM3 introductory comment remains deferred without a source edit. Fresh
 committed actualcheck/parity/preflight and separate Root full40 GO remain OPEN.
 Publication is a separate Root action. All original limits/science remain exact.
+
+
+### Accepted descendant-directory retirement, declared before use, 2026-11-09
+
+User approval workspace-directory-retirement-approval.json binds immutable
+amendment9df74de4865d81a505aaf470384a30a63d7f8e940ae3197fcece1a0a119a47b5
+and scoped reviewa11d343ae2cec0bb191295549efc8d4ec85e9f476c6821846df606674695ec84.
+This explicitly supersedes ONLY the earlier unconditional descendant-readdir
+failure rule. Root lstat/root readdir remain strict. After safe same-walk
+non-symlink descendant-directory lstat, pre-enumeration readdir ENOENT may use
+the SAME per-scan retirement facts after positive child absence and unchanged
+ROOT+ALL PARENT ancestor proof (excluding the retiring directory itself).
+First walk uses the existing ONE whole-root restart; second walk may continue
+with zero only after removing its caller-associated already-added known
+directory charge. No unknown children enumerated, guessed bytes, third walk,
+new timestamp or extra retry. Every retirement revalidates before publication;
+replacement/reappearance/symlink/unsafe/lost ancestors/permission/nonENOENT/
+stop/generation and all original freshness/phase/debt/sticky guards stay strict.
+Old failed727 CHECK is not repaired or promoted; historical confirmations UNKNOWN.
+
+Before creation declare TEST-only workspace-footprint-directory.test.mjs, no
+exports: cohesive new approved-directory cases, genuine observer/Store/lifetime
+and owned real temp trees, transparent privateFs test seams plus explicit
+controlled allocation metadata for NONZERO rollback coverage. It imports only
+existing runtime/test primitives and node builtins, creates no public API,
+backend/proof/debt owner or runtime-union member. Existing385-line footprint
+TEST owner/cases remain whole and unchanged; new leaf stays below400 readable
+lines. Runtime114 membership unchanged; private workspace-footprint walk result
+carries exact child-path retirement association solely to its original caller,
+using original scan retirement list/generation/one inflight owner. No cache,
+ledger, timer or alternate proof. Run whole affected PURE footprint/Store/
+sticky/no-write/physical ownership owners; actual Native/phase remains withheld.
+
+
+Accepted directory-retirement implementation checkpoint: workspace-footprint.mjs
+now confirms ONLY the bound safe descendant's pre-enumeration readdir ENOENT
+against captured parents/root. Its private exact-path return associates the zero
+with the immediate caller's known directory charge; no child prefix exists.
+First walk keeps one whole-root restart, second walk may continue after rollback;
+all per-scan retirements retain original final proof. Root readdir and every
+unsafe/unproven condition stay invalid. No prior invalid/sticky proof is cleared.
+Causal PURE RED:2 approved positives failed while19 negatives/sticky passed.
+Final six whole PURE owners95/95 passed natural0/2.894032333s, BOTHpipes/rawfiles
+closed, including original footprint385-line owner, Store, physical-fs/drains and
+passive error retention. New22-case directory leaf193lines proves NONZERO4096B
+rollback, first/second walk, all unsafe/final-proof negatives, sticky/no writes
+and valid-but1001ms-old Store rejection. Runtime owner359lines; runtime union114
+unchanged. Failed727 CHECK and all old proofs remain ineligible, historical
+confirmations UNKNOWN. Actual Native/fullserial/cap/phase review+GO still OPEN.
+No M3 comment cleanup, model/science/dependency/runtime-pin change or score claim.

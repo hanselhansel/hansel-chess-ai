@@ -156,7 +156,24 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
     try {
       entries = await fsp.readdir(dir, { withFileTypes: true });
     } catch (e) {
-      errors.push(`readdir ${dir}: ${e.code || e.message}`);
+      const failure = `readdir ${dir}: ${e.code || e.message}`;
+      // Only a safe SAME-walk descendant stat can bind this pre-enumeration
+      // failure. Confirm against its PARENTS, not the now-missing directory.
+      const bound = ancestors.at(-1);
+      const parents = ancestors.slice(0, -1);
+      if (dir !== workspaceRoot && e.code === "ENOENT" && bound?.[0] === dir &&
+          safeDirectory(bound[1]) && await retired(dir, parents, gen)) {
+        retirements.push({ file: dir, ancestors: parents, failure });
+        if (allowZero) {
+          // Private exact-path association lets ONLY its immediate caller
+          // remove the directory allocation it already charged. No children
+          // were enumerated or charged by this failed readdir.
+          return { total: 0, unavailable: false, retiredDirectory: dir };
+        }
+        errors.push(failure);
+        return { total, unavailable: true, retry: parents };
+      }
+      errors.push(failure);
       return { total, unavailable: true };
     }
     for (const ent of entries) {
@@ -193,7 +210,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
           errors.push(`charge ${p}: unsafe total`);
           return { total, unavailable: true };
         }
-        total += sub.total;
+        total = sub.retiredDirectory === p ? total - c : total + sub.total;
         if (sub.unavailable) return { total, unavailable: true, retry: sub.retry };
       }
     }
