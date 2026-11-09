@@ -236,17 +236,27 @@ export async function facadeQualityControl(failure) {
   const ws = fixtureWorkspace(), mf = fixtureManifest({ workspace: ws, runId: "R1" });
   const supervisor = identity(1), driverIdentity = identity(6000);
   let badRead = false, adapter = null, retainedRun = null, recorder = null, group = null;
-  const journal = { admissions: [], cleanup: [], escaped: null };
+  const journal = { admissions: [], cleanup: [], escaped: null, readerAccesses: 0, readerCalls: 0 };
+  const ledger = createResourceQuality({ runId: "R1", phase: "check" });
+  ledger.bootstrap({ startedNs: exactNs(), finishedNs: exactNs(), nativeMaxDurationNs: "0",
+    requestId: "component-bootstrap", rssBytes: 4, handleLive: true });
+  let reader = exactNs, broken = false;
+  Object.defineProperty(clock, "nowMonoNs", { configurable: true,
+    get: () => { if (broken) journal.readerAccesses += 1; return reader; },
+    set: (value) => { reader = value; } });
   const { monitor, calls, registeredPorts } = cleanupMonitorFixture({ runId: "R1", clock,
     supervisor, collector: identity(2), rows: [{ identity: driverIdentity, ppid: 1,
       pgid: 6000, workload: true, kind: "driver", scopeRunId: "R1" }],
     script: { observation: () => {
       if (badRead) throw Object.assign(new Error("scripted hard resource read"), { code: "ACCOUNTING_UNAVAILABLE" });
-      const q = quality({ phase: "check", runId: "R1" });
+      ledger.noteAge(exactNs());
+      const q = ledger.snapshot();
       return { atMonoNs: q.lastCompleteNs, rssBytes: 4, peakRssBytes: 4,
-        observedPeakRssBytes: 4, rssLimitExceeded: false, accountingValid: true,
-        snapshotComplete: true, cycleTimely: true, coverageContinuous: true, resourceQuality: q };
+        observedPeakRssBytes: 4, rssLimitExceeded: false,
+        accountingValid: BigInt(exactNs()) - BigInt(q.lastTimelyNs) <= 500000000n,
+        snapshotComplete: true, cycleTimely: true, coverageContinuous: !q.coverageLost, resourceQuality: q };
     }, probeDefault: "gone", stopResult: { exitCode: 0 } } });
+  monitor.fault = () => null;
   const cleanup = createCleanupController({ monitor, clock, runId: "R1" });
   const controlledCleanup = { ...cleanup, run: (args) => {
     journal.cleanup.push({ start: args.cleanupStartMonoMs, end: args.deadlineMonoMs });
@@ -290,6 +300,10 @@ export async function facadeQualityControl(failure) {
       await driver.ready; driver.emit({ type: "hello" });
       await state.channel.send("start", { manifestPath: config.manifestPath,
         commonIdentitySha256: config.commonIdentitySha256 }, 90000);
+      const before = monitor.lastObservation();
+      journal.preError = { admissionOpen: control.admissionOpen(), fault: monitor.fault(),
+        coverageEndNs: before.resourceQuality.coverageEndNs,
+        current: before.accountingValid && before.atMonoNs === exactNs() };
       journal.triggerAt = clock.nowMonoMs();
       const registration = { type: "register", requestId: "ordinary", rootPid: null,
         kind: "fixture", expectedExecutable: null, listener: { address: "127.0.0.1", port: 4242 } };
@@ -298,9 +312,14 @@ export async function facadeQualityControl(failure) {
         driver.emit(registration);
         await flushQuality();
       } else {
-        armResourcePolling({ capabilities, state, timing, control,
+        const observedControl = { ...control, recordFault: (error) => {
+          journal.captureError ??= { code: error.code ?? error.name, detail: error.message };
+          return control.recordFault(error);
+        } };
+        armResourcePolling({ capabilities, state, timing, control: observedControl,
           evaluationPolicy: V2_POLICY, phase: "check", makeError: (code, detail) => Object.assign(new Error(detail), { code }) });
-        clock.nowMonoNs = failure === "missing" ? undefined : () => "invalid";
+        clock.nowMonoNs = failure === "missing" ? undefined : () => { journal.readerCalls += 1; return "invalid"; };
+        broken = true;
         try { clock.runDue(); } catch (error) { journal.escaped = String(error); }
         driver.emit(registration); await flushQuality();
       }

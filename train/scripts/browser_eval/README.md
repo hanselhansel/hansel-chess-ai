@@ -10751,8 +10751,11 @@ The internal whole-facade component seam keeps public createWatchdog config
 capture/default lifecycle unchanged. New controls drive actual facade callbacks,
 operations, validated fork IPC, genuine v1 Recorder ownership, actual cleanup and
 owned exit/BOTH-pipe settlement. They prove no ordinary registration/port issuance
-after hard read failure, and contained invalid/missing exact-reader failures with
-the original captured cleanup bound. These controls are component evidence only;
+after hard read failure, and containment with a broken exact reader installed.
+R1 re-review found that its reader controls stopped at an earlier native hard
+fault (closed ledger and absent fault channel), before exact capture. Those
+receipts did not prove failed quality capture. R2 below corrects that evidence.
+These controls are component evidence only;
 they produce no normal v2 runtime, final publication, graph or Native proof.
 
 Causal RED22/25 preceded GREEN25/25. The final authorized nine-owner Node roster
@@ -10769,7 +10772,8 @@ Native controls and all runtime releases remain future gates. No push or release
 `facadeQualityControl(failure)` is a TEST-only asynchronous fixture in the existing
 separate-verdicts fixture owner. Supported cases are `hard-read`, `invalid`, and
 `missing`; no other value is a supported control. It returns observed admission
-results, driver frames/registered ports, original cleanup captures, fault events,
+results, preError admission/current/open-ledger/null-fault facts, readerAccesses,
+readerCalls, captureError, driver frames/registered ports, cleanup captures, fault events,
 actual shutdown outcome and same-owner settlement observations. It uses the real
 captured facade, operations queue, fork IPC validator/channel, cleanup controller
 and a genuine v1 Recorder/Store association. Only its lifecycle collaborator is
@@ -10784,3 +10788,48 @@ The fixture releases controlled driver exit/BOTH pipe/send facts, joins the
 original run and genuine owner, closes incomplete evidence, then removes
 its temporary root. Errors propagate after owned teardown. This cannot qualify a
 normal v2 runtime or attest Native observations.
+
+
+### Task7 review fix round2 (2026-11-10)
+
+R2 corrects the I2 fixture and evidence claims. I1 remains closed and production
+watchdog code is unchanged in this commit. The control now owns a genuinely active
+resource ledger seeded at current original-clock time, reads its unclosed snapshot
+directly and supplies monitor.fault() returning null. It first proves actual
+observation/admission valid, then observes invalid-reader calls or missing-reader
+access and the primary capture error before genuine facade containment. The
+primary persisted fault diagnostic must equal that capture error. No healthy v2
+resource publication is needed or attempted through the backing v1 Recorder.
+
+One explicitly authorized historical control temporarily restored only the two
+recorded shared-nowNs I2 blocks, retaining the facade seam and I1 fix. Both exact
+reader cases reached capture then failed containment (0/2,exit1). Actual process
+exit/BOTH EOF preceded byte/hash restoration of current production. The corrected
+owner then passed25/25; final required Node roster115/115, isolated Python8/8 and
+qualified typecheck exit0 share frozen corrected inputs. GREEN keeps the broken
+reader through actual shutdown and the original +2s/+4s/withheld-stderr proof.
+RED-only TEST-reader restoration permits owned teardown and proves no healthy run.
+
+Evidence: W/`separate-verdicts-implementation-evidence/01c2f667-532c-4bf3-825c-fc667112719c/`.
+R1 receipts and their earlier source-clock correction remain preserved, with the
+exact-capture proof limitation stated explicitly. W/`v2-task-7-report.md` appends
+R2 commands, primary-cause controls, historical/restoration hashes and audits.
+Protected23/M/whole Section3 and approved contract remain unchanged. Fresh scoped
+review still precedes Task8; no publication, archived CLI/Native/phase or runtime
+release is claimed. No push, merge or deploy.
+
+
+R2's facade fixture seeds one actual `createResourceQuality` instance at current
+original-clock time. It never uses a closed `quality()` object or relabels a fence.
+Observations return its immutable active snapshot directly; later observer age is
+recorded on that same ledger and current accounting ages normally. The scripted
+monitor's fault channel explicitly returns null. An actual pre-error facade
+admission call must succeed before reader breakage. The property/call counters
+observe subsequent exact reader access; a transparent polling fault observer
+copies the primary error and immediately forwards the unchanged error to the
+real facade recorder. It adds no stop/fault authority or swallowed exception.
+Both reader controls assert capture-specific error code/detail before containment,
+then require the first persisted fault diagnostic to match the primary capture
+error. The existing broken-reader-through-GREEN-shutdown, no-issuance, original-C
+and held-stderr/+2s/+4s constraints remain. R1 reader receipts showed containment
+of another native hard fault; they are not failed exact-capture proof.

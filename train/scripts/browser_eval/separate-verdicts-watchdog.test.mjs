@@ -367,6 +367,14 @@ import { facadeQualityControl } from "./separate-verdicts-test-fixtures.mjs";
 for (const failure of ["hard-read", "invalid", "missing"]) {
   test(`v2 real facade contains ${failure} and closes ordinary issuance`, async () => {
     const f = await facadeQualityControl(failure);
+    assert.deepEqual(f.preError, { admissionOpen: true, fault: null, coverageEndNs: null, current: true });
+    if (failure !== "hard-read") {
+      assert.ok(f.readerAccesses > 0);
+      assert.equal(f.readerCalls > 0, failure === "invalid");
+      assert.ok((failure === "invalid" ? ["SCHEMA_COHERENCE", "SyntaxError"] : ["TypeError"]).includes(f.captureError.code));
+      assert.match(f.captureError.detail, failure === "invalid"
+        ? /nanosecond string|Cannot convert invalid to a BigInt/ : /clock.nowMonoNs is not a function/);
+    }
     assert.equal(f.escaped, null);
     assert.ok(f.beforeTeardown.stop);
     assert.ok(f.beforeTeardown.faults > 0);
@@ -380,6 +388,7 @@ for (const failure of ["hard-read", "invalid", "missing"]) {
     assert.equal(f.pendingWithoutErr, true);
     assert.equal(f.settled, true);
     assert.ok(f.events.some((e) => e.kind === "fault"));
+    if (failure !== "hard-read") assert.equal(f.events.find((e) => e.kind === "fault").payload.detail, f.captureError.detail);
     assert.equal(f.events.some((e) => e.kind === "resource"), false);
     assert.equal(f.outcome.exitCode, 2);
   });
