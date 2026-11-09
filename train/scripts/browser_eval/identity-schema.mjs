@@ -1,6 +1,8 @@
 // Executable/Python/backend/environment/CommonIdentity validation built on
-// schema-primitives.mjs and schema-constants.mjs only. record-schema.mjs
+// schema primitives/constants and pure policy binding. record-schema.mjs
 // re-exports the two public entrypoints unchanged.
+
+import { assertPolicyBinding } from "./evaluation-policy.mjs";
 
 import {
   arr,
@@ -246,9 +248,16 @@ export function assertCommonIdentity(value) {
       baselineNormalization: "obj",
       conventions: "obj",
       environment: "obj",
+      ...(Object.hasOwn(value, "evaluationPolicy") ? { evaluationPolicy: "obj" } : {}),
     },
     n,
   );
+  const version = Object.hasOwn(value, "evaluationPolicy") ? 2 : 1;
+  assertPolicyBinding({
+    schemaVersion: version,
+    evaluationPolicy: version === 2 ? value.evaluationPolicy : null,
+    protocolPath: value.fixtures?.protocol?.path,
+  });
   const c = value.candidate;
   if (!CHECK.obj(c)) schemaFail("SCHEMA_TYPE", `${n}.candidate`);
   const cAllowed = ["kind", "commit", "contentSha256"];
@@ -280,7 +289,8 @@ export function assertCommonIdentity(value) {
   shape(value.fixtures, { protocol: "obj", parity: "obj", openings: "obj" }, `${n}.fixtures`);
   for (const key of Object.keys(FIXTURE_PATHS)) {
     shape(value.fixtures[key], REF_SPEC, `${n}.fixtures.${key}`);
-    if (value.fixtures[key].path !== FIXTURE_PATHS[key]) {
+    if (value.fixtures[key].path !== (key === "protocol" && version === 2
+      ? "train/fixtures/browser-protocol-v2.json" : FIXTURE_PATHS[key])) {
       schemaFail("SCHEMA_LITERAL", `${n}.fixtures.${key}.path`);
     }
   }

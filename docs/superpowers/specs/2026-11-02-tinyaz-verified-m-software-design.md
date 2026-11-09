@@ -4808,3 +4808,15 @@ Alternative3: drop RSS monitoring after a gap or attach an advisory sidecar. Rej
 The unknown secondary filesystem confirmation can still prevent a future v2 cohort. This amendment neither solves it nor permits a waiver.
 No fresh implementation/run has occurred. Detailed choices, exact versioning, compare-only scope and recovered timely admission are approved by the bound final reviewed amendment.
 Amendment approval and implementation authorization are complete. Verified implementation, fresh scoped code/document reviews, whole-change review and separate Root runtime/candidate/policy execution releases remain open.
+
+### Task 5 staging guard declaration (2026-11-10)
+
+Root authorized a minimal early change in the already declared Task8 owner `train/scripts/browser_eval/record-inputs.mjs`: `captureRecorderInputs` rejects non-v1 workspace/manifest and `validateRunningInput` rejects non-v1 running records until complete Task8 integration. This guards the existing v1 Recorder from mixed-version publication while the pure schema validators accept closed v2 data. It adds no IO, writer or publication authority. Genuine Recorder negative controls belong to `separate-verdicts-records.test.mjs`; positive v2 publication remains Task8. The accepted normative amendment projection stays unchanged.
+
+### Task 5 pure foundations checkpoint (2026-11-10)
+
+Pure policy selection, CommonIdentity/schema2 dispatch, bounded resource ledger, closed verdict reducers and data-only graph reconciliation are implemented. Operational defaults remain strict v1. The existing Recorder rejects v2 constructor/running input until Task8 integration; schema2 validity alone grants no publication authority. Monitor/Native/driver integration, genuine positive v2 publication, fixture/CLI selection, full validation and runtime release remain pending. All failed cohorts remain ineligible.
+
+The four exact focused owners passed 51/51 on qualified Node24.22.2, and qualified npm typecheck exited0. The real v1 Recorder/Store/prepared-publication/readback control matched baseline completion SHA256 `b3653531e96221121f83253d92ec64dac9e6d637e96665e01abab14e6835632e`. A failed fixture teardown required TERM of its positively owned test child after the90s file guard; its actual coordinator exit1 and BOTH pipe closes are retained. Corrected teardown closes the genuine writer before inherited-owner settlement; subsequent causal RED/GREEN and focused checks closed naturally. These are local pure/scripted controls, with no Native, browser, model, phase or cohort passage claim.
+
+Evidence: W/`separate-verdicts-implementation-evidence/b4d71967-8baf-4ebd-8472-a588dd66fe2a/`. Exact commands, input hashes, local costs, failed gates, intervention and actual exits/pipes are retained there. Root fresh source review is a separate pending gate.

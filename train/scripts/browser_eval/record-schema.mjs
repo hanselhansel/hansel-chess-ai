@@ -38,6 +38,8 @@ export {
   REQUIRED_CHECK_IDS,
   REQUIRED_PARENT_PHASES,
 } from "./schema-constants.mjs";
+import { RECORD_FIELDS } from "./record-fields.mjs";
+import { assertRecordV2 } from "./record-schema-v2.mjs";
 import { assertCommonIdentity } from "./identity-schema.mjs";
 export { assertArtifactRef, assertProcessIdentity } from "./schema-primitives.mjs";
 export { assertBackendIdentity, assertCommonIdentity } from "./identity-schema.mjs";
@@ -133,65 +135,12 @@ const vInputs = (v, n) => {
   }
 };
 
-const RECORD_FIELDS = {
-  workspace: ["schemaVersion", "workspaceId", "commonIdentity"],
-  manifest: [
-    "schemaVersion",
-    "workspaceId",
-    "runId",
-    "phase",
-    "commonIdentitySha256",
-    "inputs",
-    "limits",
-    "requiredCheckIds",
-    "prerequisites",
-    "owner",
-  ],
-  running: [
-    "schemaVersion",
-    "workspaceId",
-    "runId",
-    "phase",
-    "commonIdentitySha256",
-    "supervisor",
-    "startedAtUtc",
-  ],
-  event: ["schemaVersion", "workspaceId", "runId", "phase", "seq", "kind", "payload"],
-  final: [
-    "schemaVersion",
-    "workspaceId",
-    "runId",
-    "phase",
-    "commonIdentitySha256",
-    "status",
-    "exitCode",
-    "stopReason",
-    "requiredChecks",
-    "unplannedFaultCount",
-    "analysisEligible",
-    "cleanup",
-    "summary",
-  ],
-  completion: [
-    "schemaVersion",
-    "kind",
-    "workspaceId",
-    "runId",
-    "phase",
-    "commonIdentitySha256",
-    "status",
-    "exitCode",
-    "prerequisites",
-    "artifacts",
-    "expectedSelfTest",
-  ],
-};
-
 const VALIDATORS = {
   workspace(v, n) {
     exactOnly(v, RECORD_FIELDS.workspace, n);
     if (v.schemaVersion !== 1) schemaFail("SCHEMA_LITERAL", `${n}.schemaVersion`);
     if (!CHECK.strNE(v.workspaceId)) schemaFail("SCHEMA_FORMAT", `${n}.workspaceId`);
+    if (Object.hasOwn(v.commonIdentity ?? {}, "evaluationPolicy")) schemaFail("SCHEMA_LITERAL", "v1 policy");
     assertCommonIdentity(v.commonIdentity);
   },
 
@@ -296,6 +245,7 @@ const VALIDATORS = {
 };
 
 export function assertRecord(kind, value) {
+  if (value?.schemaVersion === 2) return assertRecordV2(kind, value);
   const validator = VALIDATORS[kind];
   if (!validator) schemaFail("SCHEMA_LITERAL", `unknown record kind ${kind}`);
   validator(value, kind);

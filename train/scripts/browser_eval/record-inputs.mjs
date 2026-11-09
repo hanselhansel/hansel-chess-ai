@@ -39,6 +39,10 @@ export function captureRecorderInputs({ workspace, manifest, verifyIdentity, ver
   }
   const ws = copy(workspace);
   const mf = copy(manifest);
+  // Staging fence: schema2 construction is pure until full Task8 wiring.
+  if (ws.schemaVersion !== 1 || mf.schemaVersion !== 1) {
+    fail("RECORDER_CONFIG", "v2 recorder integration unavailable");
+  }
   assertRecord("workspace", ws);
   assertRecord("manifest", mf);
   if (ws.workspaceId !== mf.workspaceId) fail("RECORDER_CONFIG", "workspaceId mismatch");
@@ -83,6 +87,9 @@ export function validateRunningInput(
   runningSnapshot,
   { workspaceId, runId, phase, commonIdentitySha256 },
 ) {
+  if (runningSnapshot?.schemaVersion !== 1) {
+    fail("RECORDER_CONFIG", "v1 recorder requires v1 running");
+  }
   assertRecord("running", runningSnapshot);
   if (
     runningSnapshot.workspaceId !== workspaceId ||

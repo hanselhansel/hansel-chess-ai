@@ -880,6 +880,8 @@ Dependency: reviewed Task4. Implement pure closed constants/selection/binding, e
 | C `separate-verdicts-records.test.mjs` | Genuine Recorder/Store/prepared publication/graph v2 controls and v1 readback rejection controls. |
 
 
+Task5 local implementation checkpoint: pure foundations and v1-only staging guards are implemented and locally verified. Positive v2 Recorder/publication remains Task8. The additional Task5 writable symbol scope is the two minimal guards in `record-inputs.mjs`, authorized by Root and declared before edit below. Fresh scoped Root review remains pending before Task6.
+
 ## Task 6: Whole start, resource and RSS extractions with v1 equivalence
 
 Dependency: reviewed Task5. Extract whole existing collectorArgv/start, resource polling and RSS projection/retention groups into the three declared owners on identical config/state/authority/stopOwner/monitor/record/fault/latch references. No second queue/lifetime/ledger/stop owner, no changed cadence or behavior. RED/GREEN first add v1 equivalence assertions to the new separate-verdicts-monitor.test.mjs and separate-verdicts-watchdog.test.mjs using current strict-v1 cases and exact function/reference/debt behavior. Run those new owners plus process-lifecycle.test.mjs, process-observation.test.mjs, watchdog-resource.test.mjs and watchdog-cleanup.test.mjs; typecheck and readable-line audit. Keep existing tests intact. Reuse the Task5 TEST fixture owner only for these controlled equivalence seams.
@@ -1119,3 +1121,15 @@ Dependency: Task13 authoritative result or explicit failed-gate handoff. Update 
 | M `/docs/superpowers/plans/2026-11-06-tinyaz-fault-repair-and-full-comparison.md` | Buildable phased tasks, test ownership and final code/doc comparison gates. |
 | M `/docs/experiments/tinyaz-software-plan.md` | Preserve failed cohorts; record proposed/approved/implemented/verified/released results separately. |
 | M `/docs/experiments/README.md` | Update experiment index pointer/status only, without a strength claim. |
+
+### Task 5 staging guard declaration (2026-11-10)
+
+Root authorized a minimal early change in the already declared Task8 owner `train/scripts/browser_eval/record-inputs.mjs`: `captureRecorderInputs` rejects non-v1 workspace/manifest and `validateRunningInput` rejects non-v1 running records until complete Task8 integration. This guards the existing v1 Recorder from mixed-version publication while the pure schema validators accept closed v2 data. It adds no IO, writer or publication authority. Genuine Recorder negative controls belong to `separate-verdicts-records.test.mjs`; positive v2 publication remains Task8. The accepted normative amendment projection stays unchanged.
+
+### Task 5 pure foundations checkpoint (2026-11-10)
+
+Pure policy selection, CommonIdentity/schema2 dispatch, bounded resource ledger, closed verdict reducers and data-only graph reconciliation are implemented. Operational defaults remain strict v1. The existing Recorder rejects v2 constructor/running input until Task8 integration; schema2 validity alone grants no publication authority. Monitor/Native/driver integration, genuine positive v2 publication, fixture/CLI selection, full validation and runtime release remain pending. All failed cohorts remain ineligible.
+
+The four exact focused owners passed 51/51 on qualified Node24.22.2, and qualified npm typecheck exited0. The real v1 Recorder/Store/prepared-publication/readback control matched baseline completion SHA256 `b3653531e96221121f83253d92ec64dac9e6d637e96665e01abab14e6835632e`. A failed fixture teardown required TERM of its positively owned test child after the90s file guard; its actual coordinator exit1 and BOTH pipe closes are retained. Corrected teardown closes the genuine writer before inherited-owner settlement; subsequent causal RED/GREEN and focused checks closed naturally. These are local pure/scripted controls, with no Native, browser, model, phase or cohort passage claim.
+
+Evidence: W/`separate-verdicts-implementation-evidence/b4d71967-8baf-4ebd-8472-a588dd66fe2a/`. Exact commands, input hashes, local costs, failed gates, intervention and actual exits/pipes are retained there. Root fresh source review is a separate pending gate.
