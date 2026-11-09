@@ -4,8 +4,39 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { makeWorkspace } from "./test-fixtures.mjs";
 import { canonicalBytes } from "./canonical-json.mjs";
+import { captureSetupBackendIdentity } from "./process-backend.mjs";
+import { createBackendIdentityExpectation } from "./process-backend-reader.mjs";
+import { assertEnvironment } from "./identity-schema.mjs";
+
+const HELPER_REFS = ["process-macos-abi.py", "process-macos-native.py", "process-macos.py"]
+  .map(name => `train/scripts/browser_eval/${name}`);
+
+// TEST-only source rebinding, not Native availability/collector selfreport.
+export async function bindCliFixtureNativeEnvironment(nativeEnvironment, harnessRoot) {
+  const supplied = structuredClone(nativeEnvironment);
+  assertEnvironment(supplied);
+  const expected = supplied.monitoring;
+  if (JSON.stringify(expected.helpers.map(ref => ref.path)) !== JSON.stringify(HELPER_REFS)) {
+    throw new Error("CLI fixture helper paths");
+  }
+  const current = await captureSetupBackendIdentity({
+    recordRoot: harnessRoot,
+    helperPaths: HELPER_REFS.map(ref => path.join(harnessRoot, ref)),
+    pythonExecutable: expected.python.invocationPath,
+    setupPythonMetadata: Object.fromEntries(["version", "executable", "prefix", "basePrefix"]
+      .map(key => [key, expected.python[key]])),
+  });
+  // ONLY source byte/hash facts are rebound. Every provided non-helper pin
+  // must match actual static facts. Startup still compares ALL fresh fields.
+  const rebound = { ...expected, helpers: current.helpers };
+  createBackendIdentityExpectation(rebound).assertMatches(current);
+  supplied.monitoring = current;
+  return supplied;
+}
 
 export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null } = {}) {
+  const supplied = nativeEnvironment === null ? null : structuredClone(nativeEnvironment);
+  if (supplied !== null) assertEnvironment(supplied);
   const env = await makeWorkspace();
   const workspaceRoot = await fs.realpath(env.workspaceRoot);
   const repoRoot = path.resolve(fileURLToPath(new URL("../../../", import.meta.url)));
@@ -25,7 +56,8 @@ export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null
     await fs.chmod(path.join(fixtures, name), 0o444);
   }
   const workspace = structuredClone(env.ws);
-  if (nativeEnvironment !== null) workspace.commonIdentity.environment = structuredClone(nativeEnvironment);
+  if (supplied !== null) workspace.commonIdentity.environment =
+    await bindCliFixtureNativeEnvironment(supplied, path.join(workspaceRoot, "inputs/harness"));
   workspace.commonIdentity.environment.node.invocationPath = process.execPath;
   workspace.commonIdentity.environment.node.realPath = await fs.realpath(process.execPath);
   const workspacePath = path.join(workspaceRoot, "workspace.json");

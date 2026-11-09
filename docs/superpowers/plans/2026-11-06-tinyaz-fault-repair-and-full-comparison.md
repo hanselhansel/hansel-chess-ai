@@ -652,3 +652,44 @@ Whole affected PURE trace/IO/observation/terminal owners39/39 passed naturally0/
 model/phase was run for this TEST-only correction. Scoped Max review and fresh
 Root operational release remain required. Original source/report prefix and
 all old gate/cohort/probe seals remain exact; historical88834 cause UNKNOWN.
+
+
+### Native cap TEST-fixture identity binding declaration, 2026-11-09
+
+Closed55ce cap failed BEFORE driver admission on strict expected BackendIdentity.
+Canonical STATIC reconstruction proves ONLY helpers[2] process-macos.py bytes/
+SHA drift (16169/215ccc2b... ->16385/e103be96...), while all supplied OS/ABI/Python
+launcher+process-image/libproc/lsof fields match. Old provided environment was
+provenance, but the fixture copied CURRENT trusted helpers and blindly retained
+OLD source refs. No Native matcher/policy failure or phase-cap closure proof.
+
+Before use declare ONE additional private TEST-only export in EXISTING
+cli-shutdown-test-fixtures.mjs: bindCliFixtureNativeEnvironment(nativeEnvironment,
+harnessRoot). It captures/validates provided data before awaits, calls canonical
+captureSetupBackendIdentity on the actual copied fixed three helper sources under
+harnessRoot plus supplied pinned Python metadata, requires identical helper path
+set and ALL supplied non-helper backend fields through the unchanged strict
+expectation matcher, and returns a copied environment with canonical CURRENT
+helper byte/hash refs. No collector selfreport, source edit/proof/authority bypass,
+new runtime path/flag/backend/clock or skipped final helper equality. Existing
+prepareCliShutdownFixture captures provided environment before setup awaits and
+uses this binding after its readonly source copy. Default synthetic mode unchanged;
+Node invocation/realpath normalization is the existing fixture behavior.
+Native input means controlled actual-Native-cap TEST environment only, never a
+real primary/browser/model/scoring receipt. No supplied OS/ABI/interpreter/libproc/
+lsof pin is silently regenerated to excuse mismatch. Declared pure regressions
+extend EXISTING cli-shutdown.test.mjs: causal stale-provided-helper failure,
+correct copied-source binding, wrong pin/path rejection and postbinding helper
+mutation rejected by original strict matcher. No new helper/path/framework.
+Current reviewed cap/control script and old frozen workspace/provenance unchanged;
+any new actual Native/cap execution requires fresh review and separate Root GO.
+
+Fixture-binding PURE checkpoint: causal stale-helper test failed on the original
+strict ACCOUNTING_UNAVAILABLE expected-identity error before the correction.
+After binding, whole CLI-shutdown/backend-setup owners20/20 passed naturally0
+in12.688s, BOTHpipes/rawfiles closed, stderr0. All original7 controlled CLI cases
+remain; wrong OS/Python-image/lsof pins, helper paths and postbinding helper
+tamper fail closed. Static file/OS capture is NOT Native readiness or cap closure.
+The earlier55ce actual fullserial812/812+Native14 remains separate from its
+failed pre-driver cap. Runtime114/protected23/M/six execution helpers/Section3
+unchanged. Actual Native/cap/phase remains withheld for scoped review+Root GO.

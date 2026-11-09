@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { prepareCliShutdownFixture } from "./cli-shutdown-test-fixtures.mjs";
+import { bindCliFixtureNativeEnvironment, prepareCliShutdownFixture } from "./cli-shutdown-test-fixtures.mjs";
 
 for (const mode of ["normal", "cap", "error", "disconnect", "cap-close-error", "cap-send-error", "normal-retained-timer"]) {
   test(`full CLI ${mode} joins owners and pipes and exits naturally`, { timeout: 15000 }, async (t) => {
@@ -83,3 +83,75 @@ for (const mode of ["normal", "cap", "error", "disconnect", "cap-close-error", "
     assert.deepEqual(reopened, sealed);
   });
 }
+
+// STATIC actual file/OS identity only, no libproc/collector/browser/model.
+import { fixtureCommonIdentity } from "./test-fixtures.mjs";
+import { captureSetupBackendIdentity } from "./process-backend.mjs";
+import { createBackendIdentityExpectation } from "./process-backend-reader.mjs";
+import { PYTHON_EXECUTABLE, PYTHON_PREFIX, PYTHON_VERSION } from "./schema-constants.mjs";
+import { fileURLToPath } from "node:url";
+const repo = path.resolve(fileURLToPath(new URL("../../../", import.meta.url)));
+const helpers = ["process-macos.py", "process-macos-native.py", "process-macos-abi.py"];
+const staticBackend = (root, python) => captureSetupBackendIdentity({
+  recordRoot: root,
+  helperPaths: helpers.map(name => path.join(root, "train/scripts/browser_eval", name)),
+  pythonExecutable: python.invocationPath,
+  setupPythonMetadata: Object.fromEntries(["version", "executable", "prefix", "basePrefix"].map(k => [k, python[k]])),
+});
+const nativeEnvironment = async () => {
+  const python = { invocationPath: PYTHON_EXECUTABLE, executable: PYTHON_EXECUTABLE,
+    prefix: PYTHON_PREFIX, version: PYTHON_VERSION,
+    basePrefix: path.dirname(path.dirname(await fs.realpath(PYTHON_EXECUTABLE))) };
+  const environment = structuredClone(fixtureCommonIdentity().environment);
+  environment.monitoring = await staticBackend(repo, python);
+  environment.python.runtime = environment.monitoring.python;
+  environment.os = environment.monitoring.os;
+  return environment;
+};
+
+test("native fixture binds CURRENT copied helper refs rather than stale provided source hashes", async (t) => {
+  const supplied = await nativeEnvironment();
+  const old = supplied.monitoring.helpers.find(ref => ref.path.endsWith("/process-macos.py"));
+  old.byteLength -= 216; old.sha256 = "0".repeat(64);
+  const original = structuredClone(supplied);
+  const env = await prepareCliShutdownFixture({ mode: "cap", nativeEnvironment: supplied });
+  t.after(() => fs.rm(env.workspaceRoot, { recursive: true, force: true }));
+  const workspace = JSON.parse(await fs.readFile(path.join(env.workspaceRoot, "workspace.json"), "utf8"));
+  const actual = await staticBackend(path.join(env.workspaceRoot, "inputs/harness"), supplied.monitoring.python);
+  createBackendIdentityExpectation(workspace.commonIdentity.environment.monitoring).assertMatches(actual);
+  assert.deepEqual(supplied, original, "provided environment stays provenance, unchanged");
+  assert.deepEqual(workspace.commonIdentity.environment.os, supplied.os);
+  assert.deepEqual(workspace.commonIdentity.environment.python, supplied.python);
+  assert.deepEqual(workspace.commonIdentity.environment.chromium, supplied.chromium);
+});
+
+
+test("native fixture rejects wrong pins/paths and strict matcher rejects copied-helper tamper", async (t) => {
+  const supplied = await nativeEnvironment();
+  const before = structuredClone(supplied);
+  const env = await prepareCliShutdownFixture({ mode: "cap", nativeEnvironment: supplied });
+  t.after(() => fs.rm(env.workspaceRoot, { recursive: true, force: true }));
+  const harness = path.join(env.workspaceRoot, "inputs/harness");
+  const recorded = JSON.parse(await fs.readFile(path.join(env.workspaceRoot, "workspace.json"), "utf8"));
+  for (const field of ["lsof", "python-image", "os"]) {
+    const wrong = structuredClone(supplied);
+    if (field === "lsof") wrong.monitoring.lsof.sha256 = "0".repeat(64);
+    if (field === "python-image") wrong.monitoring.python.processImage.sha256 = "0".repeat(64);
+    if (field === "os") {
+      wrong.monitoring.os.release = "wrong-release";
+      wrong.os.release = "wrong-release";
+    }
+    await assert.rejects(bindCliFixtureNativeEnvironment(wrong, harness), error =>
+      error.code === "ACCOUNTING_UNAVAILABLE" && error.message.includes("expected backend identity"));
+  }
+  const badPath = structuredClone(supplied);
+  badPath.monitoring.helpers[2].path = "train/scripts/browser_eval/unknown.py";
+  await assert.rejects(bindCliFixtureNativeEnvironment(badPath, harness), /CLI fixture helper paths/);
+  assert.deepEqual(supplied, before);
+  const helper = path.join(harness, "train/scripts/browser_eval/process-macos.py");
+  await fs.chmod(helper, 0o644);
+  await fs.appendFile(helper, "\n# controlled fixture tamper\n");
+  const tampered = await staticBackend(harness, supplied.monitoring.python);
+  assert.throws(() => createBackendIdentityExpectation(recorded.commonIdentity.environment.monitoring)
+    .assertMatches(tampered), error => error.code === "ACCOUNTING_UNAVAILABLE");
+});
