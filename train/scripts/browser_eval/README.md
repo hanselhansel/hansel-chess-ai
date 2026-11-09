@@ -11249,3 +11249,129 @@ Final code-to-doc comparison checked selected arguments/defaults, exact ref/hash
 binding,126-path closure and TEST exclusions, one-site producer/versioned wire,
 pre-SDK validation, actual verified CLI authority/exit, Python public/private
 boundaries and original closure/limit semantics. No unresolved mismatch found.
+
+
+### Task9 R1 narrow filesystem TEST declaration (2026-11-10)
+
+Before-use Root consumer-count ruling admits only the stale closure count in
+`train/scripts/browser_eval/private-fs-phase.test.mjs`:114 becomes126. Every other
+byte, including all asynchronous-filesystem checks over each runtime module,
+remains exact. The whole owner runs RED then GREEN under the qualified Node,
+serial test execution and original 90000ms file guard. Production, compat helper
+and compat TEST implementations remain unchanged. The earlier Task9 code-to-doc
+comparison missed this consumer and omitted helper return/error details; R1
+corrects those findings without changing approved requirements or proof limits.
+
+
+### Task9 R1 exact shared TEST helper contracts (2026-11-10)
+
+This addendum corrects the earlier acquisition-only descriptions.
+`separate-verdicts-compat-fixtures.mjs` substitutes BOTH `captureEnvironment`
+and `verifyEnvironment` when the generated child loads its selected
+environment.mjs URL. The first returns the fixed synthetic `{environment,
+setupFiles}`; the second returns that synthetic environment without checking
+its arguments or real environment provenance. Actual snapshot/Git/file/identity
+assembly and final byte measurement remain in use. Environment verification
+itself is synthetic in these controls. Production environment.mjs is unchanged.
+No actual environment/Native/public archived-CLI phase qualification follows.
+
+`child(executable,args)` returns a Promise. It spawns with inherited cwd/env,
+ignored stdin and piped stdout/stderr, collects all output chunks, waits for the
+child close event and asserts BOTH stream-end observations and a non-null numeric
+exit code. Success resolves exactly `{exit,stdout,stderr}`: exit is the child's
+numeric exit code; stdout/stderr are strings from Buffer.toString() UTF-8
+decoding. A nonzero numeric exit still resolves that object. A signal exit leaves
+exit null and therefore rejects via the assertion; no signal result is returned.
+Spawn/process errors reject the wait, and assertion/receipt-file errors reject
+the helper. An error-event rejection does not itself guarantee a subsequent
+child close/join. There is no helper-owned timeout, output-size cap, kill or
+automatic teardown. Callers retain their surrounding test/ownership duties.
+Output stream errors have no explicit handler in this helper.
+
+If inherited TINYAZ_COMPAT_EVIDENCE_ROOT is set, child writes exclusive
+`child-<parent-pid>-<counter>.stdout/.stderr/.json` files there before returning.
+The caller must supply an existing evidence directory; the helper creates none.
+Both raw files are fsynced and closed; the JSON receipt is written exclusively
+with writeFile (no separate receipt fsync). It records actual argv/pid/exit,
+BOTH EOF, raw hashes/lengths and raw-file closure. File failures propagate and
+may leave partial evidence; there is no rollback. Without that variable, the
+return object still contains collected strings but no inner raw files are saved.
+
+`snapshotChild(mode,workspaceRoot,protocolPath,extra={},repoRoot=SOURCE)` returns
+a Promise adopting child's result and rejection behavior, and launches the current Node executable with
+a generated module script. Intended string modes are capture and reopen. Only
+the exact string capture selects repoRoot's runtime modules and captureInputs;
+other strings take the archived workspace runtime/reopenInputs branch. There is
+NO closed-mode validator. Unsupported or unserializable arguments may fail during
+script construction/import or the actual owner checks; the helper does not
+normalize them into a new error schema. Default SOURCE is this helper's resolved
+repository root. Requested protocolPath is omitted from options only when it is
+undefined. Options start with workspaceRoot and candidate WORKTREE, then optional
+protocolPath, then extra's shallow-spread fields, which may override those defaults.
+Actual snapshot owners retain their own validation.
+
+The child uses a real lifetime and a 90s BudgetHandle, disposes the budget and
+awaits that same lifetime in finally; it adds no external process-kill timeout.
+For capture, it passes synthetic environment/setupFiles to real captureInputs,
+writes a schema-aware synthetic check manifest and invokes real verifyIdentity
+with the synthetic verifyEnvironment hook. Reopen imports the archived snapshot
+module and runs its real current/frozen/Git/identity checks with synthetic fresh
+captureEnvironment. On successful child completion stdout is one JSON.stringify
+encoding of result.workspace plus the console.log newline, including the selected
+CommonIdentity. The helper does not parse it. Runtime child errors normally
+produce a nonzero numeric result with captured stdout/stderr, rather than a
+parent helper rejection. Callers check exit before parsing successful stdout;
+partial stdout is not a success claim. Partial workspace writes are not removed.
+
+`createCompatRepo(root)` resolves to the string `path.join(root,"repo")`. It
+does not canonicalize or exclusively reserve root. Callers supply a fresh owned
+temporary root. It copies SOURCE's src tree, runtime union, fixed Python modules,
+raw M/model metadata and verification requirements, creates parent directories,
+runs real git init on feat/compat-data, writes the existing source Git-object
+alternates path and symlinks the resolved source node_modules target. The source
+model is copied as bytes, never decoded/executed. Source/dependency/Git-object
+targets are not mutated by these operations. The dependency link does not enforce
+read-only permissions. Existing target files may be overwritten by copyFile;
+a preexisting link or other filesystem/Git failure may reject. Source-row and
+Git-exit assertions also reject. There is no partial-tree rollback or automatic
+cleanup. The returned repoRoot is the path callers pass to snapshotChild's
+repoRoot argument, separate from their workspaceRoot.
+
+`writableRemove(root)` resolves undefined after recursively chmodding directories
+to 0755 and removing root with recursive rm. Descendant symlink directories are
+not traversed. It validates no ownership/confinement/canonical-root property and
+does not join child/lifetime work itself; callers supply the owned existing tree
+and await those debts first. Filesystem errors reject and may leave partial
+permission/removal effects. This TEST-only teardown grants no Native proof.
+
+Task9 and Task10 reuse these exact helpers through the compat TEST entry only.
+No helper or production code changed in R1. The earlier final comparison claim
+was incomplete for these observable helper contracts and the stale count consumer.
+This addendum records the corrected source-to-doc comparison and preserves that
+historical limitation.
+
+
+### Task9 review fix R1 checkpoint (2026-11-10)
+
+Independent review identified one stale wider-roster TEST count and incomplete
+shared TEST helper contracts. The count now follows the approved 126-path union;
+every other private-fs-phase TEST byte/assertion is unchanged. Its whole-owner
+causal RED is 3/4, exit1 at 126!=114; GREEN is 4/4, exit0 and reaches all runtime
+module filesystem checks. Both commands retain actual wait/BOTH EOF, fsynced/
+closed raw files and stable inputs. Their maps differ only in that TEST literal.
+
+The owning browser-evaluation README now states exact helper return/error/IO
+contracts, capture versus reopen branching without a closed-mode validator,
+successful workspace JSON stdout, returned root/repo path, partial failure/
+teardown limits and BOTH environment capture and verification substitutions.
+The earlier acquisition-only wording and final comparison were incomplete.
+Environment provenance in those controls is synthetic; production verification
+is unchanged. Task10 reuses the documented helper via the same compat TEST.
+
+All production and compat helper/TEST implementation bytes remain exact. Prior
+Task9 prefixes/evidence, protected23/M, whole Section3 and approved policy remain
+unchanged. Prior 75/75, Python 85/85 and typecheck 0 are retained results, not rerun
+by R1. Root fresh scoped re-review, wider Task10 and later Native/CLI/runtime/
+cohort releases remain open. No Native/model/browser/phase/network/push occurred.
+Details append to W/`v2-task-9-report.md`; R1 evidence is
+W/`separate-verdicts-implementation-evidence/aa689799-eac0-4fdb-9a51-fabc1b4e01c7/`.

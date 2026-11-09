@@ -5124,3 +5124,41 @@ and any fresh cohort remain open. No Native/browser/model/match/phase execution,
 push, merge, deploy or operational release occurred.
 Report: W/`v2-task-9-report.md`; evidence:
 W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.
+
+
+### Task9 R1 narrow filesystem TEST declaration (2026-11-10)
+
+Before-use Root consumer-count ruling admits only the stale closure count in
+`train/scripts/browser_eval/private-fs-phase.test.mjs`:114 becomes126. Every other
+byte, including all asynchronous-filesystem checks over each runtime module,
+remains exact. The whole owner runs RED then GREEN under the qualified Node,
+serial test execution and original 90000ms file guard. Production, compat helper
+and compat TEST implementations remain unchanged. The earlier Task9 code-to-doc
+comparison missed this consumer and omitted helper return/error details; R1
+corrects those findings without changing approved requirements or proof limits.
+
+
+### Task9 review fix R1 checkpoint (2026-11-10)
+
+Independent review identified one stale wider-roster TEST count and incomplete
+shared TEST helper contracts. The count now follows the approved 126-path union;
+every other private-fs-phase TEST byte/assertion is unchanged. Its whole-owner
+causal RED is 3/4, exit1 at 126!=114; GREEN is 4/4, exit0 and reaches all runtime
+module filesystem checks. Both commands retain actual wait/BOTH EOF, fsynced/
+closed raw files and stable inputs. Their maps differ only in that TEST literal.
+
+The owning browser-evaluation README now states exact helper return/error/IO
+contracts, capture versus reopen branching without a closed-mode validator,
+successful workspace JSON stdout, returned root/repo path, partial failure/
+teardown limits and BOTH environment capture and verification substitutions.
+The earlier acquisition-only wording and final comparison were incomplete.
+Environment provenance in those controls is synthetic; production verification
+is unchanged. Task10 reuses the documented helper via the same compat TEST.
+
+All production and compat helper/TEST implementation bytes remain exact. Prior
+Task9 prefixes/evidence, protected23/M, whole Section3 and approved policy remain
+unchanged. Prior 75/75, Python 85/85 and typecheck 0 are retained results, not rerun
+by R1. Root fresh scoped re-review, wider Task10 and later Native/CLI/runtime/
+cohort releases remain open. No Native/model/browser/phase/network/push occurred.
+Details append to W/`v2-task-9-report.md`; R1 evidence is
+W/`separate-verdicts-implementation-evidence/aa689799-eac0-4fdb-9a51-fabc1b4e01c7/`.
