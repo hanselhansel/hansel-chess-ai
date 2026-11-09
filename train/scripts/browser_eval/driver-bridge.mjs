@@ -28,6 +28,7 @@
 // facade -> methods -> wire -> driver-protocol + pure primitives.
 // Functional runtime input.
 
+import { assertPolicyBinding } from "./evaluation-policy.mjs";
 import {
   copyDeep,
   exactFields,
@@ -70,6 +71,10 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
   if (!strNE(runId)) throw bridgeError("runId");
   if (!isObj(manifest)) throw bridgeError("manifest");
   const manifestCopy = freezeDeep(copyDeep(manifest));
+  const version = manifestCopy.schemaVersion ?? 1;
+  assertPolicyBinding({ schemaVersion: version, evaluationPolicy: manifestCopy.evaluationPolicy ?? null,
+    protocolPath: version === 2 ? "train/fixtures/browser-protocol-v2.json" : "train/fixtures/browser-protocol.json" });
+  if (version === 1 && Object.hasOwn(manifestCopy, "evaluationPolicy")) throw bridgeError("v1 policy");
   if (manifestCopy.runId !== runId) throw bridgeError("manifest runId");
   if (!phases.includes(manifestCopy.phase)) throw bridgeError("manifest phase");
   if (!isH(manifestCopy.commonIdentitySha256))
@@ -164,6 +169,10 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
       throw bridgeError("checks");
     }
     if (!isObj(c.summary)) throw bridgeError("summary");
+    if (version === 2 && ["strengthVerdict", "resourceVerdict", "closureResourceVerdict",
+      "resourceEvidence", "qualityCheckpoint", "supervisorOutcome"].some(key => Object.hasOwn(c.summary, key))) {
+      throw bridgeError("supervisor summary namespace");
+    }
     if (typeof c.analysisEligible !== "boolean") throw bridgeError("analysisEligible");
     return c;
   };
@@ -183,6 +192,7 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     st.pendingStart = pendingStart;
     const flow = (async () => {
       const sendDebt = wire.sendFrame("hello", {
+        ...(version === 2 ? { recordSchemaVersion: 2, evaluationPolicy: manifestCopy.evaluationPolicy } : {}),
         pid: transport.pid,
         phase: manifestCopy.phase,
         commonIdentitySha256: manifestCopy.commonIdentitySha256,

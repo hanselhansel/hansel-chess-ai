@@ -11080,3 +11080,172 @@ wait and temporary-root cleanup UNPROVEN limits remain unchanged. No broad
 cleanup or actual Native/browser/model/match/phase execution occurred. Root's
 fresh scoped review remains required before Task9; archive/driver/CLI and later
 execution-release gates remain open. No push, merge or runtime release.
+
+
+### Task9 before-use selection declarations (2026-11-10)
+
+Task9 reuses the approved evaluation-policy and identity-schema owners.
+`assembleSnapshotIdentity` explicitly defaults protocolPath to the v1 fixture
+and evaluationPolicy to null; explicit v2 requires both exact arguments.
+Capture validates the selected fixture and retains that binding for final
+measurement. Reopen accepts an optional requested protocolPath (v1 default),
+validates workspace/version/policy/ref and actual selected bytes, then rebuilds
+the whole identity with both arguments. Presence of both fixtures selects nothing.
+The prospective fixture preserves every v1 science/limit field.
+
+The new `separate-verdicts-compat.test.mjs` is TEST-only. It owns selection,
+version/policy/driver binding, verified CLI projection and isolated Python
+admission controls. Fresh-process controls execute real snapshot/Git/file/body
+owners with explicitly controlled environment acquisition, never permissive
+identity/graph verification. Every subprocess owns actual wait/BOTH EOF and
+raw files. Synthetic environment facts are not Native qualification.
+The exact new fixture and compat TEST paths were absent before declaration.
+Evidence root is W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.
+Runtime leaves include all Tasks5/6 additions plus Task8 compiler/receipt leaves;
+TEST leaves stay excluded. Task9 source integration remains in progress, with
+Root review and separate execution releases open.
+
+
+Task9 Root mechanical rulings, declared before use: the complete plain const
+S2D_FIELDS object moves unchanged from driver-bridge-wire.mjs into existing
+driver-protocol.mjs, with one internal export/import. V1 arrays/order stay exact;
+v2 start extends a fresh field array. Same callback/debt/lifecycle references.
+The narrowly admitted snapshots.test.mjs updates only the obsolete114/sorted
+union assertion to original-prefix/exact12-additions/unique/files checks, writes
+valid selected protocol DATA in its complete fixture and supplies exact new AST
+bootstrap import bindings. All new behaviors belong to compat.test.
+watchdog-runtime.mjs changes only the existing actual start-envelope construction
+(the other start literal is its bounded-wait label) to carry exact v2 policy and
+version. Both top-level and nested execution reach this same constructor.
+Causal producer controls execute its actual extracted body against strict protocol
+validation; no callback, wait, bound, STOP or debt changes. No new source path.
+
+
+Task9 capacity declaration before creation: `separate-verdicts-compat-fixtures.mjs`
+is TEST-only. It exports `child(executable,args)` (actual child exit/BOTH EOF,
+optional fsynced/closed raw/hash receipts under the inherited TEST evidence root),
+`snapshotChild(mode,workspaceRoot,protocolPath,extra={},repoRoot=SOURCE)`
+(actual current/archived snapshot owners in a fresh process, controlled
+environment-acquisition module hook only), `createCompatRepo(root)` (new temporary
+Git worktree-shaped repository, actual runtime/source/Python/model byte copies,
+shared read-only dependency link and existing baseline-object alternates), and
+`writableRemove(root)` (only owned temporary-tree teardown after child closure).
+No model decoding, Native, browser, phase, proof/graph verifier substitute or
+production options are created. Real environment/archived CLI qualification stays
+open. Task9 and Task10 reuse this helper through the single compat TEST roster
+entry. It is excluded from RUNTIME_PATHS. Failed controls remain retained.
+
+
+### Task9 explicit selection integration checkpoint (2026-11-10)
+
+Local Task9 integration now selects v2 only through the exact prospective
+`train/fixtures/browser-protocol-v2.json` and closed approved policy. V1 remains
+the omitted identity/reopen default; public command syntax still requires its
+existing explicit --protocol value. Both fixtures being present selects nothing.
+Capture, final measurement, independent reopen, manifest/monitor setup, driver
+hello/start and verified CLI projection retain the selected identity. The runtime
+union preserves the original114 paths/order and appends exactly12 inputs,
+including both Task8 runtime leaves; TEST helpers remain excluded.
+
+The final exact seven-owner scripted Node roster passed75/75. Isolated pinned
+Python tests passed58+19+8, and qualified Node24.22.2 typecheck exited0. Actual
+command wait/BOTH EOF, fsynced/closed raw files and stable source maps are retained.
+Fresh-process controls use actual archived snapshot/Git/file/final measurement
+owners, with synthetic environment acquisition through a TEST module hook.
+They prove selected v1/v2 roundtrips and fail-closed byte/path/policy/version/hash
+binding, including current-byte drift in fresh temporary repos. They do not
+qualify the real environment, archived public CLI phase or Native behavior.
+The one actual supervisor start constructor is covered against strict v1/v2
+validation. Its other start literal is the unchanged bounded-wait label.
+
+Causal REDs and failed setup attempts remain preserved. Prior Task8 worker-wait
+and temporary-root cleanup UNPROVEN limits remain unchanged. Historical failed
+cohorts remain ineligible; no model, statistics, science or bound changed.
+Root's independent scoped review, later whole-change/control/runtime releases
+and any fresh cohort remain open. No Native/browser/model/match/phase execution,
+push, merge, deploy or operational release occurred.
+Report: W/`v2-task-9-report.md`; evidence:
+W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.
+
+
+### Task9 current selection APIs and boundaries
+
+`assembleSnapshotIdentity({...inputs,protocolPath=FIXTURE_PATHS.protocol,
+evaluationPolicy=null})` requires the exact v2 path and V2_POLICY together.
+It resolves the selected protocol ref from actual harness inventory, includes
+policy only for v2, validates CommonIdentity and returns the same frozen shape.
+`captureInputs({candidate,protocolPath,workspaceRoot,environment,setupFiles,
+evaluationPolicy?},context)` retains the old required arguments; v1 may omit
+policy or pass null. V2 must explicitly pass the exact policy. The operational
+bootstrap derives it from validateProtocolFixture/policyForProtocol over the
+explicit current path before environment acquisition. Direct capture validates
+selected fixture contents/policy before frozen writes. Unknown path/version,
+missing/mixed policy or changed inputs fail closed with the existing
+RUN_INVALID/SNAPSHOT_UNAVAILABLE/FIXTURE_INVALID/SCHEMA_* boundaries.
+
+`reopenInputs({workspaceRoot,candidate,protocolPath?},context)` and
+`inspectReopenedInputs` default only the omitted requested path to v1. Workspace
+is read/validated first. Version, policy, selected ref/path, actual frozen hash
+and current selected bytes must agree before independent identity assembly.
+Both selected arguments are passed explicitly into that assembly, and whole
+identity equality remains mandatory. Genuine fresh environment capture and
+after-await current/frozen/path rechecks remain production requirements.
+`verifyIdentity` repeats the explicit selection from validated expected identity,
+checks fixture/manifest/workspace version and policy and measures all retained
+bytes with the existing mandatory environment verifier and original lifetime.
+The constant RUNTIME_PATHS union is append-only; actual inventories sort a copy.
+All126 runtime inputs are archived, including the v2 compiler/receipt helpers.
+
+`manifestFor` uses the validated workspace schema and adds policy only for2.
+The same schema/policy configures monitor phase and driver protocol; nested
+selftest reuses the parent monitor. `createProtocolValidator({runId,
+recordSchemaVersion=1,evaluationPolicy=null})` detaches its private expected
+policy after exact validation. V1 envelopes stay closed and unchanged. V2 driver
+hello/start add exactly recordSchemaVersion2/evaluationPolicy, while ipcVersion,
+collector wire, backend identities and Native helpers remain1/unchanged.
+The plain S2D_FIELDS declaration now belongs to driver-protocol.mjs and is
+imported by wire; its original v1 arrays/order/lookup are unchanged. The real
+start constructor in watchdog-runtime adds fields only for a v2 workspace.
+
+`executeDriver` validates workspace/manifest version, policy and whole identity
+hash, then selected archived protocol ref/hash/contents/policy before scratch
+or SDK startup. Bridge hello/start bind that validated manifest; the existing
+PhaseResult remains an untrusted closed request. Reserved supervisor verdict,
+resource evidence, quality checkpoint and supervisorOutcome summary fields
+reject. Actual callbacks, SDK/body closure, finish/STOP/CLOSED and debts retain
+their original owners and waits. No driver verdict becomes final authority.
+
+CLI's private projectOutcome copies only the actual Watchdog verified v2 outcome
+fields: schemaVersion,policyId,status,exitCode,stopReason,strengthVerdict,
+resourceVerdict,closureResourceVerdict,completionRef. It requires a published
+completion for this projection, preserves actual exit2 for eligible/inconclusive,
+and creates no verdict for bootstrap/graph/publication fallback. No flag/alias,
+automatic chain or relaxed mode is added. Synthetic projection tests do not
+create an authoritative eligible graph; genuine graph compilation remains Task8.
+
+Python public bootstrap recognizes only the exact v1/v2 relative or repository
+absolute paths. `validate_selection(workspace,protocol_path,protocol)` returns
+the strictly bound version; `validate_manifest_selection(workspace,manifest,
+version)` requires matching version/policy and canonical CommonIdentity hash.
+Actual selected frozen ref/hash/current bytes and all prior inventory, runtime
+and wrapper checks precede public archived-CLI exec under the original90s end.
+Errors retain PARITY_BOOTSTRAP_INVALID. The isolated --reference-child branch
+and private FD3 ACK/six-module/model gate are unchanged; its actual parent still
+validates the manifest. No direct child-only policy qualification is claimed.
+
+TEST evidence: compat-fixtures child() waits for actual exit plus BOTH EOF before
+returning; the inherited TEST-only TINYAZ_COMPAT_EVIDENCE_ROOT retains exclusive
+raw/hash receipts after fsync/close. snapshotChild has only an environment module
+hook; all snapshot/Git/byte/lifetime/final measurement code is actual. Temporary
+repo copies isolate current-file tampering and share only read-only dependency
+links/existing Git objects. writableRemove runs after child closure and never
+follows these links. The original three setup-failure command attempts preceded
+per-inner-child raw receipt capture; their coordinator raw/exit/BOTH EOF and
+asserted child joins remain, but separate inner raw receipts are unavailable.
+Later controls retain each child receipt. These are scripted coordinator/body
+proofs, not independent Native actor receipts or a real environment/CLI phase.
+
+Final code-to-doc comparison checked selected arguments/defaults, exact ref/hash
+binding,126-path closure and TEST exclusions, one-site producer/versioned wire,
+pre-SDK validation, actual verified CLI authority/exit, Python public/private
+boundaries and original closure/limit semantics. No unresolved mismatch found.

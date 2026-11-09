@@ -90,6 +90,50 @@ def check_ref(root, ref, readonly=False):
     return raw
 
 
+V1_PROTOCOL = "train/fixtures/browser-protocol.json"
+V2_PROTOCOL = "train/fixtures/browser-protocol-v2.json"
+V2_POLICY = {"policyId": "tinyaz-separate-verdicts-v2", "recordSchemaVersion": 2, "softPhase": "compare"}
+
+
+def validate_selection(workspace, protocol_path, protocol):
+    identity = workspace["commonIdentity"]
+    version = workspace["schemaVersion"]
+    if type(version) is not int or version not in (1, 2):
+        fail("workspace version")
+    expected_path = V1_PROTOCOL if version == 1 else V2_PROTOCOL
+    if protocol_path != expected_path or identity["fixtures"]["protocol"]["path"] != expected_path:
+        fail("requested protocol binding")
+    if type(protocol.get("schemaVersion")) is not int or protocol["schemaVersion"] != version:
+        fail("protocol version")
+    expected_keys = {"schemaVersion", "conventions", "limits", "requiredCheckIds", "preflight", "comparison"}
+    if version == 2:
+        expected_keys.add("evaluationPolicy")
+        for value in (identity, protocol):
+            policy = value.get("evaluationPolicy")
+            if policy != V2_POLICY or type(policy.get("recordSchemaVersion")) is not int:
+                fail("exact v2 policy")
+    elif "evaluationPolicy" in identity or "evaluationPolicy" in protocol:
+        fail("v1 policy")
+    if set(protocol) != expected_keys:
+        fail("protocol fields")
+    return version
+
+
+def validate_manifest_selection(workspace, manifest, version):
+    if type(manifest.get("schemaVersion")) is not int or manifest["schemaVersion"] != version:
+        fail("manifest version")
+    if version == 2:
+        policy = manifest.get("evaluationPolicy")
+        if policy != V2_POLICY or type(policy.get("recordSchemaVersion")) is not int:
+            fail("manifest policy")
+    elif "evaluationPolicy" in manifest:
+        fail("v1 manifest policy")
+    identity_bytes = (json.dumps(workspace["commonIdentity"], sort_keys=True,
+                      separators=(",", ":"), ensure_ascii=False) + "\n").encode()
+    if manifest.get("commonIdentitySha256") != hashlib.sha256(identity_bytes).hexdigest():
+        fail("manifest identity hash")
+
+
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if "--reference-child" in argv:
@@ -112,10 +156,17 @@ def main(argv=None):
     workspace = args.out
     if not workspace.is_absolute() or workspace.resolve() != workspace:
         fail("absolute canonical workspace")
-    protocol_path = Path("train/fixtures/browser-protocol.json")
-    if args.protocol not in (str(protocol_path), str(repo / protocol_path)):
+    selected = {value: name for name in (V1_PROTOCOL, V2_PROTOCOL)
+                for value in (name, str(repo / name))}
+    if args.protocol not in selected:
         fail("fixed protocol")
+    protocol_path = Path(selected[args.protocol])
     frozen = decode(read_file(workspace / "workspace.json", 1048576, True))
+    protocol_ref = frozen["commonIdentity"]["fixtures"]["protocol"]
+    selected_bytes = check_ref(workspace / "inputs/harness", protocol_ref, True)
+    if read_file(repo / protocol_path, 1048576) != selected_bytes:
+        fail("requested protocol bytes")
+    version = validate_selection(frozen, str(protocol_path), decode(selected_bytes))
     identity = frozen["commonIdentity"]
     candidate = identity["candidate"]
     if args.candidate == "WORKTREE":
@@ -134,6 +185,7 @@ def main(argv=None):
         if candidate["kind"] != "commit" or candidate["commit"] != resolved.stdout.decode().strip():
             fail("requested commit binding")
     manifest = decode(read_file(workspace / "check/manifest.json", 1048576))
+    validate_manifest_selection(frozen, manifest, version)
     if manifest["phase"] != "check" or manifest["workspaceId"] != frozen["workspaceId"]:
         fail("retained check workspace")
     # The archived supervisor independently validates the complete receipt

@@ -278,6 +278,8 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
         state.channel.send(
           "start",
           {
+            ...(config.workspace.schemaVersion === 2 ? { recordSchemaVersion: 2,
+              evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy } : {}),
             manifestPath: config.manifestPath,
             commonIdentitySha256: config.commonIdentitySha256,
           },

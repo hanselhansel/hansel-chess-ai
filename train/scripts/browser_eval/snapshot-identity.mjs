@@ -1,5 +1,6 @@
 // Pure immutable-input identity assembly. Original paths feed inventories;
 // model bytes are checked as data only, with no decoder or inference.
+import { assertPolicyBinding } from "./evaluation-policy.mjs";
 import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertCommonIdentity } from "./identity-schema.mjs";
 import { assertArtifactRef, freezeDeep } from "./schema-primitives.mjs";
@@ -47,10 +48,12 @@ export function inventoryDigest(refs) {
 
 export function assembleSnapshotIdentity({
   candidate, baselineFiles, candidateFiles, harnessFiles, pythonFiles, environment,
+  protocolPath = FIXTURE_PATHS.protocol, evaluationPolicy = null,
 }) {
+  assertPolicyBinding({ schemaVersion: evaluationPolicy === null ? 1 : 2, evaluationPolicy, protocolPath });
   const harness = sorted(harnessFiles);
   const fixtures = Object.fromEntries(Object.entries(FIXTURE_PATHS).map(([name, filename]) => {
-    const ref = harness.find((f) => f.path === filename);
+    const ref = harness.find((f) => f.path === (name === "protocol" ? protocolPath : filename));
     if (ref === undefined) {
       throw fail("missing fixture input");
     }
@@ -67,6 +70,7 @@ export function assembleSnapshotIdentity({
       requestPath: "/weights/tinyaz-s.bin", responseSha256: MODEL_IDENTITY.sha256,
       provenance: "controlled-delivery-plus-ready",
     },
+    ...(evaluationPolicy === null ? {} : { evaluationPolicy: structuredClone(evaluationPolicy) }),
     conventions: structuredClone(PROTOCOL_IDS),
     environment: structuredClone(environment),
   };

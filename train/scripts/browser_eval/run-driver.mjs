@@ -1,5 +1,8 @@
 // Archived child process assembly. The supervisor alone authorizes Native
 // identities and physical signals. This owner closes public SDK resources.
+import { policyForProtocol, assertPolicyBinding } from "./evaluation-policy.mjs";
+import { validateProtocolFixture } from "./phase-fixtures.mjs";
+import { deepEqual } from "./schema-primitives.mjs";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { privateFs as fsp } from "./private-fs.mjs";
@@ -149,10 +152,20 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
     }
     const workspace = freezeDeep(parseCanonicalBytes(await reader.readAt(workspaceRoot, "workspace.json", true)));
     assertRecord("workspace", workspace);
-    if (workspace.workspaceId !== manifest.workspaceId ||
+    if (workspace.schemaVersion !== manifest.schemaVersion ||
+      !deepEqual(workspace.commonIdentity.evaluationPolicy ?? null, manifest.evaluationPolicy ?? null) ||
+      workspace.workspaceId !== manifest.workspaceId ||
       sha256Bytes(canonicalBytes(workspace.commonIdentity)) !== manifest.commonIdentitySha256) {
       throw new Error("RUN_INVALID manifest/workspace identity");
     }
+    const protocolPath = workspace.commonIdentity.fixtures.protocol.path;
+    const evaluationPolicy = workspace.commonIdentity.evaluationPolicy ?? null;
+    assertPolicyBinding({ schemaVersion: manifest.schemaVersion, evaluationPolicy, protocolPath });
+    const protocolBytes = await reader.readAt(workspaceRoot, `inputs/harness/${protocolPath}`, true);
+    if (!deepEqual(workspace.commonIdentity.fixtures.protocol, { path: protocolPath,
+      byteLength: protocolBytes.length, sha256: sha256Bytes(protocolBytes) })) throw new Error("RUN_INVALID protocol ref");
+    const selectedProtocol = validateProtocolFixture(parseJSONBytes(protocolBytes));
+    if (!deepEqual(policyForProtocol(selectedProtocol, protocolPath), evaluationPolicy)) throw new Error("RUN_INVALID protocol policy");
     const scratch = path.join(workspaceRoot, path.dirname(manifestRel), "driver-tmp");
     await reader.call("driver scratch directory", () => fsp.mkdir(scratch, { mode: 0o700 }));
     const scratchReal = await reader.call("driver scratch canonical path", () => fsp.realpath(scratch));
@@ -204,8 +217,8 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
       // child receipt. Native cleanup may terminate both child and driver.
     } else {
       const fixtureReader = reader;
-      const fixtures = {};
-      for (const [name, file] of [["protocol", "browser-protocol.json"], ["openings", "browser-openings.json"], ["parity", "browser-parity.json"]]) {
+      const fixtures = { protocol: selectedProtocol };
+      for (const [name, file] of [["openings", "browser-openings.json"], ["parity", "browser-parity.json"]]) {
         fixtures[name] = parseJSONBytes(await fixtureReader.readAt(workspaceRoot,
           `inputs/harness/train/fixtures/${file}`, true));
       }

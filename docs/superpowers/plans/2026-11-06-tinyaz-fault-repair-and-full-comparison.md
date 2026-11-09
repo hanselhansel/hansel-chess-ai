@@ -1381,3 +1381,89 @@ wait and temporary-root cleanup UNPROVEN limits remain unchanged. No broad
 cleanup or actual Native/browser/model/match/phase execution occurred. Root's
 fresh scoped review remains required before Task9; archive/driver/CLI and later
 execution-release gates remain open. No push, merge or runtime release.
+
+
+### Task9 before-use selection declarations (2026-11-10)
+
+Task9 reuses the approved evaluation-policy and identity-schema owners.
+`assembleSnapshotIdentity` explicitly defaults protocolPath to the v1 fixture
+and evaluationPolicy to null; explicit v2 requires both exact arguments.
+Capture validates the selected fixture and retains that binding for final
+measurement. Reopen accepts an optional requested protocolPath (v1 default),
+validates workspace/version/policy/ref and actual selected bytes, then rebuilds
+the whole identity with both arguments. Presence of both fixtures selects nothing.
+The prospective fixture preserves every v1 science/limit field.
+
+The new `separate-verdicts-compat.test.mjs` is TEST-only. It owns selection,
+version/policy/driver binding, verified CLI projection and isolated Python
+admission controls. Fresh-process controls execute real snapshot/Git/file/body
+owners with explicitly controlled environment acquisition, never permissive
+identity/graph verification. Every subprocess owns actual wait/BOTH EOF and
+raw files. Synthetic environment facts are not Native qualification.
+The exact new fixture and compat TEST paths were absent before declaration.
+Evidence root is W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.
+Runtime leaves include all Tasks5/6 additions plus Task8 compiler/receipt leaves;
+TEST leaves stay excluded. Task9 source integration remains in progress, with
+Root review and separate execution releases open.
+
+
+Task9 Root mechanical rulings, declared before use: the complete plain const
+S2D_FIELDS object moves unchanged from driver-bridge-wire.mjs into existing
+driver-protocol.mjs, with one internal export/import. V1 arrays/order stay exact;
+v2 start extends a fresh field array. Same callback/debt/lifecycle references.
+The narrowly admitted snapshots.test.mjs updates only the obsolete114/sorted
+union assertion to original-prefix/exact12-additions/unique/files checks, writes
+valid selected protocol DATA in its complete fixture and supplies exact new AST
+bootstrap import bindings. All new behaviors belong to compat.test.
+watchdog-runtime.mjs changes only the existing actual start-envelope construction
+(the other start literal is its bounded-wait label) to carry exact v2 policy and
+version. Both top-level and nested execution reach this same constructor.
+Causal producer controls execute its actual extracted body against strict protocol
+validation; no callback, wait, bound, STOP or debt changes. No new source path.
+
+
+Task9 capacity declaration before creation: `separate-verdicts-compat-fixtures.mjs`
+is TEST-only. It exports `child(executable,args)` (actual child exit/BOTH EOF,
+optional fsynced/closed raw/hash receipts under the inherited TEST evidence root),
+`snapshotChild(mode,workspaceRoot,protocolPath,extra={},repoRoot=SOURCE)`
+(actual current/archived snapshot owners in a fresh process, controlled
+environment-acquisition module hook only), `createCompatRepo(root)` (new temporary
+Git worktree-shaped repository, actual runtime/source/Python/model byte copies,
+shared read-only dependency link and existing baseline-object alternates), and
+`writableRemove(root)` (only owned temporary-tree teardown after child closure).
+No model decoding, Native, browser, phase, proof/graph verifier substitute or
+production options are created. Real environment/archived CLI qualification stays
+open. Task9 and Task10 reuse this helper through the single compat TEST roster
+entry. It is excluded from RUNTIME_PATHS. Failed controls remain retained.
+
+
+### Task9 explicit selection integration checkpoint (2026-11-10)
+
+Local Task9 integration now selects v2 only through the exact prospective
+`train/fixtures/browser-protocol-v2.json` and closed approved policy. V1 remains
+the omitted identity/reopen default; public command syntax still requires its
+existing explicit --protocol value. Both fixtures being present selects nothing.
+Capture, final measurement, independent reopen, manifest/monitor setup, driver
+hello/start and verified CLI projection retain the selected identity. The runtime
+union preserves the original114 paths/order and appends exactly12 inputs,
+including both Task8 runtime leaves; TEST helpers remain excluded.
+
+The final exact seven-owner scripted Node roster passed75/75. Isolated pinned
+Python tests passed58+19+8, and qualified Node24.22.2 typecheck exited0. Actual
+command wait/BOTH EOF, fsynced/closed raw files and stable source maps are retained.
+Fresh-process controls use actual archived snapshot/Git/file/final measurement
+owners, with synthetic environment acquisition through a TEST module hook.
+They prove selected v1/v2 roundtrips and fail-closed byte/path/policy/version/hash
+binding, including current-byte drift in fresh temporary repos. They do not
+qualify the real environment, archived public CLI phase or Native behavior.
+The one actual supervisor start constructor is covered against strict v1/v2
+validation. Its other start literal is the unchanged bounded-wait label.
+
+Causal REDs and failed setup attempts remain preserved. Prior Task8 worker-wait
+and temporary-root cleanup UNPROVEN limits remain unchanged. Historical failed
+cohorts remain ineligible; no model, statistics, science or bound changed.
+Root's independent scoped review, later whole-change/control/runtime releases
+and any fresh cohort remain open. No Native/browser/model/match/phase execution,
+push, merge, deploy or operational release occurred.
+Report: W/`v2-task-9-report.md`; evidence:
+W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.

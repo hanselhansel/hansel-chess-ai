@@ -4,6 +4,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bootstrapWorkspace, runSupervisor, runDriver } from "./run.mjs";
 
+// Only the Watchdog's published, independently verified outcome supplies
+// verdicts. This projection cannot create verdicts from a driver request.
+const projectOutcome = (outcome) => {
+  if (outcome.schemaVersion !== 2) return outcome;
+  if (outcome.completionRef === null || outcome.completionRef === undefined) {
+    throw new Error("verified v2 outcome requires published completion");
+  }
+  const { schemaVersion, policyId, status, exitCode, stopReason, strengthVerdict,
+    resourceVerdict, closureResourceVerdict, completionRef } = outcome;
+  return { schemaVersion, policyId, status, exitCode, stopReason, strengthVerdict,
+    resourceVerdict, closureResourceVerdict, completionRef };
+};
+
 // Passive post-return diagnostics only. No timer, wait, proof or status work.
 const reportActiveResourceTypes = () => {
   try {
@@ -78,7 +91,7 @@ try {
       }
       const outcome = await runSupervisor(options);
       reportActiveResourceTypes();
-      process.stdout.write(`${JSON.stringify(outcome)}\n`);
+      process.stdout.write(`${JSON.stringify(projectOutcome(outcome))}\n`);
       process.exitCode = outcome.exitCode;
     } else {
       const launch = await bootstrapWorkspace(options);

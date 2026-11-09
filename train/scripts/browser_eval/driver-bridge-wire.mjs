@@ -34,7 +34,7 @@
 // second queue/debt/ledger/proof/status/clock/globaljoin.
 
 import { canonicalBytes } from "./canonical-json.mjs";
-import { bridgeError, defer, createDriverBridgeActual } from "./driver-protocol.mjs";
+import { bridgeError, defer, createDriverBridgeActual, S2D_FIELDS } from "./driver-protocol.mjs";
 import {
   copyDeep,
   eq,
@@ -53,13 +53,7 @@ import { freezeDeep } from "./schema-primitives.mjs";
 const IPC = FIXED_LIMITS.ipc;
 const TIMING = FIXED_LIMITS.timing;
 const BASE = ["ipcVersion", "runId", "seq", "type"];
-const S2D_FIELDS = {
-  start: ["manifestPath", "commonIdentitySha256"],
-  registered: ["requestId", "identity", "listener"],
-  begun: ["operationId", "remainingMs"],
-  recorded: ["recordId", "recordSeq", "ref"],
-  stop: ["stopReason", "cleanupRemainingMs"],
-};
+
 
 // The shared bridgeError/defer helpers live in driver-protocol.mjs —
 // imported above for local use and re-exported as the IDENTICAL
@@ -244,7 +238,8 @@ export function createDriverBridgeWire(ctx) {
       st.pendingStart = null;
       if (
         msg.manifestPath !== st.startPath ||
-        msg.commonIdentitySha256 !== manifestCopy.commonIdentitySha256
+        msg.commonIdentitySha256 !== manifestCopy.commonIdentitySha256 ||
+        (manifestCopy.schemaVersion === 2 && (msg.recordSchemaVersion !== 2 || !eq(msg.evaluationPolicy, manifestCopy.evaluationPolicy)))
       ) {
         throw bridgeError("start binding");
       }
@@ -330,7 +325,8 @@ export function createDriverBridgeWire(ctx) {
     try {
       if (!isObj(msg)) throw bridgeError("frame");
       const fields = S2D_FIELDS[msg.type];
-      if (fields === undefined || !exactFields(msg, [...BASE, ...fields]))
+      const versionFields = msg.type === "start" && manifestCopy.schemaVersion === 2 ? ["recordSchemaVersion", "evaluationPolicy"] : [];
+      if (fields === undefined || !exactFields(msg, [...BASE, ...fields, ...versionFields]))
         throw bridgeError("fields");
       if (msg.ipcVersion !== 1) throw bridgeError("ipcVersion");
       if (msg.runId !== runId) throw bridgeError("runId");

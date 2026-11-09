@@ -288,3 +288,35 @@ wait and temporary-root cleanup UNPROVEN limits remain unchanged. No broad
 cleanup or actual Native/browser/model/match/phase execution occurred. Root's
 fresh scoped review remains required before Task9; archive/driver/CLI and later
 execution-release gates remain open. No push, merge or runtime release.
+
+
+### Task9 explicit selection integration checkpoint (2026-11-10)
+
+Local Task9 integration now selects v2 only through the exact prospective
+`train/fixtures/browser-protocol-v2.json` and closed approved policy. V1 remains
+the omitted identity/reopen default; public command syntax still requires its
+existing explicit --protocol value. Both fixtures being present selects nothing.
+Capture, final measurement, independent reopen, manifest/monitor setup, driver
+hello/start and verified CLI projection retain the selected identity. The runtime
+union preserves the original114 paths/order and appends exactly12 inputs,
+including both Task8 runtime leaves; TEST helpers remain excluded.
+
+The final exact seven-owner scripted Node roster passed75/75. Isolated pinned
+Python tests passed58+19+8, and qualified Node24.22.2 typecheck exited0. Actual
+command wait/BOTH EOF, fsynced/closed raw files and stable source maps are retained.
+Fresh-process controls use actual archived snapshot/Git/file/final measurement
+owners, with synthetic environment acquisition through a TEST module hook.
+They prove selected v1/v2 roundtrips and fail-closed byte/path/policy/version/hash
+binding, including current-byte drift in fresh temporary repos. They do not
+qualify the real environment, archived public CLI phase or Native behavior.
+The one actual supervisor start constructor is covered against strict v1/v2
+validation. Its other start literal is the unchanged bounded-wait label.
+
+Causal REDs and failed setup attempts remain preserved. Prior Task8 worker-wait
+and temporary-root cleanup UNPROVEN limits remain unchanged. Historical failed
+cohorts remain ineligible; no model, statistics, science or bound changed.
+Root's independent scoped review, later whole-change/control/runtime releases
+and any fresh cohort remain open. No Native/browser/model/match/phase execution,
+push, merge, deploy or operational release occurred.
+Report: W/`v2-task-9-report.md`; evidence:
+W/`separate-verdicts-implementation-evidence/63022b8a-a92e-4059-82d9-3aaa1257fdc8/`.

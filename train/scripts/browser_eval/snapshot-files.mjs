@@ -121,7 +121,19 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/watchdog.mjs",
   "train/scripts/browser_eval/workbench-fixture.mjs",
   "train/scripts/browser_eval/workspace-footprint.mjs",
-  "train/scripts/check_browser_parity.py"
+  "train/scripts/check_browser_parity.py",
+  "train/fixtures/browser-protocol-v2.json",
+  "train/scripts/browser_eval/evaluation-policy.mjs",
+  "train/scripts/browser_eval/resource-quality.mjs",
+  "train/scripts/browser_eval/verdicts-v2.mjs",
+  "train/scripts/browser_eval/record-fields.mjs",
+  "train/scripts/browser_eval/record-schema-v2.mjs",
+  "train/scripts/browser_eval/receipt-verdicts-v2.mjs",
+  "train/scripts/browser_eval/process-runtime-start.mjs",
+  "train/scripts/browser_eval/watchdog-resource-policy.mjs",
+  "train/scripts/browser_eval/watchdog-verdict-policy.mjs",
+  "train/scripts/browser_eval/record-finalization-v2.mjs",
+  "train/scripts/browser_eval/receipt-verification-v2.mjs",
 ]);
 
 const fail = (detail) => {

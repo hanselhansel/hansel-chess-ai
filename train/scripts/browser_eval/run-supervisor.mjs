@@ -26,7 +26,9 @@ const clock = { setTimeout, clearTimeout };
 const handle = (deadlineMonoMs) => createBudgetHandle({ deadlineMonoMs, clock, nowMonoMs: now });
 const refFor = (filename, bytes) => ({ path: filename, byteLength: bytes.length, sha256: sha256Bytes(bytes) });
 const manifestFor = ({ phase, runId, workspace, inputs, prerequisites, owner = null }) => ({
-  schemaVersion: 1, workspaceId: workspace.workspaceId, runId, phase,
+  schemaVersion: workspace.schemaVersion,
+  ...(workspace.schemaVersion === 2 ? { evaluationPolicy: workspace.commonIdentity.evaluationPolicy } : {}),
+  workspaceId: workspace.workspaceId, runId, phase,
   commonIdentitySha256: sha256Bytes(canonicalBytes(workspace.commonIdentity)),
   inputs, limits: FIXED_LIMITS, requiredCheckIds: REQUIRED_CHECK_IDS[phase], prerequisites, owner,
 });
@@ -63,7 +65,9 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
     const nativeHorizon = createNativeHorizon();
     detach = nativeHorizon.reader.subscribe((bound) => phaseBudget.narrow(bound));
     const runId = `${phase}-${randomUUID()}`;
-    const protocol = createProtocolValidator({ runId });
+    const driverBinding = workspace.schemaVersion === 2 ? { recordSchemaVersion: 2,
+      evaluationPolicy: workspace.commonIdentity.evaluationPolicy } : {};
+    const protocol = createProtocolValidator({ runId, ...driverBinding });
     const environment = workspace.commonIdentity.environment;
     const harnessRoot = path.join(workspaceRoot, "inputs/harness");
     const cli = path.join(harnessRoot, "train/scripts/browser_eval/cli.mjs");
@@ -71,7 +75,8 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
       pythonExecutable: environment.python.runtime.invocationPath,
       helperPath: path.join(harnessRoot, "train/scripts/browser_eval/process-macos.py"),
       recordRoot: harnessRoot, protocol, horizon: nativeHorizon.reader, lifetime,
-      expectedBackendIdentity: environment.monitoring });
+      expectedBackendIdentity: environment.monitoring,
+      ...(workspace.schemaVersion === 2 ? { phase, evaluationPolicy: workspace.commonIdentity.evaluationPolicy } : {}) });
     const footprint = createFootprintObserver({ workspaceRoot });
     const store = createArtifactStore({ workspaceRoot, lifetime, monotonicNow: now,
       readFootprint: () => issueActual(lifetime.retainActual, () => footprint.readFootprint()) });
@@ -124,7 +129,7 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
       const nestedCleanup = createCleanupController({ runId: nestedId, monitor, lifetime,
         recordEvent: (event) => nestedRecorder.current.appendEvent(event) });
       const nested = makeRun({ manifest: nestedManifest,
-        runProtocol: createProtocolValidator({ runId: nestedId }), cleanup: nestedCleanup, internalContext: context });
+        runProtocol: createProtocolValidator({ runId: nestedId, ...driverBinding }), cleanup: nestedCleanup, internalContext: context });
       nestedRecorder.current = nested.recorder;
       await createWatchdog(nested.options).run();
       const current = handle(Number(context.deadlineMonoNs / 1000000n));

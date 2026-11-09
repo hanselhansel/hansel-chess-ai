@@ -1,9 +1,11 @@
 // Fresh-process admission of an existing immutable workspace. Expected
 // hashes are never imported as proof. Every binding is reconstructed from
 // actual files/Git and a genuine new-owner environment capture.
+import { policyForProtocol, assertPolicyBinding } from "./evaluation-policy.mjs";
+import { validateProtocolFixture } from "./phase-fixtures.mjs";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { captureEnvironment } from "./environment.mjs";
 import { exactFields, isAbs, isObj, strNE } from "./protocol-values.mjs";
 import { assertRecord } from "./record-schema.mjs";
@@ -27,12 +29,14 @@ const refFor = (filename, bytes) => ({ path: filename, byteLength: bytes.length,
 const original = (refs, role) => refs.map((ref) => ({ ...ref, path: ref.path.slice(`inputs/${role}/`.length) }));
 
 export async function inspectReopenedInputs(options, context) {
-  if (!isObj(options) || !exactFields(options, ["workspaceRoot", "candidate"]) ||
+  if (!isObj(options) || !exactFields(options, ["workspaceRoot", "candidate",
+    ...(Object.hasOwn(options ?? {}, "protocolPath") ? ["protocolPath"] : [])]) ||
     !isAbs(options.workspaceRoot) || !strNE(options.candidate) || options.candidate.length > 200 ||
     !isObj(context) || !exactFields(context, ["repoRoot", "budget", "lifetime"]) || !isAbs(context.repoRoot)) {
     throw fail("arguments");
   }
-  const own = Object.freeze({ workspaceRoot: options.workspaceRoot, candidate: options.candidate });
+  const own = Object.freeze({ workspaceRoot: options.workspaceRoot, candidate: options.candidate,
+    protocolPath: options.protocolPath ?? FIXTURE_PATHS.protocol });
   context = Object.freeze({ repoRoot: context.repoRoot, budget: context.budget, lifetime: context.lifetime });
   const config = Object.freeze({ ...context, workspaceRoot: own.workspaceRoot });
   const resources = Object.freeze({ budget: context.budget, lifetime: context.lifetime });
@@ -41,6 +45,15 @@ export async function inspectReopenedInputs(options, context) {
   const workspace = parseCanonicalBytes(await files.readFrozen("workspace.json"));
   assertRecord("workspace", workspace);
   const expected = workspace.commonIdentity;
+  const protocolPath = own.protocolPath;
+  const evaluationPolicy = expected.evaluationPolicy ?? null;
+  assertPolicyBinding({ schemaVersion: workspace.schemaVersion, evaluationPolicy, protocolPath });
+  if (expected.fixtures.protocol.path !== protocolPath) throw fail("requested protocol binding");
+  const frozenProtocol = await files.readFrozen(`inputs/harness/${protocolPath}`);
+  if (!deepEqual(refFor(protocolPath, frozenProtocol), expected.fixtures.protocol) ||
+    !(await files.readActive(protocolPath)).equals(frozenProtocol)) throw fail("selected protocol bytes");
+  const protocol = validateProtocolFixture(parseJSONBytes(frozenProtocol));
+  if (!deepEqual(policyForProtocol(protocol, protocolPath), evaluationPolicy)) throw fail("selected protocol policy");
   const git = async (args) => {
     const result = await runSetupCommand({
       executable: "/usr/bin/git", args: ["--no-optional-locks", "--no-replace-objects", ...args],
@@ -93,12 +106,12 @@ export async function inspectReopenedInputs(options, context) {
   }
   const candidateFiles = original(inputs.candidate.files, "candidate");
   const harnessFiles = original(inputs.harness.files, "harness");
-  if (!deepEqual(harnessFiles.map((ref) => ref.path), RUNTIME_PATHS)) {
+  if (!deepEqual(harnessFiles.map((ref) => ref.path), [...RUNTIME_PATHS].sort())) {
     throw fail("harness path set");
   }
   validateModelBytes(observed.get(inputs.model.path));
   const measured = assembleSnapshotIdentity({
-    candidate: expected.candidate, baselineFiles: original(inputs.baseline.files, "baseline"),
+    protocolPath, evaluationPolicy, candidate: expected.candidate, baselineFiles: original(inputs.baseline.files, "baseline"),
     candidateFiles, harnessFiles,
     pythonFiles: candidateFiles.filter((ref) => PYTHON_MODULES.includes(ref.path)),
     environment: expected.environment,

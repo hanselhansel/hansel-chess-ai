@@ -10,11 +10,14 @@ import test from "node:test";
 import ts from "typescript";
 import { createArtifactStore } from "./artifact-store.mjs";
 import { createFootprintObserver } from "./workspace-footprint.mjs";
-import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
 import { BASELINE_COMMIT, FIXTURE_PATHS, FIXED_LIMITS, PHASES, MODEL_IDENTITY, PYTHON_MODULES } from "./schema-constants.mjs";
 import { createSnapshotIO } from "./snapshot-io.mjs";
 import { isObj, exactFields } from "./protocol-values.mjs";
+import { validateProtocolFixture } from "./phase-fixtures.mjs";
+import { policyForProtocol, assertPolicyBinding } from "./evaluation-policy.mjs";
+import { deepEqual } from "./schema-primitives.mjs";
 import { createSnapshotFiles, RUNTIME_PATHS } from "./snapshot-files.mjs";
 import { inventoryDigest, validateModelBytes } from "./snapshot-identity.mjs";
 import { captureInputs, verifyIdentity, reopenInputs } from "./snapshots.mjs";
@@ -73,7 +76,8 @@ async function fixture(t, { complete = false } = {}) {
   if (complete) {
     for (const rel of [...RUNTIME_PATHS, ...PYTHON_MODULES]) {
       if (!["package.json", "package-lock.json"].includes(rel)) {
-        await write(rel, `fixture DATA ${rel}\n`);
+        await write(rel, [FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json"].includes(rel)
+          ? await fsp.readFile(path.join(SOURCE, rel)) : `fixture DATA ${rel}\n`);
       }
     }
     const actual = createSnapshotFiles({ ...context, repoRoot: SOURCE, workspaceRoot });
@@ -121,9 +125,13 @@ async function manifestFor(t, f, result) {
   }, { workspaceRoot: f.workspaceRoot, budget: f.context.budget, lifetime: f.context.lifetime }));
 }
 
-test("runtime closure is explicit, unique and includes every new runtime helper", () => {
-  assert.equal(RUNTIME_PATHS.length, 114);
-  assert.deepEqual([...RUNTIME_PATHS].sort(), RUNTIME_PATHS);
+test("runtime closure is explicit, unique and includes every new runtime helper", async () => {
+  assert.equal(sha256Bytes(canonicalBytes(RUNTIME_PATHS.slice(0, 114))), "589718eeec8baf88eff67f72584167d2f3a30dcf21473fc0081ca0656ad58c0e");
+  assert.deepEqual(RUNTIME_PATHS.slice(114), ["train/fixtures/browser-protocol-v2.json",
+    ...["evaluation-policy", "resource-quality", "verdicts-v2", "record-fields", "record-schema-v2",
+      "receipt-verdicts-v2", "process-runtime-start", "watchdog-resource-policy", "watchdog-verdict-policy",
+      "record-finalization-v2", "receipt-verification-v2"].map(name => `train/scripts/browser_eval/${name}.mjs`)]);
+  for (const filename of RUNTIME_PATHS) assert.equal((await fsp.stat(path.join(SOURCE, filename))).isFile(), true);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
   assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
   for (const name of ["accounting-trace", "private-fs", "process-listeners", "snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
@@ -320,8 +328,9 @@ test("bootstrap leaves exclusive workspace creation to the actual snapshot owner
   const bindings = {
     path, process, Object, Math, Number, BigInt, Error,
     PHASES, FIXTURE_PATHS, FIXED_LIMITS, isObj, exactFields,
+    validateProtocolFixture, policyForProtocol, assertPolicyBinding, deepEqual, sha256Bytes,
     createWatchdogLifetime, createBudgetHandle, createSnapshotIO,
-    parseCanonicalBytes, assertRecord: () => { throw new Error("unexpected existing-workspace branch"); },
+    parseCanonicalBytes, parseJSONBytes, assertRecord: () => { throw new Error("unexpected existing-workspace branch"); },
     captureEnvironment: async (options, context) => {
       environmentCalls += 1;
       assert.equal(options.recordRoot, f.repoRoot);

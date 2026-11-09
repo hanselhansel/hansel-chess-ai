@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 2,
+  "conventions": {
+    "inputId": "baseline-fen-candidate-history-raw-ep-v1",
+    "ruleId": "chessjs-checkmate-first-draws-v1",
+    "visitId": "completed-root64-v1",
+    "analysisId": "paired-sign-cp95-v1",
+    "reference": {
+      "device": "cpu",
+      "dtype": "float32",
+      "inferenceMode": true,
+      "intraOpThreads": 1,
+      "interOpThreads": 1
+    }
+  },
+  "limits": {
+    "ipc": {
+      "frameBytes": 1048576,
+      "driverBytes": 262144,
+      "chunkBytes": 65536
+    },
+    "timing": {
+      "readinessMs": 30000,
+      "commandMs": 90000,
+      "heartbeatMs": 500,
+      "heartbeatGapMs": 2000,
+      "sampleMs": 250,
+      "sampleGapMs": 500,
+      "cleanupMs": 5000,
+      "phaseMs": {
+        "check": 600000,
+        "parity": 600000,
+        "preflight": 600000,
+        "compare": 86400000
+      }
+    },
+    "resources": {
+      "rssBytes": 4294967296,
+      "workspaceBytes": 268435456,
+      "ordinaryBytes": 266338304,
+      "finalReserveBytes": 2097152
+    },
+    "visits": 64,
+    "cohort": {
+      "pairs": 20,
+      "games": 40
+    }
+  },
+  "requiredCheckIds": {
+    "check": [
+      "verified-delivery",
+      "real-worker",
+      "retained-main-recovery",
+      "request-lifecycle",
+      "explicit-failure-actions",
+      "completed-display",
+      "workbench-layout",
+      "cleanup"
+    ],
+    "parity": [
+      "frozen-python-imports",
+      "input-planes-13",
+      "policy-mapping-13",
+      "numeric-tolerance-13",
+      "cleanup"
+    ],
+    "preflight": [
+      "cold-readiness",
+      "ten-fresh-requests",
+      "aa-color-pair",
+      "watchdog-selftest",
+      "timing-estimate",
+      "cleanup"
+    ],
+    "compare": [
+      "locked-suite-complete",
+      "identity-every-turn",
+      "legal-outcomes",
+      "raw-record-accounting",
+      "paired-analysis",
+      "cleanup"
+    ],
+    "watchdog-selftest": [
+      "injected-heartbeat-timeout",
+      "zero-scored-games",
+      "surviving-child-cleanup",
+      "accounting-valid"
+    ]
+  },
+  "preflight": {
+    "controlFen": "7k/8/8/8/8/8/8/KR6 w - - 99 50",
+    "freshRequestsPerArm": 5
+  },
+  "comparison": {
+    "openingCount": 20,
+    "gameCount": 40
+  },
+  "evaluationPolicy": {
+    "policyId": "tinyaz-separate-verdicts-v2",
+    "recordSchemaVersion": 2,
+    "softPhase": "compare"
+  }
+}

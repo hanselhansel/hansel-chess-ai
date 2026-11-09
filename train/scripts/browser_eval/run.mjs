@@ -1,5 +1,9 @@
 // Public operational entry owners. Bootstrap transfers into archived code;
 // every supervisor invocation obtains fresh same-owner reopen provenance.
+import { validateProtocolFixture } from "./phase-fixtures.mjs";
+import { policyForProtocol, assertPolicyBinding } from "./evaluation-policy.mjs";
+import { sha256Bytes } from "./canonical-json.mjs";
+import { deepEqual } from "./schema-primitives.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createWatchdogLifetime, observeAwaitStage } from "./watchdog-lifetime.mjs";
@@ -7,7 +11,7 @@ import { createBudgetHandle } from "./process-budget.mjs";
 import { captureEnvironment } from "./environment.mjs";
 import { captureInputs, reopenInputs } from "./snapshots.mjs";
 import { createSnapshotIO } from "./snapshot-io.mjs";
-import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes, parseJSONBytes } from "./canonical-json.mjs";
 import { assertRecord } from "./record-schema.mjs";
 import { isObj, exactFields } from "./protocol-values.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
@@ -28,13 +32,15 @@ const selection = (options) => {
   const { phase, candidate, protocolPath, workspaceRoot, repoRoot } = options ?? {};
   if (!PHASES.includes(phase) || typeof candidate !== "string" || candidate.length === 0 || candidate.length > 200 ||
     !path.isAbsolute(workspaceRoot ?? "") || !path.isAbsolute(repoRoot ?? "") ||
-    ![FIXTURE_PATHS.protocol, path.join(repoRoot, FIXTURE_PATHS.protocol)].includes(protocolPath)) {
+    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json",
+      path.join(repoRoot, FIXTURE_PATHS.protocol), path.join(repoRoot, "train/fixtures/browser-protocol-v2.json")].includes(protocolPath)) {
     throw fail("fixed phase/candidate/protocol/absolute paths");
   }
   if (["preflight", "compare"].includes(phase) && candidate === "WORKTREE") {
     throw fail("WORKTREE is development-only");
   }
-  return Object.freeze({ phase, candidate, protocolPath, workspaceRoot, repoRoot });
+  return Object.freeze({ phase, candidate, protocolPath: path.isAbsolute(protocolPath)
+    ? path.relative(repoRoot, protocolPath) : protocolPath, workspaceRoot, repoRoot });
 };
 const setup = (phaseDeadlineMonoMs = null) => {
   let reportAwaitStage = null;
@@ -55,17 +61,23 @@ export async function bootstrapWorkspace(options) {
   const { lifetime, budget } = setup();
   try {
     const reader = createSnapshotIO({ workspaceRoot: own.workspaceRoot, repoRoot: own.repoRoot, budget, lifetime });
+    const protocolBytes = await reader.readAt(own.repoRoot, own.protocolPath);
+    const selectedProtocol = validateProtocolFixture(parseJSONBytes(protocolBytes));
+    const evaluationPolicy = policyForProtocol(selectedProtocol, own.protocolPath);
     let captured;
     if (own.phase === "check") {
       // SnapshotIO exclusively creates the root when capture first writes.
       // Bootstrap never precreates or reuses that immutable workspace.
       const environment = await captureEnvironment({ recordRoot: own.repoRoot }, { budget, lifetime });
-      captured = await captureInputs({ candidate: own.candidate, protocolPath: own.protocolPath,
+      captured = await captureInputs({ candidate: own.candidate, protocolPath: own.protocolPath, evaluationPolicy,
         workspaceRoot: own.workspaceRoot, environment: environment.environment, setupFiles: environment.setupFiles },
       { repoRoot: own.repoRoot, budget, lifetime });
     } else {
       const workspace = parseCanonicalBytes(await reader.readAt(own.workspaceRoot, "workspace.json", true));
       assertRecord("workspace", workspace);
+      assertPolicyBinding({ schemaVersion: workspace.schemaVersion,
+        evaluationPolicy: workspace.commonIdentity.evaluationPolicy ?? null, protocolPath: own.protocolPath });
+      if (workspace.commonIdentity.fixtures.protocol.path !== own.protocolPath) throw fail("requested frozen protocol");
       let commit = null;
       if (own.candidate !== "WORKTREE") {
         const result = await runSetupCommand({ executable: "/usr/bin/git",
@@ -85,9 +97,11 @@ export async function bootstrapWorkspace(options) {
     const current = await reader.readAt(own.repoRoot, cliRel);
     const frozen = await reader.readAt(own.workspaceRoot, `inputs/harness/${cliRel}`, true);
     if (!current.equals(frozen)) throw fail("archived CLI bytes");
-    const protocol = await reader.readAt(own.repoRoot, FIXTURE_PATHS.protocol);
-    const frozenProtocol = await reader.readAt(own.workspaceRoot, `inputs/harness/${FIXTURE_PATHS.protocol}`, true);
-    if (!protocol.equals(frozenProtocol)) throw fail("requested protocol bytes");
+    const protocol = await reader.readAt(own.repoRoot, own.protocolPath);
+    const frozenProtocol = await reader.readAt(own.workspaceRoot, `inputs/harness/${own.protocolPath}`, true);
+    if (!protocol.equals(frozenProtocol) || !protocol.equals(protocolBytes) ||
+      !deepEqual(captured.workspace.commonIdentity.fixtures.protocol, { path: own.protocolPath,
+        byteLength: protocol.length, sha256: sha256Bytes(protocol) })) throw fail("requested protocol bytes");
     return Object.freeze({ ...own, frozenCliPath: captured.frozenCliPath,
       elapsedPreparationMs: Number(process.hrtime.bigint() - preparationStart) / 1e6,
       preparationDeadlineMonoNs: (BigInt(budget.deadlineMonoMs()) * 1000000n).toString() });
@@ -106,7 +120,7 @@ export async function runSupervisor(options) {
   const phaseDeadlineMonoMs = now() + FIXED_LIMITS.timing.phaseMs[own.phase];
   const { lifetime, budget } = setup(phaseDeadlineMonoMs);
   try {
-    const captured = await reopenInputs({ workspaceRoot: own.workspaceRoot, candidate: own.candidate },
+    const captured = await reopenInputs({ workspaceRoot: own.workspaceRoot, candidate: own.candidate, protocolPath: own.protocolPath },
       { repoRoot: own.repoRoot, budget, lifetime });
     return await executeSupervisor({ phase: own.phase, workspaceRoot: own.workspaceRoot,
       repoRoot: own.repoRoot, captured, lifetime, budget, phaseDeadlineMonoMs });

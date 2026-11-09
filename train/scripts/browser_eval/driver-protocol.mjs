@@ -27,6 +27,14 @@ import {
   strNE,
 } from "./protocol-values.mjs";
 
+export const S2D_FIELDS = {
+  start: ["manifestPath", "commonIdentitySha256"],
+  registered: ["requestId", "identity", "listener"],
+  begun: ["operationId", "remainingMs"],
+  recorded: ["recordId", "recordSeq", "ref"],
+  stop: ["stopReason", "cleanupRemainingMs"],
+};
+
 const CHUNK = FIXED_LIMITS.ipc.chunkBytes;
 const OP_CEILING = {
   readiness: FIXED_LIMITS.timing.readinessMs,
@@ -41,12 +49,15 @@ export const driverD2S = (ctx, st, message) => {
   const t = message.type;
   if (t === "hello") {
     need(st, !st.hello && st.seq.d2s === 0, "hello order");
-    envelope(st, "d2s", message, [...base, "pid", "phase", "commonIdentitySha256"], ctx.runId);
+    envelope(st, "d2s", message, [...base, "pid", "phase", "commonIdentitySha256",
+      ...(ctx.recordSchemaVersion === 2 ? ["recordSchemaVersion", "evaluationPolicy"] : [])], ctx.runId);
     need(
       st,
       isPid(message.pid) && phases.includes(message.phase) && isH(message.commonIdentitySha256),
       "hello fields",
     );
+    if (ctx.recordSchemaVersion === 2) need(st, message.recordSchemaVersion === 2 &&
+      eq(message.evaluationPolicy, ctx.evaluationPolicy), "hello policy binding");
     st.hello = true;
     return;
   }
@@ -234,8 +245,11 @@ export const driverS2D = (ctx, st, message) => {
   need(st, st.hello, `${t} before hello`);
   if (t === "start") {
     need(st, !st.started && !ctx.failed, "start state");
-    envelope(st, "s2d", message, [...base, "manifestPath", "commonIdentitySha256"], ctx.runId);
+    envelope(st, "s2d", message, [...base, "manifestPath", "commonIdentitySha256",
+      ...(ctx.recordSchemaVersion === 2 ? ["recordSchemaVersion", "evaluationPolicy"] : [])], ctx.runId);
     need(st, strNE(message.manifestPath) && isH(message.commonIdentitySha256), "start fields");
+    if (ctx.recordSchemaVersion === 2) need(st, message.recordSchemaVersion === 2 &&
+      eq(message.evaluationPolicy, ctx.evaluationPolicy), "start policy binding");
     st.started = true;
     return;
   }

@@ -1,9 +1,11 @@
 // Immutable input capture. Snapshot data never admits a phase or proves
 // Native readiness. Final verification reads actual retained files and
 // calls the fixed genuine file-only environment verifier.
+import { policyForProtocol, assertPolicyBinding } from "./evaluation-policy.mjs";
+import { validateProtocolFixture } from "./phase-fixtures.mjs";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
-import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
+import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
 import { verifyEnvironment } from "./environment.mjs";
 import { assertCommonIdentity, assertEnvironment } from "./identity-schema.mjs";
 import { exactFields, isAbs, isObj, isRel, strNE } from "./protocol-values.mjs";
@@ -95,14 +97,16 @@ const validateInputs = (inputs) => {
 
 export async function captureInputs(options, context) {
   context = contextFor(context, "repoRoot");
-  if (!isObj(options) || !exactFields(options, ["candidate", "protocolPath", "workspaceRoot", "environment", "setupFiles"])) {
+  if (!isObj(options) || !exactFields(options, ["candidate", "protocolPath", "workspaceRoot", "environment", "setupFiles",
+    ...(Object.hasOwn(options ?? {}, "evaluationPolicy") ? ["evaluationPolicy"] : [])])) {
     throw fail("capture fields");
   }
   const { setupFiles, ...serializable } = options;
-  const own = freezeDeep(copy(serializable));
+  const own = freezeDeep(copy({ ...serializable, protocolPath: serializable.protocolPath ===
+    path.join(context.repoRoot, FIXTURE_PATHS.protocol) ? FIXTURE_PATHS.protocol : serializable.protocolPath }));
   const producerSetup = ownSetup(setupFiles);
   if (!strNE(own.candidate) || own.candidate.length > 200 || !isAbs(own.workspaceRoot) ||
-    ![FIXTURE_PATHS.protocol, path.join(context.repoRoot, FIXTURE_PATHS.protocol)].includes(own.protocolPath)) {
+    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json"].includes(own.protocolPath)) {
     throw fail("capture selection");
   }
   assertEnvironment(own.environment);
@@ -132,6 +136,9 @@ export async function captureInputs(options, context) {
   for (const filename of activePaths) {
     before.set(filename, await files.readActive(filename));
   }
+  const protocol = validateProtocolFixture(parseJSONBytes(before.get(own.protocolPath)));
+  const evaluationPolicy = policyForProtocol(protocol, own.protocolPath);
+  if (!deepEqual(own.evaluationPolicy ?? null, evaluationPolicy)) throw fail("capture policy selection");
   validateModelBytes(before.get(MODEL_PATH));
   if (commit !== null) {
     const requestedPaths = await files.listGit(commit, ["src", ...PACKAGES]);
@@ -163,7 +170,7 @@ export async function captureInputs(options, context) {
   for (const filename of candidatePaths) {
     inputs.candidate.files.push(await files.writeFrozen(`inputs/candidate/${filename}`, before.get(filename)));
   }
-  for (const filename of RUNTIME_PATHS) {
+  for (const filename of [...RUNTIME_PATHS].sort()) {
     inputs.harness.files.push(await files.writeFrozen(`inputs/harness/${filename}`, before.get(filename)));
   }
   inputs.model = await files.writeFrozen("inputs/model/tinyaz-m.bin", before.get(MODEL_PATH));
@@ -190,13 +197,14 @@ export async function captureInputs(options, context) {
   const candidate = { kind: commit === null ? "WORKTREE" : "commit", commit };
   const candidateFiles = original(inputs.candidate.files, "candidate");
   const commonIdentity = assembleSnapshotIdentity({
-    candidate, baselineFiles: original(inputs.baseline.files, "baseline"), candidateFiles,
+    candidate, protocolPath: own.protocolPath, evaluationPolicy,
+    baselineFiles: original(inputs.baseline.files, "baseline"), candidateFiles,
     harnessFiles: original(inputs.harness.files, "harness"),
     pythonFiles: candidateFiles.filter((ref) => PYTHON_MODULES.includes(ref.path)), environment: own.environment,
   });
   validateInputs(inputs);
   await files.linkDependencies(path.join(context.repoRoot, "node_modules"));
-  const workspace = freezeDeep({ schemaVersion: 1, workspaceId: randomUUID(), commonIdentity });
+  const workspace = freezeDeep({ schemaVersion: protocol.schemaVersion, workspaceId: randomUUID(), commonIdentity });
   assertRecord("workspace", workspace);
   await files.writeFrozen("workspace.json", canonicalBytes(workspace));
   context.budget.assertLive("snapshot captured");
@@ -276,7 +284,14 @@ export async function verifyIdentity(options, context) {
   }
   validateModelBytes(observed.get(own.inputs.model.path));
   const candidateFiles = original(own.inputs.candidate.files, "candidate");
+  const protocolPath = own.expectedCommonIdentity.fixtures.protocol.path;
+  const evaluationPolicy = own.expectedCommonIdentity.evaluationPolicy ?? null;
+  const protocol = validateProtocolFixture(parseJSONBytes(observed.get(`inputs/harness/${protocolPath}`)));
+  assertPolicyBinding({ schemaVersion: workspace.schemaVersion, evaluationPolicy, protocolPath });
+  if (!deepEqual(policyForProtocol(protocol, protocolPath), evaluationPolicy) || manifest.schemaVersion !== workspace.schemaVersion ||
+    !deepEqual(manifest.evaluationPolicy ?? null, evaluationPolicy)) throw fail("final policy selection");
   const actualIdentity = assembleSnapshotIdentity({
+    protocolPath, evaluationPolicy,
     candidate: own.expectedCommonIdentity.candidate,
     baselineFiles: original(own.inputs.baseline.files, "baseline"), candidateFiles,
     harnessFiles: original(own.inputs.harness.files, "harness"),
