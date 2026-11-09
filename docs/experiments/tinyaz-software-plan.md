@@ -1,7 +1,8 @@
 # Tinyaz software implementation and evidence ledger
 
 - **Date:** 2026-11-02
-- **State (2026-11-07):** `6ff0128` is incomplete and intervention-qualified at 30/40 acknowledged games and 15/20 pairs. Final/completion absent, no eligible analysis. Official isolated Node 24.22.2 is qualified as an environment workaround; runtime cause UNKNOWN. Reviewed publication and fresh runtime-bound prerequisites plus a separate controller release gate the next full attempt.
+- **State (2026-11-09):** Published candidate `fc307657d8c33af9c6e226087610a454ec6bbfcf` passed the 836/836 harness gate and fresh CHECK/PARITY/PREFLIGHT. Its fresh full 40-game comparison failed naturally at 6 acknowledged games / 3 pairs, with no eligible analysis and Native cleanup/accounting unproven. M weights are unchanged. The optional PURE diagnostic measures synthetic scaling only; historical cause and the next user direction remain open. See the [latest factual checkpoint](#fresh-repaired-candidate-comparison-2026-11-09).
+- **Historical state (2026-11-07):** `6ff0128` is incomplete and intervention-qualified at 30/40 acknowledged games and 15/20 pairs. Final/completion absent, no eligible analysis. Official isolated Node 24.22.2 is qualified as an environment workaround; runtime cause UNKNOWN. Reviewed publication and fresh runtime-bound prerequisites plus a separate controller release gate the next full attempt.
 - **Historical 17d2ff8 state (2026-11-06):** Candidate `17d2ff8424c7d8c73fd7565034c01e74a4641bdf` naturally exited 2 after 5172.471 seconds at 6/40 complete games, 3/20 pairs and one incomplete game. It remains inconclusive, IPC_INVALID, three faults, invalid Native cleanup/accounting and no eligible analysis. The concrete permission/heartbeat cascade is under source repair. A fresh full cohort follows green review/publication, fresh prerequisite gates and separate controller release. The 24-hour budget, model, schedule and statistical method stay unchanged.
 - **Historical first-cohort state (preserved):** C4b passed fresh committed check, thirteen-case browser/Python numeric parity and preflight on candidate `583b317d458d361dc218ac3f704fe1f4ec158055`. The ONE locked comparison sealed inconclusive/2 at PHASE_TIMEOUT with five complete games, two complete pairs and one partial game. Native cleanup/accounting and the receipt graph are verified. Post-run natural command exit failed; its retained handle remains unresolved. No statistical strength or Elo result exists. Hansel subsequently authorized one fresh full cohort after repair, with a 24-hour ceiling; the Task2 amendment below records that separate authorization.
 - **Historical state before C4b execution (preserved):** Runtime implementation exists and every earlier stage below is accepted: C1 and C2a on their fix branches, the C3a/C3b/C3c runtime (latest known runtime base `87d3c5b410bf07fdfc4f324a0a0b50f6813d073f`) and the C2b Python verification at `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`. C4a1's pure-JS browser-evaluation evidence libraries are accepted tested source on `feat/tinyaz-browser-evidence` at base `7abb94cd07f5ddb8dc2efa8a264233f6bbcefed0`: Sol's prepared-5 `npm run test:browser-harness` gate exited 0 with 138/138 cases, zero fail/skip/cancel and no warnings, `git diff --check` exited 0, all 33 frozen hashes stayed unchanged, both independent Sol 6.1-Max reviews returned ACCEPTABLE, and the final verdict is `ACCEPTED_SOURCE_FOR_FINAL_DOCUMENTATION_METADATA`. The final functional-input union and comparison candidate are not yet frozen: real native cleanup/identity bindings, C4a2 capture/supervisor wiring, harness integration and the final candidate freeze remain pending. The source-feature commit and its ref proof are recorded externally after Sol performs them; no SHA is invented here. Source-feature Git publication is distinct from prohibited new model/weight publication. C4a2's native supervision and watchdog stack on `feat/tinyaz-native-supervision` is verified at the whole-JS boundary by the 2026-11-05 actual 352/352 serial receipt (current-verification paragraph in the C4a2 section); C4b browser capture/numeric parity/preflight, C5 and the ONE approved 64-visit/20-pair/40-game comparison remain open. No comparison, training, model publication, deployment, bot or strength result exists.
@@ -665,3 +666,77 @@ Source acceptance still requires independent review/publication; final gate resu
 Local implementation verification: final serial harness736/736, app191+184, typecheck and Python58+19 passed; all14 actual Native actors exited with BOTHpipes closed and settlement. A controlled8s archived-CLI cap with actual Native naturally returned2/PHASE_TIMEOUT, zero faults and valid cleanup/accounting. Preserve the preceding734/736 gate and its independent fatal616.296667ms Native gap (cause UNKNOWN); only its concrete Vite test-owner teardown race was repaired. These are source/runtime controls, not cohort acceptance or evidence that the historical stale latency is fixed. Independent review/publication and the separate fresh prerequisite/full40 release remain pending.
 
 I1 review correction (2026-11-07): private P now fences the monitor's actual ordinary prerequisite inside the original cached stop flow, while the collector retains C. The real periodic-queue regression and delayed receipt control pass; timely normal teardown may finish physically between P/C. Final740/740, all14 real Native actor exits/BOTHpipes/settlement and current-byte natural cap2 are verified. The preceding739/740 normal-proof failure remains preserved and unclassified; its wire timings do not establish host or queue cause and normal teardown finished before P. No sampling/phase/scientific threshold changed. Scoped re-review/publication/fresh execution release remain OPEN; no scoring attempt or push occurred.
+
+### Fresh repaired-candidate comparison, 2026-11-09
+
+Here, `W` is the repository-relative plan workspace
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison`.
+
+The approved terminal-identity and descendant-directory repairs were published
+in candidate fc307657d8c33af9c6e226087610a454ec6bbfcf. Its full harness gate
+passed 836/836, including 14 actual Native actors with physical exit/BOTH-pipe
+settlement. The current-byte controlled cleanup cap passed with planned
+PHASE_TIMEOUT exit 2, fault 0 and verified Native cleanup/accounting. Fresh
+CHECK passed 8/8 checks and 11 app assertions; PARITY passed all 13 cases with
+zero numeric mismatches and stable imports; PREFLIGHT passed 6/6 checks,
+10 deterministic fresh requests and the A/A color pair. All prerequisite
+commands, verifiers, actual output streams, raw files and journals closed.
+
+One fresh 40-game/20-pair comparison with 64 completed root visits and the
+original 24-hour ceiling launched 2026-11-09T06:33:04.806Z. It naturally failed
+with exit 2 after 5731.749997917 s, at 6 acknowledged games / 3 pairs. No outcomes
+or partial PGNs were used for inference. Frozen verifier naturally failed with exit 1
+because compare/completion.json was absent. compare/final.json and
+containment.json were also absent. Native cleanup/accounting and individual
+driver/collector exit/BOTH-pipe facts remain UNPROVEN/UNAVAILABLE. Actual
+outer command/verifier/BOTH-stream/rawfile/journal closure is established.
+Sealing 6.207061041 s is separate from experimental/cleanup time.
+
+First captured cause: ACCOUNTING_UNAVAILABLE, admitted-cycle gap 715.836458 ms
+against the unchanged 500 ms rule. The Python-local collector interval was
+263.404083 ms. The trace localizes 243.866459 ms of wall time from complete-frame
+handler entry, before decoding/parsing, through protocol acceptance. It does
+not attribute that time to an algorithm, CPU execution, GC, host scheduling
+or kernel behavior. Actual frame/cardinality fields were not retained.
+The later path-bearing Store cause was
+`ENOENT lstat compare/RunningChromeVersion > lstat compare/Cookies`, invalid
+accounting. Repeated path strings can reuse
+the sticky first cause. They do not establish repeated scans or identify the
+failed absence/ancestor/final-proof condition. Both rejections are consistent
+with current strict guards; no new causal code defect is proven.
+
+The immutable failure freeze is W/task-3-failure-freeze-fc30765-compare-20261109T081223025Z-b0241418-93f1-4476-ad7a-9ffd384550ce:
+failed-handoff.json SHA256 69866853c5e3cf2bb0c18fb9b138e7ffe2c556a29a331e917f925fdd282e3384;
+evidence-manifest.json SHA256 c87f604e15521a58cd275ebdbbdc7cb5e6b24842edc7870822cebf6b77c2b3a5.
+All 374 source/protected inputs, runtime pins and prior seals matched.
+The model remains 9706840 bytes, SHA b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee.
+No retraining, eligible strength result, Elo update or deployment occurred.
+Whole-change final review and a valid full 40 result remain open. No unchanged
+full 40 retry, timing relaxation or missing-ancestor waiver is authorized.
+
+The optional PURE frame diagnostic first failed on an observer count assertion,
+before any measured row. That failure is preserved. Its separately reviewed
+observer-selection correction then naturally completed in 1.0808465 s, with
+15 measured cases, 5 warmups, 13 strict negative cases and 33 synthetic owner
+closures. Actual outer command/BOTH-pipe/rawfile/journal closure, decoder
+restoration and zero owned timers were verified. Inbound validation at
+M = 16/64/256/1024/4096 took respectively 0.049-0.070/0.100-0.137/
+0.568-0.590/10.126-10.793/125.574-139.420 ms. These are declared synthetic
+sizes, not the failed run's unknown size. Selected decode-only max 0.047917 ms
+excludes JSON.parse. CPU is process-wide and observation overhead is nonzero.
+This establishes scaling cost under the control, not historical causality,
+a repair or Native cleanup proof. Control handoff c83b08d3dcc2526e4f10c6aa570685a898a39c3f55bd727662e9f902b51e12c5
+and manifest 8bdb115e7214c9bd3c5927b9cc0ec006f0b5c6e0f83c5e9739aef353029dce96
+are under W/fc30765-frame-control-evidence/one-command-owner-v2.
+Separate sealing writers 0.5378105 s and 0.073532 s closed successfully; the
+outer manager's total lifetime was not separately measured. All 374 inputs /
+23 declared references, 5 binaries, 6 helpers and earlier failure seals matched.
+
+The next architectural direction is awaiting the user: preserve the current
+strict monitoring contract and diagnose within it, or design separate chess-strength
+and resource-monitoring verdicts. No amendment has been approved or implemented. No failed run is retroactively eligible under either direction.
+
+This checkpoint changes documentation only. No runtime tests were rerun because
+no executable behavior, dependency, model input or evidence receipt changed. The
+status was compared directly with the selected frozen evidence and diagnosis;
+whole-change final review and a valid full 40-game result remain open.

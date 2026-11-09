@@ -4448,3 +4448,15 @@ Section3, pins/six execution helpers unchanged. MinorM3 remains deferred.
 Docs-only factual checkpoint: no source edits/tests/workload. Fresh committed
 actualcheck/parity/preflight and new Root full40 GO remain OPEN. Publication is
 separate; original scientific/clock/resource/ownership/debt limits stay exact.
+
+### Latest factual status pointer, 2026-11-09
+
+See the [experiment ledger checkpoint](../../experiments/tinyaz-software-plan.md#fresh-repaired-candidate-comparison-2026-11-09)
+for published candidate `fc307657d8c33af9c6e226087610a454ec6bbfcf`: the
+836/836 harness gate and fresh CHECK/PARITY/PREFLIGHT passed. Its fresh full
+40-game comparison failed naturally at 6 acknowledged games / 3 pairs, with no
+eligible analysis and Native cleanup/accounting unproven. M weights are unchanged.
+The optional PURE frame diagnostic measures synthetic scaling, not historical
+cause or Native closure. The next architectural direction awaits the user; no
+amendment is approved. This is a docs-only checkpoint; runtime tests were not
+rerun. A valid full 40-game result and whole-change final review remain open.

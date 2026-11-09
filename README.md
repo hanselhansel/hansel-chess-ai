@@ -202,7 +202,7 @@ remain fatal. A fresh full cohort requires reviewed committed source, fresh
 check/parity/preflight and a separate controller execution release.
 
 
-The latest `6ff0128` attempt reached 30/40 acknowledged games and 15/20 pairs,
+The historical `6ff0128` attempt reached 30/40 acknowledged games and 15/20 pairs,
 then hung in shutdown and required supervisor TERM. Final/completion records
 are absent, so it is incomplete and intervention-qualified, with no eligible
 analysis. The underlying async filesystem/runtime cause remains UNKNOWN.
@@ -212,3 +212,10 @@ workaround, not a demonstrated causal fix. See the [runtime procedure](train/scr
 and [preserved attempt](docs/experiments/tinyaz-software-plan.md#incomplete-6ff0128-attempt-and-runtime-qualification-2026-11-07).
 Fresh runtime-bound preparation/check/parity/preflight and a separate controller
 release remain required before one fresh full cohort.
+
+Current published candidate `fc307657d8c33af9c6e226087610a454ec6bbfcf` passed
+fresh CHECK/PARITY/PREFLIGHT. Its full 40-game comparison failed at 6 acknowledged
+games / 3 pairs and remains ineligible, with Native cleanup unproven. M weights
+are unchanged. See the [current factual checkpoint](docs/experiments/tinyaz-software-plan.md#fresh-repaired-candidate-comparison-2026-11-09).
+The next direction awaits the user; a valid full 40-game result and whole-change
+final review remain pending.
