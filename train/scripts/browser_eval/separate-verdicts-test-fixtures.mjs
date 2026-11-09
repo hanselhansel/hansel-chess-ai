@@ -1,5 +1,7 @@
 // TEST ONLY. Synthetic data, no Native/browser/model or publication proof.
 // Real v1 helpers below retain their genuine Store/debt teardown in tests.
+import assert from "node:assert/strict";
+import { artifactStoreLifetime } from "./artifact-store.mjs";
 import { fixtureCommonIdentity, fixtureManifest, identity, proof, ref } from "./test-fixtures.mjs";
 import { REQUIRED_CHECK_IDS, REQUIRED_PARENT_PHASES } from "./schema-constants.mjs";
 import { V2_POLICY } from "./evaluation-policy.mjs";
@@ -14,7 +16,7 @@ export function v2Workspace() {
 }
 
 export function quality({ phase = "compare", runId = `run-${phase}`, gap = false, cap = false, pending = false } = {}) {
-  const monitorRunId = phase === "watchdog-selftest" ? "parent" : runId;
+  const monitorRunId = phase === "watchdog-selftest" ? runId.slice(0, -":watchdog-selftest".length) : runId;
   const q = createResourceQuality({ runId, phase, monitorRunId });
   const cycle = (start, end, bytes) => ({
     startedNs: start,
@@ -215,8 +217,8 @@ export async function periodicQuality(f, milliseconds = 250, reply = {}) {
 }
 
 // TEST-only component lifecycle over actual facade callbacks and owned IO.
-import { fixtureWorkspace, fixtureRunning, makeStore } from "./test-fixtures.mjs";
-import { createPhaseRecorder, phaseRecorderLifetime } from "./records.mjs";
+import { fixtureWorkspace, fixtureRunning, makeStore, writeFixtureInputs } from "./test-fixtures.mjs";
+import { createPhaseRecorder, phaseRecorderLifetime, writeWorkspaceOnce } from "./records.mjs";
 import { createWatchdogFacade } from "./watchdog.mjs";
 import { captureWatchdogRuntimeConfig, createWatchdogOperationContext } from "./watchdog-config.mjs";
 import { createWatchdogOperations } from "./watchdog-operations.mjs";
@@ -354,4 +356,21 @@ export async function facadeQualityControl(failure) {
     if (recorder) { await recorder.closeIncompleteEvidence(); await phaseRecorderLifetime(recorder).whenSettled(); }
     await fixtureFs.rm(workspaceRoot, { recursive: true });
   }
+}
+
+export async function createV2RecorderWorkspace(t) {
+  const env = await makeStore();
+  env.ws = v2Workspace(); env.recorders = [];
+  t.after(async () => {
+    const closures = await Promise.allSettled(env.recorders.map((r) => r.closeIncompleteEvidence()));
+    await artifactStoreLifetime(env.store).whenSettled();
+    for (const result of closures) if (result.status === "rejected") {
+      assert.equal(result.reason?.code, "RECORDER_STATE");
+      assert.match(result.reason.message, /finalization/);
+    }
+    await fixtureFs.rm(env.workspaceRoot, { recursive: true, force: true });
+  });
+  await writeWorkspaceOnce({ store: env.store, workspace: env.ws });
+  env.inputs = await writeFixtureInputs(env);
+  return env;
 }

@@ -11,7 +11,7 @@ const bodyFields = ["schemaVersion", "frozen", "firstStopReason", "freezeAtMonoN
 const gameFields = ["gameId", "pairNumber", "gameNumber", "openingId", "candidateColor", "state", "result", "stopReason", "checkpoint"];
 const checkpointFields = ["checkpointId", "ordinal", "slot", "plyCount", "initialFen", "fen", "pgn"];
 
-export function deriveFinalGameEvidence({ request, status, artifactRefs, cleanupOk, identityProven, faults }) {
+export function deriveFinalGameEvidence({ request, status, artifactRefs, cleanupOk, identityProven, faults, recordSchemaVersion = 1, scienceProven = false }) {
   const next = copy(request);
   const summary = isObj(next.summary) ? next.summary : {};
   for (const key of ["pairedAnalysis", "pValue", "interval95", "conditionalEstimate", "classification", "analysisEligible", "elo", "Elo"]) {
@@ -66,7 +66,7 @@ export function deriveFinalGameEvidence({ request, status, artifactRefs, cleanup
     pairs = [];
   }
   const complete = proven && pairs.length === 20 && pairs.every((pair) => pair.games.length === 2 && pair.games.every((game) => terminal(game.result)));
-  const inferenceAllowed = complete && status === "passed" && cleanupOk === true && identityProven === true &&
+  const inferenceAllowed = complete && (recordSchemaVersion === 2 ? scienceProven === true : status === "passed") && cleanupOk === true && identityProven === true &&
     faults === 0 && next.stopReason === null && body.firstStopReason === null;
   const analysis = summarizePairs(pairs, {
     unplannedFaultCount: faults,

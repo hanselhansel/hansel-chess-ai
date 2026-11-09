@@ -155,7 +155,7 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
   };
 
   const headFields = () => ({
-    schemaVersion: 1,
+    schemaVersion: mf.schemaVersion,
     workspaceId: mf.workspaceId,
     runId: mf.runId,
     phase: mf.phase,
@@ -186,6 +186,7 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
     state,
     lifecycle,
     closeWriters,
+    appendRawEvent,
     headFields,
     verifyIdentity,
     verifyCleanup,
@@ -217,6 +218,7 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
         need(state.running === null, "running already written");
         need(!state.stopped && !state.finalized, "phase ended");
         validateRunningInput(record, {
+          schemaVersion: mf.schemaVersion,
           workspaceId: mf.workspaceId,
           runId: mf.runId,
           phase: mf.phase,
@@ -232,6 +234,9 @@ export function createPhaseRecorder({ store, workspace, manifest, verifyCleanup,
       return attempt(async () => {
         need(state.manifest, "manifest required first");
         need(!state.finalized, "phase finalized");
+        if (mf.schemaVersion === 2 && state.finalizing && kind === "resource") {
+          fail("RECORDER_STATE", "resource coverage already closed");
+        }
         if (state.running === null) {
           if (!BOOTSTRAP_KINDS.has(kind)) {
             fail("RECORDER_STATE", "running required first");

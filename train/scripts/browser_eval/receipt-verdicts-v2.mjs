@@ -153,3 +153,19 @@ export function verifyVerdictClosure(input) {
   eqLiteral(bundle(completion), reduced, "completion reducer equality");
   return reduced;
 }
+
+// Pure reconciliation of an exact strict selftest prefix with the eventual
+// parent monitor-stop evidence. Physical closure remains the graph owner's.
+export function verifyResourcePrefixExtension(prefix, parent) {
+  assertResourceEvidence(prefix);
+  assertResourceEvidence(parent);
+  if (prefix.closureKind !== "selftest-prefix" || parent.closureKind !== "monitor-stop" ||
+    prefix.monitorRunId !== parent.runId || prefix.startedNs !== parent.startedNs ||
+    stamp(prefix.coverageEndNs) > stamp(parent.coverageEndNs) ||
+    stamp(prefix.lastCoverageQualifiedNs) > stamp(parent.lastCoverageQualifiedNs)) fail("prefix parent clocks");
+  extendsCheckpoint({ ...prefix, lateDropCount: prefix.lateDrops.count },
+    { ...parent, lateDropCount: parent.lateDrops.count });
+  for (const key of ["peakRssBytes", "observedPeakRssBytes"])
+    if (parent[key] < prefix[key]) fail("lost prefix peak");
+  if (prefix.rssLimitExceeded && !parent.rssLimitExceeded) fail("lost prefix cap");
+}

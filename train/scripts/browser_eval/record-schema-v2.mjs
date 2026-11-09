@@ -121,7 +121,7 @@ const vCheckSet = (v, n) => {
   }
 };
 
-const vCleanup = (v, n) => {
+export const assertCleanupProofV2 = (v, n = "cleanup") => {
   shape(
     v,
     {
@@ -246,7 +246,7 @@ const VALIDATORS = {
     if (typeof v.analysisEligible !== "boolean") {
       schemaFail("SCHEMA_FORMAT", `${n}.analysisEligible`);
     }
-    vCleanup(v.cleanup, `${n}.cleanup`);
+    assertCleanupProofV2(v.cleanup, `${n}.cleanup`);
     const scope = v.phase === "watchdog-selftest" ? "selftest-workload" : "phase-workload";
     if (v.cleanup.scope !== scope) schemaFail("SCHEMA_LITERAL", `${n}.cleanup.scope`);
     if (!CHECK.obj(v.summary)) schemaFail("SCHEMA_TYPE", `${n}.summary`);

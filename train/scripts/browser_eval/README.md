@@ -10833,3 +10833,201 @@ then require the first persisted fault diagnostic to match the primary capture
 error. The existing broken-reader-through-GREEN-shutdown, no-issuance, original-C
 and held-stderr/+2s/+4s constraints remain. R1 reader receipts showed containment
 of another native hard fault; they are not failed exact-capture proof.
+
+
+### Task8 before-use capacity and API declaration (2026-11-10)
+
+Root authorizes three focused leaves under the Task8 brief, preserving the
+approved policy and every existing owner. `record-finalization-v2.mjs` exports
+pure `compileFinalV2(input)` over captured head/identity/cleanup/request/checks,
+actual closed artifacts/events and verified parent graphs; it calls the existing
+PGN evidence/statistics owners before resource aggregation. It returns frozen
+`{final,facts}`, with no IO, Native, writer or publication authority.
+`receipt-verification-v2.mjs` exports `readVerdictEventsV2({workspaceRoot,eventsRef,headFields},io)`
+and `verifyReceiptVerdictsV2({workspaceRoot,workspace,manifest,running,final,completion,inventory,parents,nested},io)`.
+The first performs confined hash-bound event reads through existing receipt IO
+and the same inherited registrar. The second reconstructs captured facts,
+checks versions/policy/strict parents and nested scope, invokes the same pure
+compiler and `verifyVerdictClosure`, and returns no publication capability.
+It owns no Store, queue, lifetime, Native probe or independent verifier.
+`separate-verdicts-recorder.test.mjs` owns genuine Recorder/Store/prepared graph,
+publication/readback and prerequisite controls with controlled science fixtures.
+It executes with the original eight Task8 owners and joins actual writer/body
+debts. Its tests make no Native, browser, model, phase or cohort claim.
+
+Version2 input construction replaces the temporary both-v2 rejection only as
+this integration lands. The original pure records owner retains v1 golden and
+mixed-version controls. Task9 must add both new runtime leaves to its functional
+snapshot union. Task10's exact scripted roster includes the new recorder TEST
+owner. No operational archive, CLI, phase or release qualification follows.
+
+### Task8 current Recorder and graph APIs (2026-11-10)
+
+The temporary both-v2 constructor ban is replaced by complete schema-aware
+Recorder integration. Operational default producers remain v1 until Task9.
+`createPhaseRecorder` retains its original mandatory real Store, identity and
+cleanup callbacks, sole state/lifecycle/queue and lifetime ownership. Workspace,
+manifest and running versions must match. Head fields use the validated manifest
+version. V1 output construction and its golden completion remain unchanged.
+
+`validateRunningInput(snapshot,{workspaceId,runId,phase,commonIdentitySha256,schemaVersion=1})`
+requires that exact version and the original four equalities. Invalid versions
+raise RECORDER_CONFIG. `validateFinalizationIntent(request,manifest=null)` retains
+v1 status/exit checks. With a schema2 manifest the only allowed request keys are
+status,exitCode,stopReason,summary,unplannedFaultCount,analysisEligible and
+resourceEvidence. Fault count must be a safe nonnegative integer. Resource
+identity/phase must match, coverageEndNs must exist and ordinary monitor-stop
+pending must be false. Selftest-prefix may retain parent pending. The live
+summary rejects strengthVerdict,resourceVerdict,closureResourceVerdict,
+resourceEvidence,qualityCheckpoint and supervisorOutcome. Existing driver
+summary.completedGames (an array) and summary.completedPairs remain accepted
+request diagnostics, are discarded by the v2 compiler and never choose final
+counts. Top-level counter/verdict/evidence injection still rejects. Unknown
+injected top-level fields and reserved summary fields
+raise RECORDER_INPUT. Resource schema faults retain their SCHEMA_* errors.
+Canonical detached capture occurs before the first await.
+
+`assertCleanupProofV2(value,name="cleanup")` validates the unchanged proof fields
+without manufacturing a hypothetical final. V2 evidence capture retains the
+actual on-time valid CommonIdentity observation, or null when unproven, plus
+expectedIdentity and expectedFinalizer in its private closed facts. V1 retains
+its original fact roster. Real callback settlement, original cutoff and same
+inherited registrar requirements remain unchanged.
+
+`compileFinalV2(input)` returns frozen `{final,facts}`. Its input is the captured
+headFields/commonIdentitySha256/request/claims/requiredChecks/recordedProof,
+identityObservation/expectedIdentity/expectedFinalizer, actual artifactRefs,
+eventsRef/events and verifiedParents. It recomputes identity equality and cleanup
+scope/finalizer/proof equality. Hard fault count is at least the reported count,
+actual fault-event count and any typed resource hard fault. Known caps, Store
+faults, missing records and every hard class remain fatal to inference.
+Ordinary missing check evidence is unproven; an explicit failed scientific
+check is a proven violation. Noncompare remains strength not-applicable.
+
+For compare, the compiler validates frozen timestamps inside the measured
+interval, selected checkpoint response events and actual retained PGN refs,
+required scientific checks with retained evidence, strict verified parents and
+all cleanup/identity/hard facts. It calls the unchanged PGN evidence/statistical
+owners before resource aggregate degradation. Only full40/20 with all proofs
+may remain strength eligible through a cadence-only resource gap. Partial or
+malformed bodies retain no inference. Validated recorded selections retain
+descriptive counts even when finish checks or other graph proofs are unproven;
+those independent missing-proof reasons continue to prevent inference.
+No model, match, statistics formula or Native proof is created by this compiler.
+
+The compiler owns `final.summary.supervisorOutcome` exactly
+`{status,exitCode,reportedFaultCount,identityObservation,checkClaims}`. These are
+captured original supervisor inputs and mandatory callback observations, never
+driver-selected final verdicts. Readback resolves those original check claims
+again against the actual inventory and reconstructs the same final/facts. The
+namespace is forbidden in live caller summaries. Hash binding authenticates
+consistency with the requested receipt; it is not a signature or a new live
+Native identity probe.
+
+After mandatory callbacks and the actual admitted Records-body fence/drain,
+Recorder appends one full resource event before closing the existing writer:
+`{kind:"final-resource-evidence",resourceEvidence}`. The supplied snapshot must
+already be the supervisor's drained monitor closure, or exact cached nested
+prefix after child proof. It does not cause a fresh sample or close any debt.
+The mandatory event is last and equals final.resourceEvidence. During schema2
+final capture, ordinary resource checkpoints reject with RECORDER_STATE even if
+they carry a pre-fence timestamp; cleanup/fault events remain admitted until the
+actual total evidence fence. The private mandatory full snapshot uses the same
+Recorder writer directly after that fence/drain. EventsRef is
+obtained only after real sink close; local resource refs equal [eventsRef].
+`buildFinalFromClosedFacts` dispatches only explicit schema2 to the compiler.
+`buildCompletion(...,final=null)` adds the policy and three actual final verdicts
+only for schema2. The original final write, actual inventory, prepared token,
+full graph verification, one-shot publication and fresh readback are unchanged.
+No prepublication eligible object is exposed as authoritative.
+
+`readVerdictEventsV2({workspaceRoot,eventsRef,headFields},io)` uses existing
+confined stable-byte reads and the identical optional registrar. It requires
+actual ref/hash equality, canonical JSONL/final newline, contiguous sequence and
+exact schema/workspace/run/phase heads. It returns only parsed event facts.
+`verifyReceiptVerdictsV2({workspaceRoot,workspace,manifest,running,final,completion,inventory,parents,nested},io)`
+is the existing verifier's explicit-v2 group after real inventories, retained
+inputs, parents and nested graph reads. It checks all versions/policy/identity,
+exactly one last full snapshot, independent final compilation and pure reducer
+closure equality, including checkpoint chronology/counters/ring/peaks/caps.
+Neither function owns a Store, verifier lifetime, queue, writer or publication.
+
+`verifyResourcePrefixExtension(prefix,parent)` is pure. It validates both exact
+resource schemas, monitor identity/start/end, monotone counters/causes/clocks,
+unchanged completion clocks when no cycle completed, and retained peaks/caps.
+A nested graph remains selftest-prefix and can display pending parent work;
+it proves no parent completion. Eventual preflight binds the exact nested owner,
+supervisor, shared monitor start and prefix extension to actual full parent
+closure. A later parent gap/cap/fault or pending body prevents parent passage.
+Parent admission additionally requires schema2 phase and closure resources
+passed, passed0 and the original checks/cleanup/live-finalizer probe. V1 cannot
+satisfy a v2 parent and no cross-version graph is admitted.
+
+`separate-verdicts-recorder.test.mjs` uses genuine Recorder/Store/prepared graph,
+publication and fresh readback with synthetic scientific/cleanup collaborators.
+Its real scripted-monitor controls retain the genuine queue/fence/drain and
+actual controlled collector body/exit/BOTH-pipe debts. Teardown inspects every
+close result, permits only the expected already-finalized RECORDER_STATE guard,
+and joins the same actual lifetime. These controls are not Native, browser,
+model, phase or scoring-cohort proof. V1 golden stays in the original pure
+records TEST owner. New fixture quality scope derives the exact parent from the
+required `<parent>:watchdog-selftest` runId; no new monitor or ledger is created.
+
+Task9 must archive both new runtime leaves. Current snapshot-files.mjs still
+omits the complete new runtime closure. Archived CLI/phase qualification,
+fixture/driver/CLI integration, independent scoped/whole-change reviews and
+separate Root execution releases remain open. No old cohort is reclassified.
+
+Task8 focused fixture grouping: `createV2RecorderWorkspace(t)` is TEST-only and
+returns the same `{store,workspaceRoot,ctl,ws,inputs,recorders}` bundle formerly
+built by the recorder test's whole local workspace helper. It writes a genuine
+schema2 workspace and retained synthetic inputs. Its registered teardown closes
+every recorded real Recorder with allSettled, joins the identical Store lifetime,
+checks every rejection as the expected finalized RECORDER_STATE guard, then
+removes only its temporary root. It creates no Native/model/browser authority.
+This whole workspace/teardown group belongs to the existing fixture owner;
+no new path, production capability, queue or state owner is introduced.
+
+
+### Task8 local Recorder/graph integration checkpoint (2026-11-10)
+
+Explicit schema2 Recorder construction now uses the genuine Store, mandatory
+identity/cleanup capture, sole event writer and original prepared publication
+sequence. The full final resource snapshot is last, after actual admitted-body
+fencing/drain and before writer close. Closed science/selection facts are derived
+before resource aggregate degradation; graph readback independently recompiles
+those facts and binds versions, policy, hashes, strict parents and nested prefix
+extension. Pure helpers create no IO/publication/Native authority. V1 construction,
+old readback and golden completion bytes retain their historical meanings.
+
+The final exact nine-owner scripted Node roster passed178/178; qualified
+Node24.22.2 typecheck exited0. Each final command retains actual process wait,
+BOTH pipe EOF, fsynced/closed raw files and unchanged before/after source hashes.
+Genuine publication/readback controls cover full40 synthetic fixtures with
+eligible/inconclusive2 cadence-only outcomes, partial6/3 with absent finish checks
+and no inference, every hard class, caps, cleanup/Store/publication failures,
+forged resource graphs, strict parents and eventual pending-prefix closure.
+Actual scripted-monitor post-fence cap retention is bound into genuine final
+graphs. Existing producer-shaped driver completedGames arrays and diagnostic
+completedPairs are accepted then discarded; authoritative counts come only from
+validated recorded selections. All source/test owners remain below400 lines.
+
+All causal REDs and intervening failed setup controls remain in
+W/`separate-verdicts-implementation-evidence/77679d89-d055-4b70-b788-c2b1322a1c82/`.
+The report is W/`v2-task-8-report.md`; the owning browser-evaluation README records
+current APIs/defaults/errors/side effects/proof limits and the final code-to-doc
+comparison. One failed test attempt required TERM of its positively owned worker;
+its separate wait status is UNPROVEN. No Native closure is inferred from that
+intervention. A later fixture factoring setup failed before lifetime/root-removal
+teardown because of missing TEST imports; its natural failed process closure is
+retained and its temporary-root cleanup remains unproven. Corrected final controls
+inspect all close outcomes, join the exact owner and remove their owned roots.
+
+This is local scripted integration awaiting Root's independent scoped review.
+Task9 still owns fixture/driver/CLI and functional snapshot integration, including
+`record-finalization-v2.mjs` and `receipt-verification-v2.mjs`. Current
+snapshot-files.mjs lacks the complete new runtime closure, so archived CLI/phase
+qualification remains unavailable. Task10 includes the new recorder TEST owner.
+No actual Native/browser/model/match/phase/cohort execution, runtime release,
+publication of a candidate, fresh strength result or old-cohort reclassification
+is claimed. M, protected assets, original bounds and failed history are unchanged.

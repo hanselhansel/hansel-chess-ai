@@ -251,3 +251,47 @@ R2 commands, primary-cause controls, historical/restoration hashes and audits.
 Protected23/M/whole Section3 and approved contract remain unchanged. Fresh scoped
 review still precedes Task8; no publication, archived CLI/Native/phase or runtime
 release is claimed. No push, merge or deploy.
+
+
+### Task8 local Recorder/graph integration checkpoint (2026-11-10)
+
+Explicit schema2 Recorder construction now uses the genuine Store, mandatory
+identity/cleanup capture, sole event writer and original prepared publication
+sequence. The full final resource snapshot is last, after actual admitted-body
+fencing/drain and before writer close. Closed science/selection facts are derived
+before resource aggregate degradation; graph readback independently recompiles
+those facts and binds versions, policy, hashes, strict parents and nested prefix
+extension. Pure helpers create no IO/publication/Native authority. V1 construction,
+old readback and golden completion bytes retain their historical meanings.
+
+The final exact nine-owner scripted Node roster passed178/178; qualified
+Node24.22.2 typecheck exited0. Each final command retains actual process wait,
+BOTH pipe EOF, fsynced/closed raw files and unchanged before/after source hashes.
+Genuine publication/readback controls cover full40 synthetic fixtures with
+eligible/inconclusive2 cadence-only outcomes, partial6/3 with absent finish checks
+and no inference, every hard class, caps, cleanup/Store/publication failures,
+forged resource graphs, strict parents and eventual pending-prefix closure.
+Actual scripted-monitor post-fence cap retention is bound into genuine final
+graphs. Existing producer-shaped driver completedGames arrays and diagnostic
+completedPairs are accepted then discarded; authoritative counts come only from
+validated recorded selections. All source/test owners remain below400 lines.
+
+All causal REDs and intervening failed setup controls remain in
+W/`separate-verdicts-implementation-evidence/77679d89-d055-4b70-b788-c2b1322a1c82/`.
+The report is W/`v2-task-8-report.md`; the owning browser-evaluation README records
+current APIs/defaults/errors/side effects/proof limits and the final code-to-doc
+comparison. One failed test attempt required TERM of its positively owned worker;
+its separate wait status is UNPROVEN. No Native closure is inferred from that
+intervention. A later fixture factoring setup failed before lifetime/root-removal
+teardown because of missing TEST imports; its natural failed process closure is
+retained and its temporary-root cleanup remains unproven. Corrected final controls
+inspect all close outcomes, join the exact owner and remove their owned roots.
+
+This is local scripted integration awaiting Root's independent scoped review.
+Task9 still owns fixture/driver/CLI and functional snapshot integration, including
+`record-finalization-v2.mjs` and `receipt-verification-v2.mjs`. Current
+snapshot-files.mjs lacks the complete new runtime closure, so archived CLI/phase
+qualification remains unavailable. Task10 includes the new recorder TEST owner.
+No actual Native/browser/model/match/phase/cohort execution, runtime release,
+publication of a candidate, fresh strength result or old-cohort reclassification
+is claimed. M, protected assets, original bounds and failed history are unchanged.

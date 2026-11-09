@@ -332,24 +332,15 @@ test("shared v1 field declaration remains immutable after extraction", () => {
   }, TypeError);
 });
 
-test("v1 Recorder rejects v2 workspace/manifest before any publication", async (t) => {
+test("v1 Recorder rejects v2 workspace with v1 manifest before publication", async (t) => {
   const env = await workspaceForTest(t);
   const workspace = v2Workspace();
-  const manifest = {
-    ...fixtureManifest({ workspace, inputs: env.inputs }),
-    schemaVersion: 2,
-    evaluationPolicy: V2_POLICY,
-  };
+  const manifest = fixtureManifest({ workspace: env.ws, inputs: env.inputs });
   const cb = verifyCallbacks({ commonIdentity: workspace.commonIdentity });
   assert.throws(
-    () =>
-      createPhaseRecorder({
-        store: env.store,
-        workspace,
-        manifest,
-        verifyIdentity: cb.verifyIdentity.fn.bind(cb.verifyIdentity),
-        verifyCleanup: cb.verifyCleanup.fn.bind(cb.verifyCleanup),
-      }),
+    () => createPhaseRecorder({ store: env.store, workspace, manifest,
+      verifyIdentity: cb.verifyIdentity.fn.bind(cb.verifyIdentity),
+      verifyCleanup: cb.verifyCleanup.fn.bind(cb.verifyCleanup) }),
     (e) => e.code === "RECORDER_CONFIG",
   );
   await assert.rejects(fsp.stat(path.join(env.workspaceRoot, "check/completion.json")), (e) => e.code === "ENOENT");

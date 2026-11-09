@@ -94,6 +94,8 @@ const requirePassedParent = async (ev, probeIdentity) => {
   const pass =
     f.status === "passed" &&
     f.exitCode === 0 &&
+    (f.schemaVersion !== 2 || (f.resourceVerdict.status === "passed" &&
+      f.closureResourceVerdict.status === "passed")) &&
     f.unplannedFaultCount === 0 &&
     f.requiredChecks.every((x) => x.status === "passed") &&
     isCleanupProven(f.cleanup, "phase-workload", ev.running.supervisor);

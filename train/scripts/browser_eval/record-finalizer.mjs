@@ -15,7 +15,8 @@ import {
   validateFinalizationIntent,
 } from "./record-inputs.mjs";
 import { createBookkeepingObserver } from "./record-bookkeeping.mjs";
-import { verifyPreparedReceiptGraph } from "./receipt-verification.mjs";
+import { readVerdictEventsV2 } from "./receipt-verification-v2.mjs";
+import { verifyPreparedReceiptGraph, verifyReceiptGraph } from "./receipt-verification.mjs";
 
 const fail = (code, detail) => {
   const error = new Error(`records ${code}: ${detail}`);
@@ -31,6 +32,7 @@ export function createRecorderFinalizer({
   state,
   lifecycle,
   closeWriters,
+  appendRawEvent,
   headFields,
   verifyIdentity,
   verifyCleanup,
@@ -73,7 +75,7 @@ export function createRecorderFinalizer({
     await attempt(async (token) => {
       need(state.manifest && state.running !== null, "manifest+running required");
       need(!state.finalized && !state.finalizing, "finalize once");
-      validateFinalizationIntent(bundle.request);
+      validateFinalizationIntent(bundle.request, mf);
       // Finalizing is distinct from finalized: ordinary work stops now,
       // but trusted cleanup/fault/resource events remain writable until
       // the evidence sinks close, and a second finalizer is rejected.
@@ -99,6 +101,10 @@ export function createRecorderFinalizer({
         if (!state.lanePromoted && state.eventsSink !== null) {
           state.eventsSink.setLane("final");
           state.lanePromoted = true;
+        }
+        if (mf.schemaVersion === 2) {
+          await appendRawEvent("resource", { kind: "final-resource-evidence",
+            resourceEvidence: bundle.request.resourceEvidence });
         }
         await closeWriters();
         capture.finishClosedEvidence();
@@ -156,7 +162,18 @@ export function createRecorderFinalizer({
       { workspaceRoot: store.root, phaseDirectory: phaseDir },
       io,
     );
+    const v2 = {};
+    if (mf.schemaVersion === 2) {
+      v2.events = await readVerdictEventsV2({ workspaceRoot: store.root,
+        eventsRef: sealed.eventsRef, headFields: headFields() }, io);
+      v2.verifiedParents = [];
+      for (const parent of sealed.parents) {
+        v2.verifiedParents.push(await verifyReceiptGraph({ workspaceRoot: store.root,
+          completionRef: parent.completion, expectedIdentity: ws.commonIdentity }, new Map(), io));
+      }
+    }
     const final = buildFinalFromClosedFacts({
+      ...v2,
       ...sealed.capture.finalInputs(),
       artifactRefs,
       eventsRef: sealed.eventsRef,
@@ -173,6 +190,7 @@ export function createRecorderFinalizer({
       prerequisites: sealed.parents,
       artifacts,
       expectedSelfTest: sealed.nested,
+      final,
     });
     const prepared = await store.prepareCompletion({
       phaseDirectory: phaseDir,

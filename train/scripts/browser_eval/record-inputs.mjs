@@ -8,6 +8,7 @@
 
 import { canonicalBytes, parseCanonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { assertRecord } from "./record-schema.mjs";
+import { assertResourceEvidence } from "./resource-quality.mjs";
 import { EXIT_CODES } from "./record-finalization.mjs";
 
 const fail = (code, detail) => {
@@ -39,10 +40,7 @@ export function captureRecorderInputs({ workspace, manifest, verifyIdentity, ver
   }
   const ws = copy(workspace);
   const mf = copy(manifest);
-  // Staging fence: schema2 construction is pure until full Task8 wiring.
-  if (ws.schemaVersion !== 1 || mf.schemaVersion !== 1) {
-    fail("RECORDER_CONFIG", "v2 recorder integration unavailable");
-  }
+  if (ws.schemaVersion !== mf.schemaVersion) fail("RECORDER_CONFIG", "record version mismatch");
   assertRecord("workspace", ws);
   assertRecord("manifest", mf);
   if (ws.workspaceId !== mf.workspaceId) fail("RECORDER_CONFIG", "workspaceId mismatch");
@@ -69,7 +67,26 @@ export function captureFinalizationRequest({ intent, checks, prerequisites, expe
 // canonical exit code. records.mjs runs this inside its attempt after
 // the manifest/running/once state guards; no status is accepted or
 // rejected here outside that order.
-export function validateFinalizationIntent(request) {
+export function validateFinalizationIntent(request, manifest = null) {
+  if (manifest?.schemaVersion === 2) {
+    const allowed = ["status", "exitCode", "stopReason", "summary", "unplannedFaultCount",
+      "analysisEligible", "resourceEvidence"];
+    if (Object.keys(request).some((key) => !allowed.includes(key)) ||
+      !Number.isSafeInteger(request.unplannedFaultCount) || request.unplannedFaultCount < 0) {
+      fail("RECORDER_INPUT", "v2 supervisor intent fields");
+    }
+    const reserved = ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "resourceEvidence",
+      "qualityCheckpoint", "supervisorOutcome"];
+    if (reserved.some((key) => Object.hasOwn(request.summary ?? {}, key))) {
+      fail("RECORDER_INPUT", "reserved supervisor summary");
+    }
+    assertResourceEvidence(request.resourceEvidence);
+    const e = request.resourceEvidence;
+    if (e.runId !== manifest.runId || e.phase !== manifest.phase || e.coverageEndNs === null ||
+      (manifest.phase !== "watchdog-selftest" && e.pending)) {
+      fail("RECORDER_INPUT", "unclosed resource evidence");
+    }
+  }
   if (
     !["passed", "failed", "inconclusive", "abandoned"].includes(request.status) ||
     request.exitCode !== EXIT_CODES[request.status]
@@ -85,10 +102,10 @@ export function validateFinalizationIntent(request) {
 // equalities moved here unchanged.
 export function validateRunningInput(
   runningSnapshot,
-  { workspaceId, runId, phase, commonIdentitySha256 },
+  { workspaceId, runId, phase, commonIdentitySha256, schemaVersion = 1 },
 ) {
-  if (runningSnapshot?.schemaVersion !== 1) {
-    fail("RECORDER_CONFIG", "v1 recorder requires v1 running");
+  if (runningSnapshot?.schemaVersion !== schemaVersion) {
+    fail("RECORDER_CONFIG", "running version mismatch");
   }
   assertRecord("running", runningSnapshot);
   if (

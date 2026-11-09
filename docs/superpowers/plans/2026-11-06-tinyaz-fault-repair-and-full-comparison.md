@@ -959,7 +959,7 @@ Dependency: reviewed Task8. Add exact prospective v2 fixture without editing v1 
 | M `snapshot-identity.mjs` | Explicit protocolPath/evaluationPolicy signature/defaults from section8; assembleSnapshotIdentity includes policy only for exactly selected v2, correct protocol ref/digest. |
 | M `snapshots.mjs` | Policy-aware capture/final remeasurement/reopen; forward explicit protocolPath/evaluationPolicy into every identity reconstruction and requested path into independent reopen. |
 | M `snapshot-reopen.mjs` | inspectReopenedInputs validates requested selection against workspace schema/policy/selected ref and actual fixture bytes, passes both selected arguments into independent assembleSnapshotIdentity; retain genuine fresh-process environment/byte rechecks. |
-| M `snapshot-files.mjs` | Append exact new runtime leaves and v2 fixture to functional closure; preserve all original paths/order; exclude TEST leaves. |
+| M `snapshot-files.mjs` | Include Task8 `record-finalization-v2.mjs` and `receipt-verification-v2.mjs`, plus exact new runtime leaves and v2 fixture in functional closure; preserve all original paths/order; exclude TEST leaves. |
 | M `run.mjs` | Closed --protocol selection supports exact v1/v2 paths; bootstrap compares selected current/frozen bytes and runSupervisor forwards own.protocolPath explicitly to reopenInputs, no arbitrary path or implicit v1 fallback for v2. |
 | M `run-supervisor.mjs` | makeManifest version/policy, create monitor with phase/policy, pass expected driver protocol binding and final outcome fields. |
 | M `run-driver.mjs` | Read selected archived protocol path from identity, validate v2 policy/manifest before SDK work; bind bridge version. |
@@ -1073,6 +1073,7 @@ The current77-file inventory has76 scripted owners and one actual Native owner. 
   train/scripts/browser_eval/separate-verdicts-monitor.test.mjs \
   train/scripts/browser_eval/separate-verdicts-terminal.test.mjs \
   train/scripts/browser_eval/separate-verdicts-records.test.mjs \
+  train/scripts/browser_eval/separate-verdicts-recorder.test.mjs \
   train/scripts/browser_eval/separate-verdicts-watchdog.test.mjs \
   train/scripts/browser_eval/separate-verdicts-compat.test.mjs
 ```
@@ -1276,3 +1277,74 @@ R2 commands, primary-cause controls, historical/restoration hashes and audits.
 Protected23/M/whole Section3 and approved contract remain unchanged. Fresh scoped
 review still precedes Task8; no publication, archived CLI/Native/phase or runtime
 release is claimed. No push, merge or deploy.
+
+
+### Task8 before-use capacity and API declaration (2026-11-10)
+
+Root authorizes three focused leaves under the Task8 brief, preserving the
+approved policy and every existing owner. `record-finalization-v2.mjs` exports
+pure `compileFinalV2(input)` over captured head/identity/cleanup/request/checks,
+actual closed artifacts/events and verified parent graphs; it calls the existing
+PGN evidence/statistics owners before resource aggregation. It returns frozen
+`{final,facts}`, with no IO, Native, writer or publication authority.
+`receipt-verification-v2.mjs` exports `readVerdictEventsV2({workspaceRoot,eventsRef,headFields},io)`
+and `verifyReceiptVerdictsV2({workspaceRoot,workspace,manifest,running,final,completion,inventory,parents,nested},io)`.
+The first performs confined hash-bound event reads through existing receipt IO
+and the same inherited registrar. The second reconstructs captured facts,
+checks versions/policy/strict parents and nested scope, invokes the same pure
+compiler and `verifyVerdictClosure`, and returns no publication capability.
+It owns no Store, queue, lifetime, Native probe or independent verifier.
+`separate-verdicts-recorder.test.mjs` owns genuine Recorder/Store/prepared graph,
+publication/readback and prerequisite controls with controlled science fixtures.
+It executes with the original eight Task8 owners and joins actual writer/body
+debts. Its tests make no Native, browser, model, phase or cohort claim.
+
+Version2 input construction replaces the temporary both-v2 rejection only as
+this integration lands. The original pure records owner retains v1 golden and
+mixed-version controls. Task9 must add both new runtime leaves to its functional
+snapshot union. Task10's exact scripted roster includes the new recorder TEST
+owner. No operational archive, CLI, phase or release qualification follows.
+
+
+### Task8 local Recorder/graph integration checkpoint (2026-11-10)
+
+Explicit schema2 Recorder construction now uses the genuine Store, mandatory
+identity/cleanup capture, sole event writer and original prepared publication
+sequence. The full final resource snapshot is last, after actual admitted-body
+fencing/drain and before writer close. Closed science/selection facts are derived
+before resource aggregate degradation; graph readback independently recompiles
+those facts and binds versions, policy, hashes, strict parents and nested prefix
+extension. Pure helpers create no IO/publication/Native authority. V1 construction,
+old readback and golden completion bytes retain their historical meanings.
+
+The final exact nine-owner scripted Node roster passed178/178; qualified
+Node24.22.2 typecheck exited0. Each final command retains actual process wait,
+BOTH pipe EOF, fsynced/closed raw files and unchanged before/after source hashes.
+Genuine publication/readback controls cover full40 synthetic fixtures with
+eligible/inconclusive2 cadence-only outcomes, partial6/3 with absent finish checks
+and no inference, every hard class, caps, cleanup/Store/publication failures,
+forged resource graphs, strict parents and eventual pending-prefix closure.
+Actual scripted-monitor post-fence cap retention is bound into genuine final
+graphs. Existing producer-shaped driver completedGames arrays and diagnostic
+completedPairs are accepted then discarded; authoritative counts come only from
+validated recorded selections. All source/test owners remain below400 lines.
+
+All causal REDs and intervening failed setup controls remain in
+W/`separate-verdicts-implementation-evidence/77679d89-d055-4b70-b788-c2b1322a1c82/`.
+The report is W/`v2-task-8-report.md`; the owning browser-evaluation README records
+current APIs/defaults/errors/side effects/proof limits and the final code-to-doc
+comparison. One failed test attempt required TERM of its positively owned worker;
+its separate wait status is UNPROVEN. No Native closure is inferred from that
+intervention. A later fixture factoring setup failed before lifetime/root-removal
+teardown because of missing TEST imports; its natural failed process closure is
+retained and its temporary-root cleanup remains unproven. Corrected final controls
+inspect all close outcomes, join the exact owner and remove their owned roots.
+
+This is local scripted integration awaiting Root's independent scoped review.
+Task9 still owns fixture/driver/CLI and functional snapshot integration, including
+`record-finalization-v2.mjs` and `receipt-verification-v2.mjs`. Current
+snapshot-files.mjs lacks the complete new runtime closure, so archived CLI/phase
+qualification remains unavailable. Task10 includes the new recorder TEST owner.
+No actual Native/browser/model/match/phase/cohort execution, runtime release,
+publication of a candidate, fresh strength result or old-cohort reclassification
+is claimed. M, protected assets, original bounds and failed history are unchanged.

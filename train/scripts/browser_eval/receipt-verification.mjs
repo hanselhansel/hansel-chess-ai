@@ -29,6 +29,7 @@ import { freezeDeep } from "./schema-primitives.mjs";
 import { isCleanupProven } from "./record-finalization.mjs";
 import { assertReadEffect, issueActual, phaseArtifactRefs, storeFail } from "./artifact-files.mjs";
 import { confinedRead, loadRecord, verifyInputRefs } from "./receipt-files.mjs";
+import { verifyReceiptVerdictsV2 } from "./receipt-verification-v2.mjs";
 import { readPreparedCompletion } from "./completion-publication.mjs";
 
 const fail = (code, detail) => {
@@ -95,6 +96,9 @@ export const selftestOutcome = (ev, parentRunId, parentSupervisor) => {
     return "owner";
   }
   const f = ev.final;
+  if (f.schemaVersion === 2 && (f.resourceVerdict.status !== "passed" ||
+    f.closureResourceVerdict.status !== "passed" ||
+    f.resourceEvidence.monitorRunId !== parentRunId)) return "resource prefix";
   if (
     f.status !== "inconclusive" ||
     f.exitCode !== 2 ||
@@ -202,7 +206,7 @@ const verifyCompletion = async (
   if (completion.commonIdentitySha256 !== identityHash) {
     fail("EVIDENCE_MISMATCH", "identity hash");
   }
-  if (workspace.value.workspaceId !== completion.workspaceId) {
+  if (workspace.value.workspaceId !== completion.workspaceId || workspace.value.schemaVersion !== completion.schemaVersion) {
     fail("EVIDENCE_MISMATCH", "workspaceId");
   }
   for (const [rec, name] of [
@@ -211,7 +215,7 @@ const verifyCompletion = async (
     [final.value, "final"],
   ]) {
     if (
-      rec.workspaceId !== completion.workspaceId ||
+      rec.schemaVersion !== completion.schemaVersion || rec.workspaceId !== completion.workspaceId ||
       rec.runId !== completion.runId ||
       rec.phase !== completion.phase ||
       rec.commonIdentitySha256 !== identityHash
@@ -227,6 +231,7 @@ const verifyCompletion = async (
     fail("EVIDENCE_MISMATCH", "final/prerequisite fields");
   }
 
+  let nested = null;
   if (completion.phase === "preflight") {
     const nestedRef = completion.expectedSelfTest.completion;
     const fixedPath = `${phaseDir}/selftest/completion.json`;
@@ -235,7 +240,7 @@ const verifyCompletion = async (
     if (declared === undefined || !sameRef(declared, nestedRef)) {
       fail("EVIDENCE_INCOMPLETE", "selftest ref");
     }
-    const nested = await verifyReceiptGraph(
+    nested = await verifyReceiptGraph(
       { workspaceRoot: root, completionRef: nestedRef, expectedIdentity },
       memo,
       io,
@@ -246,6 +251,7 @@ const verifyCompletion = async (
 
   const closure = [];
   const byPhase = new Map();
+  const parents = [];
   for (const parent of completion.prerequisites) {
     const child = await verifyReceiptGraph(
       {
@@ -256,6 +262,7 @@ const verifyCompletion = async (
       memo,
       io,
     );
+    parents.push(child);
     if (child.phase !== parent.phase || child.runId !== parent.runId) {
       fail("EVIDENCE_MISMATCH", "prerequisite ref");
     }
@@ -266,6 +273,10 @@ const verifyCompletion = async (
   }
   closure.sort((a, b) => (a.phase < b.phase ? -1 : 1));
 
+  if (completion.schemaVersion === 2) await verifyReceiptVerdictsV2({
+    workspaceRoot: root, workspace: workspace.value, manifest: manifest.value,
+    running: running.value, final: final.value, completion, inventory, parents, nested,
+  }, io);
   const evidence = freezeDeep({
     workspaceId: completion.workspaceId,
     runId: completion.runId,

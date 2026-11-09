@@ -4,6 +4,8 @@
 // and the close -> evidence-path hash -> final -> completion order. Nothing
 // in this module is a second writer.
 
+import { compileFinalV2 } from "./record-finalization-v2.mjs";
+import { assertCleanupProofV2 } from "./record-schema-v2.mjs";
 import { deriveFinalGameEvidence } from "./pgn-summary.mjs";
 import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
 import { assertRecord, REQUIRED_CHECK_IDS } from "./record-schema.mjs";
@@ -45,6 +47,10 @@ export const UNPROVEN_PROOF = (scope) => ({
 // callback result degrades to the unproven proof rather than crashing.
 export function structurallyValidProof(proof, headFields, commonIdentitySha256) {
   try {
+    if (headFields.schemaVersion === 2) {
+      assertCleanupProofV2(proof);
+      return proof.scope === (headFields.phase === "watchdog-selftest" ? "selftest-workload" : "phase-workload");
+    }
     assertRecord("final", {
       ...headFields,
       commonIdentitySha256,
@@ -203,7 +209,7 @@ export function buildFinal({ headFields, commonIdentitySha256, status, requiredC
   return final;
 }
 
-export function buildCompletion({ headFields, commonIdentitySha256, status, prerequisites, artifacts, expectedSelfTest }) {
+export function buildCompletion({ headFields, commonIdentitySha256, status, prerequisites, artifacts, expectedSelfTest, final = null }) {
   const completion = {
     ...headFields,
     kind: "tinyaz-phase-completion",
@@ -213,6 +219,9 @@ export function buildCompletion({ headFields, commonIdentitySha256, status, prer
     prerequisites,
     artifacts,
     expectedSelfTest,
+    ...(headFields.schemaVersion === 2 ? Object.fromEntries(
+      ["evaluationPolicy", "strengthVerdict", "resourceVerdict", "closureResourceVerdict"]
+        .map((key) => [key, final[key]])) : {}),
   };
   assertRecord("completion", completion);
   return completion;
@@ -259,6 +268,9 @@ export function buildFinalFromClosedFacts(input) {
     });
   }
 
+  if (headFields.schemaVersion === 2) {
+    return compileFinalV2({ ...facts, requiredChecks }).final;
+  }
   const faults = Number.isSafeInteger(request.unplannedFaultCount)
     ? request.unplannedFaultCount
     : 1;

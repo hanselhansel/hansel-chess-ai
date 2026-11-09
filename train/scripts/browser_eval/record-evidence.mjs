@@ -70,7 +70,7 @@ export function createEvidenceCapture({
   const selftest = mf.phase === "watchdog-selftest";
   const phaseDirectory = selftest ? "preflight/selftest" : mf.phase;
   const headFields = {
-    schemaVersion: 1,
+    schemaVersion: mf.schemaVersion,
     workspaceId: mf.workspaceId,
     runId: mf.runId,
     phase: mf.phase,
@@ -154,6 +154,7 @@ export function createEvidenceCapture({
       }
     };
 
+    let identityObservation = null;
     let identityProven = false;
     let identityMismatch = false;
     const identity = await invokeVerifier(verifyIdentity, {
@@ -169,6 +170,7 @@ export function createEvidenceCapture({
       try {
         const observed = copy(identity.value);
         assertCommonIdentity(observed);
+        identityObservation = observed;
         identityProven = deepEqual(observed, ws.commonIdentity);
         identityMismatch = !identityProven;
       } catch {
@@ -219,6 +221,8 @@ export function createEvidenceCapture({
       identityProven,
       identityMismatch,
       cleanupOk,
+      ...(mf.schemaVersion === 2 ? { identityObservation, expectedIdentity: ws.commonIdentity,
+        expectedFinalizer } : {}),
     };
   };
 
