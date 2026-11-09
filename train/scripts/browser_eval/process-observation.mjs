@@ -9,10 +9,8 @@ import { accountingTrace } from "./accounting-trace.mjs";
 // the caller's borrowed BudgetHandle, and the admitted observation
 // commits through the monitor's explicit callbacks only.
 import { TIMING_LIMITS } from "./supervisor-protocol.mjs";
-import { resolvePythonProcessImage } from "./process-backend-reader.mjs";
 import {
   copyDeep,
-  eq,
   identityKey,
   isIdentity,
   isObj,
@@ -26,147 +24,8 @@ const acct = (detail) => {
   return e;
 };
 
-// The shared inspectPids wire wrapper, housed here under the approved
-// existing-owner move in the diagnostic-repair decision (22) to keep
-// process-proof.mjs under the readable cap: ONE bounded sample request
-// carrying the COMPLETE current owned union — the genuine
-// `ownership.ownedIdentities()` evaluated at EVERY issue — plus
-// inspectPids through the caller's transport-bound send and request
-// allocator on the borrowed handle, returning reply.inspected. It
-// performs no validation, IO, state, timer, registry, scheduler or
-// clock authority of its own; the caller classifies the returned rows
-// and all transport/validator guards stay exactly as they were.
-export const readProcessInspections = (
-  pids,
-  handle,
-  { send, nextRid, getOwnedIdentities },
-) =>
-  send(
-    "sample",
-    { owned: getOwnedIdentities(), inspectPids: pids, probes: [] },
-    nextRid("inspect"),
-    handle,
-  ).then((r) => r.inspected);
-
-// The helper-only readiness read (corrective 79): ONE first same-handle
-// inspection shared by every registration — a non-"helper" row or a row
-// already at the expected image returns immediately with no Python FS
-// resolution at all. Only a pending helper whose expectedExecutable
-// equals the deterministic derived process image AND whose resolved
-// launcher differs — and whose first row is live EXACT-launcher with
-// the supplied non-null UID and this supervisor's PPID — qualifies for
-// the bounded wait: fresh same-handle inspections of ONLY this pid,
-// assertLive on the ORIGINAL handle before every read and immediately
-// after each return, the first row's full tuple/UID/PPID held in a
-// private copy across the awaits. A gone/unavailable/reused or
-// UID-or-PPID change fails ACCOUNTING_UNAVAILABLE, a third image fails
-// instead of retrying, and a launcher row is NEVER returned as
-// readiness proof — only the exact payload row returns, with every
-// caller-side proof fence and the roots-accepted ack still ahead. No
-// sleep, tick, budget, clock, queue, registry or owner of its own.
-export const readHelperReadyInspection = async (
-  {
-    pid,
-    kind,
-    expectedExecutable,
-    pythonExecutable,
-    resolvePath,
-    uid,
-    inspect,
-  },
-  handle,
-) => {
-  handle.assertLive("helper register read");
-  const first = (await inspect([pid], handle)).find((x) => x.pid === pid);
-  handle.assertLive("helper register read");
-  if (
-    kind !== "helper" ||
-    first === undefined ||
-    first.executable === expectedExecutable
-  ) {
-    return first;
-  }
-  const payload = resolvePythonProcessImage(pythonExecutable, {
-    resolvePath,
-  });
-  const launcher = resolvePath(pythonExecutable);
-  if (
-    expectedExecutable !== payload ||
-    launcher === payload ||
-    first.state !== "live" ||
-    first.executable !== launcher ||
-    uid === null ||
-    first.process.uid !== uid ||
-    first.process.ppid !== process.pid
-  ) {
-    return first;
-  }
-  const ident = copyDeep(first.process.identity);
-  const firstUid = first.process.uid;
-  const firstPpid = first.process.ppid;
-  for (;;) {
-    handle.assertLive("helper ready read");
-    const cur = (await inspect([pid], handle)).find((x) => x.pid === pid);
-    handle.assertLive("helper ready read");
-    if (
-      cur === undefined ||
-      cur.state !== "live" ||
-      !eq(cur.process.identity, ident) ||
-      cur.process.uid !== firstUid ||
-      cur.process.ppid !== firstPpid
-    ) {
-      throw acct("helper readiness");
-    }
-    if (cur.executable === payload) return cur;
-    if (cur.executable !== launcher) throw acct("helper readiness image");
-  }
-};
-
-// The live-workload PID classifier (corrective 81): ONE fresh
-// same-handle inspection over the PID set of an EXACT captured
-// full-tuple snapshot — the identities are privately copied before any
-// await and deduplicated by PID (two retained birth tuples can share
-// one PID), an empty snapshot returns [] with NO native issue at all.
-// For each captured identity the fresh row must be present and
-// well-formed: a missing/unavailable/malformed row or a UID that
-// differs from the supplied uid fails ACCOUNTING_UNAVAILABLE and is
-// never claimed gone. Only a NATIVE gone row — or a live row on the
-// same PID carrying a DIFFERENT full start tuple — skips the old
-// identity (the old tuple is gone; the retained cache is never
-// evicted). A live row on the same full tuple with the same uid
-// contributes its PID once. assertLive runs on the ORIGINAL borrowed
-// handle before the single inspect and immediately after it. No FS,
-// clock, queue, cache, registry or ownership authority of its own.
-export const readLiveWorkloadPids = async (
-  identities,
-  handle,
-  { inspect, uid },
-) => {
-  if (!Array.isArray(identities)) throw acct("workload identities");
-  const wanted = copyDeep(identities);
-  if (wanted.length === 0) return [];
-  if (!wanted.every(isIdentity) || !Number.isSafeInteger(uid)) {
-    throw acct("workload identities");
-  }
-  const pids = [...new Set(wanted.map((i) => i.pid))];
-  handle.assertLive("workload live read");
-  const rows = await inspect(pids, handle);
-  handle.assertLive("workload live read");
-  const byPid = new Map(rows.map((r) => [r.pid, r]));
-  const live = [];
-  for (const ident of wanted) {
-    const ins = byPid.get(ident.pid);
-    if (ins === undefined) throw acct("workload inspection");
-    if (ins.state === "gone") continue;
-    const proc = ins.process;
-    if (ins.state !== "live" || !isObj(proc) || !isIdentity(proc.identity)) {
-      throw acct("workload inspection");
-    }
-    if (proc.uid !== uid) throw acct("workload uid");
-    if (eq(proc.identity, ident)) live.push(ident.pid);
-  }
-  return [...new Set(live)];
-};
+export { readProcessInspections, readHelperReadyInspection,
+  readLiveWorkloadPids } from "./process-inspections.mjs";
 
 export function createProcessObservation({
   ownership,
@@ -194,6 +53,21 @@ export function createProcessObservation({
 
   const nowNs = () => BigInt(clock.nowMonoNs());
 
+  // Sole Node terminal store. No external writer, producer authority or PID keys.
+  let terminal = new Set();
+  const isTerminalIdentity = (i) => isIdentity(i) && terminal.has(identityKey(i));
+  const sampleOwnedIdentities = () => ownership.ownedIdentities().filter((i) => !isTerminalIdentity(i));
+  const checkReply = (reply, absent) => {
+    const identities = [
+      ...(reply.discovered ?? []).map((r) => r.identity),
+      ...(reply.samples ?? []).map((r) => r.identity),
+      ...(reply.inspected ?? []).filter((r) => r.state === "live").map((r) => r.process.identity),
+      ...(reply.probes ?? []).filter((r) => r.state === "same-live").map((r) => r.identity),
+    ];
+    if (identities.some((i) => absent.has(identityKey(i)))) throw acct("terminal identity reappeared");
+  };
+  const assertNoTerminalReappearance = (reply) => checkReply(reply, terminal);
+
   // The private peak aggregate: the running maximum of actual
   // whole-union rssBytes across every ADMITTED complete cycle, plus
   // the sticky 4 GiB overage flag. Both survive lower later samples
@@ -214,10 +88,12 @@ export function createProcessObservation({
     requireHealthy();
     const startedNs = nowNs();
     const found = new Map();
+    const staged = new Set();
+    for (const i of ownership.ownedIdentities()) if (isTerminalIdentity(i)) found.set(identityKey(i), "gone");
     let requestId; // Diagnostic copy of the original allocator result, not reply data.
     let res = await send(
       "sample",
-      { owned: ownership.ownedIdentities(), inspectPids: [], probes: [] },
+      { owned: sampleOwnedIdentities(), inspectPids: [], probes: [] },
       (requestId = nextRid("sample")),
       handle,
     );
@@ -234,9 +110,15 @@ export function createProcessObservation({
       }
       nativeDurationNs += nativeNs;
       coverageRounds += 1;
+      // This census precedes THIS reply's gone reads. Only prior absence
+      // (earlier admitted cycles/coverage rounds) can contradict it.
+      checkReply(res, new Set([...terminal, ...staged]));
       ownership.observeDiscovery(res.discovered);
       for (const s of res.samples) found.set(identityKey(s.identity), s);
-      for (const g of res.gone) found.set(identityKey(g), "gone");
+      for (const g of res.gone) {
+        staged.add(identityKey(g));
+        found.set(identityKey(g), "gone");
+      }
       const fresh = ownership
         .ownedIdentities()
         .filter((i) => !found.has(identityKey(i)));
@@ -245,7 +127,7 @@ export function createProcessObservation({
       res = await send(
         "sample",
         {
-          owned: ownership.ownedIdentities(),
+          owned: sampleOwnedIdentities(),
           inspectPids: [],
           probes: [],
         },
@@ -284,27 +166,32 @@ export function createProcessObservation({
     }
     // The commit is the success point: a late callback can never beat
     // the shared horizon because assertLive rechecks the actual clock.
-    handle.assertLive("observation commit");
     // Only an ADMITTED complete sample moves the peak aggregate; the
     // strict overage predicate is rssBytes > 4 GiB and once latched it
     // never clears.
-    peakRssBytes =
-      peakRssBytes === null ? rssBytes : Math.max(peakRssBytes, rssBytes);
-    if (rssBytes > 4294967296) {
-      rssLimitExceeded = true;
-    }
+    const nextPeak = peakRssBytes === null ? rssBytes : Math.max(peakRssBytes, rssBytes);
+    const nextLimit = rssLimitExceeded || rssBytes > 4294967296;
     const obs = {
       atMonoNs: finishedNs.toString(),
       rssBytes,
-      peakRssBytes,
-      rssLimitExceeded,
+      peakRssBytes: nextPeak,
+      rssLimitExceeded: nextLimit,
       accountingValid: true,
       intervalMs,
       sampled: samples.length,
       gone,
     };
-    commitCycle(obs, finishedNs.toString());
-    return copyDeep(obs);
+    // All fallible preparation precedes the last original guard. No await
+    // or public callback separates original commit and terminal publication.
+    const result = copyDeep(obs);
+    const nextTerminal = new Set([...terminal, ...staged]);
+    const finished = finishedNs.toString();
+    handle.assertLive("observation commit");
+    commitCycle(obs, finished);
+    terminal = nextTerminal;
+    peakRssBytes = nextPeak;
+    rssLimitExceeded = nextLimit;
+    return result;
   };
 
   // The current-observation projection: the newest admitted cycle is
@@ -324,5 +211,6 @@ export function createProcessObservation({
     return obs;
   };
 
-  return Object.freeze({ runCycle, projectObservation });
+  return Object.freeze({ runCycle, projectObservation, sampleOwnedIdentities,
+    isTerminalIdentity, assertNoTerminalReappearance });
 }

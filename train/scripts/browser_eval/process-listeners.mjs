@@ -6,10 +6,11 @@ import { copyDeep, eq, identityKey } from "./protocol-values.mjs";
 const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
 
 export function createProcessListenerProof({
-  ownership, enqueue, inspect, ownUid, requireHealthy, lsofQueries, acct,
+  ownership, enqueue, inspect, ownUid, requireHealthy, lsofQueries, acct, isTerminalIdentity = () => false,
 }) {
   // Listener proof under the caller's absolute deadline: ONE queued
-  // fresh liveness classification over the captured workload tuples —
+  // liveness classification over the full captured workload tuples, with
+  // only Node-admitted terminal exacttuples excluded from fresh inspection —
   // a cached-gone PID never reaches the lsof gate — then one gated
   // owned-pids query PER remaining live PID plus one gated port query
   // per registered port (which always runs, even for a gone owner),
@@ -34,7 +35,7 @@ export function createProcessListenerProof({
     if (workload.length > 0) {
       handle.assertLive("listener deadline");
       const livePids = await enqueue(
-        () => readLiveWorkloadPids(workload, handle, { inspect, uid: ownUid() }),
+        () => readLiveWorkloadPids(workload, handle, { inspect, uid: ownUid(), isTerminalIdentity }),
         handle,
       );
       for (const pid of livePids) {

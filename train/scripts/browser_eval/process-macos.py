@@ -91,6 +91,7 @@ class Collector:
         self.seq_in = 0
         self.seq_out = 0
         self.roots = []
+        self.discovery_seeds = {}  # DATA ONLY, never terminal/proof authority.
         self.request_ids = set()
         self.protected = set()
         self.closed = False
@@ -242,7 +243,10 @@ class Collector:
         discovered = n.discover(be)
         # The emitted set is the stateless conservative superset built
         # from the same snapshot + the complete owned union and roots.
-        discovered = n.project_discovery(discovered, owned, self.roots)
+        for ident in owned:
+            self.discovery_seeds[self._key(ident)] = dict(ident)
+        discovered = n.project_discovery(
+            discovered, list(self.discovery_seeds.values()), self.roots)
         samples, gone, inspected = [], [], []
         for ident in msg["owned"]:
             r = n.sample_process(be, ident)

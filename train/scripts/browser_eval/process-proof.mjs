@@ -12,7 +12,7 @@ import { createProcessListenerProof } from "./process-listeners.mjs";
 import { realpathSync } from "node:fs";
 import { resolvePythonProcessImage } from "./process-backend-reader.mjs";
 import { readHelperReadyInspection, readProcessInspections } from "./process-observation.mjs";
-import { copyDeep, eq, isAbs, isIdentity, isObj, isPid, strNE } from "./protocol-values.mjs";
+import { copyDeep, eq, fail as ipcFail, isAbs, isIdentity, isObj, isPid, strNE } from "./protocol-values.mjs";
 
 
 
@@ -34,6 +34,9 @@ export function createProcessProofs({
   lsofQueries,
   ownUid,
   resolvePath = realpathSync,
+  sampleOwnedIdentities = () => ownership.ownedIdentities(),
+  isTerminalIdentity = () => false,
+  assertNoTerminalReappearance = () => {},
 }) {
   if (
     !strNE(runId) ||
@@ -47,17 +50,21 @@ export function createProcessProofs({
     typeof requireHealthy !== "function" ||
     typeof lsofQueries !== "function" ||
     typeof ownUid !== "function" ||
+    typeof sampleOwnedIdentities !== "function" ||
+    typeof isTerminalIdentity !== "function" ||
+    typeof assertNoTerminalReappearance !== "function" ||
     typeof resolvePath !== "function"
   ) {
     throw acct("proof options");
   }
 
   // One fresh native inspectPids read under the caller's borrowed
-  // handle carrying the COMPLETE current owned union on every issue;
+  // handle carrying the full unresolved/live partition on every issue;
+  // ONLY whole-cycle Node-admitted terminal tuples may be omitted.
   // the caller classifies the returned rows itself. The wire
   // wrapper lives in process-observation.mjs (diagnostic move 22).
   const inspect = (pids, handle) =>
-    readProcessInspections(pids, handle, { send, nextRid, getOwnedIdentities: ownership.ownedIdentities });
+    readProcessInspections(pids, handle, { send, nextRid, getOwnedIdentities: sampleOwnedIdentities, assertNoTerminalReappearance });
 
   // The accepted ready envelope declares tuples; they bind only to the
   // real child PID and this supervisor PID, then to native inspection:
@@ -203,18 +210,22 @@ export function createProcessProofs({
     return { identity: copyDeep(row.identity) };
   };
 
-  // A fresh exact-tuple probe through the collector: never a cached or
-  // invented verdict; failure or deadline expiry is unavailable, not
-  // gone.
+  // Approved exact-terminal hit after health/live guards needs no Native
+  // effect. Every unproven tuple still uses the original fresh collector
+  // probe; failures/expiry are unavailable, never new terminal authority.
   const probeIdentityFresh = async (identity, handle) => {
     if (!isIdentity(identity)) return "unavailable";
     try {
+      requireHealthy();
+      handle.assertLive("probe deadline");
+      if (isTerminalIdentity(identity)) return "gone";
       const res = await send(
         "sample",
-        { owned: ownership.ownedIdentities(), inspectPids: [], probes: [identity] },
+        { owned: sampleOwnedIdentities(), inspectPids: [], probes: [identity] },
         nextRid("probe"),
         handle,
       );
+      assertNoTerminalReappearance(res);
       const p = res.probes.find((x) => eq(x.identity, identity));
       handle.assertLive("probe deadline");
       return p ? p.state : "unavailable";
@@ -232,6 +243,11 @@ export function createProcessProofs({
   ) => {
     requireHealthy();
     const target = ownership.assertSignalTarget(identity, scopeRunId);
+    handle.assertLive("signal deadline");
+    if (isTerminalIdentity(target)) {
+      if (!["TERM", "KILL"].includes(signal)) ipcFail("signal authorize fields");
+      return "gone";
+    }
     const rid = nextRid("signal");
     protocol.authorizeSignal({ requestId: rid, identity: target, signal });
     const res = await send(
@@ -245,7 +261,7 @@ export function createProcessProofs({
   };
 
   const queryListenersScoped = createProcessListenerProof({
-    ownership, enqueue, inspect, ownUid, requireHealthy, lsofQueries, acct,
+    ownership, enqueue, inspect, ownUid, requireHealthy, lsofQueries, acct, isTerminalIdentity,
   });
 
   // The lsof exec-gate's private transition evidence: one fresh native

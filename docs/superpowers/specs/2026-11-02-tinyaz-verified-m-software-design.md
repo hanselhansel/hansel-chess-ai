@@ -564,6 +564,12 @@ Do not change runtime auth defaults, missing-file handling, environment preceden
 | Create | `./train/scripts/browser_eval/private-fs.mjs` | Declared before creation: shared harness-private default filesystem backend, sole exports privateFs and createPrivateReadStream. Metadata/path methods and raw FD stat/read/write/sync/close invoke actual Node synchronous FS immediately within caller prearmed/guarded issuance; completed value/original throw delivers through one setImmediate, never deferred fresh FS. Same Promise APIs, no clock/deadline/queue/debt authority. Cold bounded Readable uses emitClose:false; only actual close success or proven never-issued open emits physical close. Ambiguous open/close remains strongly retained/unknown; after ambiguous close never reuse integer FD for another operation. Private stream accepts captured assertEffectLive for each fresh read and bounded delivery; mandatory close remains allowed. One raw-resource storage Set, no new receipt ledger; existing issueActual/OwnedFile remains authority. Functional runtime union111, helpers unchanged. |
 | Create | `./train/scripts/browser_eval/private-fs.test.mjs` | TEST-only default sync syscall/fair delivery, original errors, real FD and ambiguous-close/reuse safety, cold stream/guard/close controls. Excluded from runtime. |
 | Create | `./train/scripts/browser_eval/private-fs-phase.test.mjs` | TEST-only causal unavailable async-pool Store/Recorder/footprint/receipt controls and complete runtime import closure. Existing async injected fixture bodies/results/errors remain; interception targets the same shared privateFs facade instead of Node's global provider. Excluded from runtime. |
+| Create | `./train/scripts/browser_eval/process-accounting.mjs` | Declared before use: accepted terminal identity addendum; pure capacity delegation, functional runtime114; no extra proof/debt/time authority. |
+| Create | `./train/scripts/browser_eval/process-inspections.mjs` | Declared before use: accepted terminal identity addendum; pure capacity delegation, functional runtime114; no extra proof/debt/time authority. |
+| Create | `./train/scripts/browser_eval/terminal-test-fixtures.mjs` | Declared before use: accepted terminal identity addendum; PURE TEST-only, runtime-excluded; no extra proof/debt/time authority. |
+| Create | `./train/scripts/browser_eval/terminal-identity.test.mjs` | Declared before use: accepted terminal identity addendum; PURE TEST-only, runtime-excluded; no extra proof/debt/time authority. |
+| Create | `./train/scripts/browser_eval/terminal-consumers.test.mjs` | Declared before use: accepted terminal identity addendum; PURE TEST-only, runtime-excluded; no extra proof/debt/time authority. |
+| Create | `./train/scripts/browser_eval/terminal-identity.test.py` | Declared before use: accepted terminal identity addendum; PURE TEST-only, runtime-excluded; no extra proof/debt/time authority. |
 | Create | `./train/scripts/browser_eval/accounting-trace.mjs` | Passive bounded scalar accounting timing data; exact declaration in runtime passive accounting trace addendum. Functional runtime112, no authority/IO/timer. |
 | Create | `./train/scripts/browser_eval/accounting-trace.test.mjs` | PURE genuine first-fault/data/capacity/nested-owner controls, runtime excluded. |
 | Create | `./train/scripts/browser_eval/accounting-trace-io.test.mjs` | PURE private FS/transport/held/error boundary controls, runtime excluded. |
@@ -1455,11 +1461,13 @@ are excluded. This declaration supersedes earlier runtime registries:
   "train/scripts/browser_eval/phase-runners.mjs",
   "train/scripts/browser_eval/prerequisites.mjs",
   "train/scripts/browser_eval/private-fs.mjs",
+  "train/scripts/browser_eval/process-accounting.mjs",
   "train/scripts/browser_eval/process-backend-reader.mjs",
   "train/scripts/browser_eval/process-backend.mjs",
   "train/scripts/browser_eval/process-budget.mjs",
   "train/scripts/browser_eval/process-framing.mjs",
   "train/scripts/browser_eval/process-horizon.mjs",
+  "train/scripts/browser_eval/process-inspections.mjs",
   "train/scripts/browser_eval/process-listeners.mjs",
   "train/scripts/browser_eval/process-lsof-fields.mjs",
   "train/scripts/browser_eval/process-lsof-io.mjs",
@@ -4167,3 +4175,94 @@ bounded NONREPRODUCTION and f1 setup remains FAILED_SETUP. Passive trace collect
 evidence; no backend repair is claimed. No new workload ran for this docs-only
 checkpoint. Publication, fresh committed check/parity/preflight, new Root full40
 release and final whole-change/task review remain OPEN. No push or phase launch.
+
+
+### Accepted terminal identity amendment and before-use declarations, 2026-11-09
+
+Hansel approved terminal-gone-proposed-amendment.md SHA13cc15b7f5d1cfa41d9b1bb23ddf6d691d184f52cf38a9cab25b6eb2750f7f66
+through terminal-gone-approval.json, after scoped reviewa7d02d088f67892883803fce8766591a5cb08dd391793c0f85daf1d8d1ac0b2c.
+That immutable draft/review stays unchanged; approval is external. This addendum
+supersedes the complete-historical-owned SAMPLE/fresh-every-cached-tuple literal
+ONLY for exact Node-admitted terminal identities. Keep all roots/membership/history.
+ONE monitor-local observation terminal set, admitted only with whole timely
+validated runCycle at original live-handle/last-valid commit. No standalone read,
+failed/late/native-duration/flush/batch/Node-rejected work admits facts. Python
+frame flush is not Node acceptance. SamePID/newbirth gets no hit; exact later
+reappearance is fatal, not revival. Earlier same-batch census before disappearance
+is legal; a subsequent census/inspection contradicting absence is fatal.
+
+Every SAMPLE partition omits ONLY admitted terminal exacttuples; all unresolved/
+live owned identities still require original Native sampling. Complete currentUID
+census remains mandatory and precedes unchanged projection. Native Collector gains
+DATA-ONLY cumulative fulltuple projection-seed history, empty per collector, no
+terminal/proof/ownership authority, no new wire/ACK. Preserve full projection
+visibility for terminal members. Costs stay under original aggregate bounds.
+Probe/no-action and workload PID selection may use admitted exact absence after
+original health/scope/live-handle guards. Generic numericPID inspection/newroot/
+newbirth stay fresh; all ports including gone owners and fresh holder binding
+remain mandatory. Every ACTUAL signal keeps fresh tuple check immediately before
+kill; terminal no-action consumes no authorization. No oldfact clears sticky
+fault/accounting/overage or physical exit/BOTHpipe/fd/callback/body/lifetime debt.
+All 250/500/1000ms,30/90s/24h,P/C,TERM2/KILL4/5s/resource/scientific limits remain.
+
+Declare BEFORE creation/use for readable capacity:
+- process-accounting.mjs: ONE pure createProcessAccounting over EXACT14 borrowed
+  keys runId/pythonExecutable/protocol/ownership/send/enqueue/nextRid/requireHealthy/
+  lsofQueries/ownUid/clock/state/commitCycle/markFault. Whole proof/observation
+  constructor+runCycle wrapper group delegates over same refs, frozen return
+  {proofs,observation,runCycle}. No extra queue/store/deadline/IO or constructor
+  callback effects. imports only existing observation/proof owners.
+- process-inspections.mjs: whole existing readProcessInspections,
+  readHelperReadyInspection,readLiveWorkloadPids group from observation with its
+  original guards/comments/error factory. Observation reexports IDENTICAL refs.
+  Depends on existing backend-reader/protocol-values only, no proof/observation
+  backedge. Existing private inspection context captures read-only terminal/
+  contradiction bindings; standalone omitted bindings preserve no-terminal API.
+- process-observation frozen private roster becomes runCycle/projectObservation/
+  sampleOwnedIdentities/isTerminalIdentity/assertNoTerminalReappearance. No writer
+  API; one private set is writable ONLY in runCycle successful atomic commit.
+  processes/proof/listeners get genuine captured read-only same-monitor refs.
+  Public monitor roster unchanged. DAG processes -> accounting -> proof/observation
+  -> inspections -> backend-reader/protocol-values; no backedge/new state owner.
+Functional runtime112->114; Python helper union3 and six execution helpers stay.
+
+Declare PURE runtime-excluded TEST paths terminal-test-fixtures.mjs (sole factory
+makeTerminalObservation over genuine observation/ownership/budget with staged
+send/clock), terminal-identity.test.mjs (admission/partition/contradiction controls),
+terminal-consumers.test.mjs (genuine monitor/proof/listener/physical debt controls)
+and terminal-identity.test.py (genuine Collector/Native staged-kernel/flush controls).
+No Native/browser/model/control/cohort execution before fresh review and Root GO.
+Current66 failed8/40 and subsequent known38gone observations remain ineligible/
+historical-cause UNKNOWN; no scores/weights change or old receipt repair. Required
+whole PURE owners, docs/current usage/status and final code-to-doc check accompany
+local green implementation. Protected wholeSection3 and approved artifact hashes
+stay exact. No hidden minification; all changed source/tests below400.
+
+
+### Terminal identity implementation checkpoint, 2026-11-09
+
+Approved Node-admitted rule implemented, ready for fresh source review only.
+Causal behavioral RED retained: repeated confirmed-gone oldtuple hit staged
+permission. Whole affected PURE sweep245/245 passed; final proof/consumer/
+monitor/protocol whole owners139/139 passed after preserving signal-field and
+malformed private-binding guards. Python whole58+19 and new8 controls passed.
+All command exits/BOTHpipes/rawfiles joined. No actual Native/control/fullserial
+Native/cap/browser/model/phase/cohort ran. Current runtime114/helpers3; source/
+tests below400. App/typecheck carry132 unchanged non-Python refs; the sole changed
+prior Python ref is Collector, freshly covered by whole Python owners.
+
+One private observation set publishes only after all fallible preparation and
+original last live guard/private cycle commit. All SAMPLE callers use the sole
+read-only unresolved/live partition. Counts of gone include admitted terminal
+history, not new BSD proof; live RSS is freshly sampled, peak/overage stays latched.
+The Python history is only projection seeds, not Node-acceptance/death authority.
+Contradiction ordering, generic present-PID/newbirth, all ports/fresh holders,
+original signal validation/no authorization for no-action, actual signal tuple
+reads and independent child/BOTHpipe/fd/body/debt obligations remain explicit.
+
+Source/doc audit and raw commands/hashes/closure: terminal-gone-implementation-report.md
+in the established SDD. Prior66 failed8/40, later known38gone only, all old seals/
+proposal/review/report prefixes remain immutable and ineligible. Historical88834
+cause stays UNKNOWN; no causal/score/strength or completed40 claim. Fresh Max
+source review and separate Root operational releases/publication/fresh committed
+prerequisites remain OPEN. No push/main/merge or new experiment is authorized.

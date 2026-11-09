@@ -6,7 +6,9 @@
 // gated lsof to process-lsof.mjs, native IO proof to
 // process-proof.mjs, deadline capture/BudgetHandles/bounded waits and
 // the serialized bounded queue to process-budget.mjs, the complete RSS
-// cycle and projection to process-observation.mjs, and the closed
+// cycle/terminal admission to process-observation.mjs (same-ref assembly
+// in process-accounting.mjs, inspection helpers in process-inspections.mjs),
+// and the closed
 // BackendIdentity capture to process-backend.mjs. Every async method
 // accepts an optional trusted {deadlineMonoMs} harness budget: the
 // captured horizon is computed once BEFORE enqueue as the minimum of
@@ -32,8 +34,7 @@ import {
   createWatchdogLifetime,
 } from "./watchdog-lifetime.mjs";
 import { bindProcessHorizon } from "./process-horizon.mjs";
-import { createProcessProofs } from "./process-proof.mjs";
-import { createProcessObservation } from "./process-observation.mjs";
+import { createProcessAccounting } from "./process-accounting.mjs";
 import { createBoundedQueue } from "./process-budget.mjs";
 import { createMonitorBackendCapture } from "./process-backend.mjs";
 import { TIMING_LIMITS } from "./supervisor-protocol.mjs";
@@ -222,49 +223,14 @@ export function createProcessMonitor({
   const send = (type, fields, rid, handle) =>
     state.transport.send(type, fields, rid, handle);
 
-  // The one native-proof owner over this monitor's shared state via
-  // explicit callbacks; it keeps no parallel state of its own.
-  const proofs = createProcessProofs({
-    runId,
-    pythonExecutable,
-    protocol,
-    ownership,
-    send,
-    enqueue,
-    nextRid,
-    requireHealthy,
-    lsofQueries: () => state.lsof,
-    ownUid: () => state.ownUid,
+  const { proofs, observation, runCycle } = createProcessAccounting({
+    runId, pythonExecutable, protocol, ownership, send, enqueue, nextRid,
+    requireHealthy, lsofQueries: () => state.lsof, ownUid: () => state.ownUid,
+    clock, state: () => ({ lastObservation: lastObs, lastValidNs, stickyFault,
+      sampling: state.timer !== null, nowMonoNs: clock.nowMonoNs() }),
+    commitCycle: (obs, finishedNs) => { lastObs = obs; lastValidNs = finishedNs; },
+    markFault,
   });
-
-  // The one RSS-observation owner: the bounded coverage cycle through
-  // this monitor's send/allocator/registry and commit callbacks.
-  const observation = createProcessObservation({
-    ownership,
-    send,
-    nextRid,
-    requireHealthy,
-    clock,
-    state: () => ({
-      lastObservation: lastObs,
-      lastValidNs,
-      stickyFault,
-      sampling: state.timer !== null,
-      nowMonoNs: clock.nowMonoNs(),
-    }),
-    commitCycle: (obs, finishedNs) => {
-      lastObs = obs;
-      lastValidNs = finishedNs;
-    },
-  });
-
-  // Any failed cycle latches the fault and leaves the retained LAST
-  // VALID observation current-invalid.
-  const runCycle = (handle) =>
-    observation.runCycle(handle).catch((e) => {
-      markFault(e);
-      throw e;
-    });
 
   // The borrowed authorities the runtime consumes: its nested lsof
   // registration/signal enqueue real proof work on the SAME queue with
