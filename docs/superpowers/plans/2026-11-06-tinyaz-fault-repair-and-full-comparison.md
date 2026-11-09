@@ -777,3 +777,36 @@ and valid-but1001ms-old Store rejection. Runtime owner359lines; runtime union114
 unchanged. Failed727 CHECK and all old proofs remain ineligible, historical
 confirmations UNKNOWN. Actual Native/fullserial/cap/phase review+GO still OPEN.
 No M3 comment cleanup, model/science/dependency/runtime-pin change or score claim.
+
+
+### Closed directory-retirement verification checkpoint, 2026-11-09
+
+Verified candidate299625f8da6b0783f11135449a3f1efcbb98e3c8: actual full serial
+836/836 passed,0 failures/cancelled/skipped/todo; parent natural0/103.05508225s,
+BOTHpipes/rawfiles/journal joined. ActualNative14 all exit+BOTHpipes+settled,
+expected collectors0/0/2, errors[], shared output1022967B below4MiB. Final gate
+bookkeeping separately closed0/0.43921s. W/directory-retirement-native-gate-299625f-20261109T053822831Z-fd6c6b73-5c45-417d-a2da-49d3a083fe20/completed-handoff.json
+SHA79dc3da712bd7b48dc380652ab19a908c88bbb63a5d4ad57bd043184d771c0c4;
+completed-evidence-manifest.json SHAbac5fdfc01538fbe713bf4c194aecca6eda066ac6ae998e17779177e19eb5818.
+
+Controlled CAP wrapper90658 natural0/7.482946042s; CLI90673 natural2/
+PHASE_TIMEOUT, fault0, BOTHpipes joined. Driver90687+collector90681 actualexit0/
+no signal/BOTHpipes; cleanup verified+accountingtrue, analysisEligiblefalse,
+no containment.45markers:22entered/22fulfilled/1accepted/0rejected. All496
+executed input/seal refs exact after. Bookkeeping BEFORE handoff1.343306958s;
+final tool externally closed0, no extra exact duration inferred. W/directory-retirement-cap-299625f-1-owner/completed-handoff.json
+SHAfe8fb2e6bd7e8aeb960e17a3fd17952a9f75825eac8eff4cd2ed7ba4b85ee7d2;
+completed-evidence-manifest.json SHA4f7129ffbf7bddcf773987929dd7a6606595bf9cec99885f63af1e924f3ad631.
+Seven app checks intentionally failed in controlled SDK/body/input-reopen setup.
+This is genuine CLI/Native/Recorder/Watchdog/driver closure evidence ONLY, not a
+real primary check, browser/model/parity/cohort/score pass or strength refresh.
+
+The failed727 actual CHECK remains failed/ineligible, with missing completion
+and unproven Native cleanup (handoffe2f531b3..., manifest08eb9456...). Earlier
+failures and immutable approved9df amendment/approval/review remain unchanged.
+Historical directory confirmations/88834/415ms/OS causes remain UNKNOWN. No old
+proof or result is promoted. Runtime114, all TEST sources/deps, protected23/M/
+Section3, pins/six execution helpers unchanged. MinorM3 remains deferred.
+Docs-only factual checkpoint: no source edits/tests/workload. Fresh committed
+actualcheck/parity/preflight and new Root full40 GO remain OPEN. Publication is
+separate; original scientific/clock/resource/ownership/debt limits stay exact.
