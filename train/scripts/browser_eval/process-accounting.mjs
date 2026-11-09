@@ -17,6 +17,8 @@ export function createProcessAccounting({
   state,
   commitCycle,
   markFault,
+  quality = null,
+  softCompare = false,
 }) {
   if (typeof markFault !== "function") throw new TypeError("accounting markFault binding");
   const observation = createProcessObservation({
@@ -27,6 +29,8 @@ export function createProcessAccounting({
     clock,
     state,
     commitCycle,
+    quality,
+    softCompare,
   });
   const assertNoTerminalReappearance = (reply) => {
     try {
@@ -51,8 +55,8 @@ export function createProcessAccounting({
     isTerminalIdentity: observation.isTerminalIdentity,
     assertNoTerminalReappearance,
   });
-  const runCycle = (handle) =>
-    observation.runCycle(handle).catch((error) => {
+  const runCycle = (handle, metadata) =>
+    observation.runCycle(handle, metadata).catch((error) => {
       markFault(error);
       throw error;
     });

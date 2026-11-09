@@ -1,12 +1,17 @@
 // Whole original resource-poll group over borrowed references. The facade
 // retains first-stop authority, and state.resourceTask remains the sole FS body.
 import { FIXED_LIMITS } from "./record-schema.mjs";
+import { createWatchdogResourceChecks } from "./watchdog-verdict-policy.mjs";
 import { issueActual } from "./artifact-files.mjs";
 
 const L = FIXED_LIMITS;
 
-export function armResourcePolling({ capabilities, state, timing, control, makeError: fail }) {
+export function armResourcePolling({ capabilities, state, timing, control, makeError: fail, evaluationPolicy = null, phase = null }) {
   const { clock, monitor, footprint, io } = capabilities;
+  if (evaluationPolicy !== null && typeof clock.nowMonoNs !== "function")
+    throw fail("ACCOUNTING_UNAVAILABLE", "v2 clock nowMonoNs");
+  const checks = createWatchdogResourceChecks({ monitor, state, ...control, makeError: fail,
+    evaluationPolicy, phase, nowNs: () => clock.nowMonoNs() });
   // The resource interval's Native check never waits on footprint IO.
   // Every bounded observation is retained through the existing
   // "resource" event lane with the ACTUAL sample's own atMonoNs,
@@ -22,32 +27,24 @@ export function armResourcePolling({ capabilities, state, timing, control, makeE
   };
   const scan = clock.setInterval(() => {
     if (state.stopReq !== null || state.finishReq !== null) return;
-    const mo = monitor.lastObservation();
-    const rssBytes =
-      mo !== null && Number.isSafeInteger(mo.rssBytes) ? mo.rssBytes : null;
-    const peakRssBytes =
-      mo !== null && Number.isSafeInteger(mo.peakRssBytes)
-        ? mo.peakRssBytes
-        : null;
-    const rssLimitExceeded = mo !== null && mo.rssLimitExceeded === true;
-    const accountingValid = mo !== null && mo.accountingValid === true;
-    const atMonoNs =
-      mo !== null && mo.atMonoNs !== undefined ? `${mo.atMonoNs}` : null;
+    let mo;
+    if (evaluationPolicy === null) mo = monitor.lastObservation();
+    else {
+      try { mo = checks.readObservation(); }
+      catch (error) { latchResource(error); return; }
+    }
+    let captured;
+    try { captured = checks.payload(mo); }
+    catch (error) { latchResource(error); return; }
     const emitResource = () => {
-      if (state.records !== null) {
+      if (state.records !== null && captured !== null) {
         void state.records
-          .recordEvent("resource", {
-            rssBytes,
-            peakRssBytes,
-            rssLimitExceeded,
-            accountingValid,
-            atMonoNs,
-          })
+          .recordEvent("resource", captured)
           .catch(control.recordFault);
       }
     };
     try {
-      if (!mo || mo.accountingValid !== true) {
+      if (!mo || (evaluationPolicy === null && mo.accountingValid !== true)) {
         let detail = "native observation";
         try {
           const retained = monitor.fault?.()?.detail;

@@ -20,6 +20,7 @@ const realClock = {
   setInterval,
   clearInterval,
   nowMonoMs: () => Number(process.hrtime.bigint() / 1000000n),
+  nowMonoNs: () => process.hrtime.bigint().toString(),
   nowUtc: () => new Date().toISOString(),
 };
 
@@ -37,6 +38,8 @@ const OP_CEILING = {
 export function createWatchdog(options) {
   const { config, capabilities } = captureWatchdogRuntimeConfig(options, realClock);
   const { clock, monitor } = capabilities;
+  const v2 = config.workspace.schemaVersion === 2;
+  if (v2 && typeof clock.nowMonoNs !== "function") throw fail("IPC_INVALID", "v2 clock nowMonoNs");
 
   // ONE shared mutable private state. No second state or validator.
   const state = {
@@ -74,7 +77,7 @@ export function createWatchdog(options) {
   };
 
   const now = () => clock.nowMonoMs();
-  const nowNs = () => BigInt(Math.floor(now() * 1e6));
+  const nowNs = () => v2 ? BigInt(clock.nowMonoNs()) : BigInt(Math.floor(now() * 1e6));
 
   // The genuine recorder's timed runtime binds ONCE here — purely,
   // before any adapter use and with no clock read at construction: the
@@ -172,6 +175,9 @@ export function createWatchdog(options) {
     recordFault,
     latchStop,
     makeError: fail,
+    evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null,
+    phase: config.phase,
+    nowNs,
   });
   const requestStop = (reason) => latchStop(reason);
   const stopped = () => state.stopReq !== null;

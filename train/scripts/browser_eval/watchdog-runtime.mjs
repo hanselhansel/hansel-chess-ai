@@ -111,6 +111,8 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
       phase: config.phase,
       onObserverFault: control.recordFault,
       io, // forwarded unchanged for the NEXT adapter consumer
+      resourceSnapshot: config.workspace.schemaVersion === 2 ? () => config.selftestPhase
+        ? cleanup.readResourcePrefix() : monitor.lastObservation()?.resourceQuality : null,
     });
     // A stop latched before the adapter existed still gets its real
     // first-stop freeze with the latched timestamp.
@@ -177,7 +179,7 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
         throw fail("ACCOUNTING_UNAVAILABLE", "supervisor tuple");
       await bounded(
         recorder.writeRunning({
-          schemaVersion: 1,
+          schemaVersion: config.workspace.schemaVersion,
           workspaceId: config.workspace.workspaceId,
           runId: config.runId,
           phase: config.phase,
@@ -285,7 +287,8 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
         "start",
       );
 
-      armResourcePolling({ capabilities, state, timing, control, makeError: fail });
+      armResourcePolling({ capabilities, state, timing, control, makeError: fail,
+        evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null, phase: config.phase });
       await control.wake;
     }
     return await control.shutdown();

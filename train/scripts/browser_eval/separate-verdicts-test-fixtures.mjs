@@ -146,3 +146,70 @@ export {
   startMonitorFixture as startStrictMonitor,
 } from "./process-monitor-test-fixtures.mjs";
 export { setupRun as strictWatchdogRun } from "./watchdog-run-test-fixtures.mjs";
+
+// Task7 TEST-only scripted collector. One genuine monitor, transport and owner.
+import { realpathSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { createProcessMonitor, processMonitorLifetime } from "./processes.mjs";
+import { PYTHON_EXECUTABLE } from "./schema-constants.mjs";
+import { fakeClock, collectorFixture, sampleReply } from "./supervision-test-fixtures.mjs";
+import { monitorReadyOptions, monitorBootstrapScript } from "./process-monitor-test-fixtures.mjs";
+
+export function qualityMonitor({ phase = "compare", evaluationPolicy = V2_POLICY,
+  getDeadlineMonoMs = null, startNs = 1000000000n } = {}) {
+  const clock = fakeClock({ startNs });
+  const script = monitorBootstrapScript();
+  const fixture = collectorFixture({ runId: "R1", script });
+  const write = fixture.child.stdin.write;
+  fixture.child.stdin.write = (...args) => {
+    // OS child exit cannot reenter the synchronous parent write stack.
+    if (JSON.parse(String(args[0]).trim()).type === "shutdown") {
+      queueMicrotask(() => {
+        if (script.holdShutdown) fixture.written.push(JSON.parse(String(args[0]).trim()));
+        else write(...args);
+      });
+      return true;
+    }
+    return write(...args);
+  };
+  const dir = realpathSync(mkdtempSync(path.join(tmpdir(), "quality-mon-")));
+  for (const name of ["process-macos.py", "process-macos-native.py", "process-macos-abi.py"])
+    writeFileSync(path.join(dir, name), "# scripted helper\n");
+  const spawns = [];
+  let monitor;
+  try {
+    monitor = createProcessMonitor({ runId: "R1", phase, evaluationPolicy,
+      pythonExecutable: PYTHON_EXECUTABLE, helperPath: path.join(dir, "process-macos.py"),
+      recordRoot: dir, protocol: fixture.protocol, clock, getDeadlineMonoMs,
+      spawnImpl: (...args) => { spawns.push(args); return fixture.child; } });
+  } catch (error) { rmSync(dir, { recursive: true }); throw error; }
+  const reply = (extra = {}) => {
+    const request = fixture.written.filter((m) => m.type === "sample").at(-1);
+    fixture.emit({ ...sampleReply({ ...request, script }), ...extra });
+  };
+  return { clock, fixture, script, monitor, spawns, reply,
+    async start(options) {
+      const p = monitor.start(options);
+      fixture.ready(monitorReadyOptions());
+      clock.advance(10);
+      return p;
+    },
+    async dispose() {
+      fixture.exit(0);
+      await monitor.stopAndReap().catch(() => {});
+      await processMonitorLifetime(monitor).whenSettled();
+      rmSync(dir, { recursive: true });
+    } };
+}
+export const flushQuality = () => new Promise((resolve) => setImmediate(resolve));
+export const qualitySamples = (f) => f.fixture.written.filter((m) => m.type === "sample");
+export async function periodicQuality(f, milliseconds = 250, reply = {}) {
+  f.script.muteSample = true;
+  f.clock.advance(milliseconds);
+  await flushQuality();
+  f.reply(reply);
+  await flushQuality();
+  f.script.muteSample = false;
+  return f.monitor.lastObservation();
+}

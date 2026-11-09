@@ -152,7 +152,7 @@ export function createProcessStart({
         spawnImpl,
       });
       state.timer = clock.setInterval(tick, TIMING_LIMITS.sampleMs);
-      await authority.enqueue(() => authority.runCycle(h), h);
+      await authority.enqueue(() => authority.runCycle(h, "bootstrap"), h);
       h.assertLive("start deadline");
       if (state.stopping) {
         // A stop captured the fence while the first cycle ran: no

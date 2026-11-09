@@ -10470,7 +10470,7 @@ the caller's responsibility. The v1-only Recorder staging guards remain active.
 ### Current Task5 TEST fixture API contract (review fix round1)
 
 `separate-verdicts-test-fixtures.mjs` exports the five Task5 functions below. These five build
-synthetic data only. Task6 additionally re-exports four existing scripted factories, documented in the Task6 API section below. They launch no process, own no monitor/Store/lifetime, write
+synthetic data only. Task6 additionally re-exports four existing scripted factories, documented in the Task6 API section below. These five Task5 functions launch no process, own no monitor/Store/lifetime, write
 no file, and relax no production validator. They cannot establish a genuine v2
 workspace, publication, parent, Native observation, cleanup, cohort or passage.
 `ref`, identity/environment values and model input inventories come from the
@@ -10538,3 +10538,176 @@ Before production extraction the two new owners characterized strict-v1 behavior
 Evidence: W/`separate-verdicts-implementation-evidence/46cb8caf-2b51-4294-b63e-9073fce7f4ac/`; full command/closure/hash/cost and final code-to-doc comparison in W/`v2-task-6-report.md`. This is local scripted equivalence, with no actual Native/browser/model/phase run, v2 publication, cohort or strength claim. Root's fresh independent scoped review remains a separate gate before Task7; operational v1 and Task5 Recorder staging remain active.
 
 Functional-closure staging: the three new runtime imports are not yet captured by `snapshot-files.mjs` (authorized Task9 scope). Local strict-v1 source equivalence is tested; archived CLI/phase qualification is unavailable at this checkpoint until Task9 captures every new runtime import and later gates pass. No source-stage result is a runtime release.
+
+### Task7 before-use declarations (2026-11-10)
+
+Task7 reuses the Task5 ledger and Task6 same-reference owners for the approved
+monitor-only and Watchdog policy wiring. The private monitor adds only
+`_captureResourcePrefix({scopeRunId,deadlineMonoMs})`, synchronous exact-bound
+preflight/selftest capture. No queue/IO/timer or parent-horizon write is allowed.
+`lastObservation().resourceQuality` exposes the frozen sole-ledger snapshot;
+monitor-stop final capture follows the actual fence/drain and nested cleanup
+caches one exact prefix for private `readResourcePrefix()` readback. V2 Recorder
+publication remains blocked until Task8; archived CLI closure remains unavailable
+until Task9 captures every transitive runtime import. No runtime release.
+
+Task7 TEST-only additions in the existing fixture owner are
+`qualityMonitor({phase="compare",evaluationPolicy=V2_POLICY,getDeadlineMonoMs=null,startNs=1000000000n}={})`,
+`flushQuality()`, `qualitySamples(env)`, and
+`periodicQuality(env,milliseconds=250,reply={})`. The first owns one genuine
+monitor/protocol/queue/lifetime using a scripted collector, temporary helper bytes
+and a fake clock; `start(options?)` emits scripted ready facts, `reply(extra?)`
+releases the latest genuine sample request, and `dispose()` supplies actual
+controlled exit and BOTH closes before joining its owner and removing its root.
+Helpers flush a turn, read issued sample requests, and drive one periodic reply.
+They make no Native/browser/model/publication claim. The new declared
+`separate-verdicts-terminal.test.mjs` owns terminal-admission controls, with no
+existing test edits. Monitor/watchdog TEST owners retain Task6 characterizations.
+
+
+### Task7 monitor and Watchdog component checkpoint (2026-11-10)
+
+Explicit v2 monitor policy now separates sticky whole-run coverage loss from
+rolling complete/current timely observations and the original hard-fault channel.
+Only private periodic compare timing predicates are soft. Bootstrap, public
+sampling, other phases, structural/transport/permission faults and all original
+bounds remain strict. Terminal admission requires a timely live complete cycle
+without an overage. Observed versus admitted peaks stay distinct; observed caps
+remain sticky through the real sampling fence and admitted-work drain.
+
+Nested cleanup captures and caches an exact synchronous selftest prefix only
+after its actual child-scope proof. Parent periodic debt remains pending and
+owned. Later parent caps/faults/debt are parent evidence. V2 resource captures use
+the borrowed clock's exact `nowMonoNs` reader, with no ms reconstruction or
+change to operational ms deadlines. Closed monitor/prefix coverage emits no
+redundant ordinary checkpoint; Task8 Recorder remains the sole mandatory full
+final-resource-event publisher after actual drain.
+
+The final exact nine-owner scripted Node roster passed112/112; isolated
+`terminal-identity.test.py` passed8/8. Qualified npm typecheck exited0. Commands
+retain actual process exit, BOTH pipe EOF, closed raw files and stable source
+hashes. Causal failures and all intervening attempts remain in
+W/`separate-verdicts-implementation-evidence/6114b3a8-893e-4e27-aa9e-78f72dcdd095/`.
+The report is W/`v2-task-7-report.md`. The owning browser-evaluation README
+records current signatures, defaults, errors, side effects and proof limits.
+
+This is a local component checkpoint awaiting Root's independent scoped review.
+Task5's v1-only Recorder staging guards remain active. Genuine positive v2
+Recorder/Store/graph publication is Task8. Versioned fixture/driver/CLI capture
+and reopen are Task9. `snapshot-files.mjs` is unchanged and does not yet capture
+all new transitive runtime imports. Archived CLI/phase qualification and runtime
+release remain unavailable. No actual Native/browser/model/phase execution,
+fresh cohort or strength result is claimed. Failed cohorts remain ineligible.
+
+
+### Task7 current monitor and policy APIs
+
+`createProcessMonitor` adds `evaluationPolicy=null,phase=null`. Both omitted
+retain strict v1 and its original public key roster. V2 requires exact
+`V2_POLICY` plus a recorded ordinary phase (check, parity, preflight, compare).
+A missing/mismatched policy/phase rejects before bound callbacks or IO. A nested
+selftest reuses the bound preflight monitor. There is one ledger, ownership
+registry, queue, allocator, transport, clock and actual-settlement lifetime.
+The ledger's existing Task5 API is reused unchanged.
+
+Every captured operation stores immutable `originalEndNs` before enqueue, equal
+to the mathematical floor of its original numeric minimum deadline multiplied
+by1000000. Fractional1000.25ms becomes1000250000ns. Later narrowing changes the
+same genuine handle and never reconstructs that evidence. A private runtime tick
+passes purpose `periodic`; startup passes `bootstrap`; public sample passes
+`ordinary`. Callers cannot select private periodic treatment. Pre-bootstrap or
+pre-successful-start work cannot obtain soft admission. Accounting forwards the
+same handle/metadata and latches every thrown error; returned typed data does
+not latch a fault. Original first code/detail/time stay authoritative. Known
+source predicates assign IDENTITY/TIMESTAMP/UNION/AGGREGATE, cleanup and IPC map
+to CLEANUP/TRANSPORT, and unmapped source errors remain hard NATIVE.
+
+The original whole-union/fixpoint/partition checks remain in the observation
+owner. V2 complete cycles update the sole ledger after the original handle's
+actual live guard. Only a timely, cap-negative cycle admits staged terminal
+facts; discovery/history remains retained on untimely complete cycles. A cap
+never clears and prevents fresh terminal admission. Pure strict-v1 behavior and
+returned field roster remain unchanged before the strengthened stop fence.
+
+V2 `sample(options?)` remains strict. Its internal observation result has the
+existing sample fields plus `snapshotComplete,cycleTimely,observedPeakRssBytes`,
+`resourceQuality`, and a discriminant `kind:"observation"`. Private periodic
+cycles use `kind:"periodic-quality"` when their native duration or completion
+interval loses quality, while retaining complete current facts. A decoded
+post-fence cycle returns only frozen `{kind:"fenced-observation"}`; ordinary
+proof success cannot escape the fence. Unqueued work is checked before issuance
+and before successful return. No queued ordinary body issues after the fence.
+
+`lastObservation()` returns null before a strict bootstrap seed. V2 projections
+retain the original sample facts and add `snapshotComplete,cycleTimely`,
+`observedPeakRssBytes,coverageContinuous,lastCoverageQualifiedNs,lastCompleteNs`,
+`lastTimelyNs,resourceQuality`. The full resourceQuality snapshot is deeply frozen.
+Its pending bit comes from the actual queued/in-flight private periodic tick.
+Reads may record observer age while sampling; they perform no IO and cannot
+repair coverage. Accounting validity means current timely evidence, actual
+age<=500ms while sampling and no hard fault. Getter errors remain hard. The
+fence closes the sole coverage interval once and records any open tail. Actual
+queue/collector drain remains required. Only an already-issued live complete
+periodic post-fence sum above4GiB changes observed peak/overage; it changes no
+sample, admitted peak, counter, terminal fact, clock or coverage endpoint.
+Guard-observed lateDrops retain actual now plus the immutable original end;
+earlier rejected wire chunks have unavailable observation attribution.
+
+`_captureResourcePrefix({scopeRunId,deadlineMonoMs})` is present only on explicit
+v2 monitors and returns a deeply frozen resourceEvidence synchronously. The
+monitor must be preflight, scope exactly `<parent>:watchdog-selftest`, C finite,
+actual now strictly before C and the current parent bound, with no hard fault,
+continuous coverage, a timely observation aged<=500ms and no cap. Invalid scope,
+expired bound or missing/stale proof throws ACCOUNTING_UNAVAILABLE immediately.
+It copies parent start/counters/peaks and actual tick pending, changes only the
+copy's scope/phase/closureKind/coverageEndNs, and leaves parent state, handles,
+queue, horizon and timers untouched. It performs no wait, IO or new allocation
+of an operation handle. Trusted cleanup owns the prior child-scope proof.
+
+`createCleanupController` adds private `readResourcePrefix()`: null before
+success and the same frozen object afterward. The nested run captures once,
+after survivor/listener/workload settlement and before original C. Child debt,
+failed proof or stale current evidence prevents capture. Ordinary compare cleanup
+can prove current freshness despite sticky coverage loss. Other phases remain
+strict. Original TERM/KILL/P/C, listener and actual pipe/body requirements remain.
+
+`createWatchdogResourceChecks` now additionally accepts
+`evaluationPolicy=null,phase=null,nowNs=null`, and returns frozen
+`{rssExceeded,stopFinishOnOverage,readObservation,payload}` over the same borrowed
+state/monitor/fault/latch. V1 defaults preserve its original behavior. Explicit
+v2 validates full resource evidence/current fields, allows only compare quality
+loss, and keeps missing/invalid/getter/unmapped failures hard. A validated sticky
+cap takes priority even over a later hard projection. `payload(mo)` returns the
+original v1 payload, the closed active v2 checkpoint payload, or null for fenced
+v2 coverage. The exported pure `resourcePayload(mo,capturedNs)` implements this
+projection without a ledger, clock, timer, IO or stop authority. Active v2 input
+requires actual capture ns and schema/size-valid checkpoint facts. Invalid data
+throws the existing bounded schema/canonical errors.
+
+`armResourcePolling` additionally accepts `evaluationPolicy=null,phase=null`.
+V2 requires `capabilities.clock.nowMonoNs`; it uses that same borrowed exact
+reader for checkpoint capture. Watchdog's default clock now exposes this reader
+from the same hrtime origin; existing operational ms functions are unchanged.
+Missing/invalid v2 reader fails closed, with no synthesized capture timestamp.
+The interval remains1000ms and state.resourceTask stays the sole FS body. Quality
+alone records without latching stop; native/footprint/cap failures retain their
+hard path. Closed coverage produces no ordinary checkpoint. Cleanup/shutdown
+keeps sticky cap/fault state and supervisor evidence for Task8's full final event.
+A nested finalization selects its cached prefix, never later parent samples.
+
+The records adapter adds optional trusted `resourceSnapshot=null`. Runtime binds
+it only for explicit schema2 to actual stopped-monitor evidence or the exact
+cleanup prefix. `composeIntent` validates and copies that supervisor evidence;
+no driver summary/verdict can replace it. Current v1-only Recorder guards still
+reject operational v2 construction/intent. The shutdown outcome projection adds
+schema/policy/verdict/completion fields only from a genuinely verified schema2
+final. Positive v2 end-to-end publication is untested and staged for Task8.
+
+The Task7 fixture's scripted shutdown exit runs in a microtask, matching real
+ChildProcess event ordering outside synchronous stdin.write. `script.holdShutdown`
+withholds that controlled exit for explicit exit/BOTH-pipe debt controls. This is
+TEST-only scheduling, not a transport fix, Native delay or extra production timer.
+All temporary roots and collector/operation debts are explicitly closed before
+removal. Existing tests/factories remain unchanged. The Task6 review pronoun now
+explicitly says "These five Task5 functions", so its no-IO claim excludes the
+four re-exported owned scripted factories.

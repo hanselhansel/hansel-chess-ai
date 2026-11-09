@@ -18,9 +18,10 @@ import {
 
 const COVERAGE_ROUNDS = 8;
 
-const acct = (detail) => {
+const acct = (detail, resourceReason = "NATIVE") => {
   const e = new Error(`ACCOUNTING_UNAVAILABLE ${detail}`);
   e.code = "ACCOUNTING_UNAVAILABLE";
+  e.resourceReason = resourceReason;
   return e;
 };
 
@@ -35,6 +36,8 @@ export function createProcessObservation({
   clock,
   state,
   commitCycle,
+  quality = null,
+  softCompare = false,
 }) {
   if (
     !isObj(ownership) ||
@@ -64,7 +67,7 @@ export function createProcessObservation({
       ...(reply.inspected ?? []).filter((r) => r.state === "live").map((r) => r.process.identity),
       ...(reply.probes ?? []).filter((r) => r.state === "same-live").map((r) => r.identity),
     ];
-    if (identities.some((i) => absent.has(identityKey(i)))) throw acct("terminal identity reappeared");
+    if (identities.some((i) => absent.has(identityKey(i)))) throw acct("terminal identity reappeared", "IDENTITY");
   };
   const assertNoTerminalReappearance = (reply) => checkReply(reply, terminal);
 
@@ -82,9 +85,14 @@ export function createProcessObservation({
   // each reply's native duration is checked in ITS OWN Python monotonic
   // origin — never subtracted against the supervisor's hrtime, which
   // separately bounds the completed-cycle gap including the slow first
-  // sample. Any failure throws; the monitor latches the fault and the
-  // retained last-valid observation stays untouched.
-  const runCycle = async (handle) => {
+  // sample. Only private v2 compare periodic timing predicates return
+  // quality data. Structural and strict-policy failures remain thrown.
+  const runCycle = async (handle, metadata = {}) => {
+    if (state().stopping) throw acct("monitor stopping");
+    if (quality !== null && quality.snapshot().completedCycles === 0 && metadata.purpose !== "bootstrap")
+      throw acct("missing strict bootstrap");
+    const soft = quality !== null && softCompare && metadata.purpose === "periodic" &&
+      quality.snapshot().completedCycles > 0;
     requireHealthy();
     const startedNs = nowNs();
     const found = new Map();
@@ -98,17 +106,20 @@ export function createProcessObservation({
       handle,
     );
     let nativeDurationNs = 0n;
+    let nativeMaxDurationNs = 0n;
     let coverageRounds = 0;
     for (let round = 0; ; round += 1) {
       const nativeNs =
         BigInt(res.finishedAtMonoNs) - BigInt(res.startedAtMonoNs);
+      if (BigInt(res.startedAtMonoNs) < 0n || BigInt(res.finishedAtMonoNs) < 0n || nativeNs < 0n)
+        throw acct("native interval", "TIMESTAMP");
       if (
-        nativeNs < 0n ||
-        nativeNs > BigInt(TIMING_LIMITS.sampleGapMs) * 1000000n
+        (!soft && nativeNs > BigInt(TIMING_LIMITS.sampleGapMs) * 1000000n)
       ) {
         throw acct("native interval");
       }
       nativeDurationNs += nativeNs;
+      if (nativeNs > nativeMaxDurationNs) nativeMaxDurationNs = nativeNs;
       coverageRounds += 1;
       // This census precedes THIS reply's gone reads. Only prior absence
       // (earlier admitted cycles/coverage rounds) can contradict it.
@@ -123,7 +134,7 @@ export function createProcessObservation({
         .ownedIdentities()
         .filter((i) => !found.has(identityKey(i)));
       if (fresh.length === 0) break;
-      if (round >= COVERAGE_ROUNDS) throw acct("coverage unsettled");
+      if (round >= COVERAGE_ROUNDS) throw acct("coverage unsettled", "UNION");
       res = await send(
         "sample",
         {
@@ -140,18 +151,31 @@ export function createProcessObservation({
     const gone = found.size - samples.length;
     let rssBytes = 0;
     for (const s of samples) {
+      if (!Number.isSafeInteger(s.residentBytes) || s.residentBytes < 0) throw acct("rss aggregate", "AGGREGATE");
       rssBytes += s.residentBytes;
       if (!Number.isSafeInteger(rssBytes) || rssBytes < 0) {
-        throw acct("rss aggregate");
+        throw acct("rss aggregate", "AGGREGATE");
       }
     }
-    const { lastValidNs, stickyFault } = state();
+    const current = state();
+    if (quality !== null && current.stopping) {
+      // Only decoded attempts reaching this guard are attributable. The
+      // immutable end is diagnostic; the SAME live handle still decides.
+      const d = { requestId, observedAtNs: String(nowNs()), originalEndNs: metadata.originalEndNs };
+      try { handle.assertLive("observation commit"); }
+      catch (error) { quality.noteLateDrop(d); throw error; }
+      quality.noteLateDrop(d, soft ? rssBytes : null);
+      return Object.freeze({ kind: "fenced-observation" });
+    }
+    if (current.stopping) throw acct("monitor stopping");
+    const { lastValidNs, stickyFault } = current;
     const previousNs = lastValidNs === null ? null : BigInt(lastValidNs);
     const intervalMs =
       previousNs === null
         ? Number(finishedNs - startedNs) / 1e6
         : Number(finishedNs - previousNs) / 1e6;
-    if (intervalMs > TIMING_LIMITS.sampleGapMs || stickyFault !== null) {
+    if ((!soft && (intervalMs > TIMING_LIMITS.sampleGapMs ||
+      finishedNs - startedNs > 500000000n)) || stickyFault !== null) {
       const diagnostic = {
         startedNs: startedNs.toString(), finishedNs: finishedNs.toString(),
         lastValidNs: previousNs === null ? null : previousNs.toString(),
@@ -163,6 +187,24 @@ export function createProcessObservation({
       };
       accountingTrace.cycle(diagnostic, requestId);
       throw acct(`sample interval ${JSON.stringify(diagnostic)}`);
+    }
+    if (quality !== null) {
+      const timely = finishedNs - startedNs <= 500000000n && nativeMaxDurationNs <= 500000000n;
+      const cycle = { startedNs: String(startedNs), finishedNs: String(finishedNs),
+        nativeMaxDurationNs: String(nativeMaxDurationNs), rssBytes, requestId, handleLive: true };
+      // The original guard precedes every ledger/terminal/observation commit.
+      handle.assertLive("observation commit");
+      if (quality.snapshot().completedCycles === 0) quality.bootstrap(cycle);
+      else quality.complete(cycle);
+      const q = quality.snapshot();
+      const obs = { atMonoNs: String(finishedNs), rssBytes, peakRssBytes: q.peakRssBytes,
+        observedPeakRssBytes: q.observedPeakRssBytes, rssLimitExceeded: q.rssLimitExceeded,
+        accountingValid: timely, snapshotComplete: true, cycleTimely: timely,
+        intervalMs, sampled: samples.length, gone };
+      commitCycle(obs, String(finishedNs));
+      if (timely && !q.rssLimitExceeded) terminal = new Set([...terminal, ...staged]);
+      return { ...copyDeep(obs), kind: soft && (!timely || intervalMs > TIMING_LIMITS.sampleGapMs) ? "periodic-quality" : "observation",
+        resourceQuality: q };
     }
     // The commit is the success point: a late callback can never beat
     // the shared horizon because assertLive rechecks the actual clock.
@@ -199,9 +241,20 @@ export function createProcessObservation({
   // monitor whose last valid completion went stale reports invalid
   // accounting without zeroing the retained sample facts.
   const projectObservation = () => {
-    const { lastObservation, stickyFault, sampling, nowMonoNs } = state();
+    const { lastObservation, stickyFault, sampling, nowMonoNs, pending } = state();
+    if (quality !== null) {
+      quality.setPending(pending === true);
+      if (sampling && quality.snapshot().completedCycles > 0) quality.noteAge(String(nowMonoNs));
+    }
     if (lastObservation === null) return null;
     const obs = copyDeep(lastObservation);
+    if (quality !== null) {
+      const q = quality.snapshot();
+      Object.assign(obs, { resourceQuality: q, coverageContinuous: !q.coverageLost,
+        lastCoverageQualifiedNs: q.lastCoverageQualifiedNs, lastCompleteNs: q.lastCompleteNs,
+        lastTimelyNs: q.lastTimelyNs, observedPeakRssBytes: q.observedPeakRssBytes,
+        peakRssBytes: q.peakRssBytes, rssLimitExceeded: q.rssLimitExceeded });
+    }
     if (stickyFault !== null) {
       obs.accountingValid = false;
     } else if (sampling && obs.accountingValid) {

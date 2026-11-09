@@ -14,6 +14,7 @@ import { copyDeep, isObj } from "./protocol-values.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import { finishDriverActualScope } from "./watchdog-driver.mjs";
 import { observeAwaitStage } from "./watchdog-lifetime.mjs";
+import { resourcePayload } from "./watchdog-verdict-policy.mjs";
 import { cleanupProofEnd } from "./watchdog-cleanup-context.mjs";
 export { createWatchdogCleanupArgs } from "./watchdog-cleanup-context.mjs";
 
@@ -68,6 +69,10 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
         status: res.final.status,
         exitCode: res.final.exitCode,
         stopReason: res.final.stopReason,
+        ...(res.final.schemaVersion === 2 ? { schemaVersion: 2,
+          policyId: res.final.evaluationPolicy.policyId, strengthVerdict: copyDeep(res.final.strengthVerdict),
+          resourceVerdict: copyDeep(res.final.resourceVerdict), closureResourceVerdict: copyDeep(res.final.closureResourceVerdict),
+          completionRef: copyDeep(res.completionRef) } : {}),
       };
     }
     return fallbackOutcome();
@@ -258,28 +263,19 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // the latch BEFORE the resource/fault event dispatch — same as W3 —
     // and its actual separate current/peak/flag/time/verdict stays
     // retained in the resource lane.
-    if (control.rssExceeded()) {
+    const prefix = config.selftestPhase && typeof cleanup.readResourcePrefix === "function"
+      ? cleanup.readResourcePrefix() : null;
+    // A sealed nested prefix does not consume the parent's later observations.
+    if (prefix === null && control.rssExceeded()) {
       const mo = monitor.lastObservation();
-      // The mutable observation's primitive fields are copied BEFORE any
-      // stop/record observer callback runs — never re-read after the
-      // synchronous latch — so the emitted resource/fault observations
-      // carry the same real numbers, flag and time.
-      const obsRss = mo !== null ? mo.rssBytes : null;
-      const obsPeak = mo !== null ? mo.peakRssBytes : null;
-      const obsAccounting = mo !== null ? mo.accountingValid : null;
-      const obsAtNs = mo !== null ? mo.atMonoNs : undefined;
-      const e = fail("RESOURCE_RSS", `peak ${mo !== null ? obsPeak : "?"}`);
+      const captured = resourcePayload(mo, mo?.resourceQuality?.coverageEndNs === null
+        ? String(capabilities.clock.nowMonoNs()) : undefined);
+      const e = fail("RESOURCE_RSS", `peak ${mo !== null ? mo.observedPeakRssBytes ?? mo.peakRssBytes : "?"}`);
       control.latchStop(e.code);
       control.recordFault(e);
-      if (state.records !== null) {
+      if (state.records !== null && captured !== null) {
         void state.records
-          .recordEvent("resource", {
-            rssBytes: Number.isSafeInteger(obsRss) ? obsRss : null,
-            peakRssBytes: Number.isSafeInteger(obsPeak) ? obsPeak : null,
-            rssLimitExceeded: true,
-            accountingValid: obsAccounting === true,
-            atMonoNs: obsAtNs !== undefined ? `${obsAtNs}` : null,
-          })
+          .recordEvent("resource", captured)
           .catch(control.recordFault);
       }
     }

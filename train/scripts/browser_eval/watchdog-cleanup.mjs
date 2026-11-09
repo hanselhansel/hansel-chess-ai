@@ -71,6 +71,7 @@ export function createCleanupController({
     unproven("runId required");
   if (typeof clock.nowMonoMs !== "function") unproven("clock nowMonoMs");
   let settled = null;
+  let resourcePrefix = null;
   let inRun = false;
 
   const run = async ({
@@ -303,8 +304,15 @@ export function createCleanupController({
       // Current accounting captured WHILE the collector is still sampling —
       // the projection disables age checking once sampling has stopped.
       const obs = monitor.lastObservation();
-      if (!obs || obs.accountingValid !== true) accountingValid = false;
+      if (!obs || obs.accountingValid !== true || (obs.resourceQuality &&
+        obs.resourceQuality.phase !== "compare" && obs.coverageContinuous !== true)) accountingValid = false;
       if (signalFaults > 0 || probeFaults > 0 || eventFaults > 0) accountingValid = false;
+      if (snap.scope === "selftest-workload" && typeof monitor._captureResourcePrefix === "function") {
+        if (!accountingValid || settlementDebt || survivors.length || listenersRemaining.length)
+          unproven("nested prefix child proof");
+        cap();
+        resourcePrefix = monitor._captureResourcePrefix({ scopeRunId: snap.scopeRunId, deadlineMonoMs: absEnd });
+      }
       const failedProof = settlementDebt; // Settled negative proof already has the original ordering.
       try { await stopCollector(failedProof); } catch { accountingValid = false; }
       const proof = {
@@ -366,5 +374,5 @@ export function createCleanupController({
     return copyDeep(settled.proof);
   };
 
-  return Object.freeze({ run, verifyCleanup });
+  return Object.freeze({ run, verifyCleanup, readResourcePrefix: () => resourcePrefix });
 }

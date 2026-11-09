@@ -1161,3 +1161,38 @@ Genuine pre-extraction characterization passed10/10, then identical inputs passe
 These are local scripted controls only. No actual Native/browser/model/phase execution, runtime release, v2 publication, fresh cohort or strength result is claimed. All failed cohorts remain ineligible. Fresh independent Root-dispatched scoped review is required before Task7.
 
 Functional-closure staging: the three new runtime imports are not yet captured by `snapshot-files.mjs` (authorized Task9 scope). Local strict-v1 source equivalence is tested; archived CLI/phase qualification is unavailable at this checkpoint until Task9 captures every new runtime import and later gates pass. No source-stage result is a runtime release.
+
+
+### Task7 monitor and Watchdog component checkpoint (2026-11-10)
+
+Explicit v2 monitor policy now separates sticky whole-run coverage loss from
+rolling complete/current timely observations and the original hard-fault channel.
+Only private periodic compare timing predicates are soft. Bootstrap, public
+sampling, other phases, structural/transport/permission faults and all original
+bounds remain strict. Terminal admission requires a timely live complete cycle
+without an overage. Observed versus admitted peaks stay distinct; observed caps
+remain sticky through the real sampling fence and admitted-work drain.
+
+Nested cleanup captures and caches an exact synchronous selftest prefix only
+after its actual child-scope proof. Parent periodic debt remains pending and
+owned. Later parent caps/faults/debt are parent evidence. V2 resource captures use
+the borrowed clock's exact `nowMonoNs` reader, with no ms reconstruction or
+change to operational ms deadlines. Closed monitor/prefix coverage emits no
+redundant ordinary checkpoint; Task8 Recorder remains the sole mandatory full
+final-resource-event publisher after actual drain.
+
+The final exact nine-owner scripted Node roster passed112/112; isolated
+`terminal-identity.test.py` passed8/8. Qualified npm typecheck exited0. Commands
+retain actual process exit, BOTH pipe EOF, closed raw files and stable source
+hashes. Causal failures and all intervening attempts remain in
+W/`separate-verdicts-implementation-evidence/6114b3a8-893e-4e27-aa9e-78f72dcdd095/`.
+The report is W/`v2-task-7-report.md`. The owning browser-evaluation README
+records current signatures, defaults, errors, side effects and proof limits.
+
+This is a local component checkpoint awaiting Root's independent scoped review.
+Task5's v1-only Recorder staging guards remain active. Genuine positive v2
+Recorder/Store/graph publication is Task8. Versioned fixture/driver/CLI capture
+and reopen are Task9. `snapshot-files.mjs` is unchanged and does not yet capture
+all new transitive runtime imports. Archived CLI/phase qualification and runtime
+release remain unavailable. No actual Native/browser/model/phase execution,
+fresh cohort or strength result is claimed. Failed cohorts remain ineligible.

@@ -202,13 +202,22 @@ export function createProcessRuntime({ config, state, authority }) {
       return;
     }
     state.tickQueued = true;
-    const dl = authority.op(undefined, TIMING_LIMITS.commandMs);
-    const lifetime = authority.ownOperation(dl);
+    let dl, lifetime;
+    try {
+      dl = authority.op(undefined, TIMING_LIMITS.commandMs);
+      lifetime = authority.ownOperation(dl);
+    } catch (error) {
+      // No body was issued. Retire only this unissued setup acquisition.
+      dl?.dispose();
+      state.tickQueued = false;
+      authority.markFault(error);
+      return;
+    }
     lifetime.actualSettled.then(() => {
       state.tickQueued = false;
     });
     authority
-      .enqueue(() => authority.runCycle(dl), dl)
+      .enqueue(() => authority.runCycle(dl, "periodic"), dl)
       .catch(() => {})
       .finally(() => lifetime.finish());
   };

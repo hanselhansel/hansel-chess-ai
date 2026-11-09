@@ -34,6 +34,10 @@ import {
   createWatchdogLifetime,
 } from "./watchdog-lifetime.mjs";
 import { bindProcessHorizon } from "./process-horizon.mjs";
+import { V2_POLICY } from "./evaluation-policy.mjs";
+import { createResourceQuality, assertResourceEvidence } from "./resource-quality.mjs";
+import { eqLiteral, freezeDeep } from "./schema-primitives.mjs";
+import { RECORDED_PHASES } from "./schema-constants.mjs";
 import { createProcessAccounting } from "./process-accounting.mjs";
 import { createBoundedQueue } from "./process-budget.mjs";
 import { createMonitorBackendCapture } from "./process-backend.mjs";
@@ -78,6 +82,8 @@ export function createProcessMonitor({
   horizon = null,
   lifetime = undefined,
   expectedBackendIdentity = undefined,
+  evaluationPolicy = null,
+  phase = null,
 }) {
   if (
     !strNE(runId) ||
@@ -101,9 +107,13 @@ export function createProcessMonitor({
   ) {
     throw acct("monitor options");
   }
-  // An omitted lifetime mints ONE real-default owner for isolated
-  // legacy use; a supplied owner (null included) must be genuinely
-  // branded and is retained by exact identity, never copied/rebound.
+  if (evaluationPolicy !== null) {
+    eqLiteral(evaluationPolicy, V2_POLICY, "monitor evaluationPolicy");
+    if (!RECORDED_PHASES.includes(phase) || phase === "watchdog-selftest") throw acct("monitor phase");
+  } else if (phase !== null) throw acct("monitor policy/phase");
+  const quality = evaluationPolicy === null ? null : createResourceQuality({ runId, phase });
+  // One ledger and immutable per-handle diagnostic end. Neither grants IO.
+  const cycleMetadata = new WeakMap();
   const lifetimeOwner =
     lifetime === undefined ? createWatchdogLifetime() : lifetime;
   if (lifetime !== undefined) assertWatchdogLifetime(lifetimeOwner);
@@ -112,7 +122,6 @@ export function createProcessMonitor({
   const helperDir = path.dirname(helperPath);
   const helperPaths = HELPER_NAMES.map((n) => path.join(helperDir, n));
   const nowMonoMs = () => Number(BigInt(clock.nowMonoNs()) / 1000000n);
-  // C4b-09: the optional static expectation is validated/copied/frozen BEFORE the bound getter or any IO.
   const backendCapture = createMonitorBackendCapture({
     expectedBackendIdentity,
     captureOptions: {
@@ -121,12 +130,8 @@ export function createProcessMonitor({
       clearDelay: (t) => clock.clearTimeout(t),
     },
   });
-  // The constructor-captured absolute bound: later getter reads may
-  // narrow it, never extend.
   const constructorDeadlineMs =
     getDeadlineMonoMs === null ? null : getDeadlineMonoMs();
-  // The ONE shared lifecycle object: the runtime mutates it and the
-  // proofs/observation/health checks read the same fields.
   const state = {
     child: null,
     transport: null,
@@ -147,21 +152,15 @@ export function createProcessMonitor({
 
   const nextRid = (p) => `${p}-${runId}-${(reqNo += 1)}`;
 
-  // The one serialized bounded queue: public promises settle at their
-  // handles' expiry and op() narrows every tracked active AND queued
-  // handle when a later trusted getter yields an earlier bound.
   const queue = createBoundedQueue({ clock, nowMonoMs });
-  const enqueue = (fn, handle) => queue.enqueue(fn, handle);
-  // A supplied branded horizon binds once here: every strict narrowing
-  // synchronously reaches every live handle through the same narrowAll.
+  // Queue admission stays owned until actual body settlement, including expiry.
+  const enqueue = (fn, handle) => queue.enqueue(() => {
+    if (state.stopping) throw acct("monitor stopping");
+    return fn();
+  }, handle);
   const binding =
     horizon === null ? null : bindProcessHorizon({ reader: horizon, queue });
 
-  // The trusted bound source for the capture owner: the branded
-  // horizon supplies its immutable original end and current min and is
-  // validated armed here — an unarmed operational horizon rejects
-  // before any timer, queue acquisition or IO — while the legacy
-  // getter path keeps its captured/later reads.
   const readBounds = () => {
     if (binding !== null && binding.readDeadlineMonoMs() === null) {
       throw acct("unarmed horizon");
@@ -178,28 +177,27 @@ export function createProcessMonitor({
         };
   };
 
-  // The whole bound/handle capture owner, hosted by the runtime's
-  // declared factory over the same clock, queue and bound source.
   const capture = createProcessOperationCapture({ clock, nowMonoMs, queue, readBounds });
 
-  // Capture once BEFORE enqueue into ONE narrow-only handle: the
-  // stopping fence permanently closes new ordinary admission; the
-  // bare captureOperationBound stays fence-free so repeated stops
-  // still validate and narrow after the fence is closed.
+  // Copy the original numeric minimum before enqueue; genuine narrowing wins.
   const op = (callOptions, ceilingMs) => {
     if (state.stopping) throw acct("monitor stopping");
-    return capture.op(callOptions, ceilingMs);
+    const handle = capture.op(callOptions, ceilingMs);
+    cycleMetadata.set(handle, Object.freeze({ originalEndNs:
+      BigInt(Math.floor(handle.deadlineMonoMs() * 1000000)).toString() }));
+    return handle;
   };
 
-  // One operation's actual-settlement lifetime over the SAME queue
-  // acquisitions, from the runtime's shared-owner factory: each
-  // operation's actualSettled registers on the SAME supervisor owner.
   const ownOperation = createProcessLifetimeOwner({
     queue,
     retainActual: lifetimeOwner.retainActual,
   });
 
   const markFault = (e) => {
+    const reason = ["IDENTITY", "TIMESTAMP", "UNION", "AGGREGATE"].includes(e?.resourceReason)
+      ? e.resourceReason : e?.code === "CLEANUP_UNPROVEN" ? "CLEANUP" :
+        e?.code === "IPC_INVALID" ? "TRANSPORT" : "NATIVE";
+    quality?.markHard(reason);
     if (stickyFault === null) {
       stickyFault = {
         code: e && typeof e.code === "string" ? e.code : "ACCOUNTING_UNAVAILABLE",
@@ -220,21 +218,22 @@ export function createProcessMonitor({
     }
   };
 
-  const send = (type, fields, rid, handle) =>
-    state.transport.send(type, fields, rid, handle);
+  const send = (type, fields, rid, handle) => {
+    if (state.stopping) throw acct("monitor stopping");
+    return state.transport.send(type, fields, rid, handle);
+  };
 
   const { proofs, observation, runCycle } = createProcessAccounting({
     runId, pythonExecutable, protocol, ownership, send, enqueue, nextRid,
     requireHealthy, lsofQueries: () => state.lsof, ownUid: () => state.ownUid,
-    clock, state: () => ({ lastObservation: lastObs, lastValidNs, stickyFault,
+    clock, quality, softCompare: quality !== null && phase === "compare",
+    state: () => ({ lastObservation: lastObs, lastValidNs, stickyFault,
+      stopping: state.stopping, pending: state.tickQueued,
       sampling: state.timer !== null, nowMonoNs: clock.nowMonoNs() }),
     commitCycle: (obs, finishedNs) => { lastObs = obs; lastValidNs = finishedNs; },
     markFault,
   });
 
-  // The borrowed authorities the runtime consumes: its nested lsof
-  // registration/signal enqueue real proof work on the SAME queue with
-  // the SAME borrowed handle, never disposing the owner handle.
   const authority = {
     op,
     ownOperation,
@@ -249,7 +248,14 @@ export function createProcessMonitor({
     releaseHorizonAfter: binding === null ? null : binding.releaseAfter,
     hasAccountingFault: () => stickyFault !== null,
     proofs,
-    runCycle,
+    runCycle: (h, purpose = "ordinary") => runCycle(h, { ...cycleMetadata.get(h),
+      purpose: purpose === "periodic" && state.startHandle !== null ? "ordinary" : purpose }),
+    closeCoverage: () => {
+      if (quality !== null && quality.snapshot().completedCycles > 0) {
+        quality.setPending(state.tickQueued);
+        quality.close(String(clock.nowMonoNs()));
+      }
+    },
     getApi: () => api,
     registerHelper: (input, handle) =>
       enqueue(() => proofs.registerRootProved(input, handle), handle),
@@ -259,7 +265,6 @@ export function createProcessMonitor({
       enqueue(() => proofs.proveTransition(args, handle), handle),
   };
 
-  // The whole collector lifecycle owner over the shared state.
   const runtime = createProcessRuntime({
     config: {
       runId,
@@ -276,31 +281,27 @@ export function createProcessMonitor({
 
   const start = (options) => runtime.start(options);
 
-  // One ordinary public op: capture a handle plus its actual-settlement
-  // lifetime BEFORE enqueue, dispatch the SAME handle through the queue
-  // and release only the owner acquisition in the public finally — the
-  // handle is disposed when every actual acquisition reaches zero,
-  // never when the public promise merely timed out.
   const call = (fn, options) => {
     const h = op(options, TIMING_LIMITS.commandMs);
     const lifetime = ownOperation(h);
-    return enqueue(() => fn(h), h).finally(() => lifetime.finish());
+    return enqueue(() => fn(h), h).then((result) => {
+      if (state.stopping && result?.kind !== "fenced-observation") throw acct("monitor stopping");
+      return result;
+    }).finally(() => lifetime.finish());
   };
 
-  // The same capture/lifetime for work that never enters the queue:
-  // queryListeners runs through the proof/lsof owners and
-  // backendIdentity borrows the handle for its own IO stages, and each
-  // receives the lifetime's retainActual registrar so its physical IO
-  // receipts stay acquired until real settlement. fn runs inside a
-  // Promise continuation so synchronous validation errors still reach
-  // finish(); the handle stays queue-tracked through the owner
-  // acquisition so a later narrower getter still reaches it until the
-  // ACTUAL unqueued task settles.
   const callUnqueued = (fn, options) => {
     const h = op(options, TIMING_LIMITS.commandMs);
     const lifetime = ownOperation(h);
     return Promise.resolve()
-      .then(() => fn(h, lifetime.retainActual))
+      .then(() => {
+        if (state.stopping) throw acct("monitor stopping");
+        return fn(h, lifetime.retainActual);
+      })
+      .then((result) => {
+        if (state.stopping) throw acct("monitor stopping");
+        return result;
+      })
       .finally(() => lifetime.finish());
   };
 
@@ -313,7 +314,7 @@ export function createProcessMonitor({
     ownership.registerPort({ address, port, ownerIdentity, scopeRunId });
   };
 
-  const sample = (options) => call((h) => runCycle(h), options);
+  const sample = (options) => call((h) => runCycle(h, { ...cycleMetadata.get(h), purpose: "ordinary" }), options);
 
   const probeIdentity = (identity, options) =>
     call((h) => proofs.probeIdentityFresh(identity, h), options);
@@ -330,9 +331,6 @@ export function createProcessMonitor({
 
   const stopAndReap = (options) => runtime.stopAndReap(options);
 
-  // The backend capture borrows this op's handle through the shared
-  // monitor-capture factory (documented private `budget` option), so
-  // one injected clock drives every stat/read/hash/close wait.
   const backendIdentity = (options) =>
     callUnqueued(
       (h, retainActual) =>
@@ -340,10 +338,31 @@ export function createProcessMonitor({
       options,
     );
 
-  const lastObservation = () => observation.projectObservation();
+  const lastObservation = () => {
+    try { return observation.projectObservation(); }
+    catch (error) { markFault(error); throw error; }
+  };
 
   const fault = () => (stickyFault === null ? null : { ...stickyFault });
   const _ready = () => copyDeep(state.readyEvidence);
+
+  const _captureResourcePrefix = ({ scopeRunId, deadlineMonoMs }) => {
+    if (quality === null || phase !== "preflight" || scopeRunId !== `${runId}:watchdog-selftest` ||
+      !Number.isFinite(deadlineMonoMs) || deadlineMonoMs < 0 || state.stopping) throw acct("prefix binding");
+    const bounds = readBounds();
+    const end = Math.min(deadlineMonoMs, bounds.constructorDeadlineMs ?? Infinity,
+      bounds.laterDeadlineMs ?? Infinity);
+    const at = String(clock.nowMonoNs());
+    if (Number(BigInt(at)) / 1e6 >= end) throw acct("prefix deadline");
+    requireHealthy();
+    const q = quality.snapshot();
+    if (stickyFault !== null || !lastObs?.cycleTimely || q.coverageLost || q.rssLimitExceeded ||
+      BigInt(at) - BigInt(lastObs.atMonoNs) > 500000000n) throw acct("prefix current proof");
+    const value = { ...q, pending: state.tickQueued, runId: scopeRunId, phase: "watchdog-selftest",
+      closureKind: "selftest-prefix", coverageEndNs: at };
+    assertResourceEvidence(value);
+    return freezeDeep(value);
+  };
 
   const api = Object.freeze({
     start,
@@ -358,6 +377,7 @@ export function createProcessMonitor({
     lastObservation,
     fault,
     _ready,
+    ...(quality === null ? {} : { _captureResourcePrefix }),
     _ownership: ownership,
   });
   MONITOR_LIFETIMES.set(api, lifetimeOwner);

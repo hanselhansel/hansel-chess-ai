@@ -9,6 +9,7 @@
 // authority, no wire or schema field, no generic success fallback.
 import { copyDeep, isObj } from "./protocol-values.mjs";
 import { loadRecord } from "./receipt-files.mjs";
+import { assertResourceEvidence } from "./resource-quality.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
 
 // Error factory: returns the Error. Guard sites throw explicitly.
@@ -27,6 +28,7 @@ export function createWatchdogRecordAdapter({
   phase,
   onObserverFault = () => {},
   io,
+  resourceSnapshot = null,
 }) {
   if (!isObj(recorder)) throw fail("IPC_INVALID", "recorder");
   if (pgnEvidence !== null && pgnEvidence !== undefined) {
@@ -263,6 +265,12 @@ export function createWatchdogRecordAdapter({
             };
     base.unplannedFaultCount =
       typeof faultCount === "function" ? faultCount() : faultCount;
+    if (resourceSnapshot !== null) {
+      const evidence = resourceSnapshot();
+      assertResourceEvidence(evidence);
+      if (evidence.phase !== phase) throw fail("EVIDENCE_INCOMPLETE", "resource phase");
+      base.resourceEvidence = copyDeep(evidence);
+    }
     return base;
   };
 
