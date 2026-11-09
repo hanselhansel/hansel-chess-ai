@@ -34,6 +34,33 @@ const extendsCheckpoint = (before, after) => {
     fail("fabricated completion clocks");
 };
 
+// A retained episode can contribute only its duration reached by capture.
+// Missing ordinals contribute a conservative interval bound between retained
+// neighbors, never invented episode details or an inferred historical maximum.
+const assertMaximumAtCapture = (cp, episodes) => {
+  const captured = BigInt(cp.capturedNs);
+  let maximum = 0n;
+  let previous = null;
+  const includeInterval = (fromNs, endNs) => {
+    const end = endNs === null ? captured : BigInt(endNs);
+    const clippedEnd = end < captured ? end : captured;
+    const duration = clippedEnd - BigInt(fromNs);
+    if (duration < 0n) fail("checkpoint predates retained boundary");
+    if (duration > maximum) maximum = duration;
+  };
+  for (const episode of episodes) {
+    if (previous && previous.ordinal < cp.gapCount && episode.ordinal > previous.ordinal + 1) {
+      if (previous.toNs === null) fail("missing closed retained boundary");
+      includeInterval(previous.toNs, episode.fromNs);
+    }
+    if (episode.ordinal > cp.gapCount) break;
+    if (BigInt(episode.detectedNs) > captured) fail("checkpoint predates known gap");
+    includeInterval(episode.fromNs, episode.toNs);
+    previous = episode;
+  }
+  if (BigInt(cp.maxGapNs) > maximum) fail("checkpoint maximum exceeds retained capture bounds");
+};
+
 export function verifyVerdictClosure(input) {
   exactOnly(input, ["facts", "final", "completion", "eventsRef", "finalEvent", "checkpoints"], "verdict closure input");
   const { facts, final, completion, eventsRef, finalEvent, checkpoints } = input;
@@ -82,6 +109,9 @@ export function verifyVerdictClosure(input) {
   );
   eqLiteral(facts.stoppedEarly, final.stopReason !== null, "final stop facts");
   if (!Array.isArray(checkpoints)) fail("checkpoint array");
+  const episodes = [...new Map([e.firstGap, ...e.details].filter(Boolean).map((d) => [d.ordinal, d])).values()].sort(
+    (a, b) => a.ordinal - b.ordinal,
+  );
   let previous = null;
   let previousPayload = null;
   for (const payload of checkpoints) {
@@ -93,10 +123,7 @@ export function verifyVerdictClosure(input) {
     assertQualityCheckpoint(cp);
     if (BigInt(cp.maxGapNs) > BigInt(cp.capturedNs) - BigInt(e.startedNs)) fail("checkpoint maximum predates capture");
     if (BigInt(cp.capturedNs) > BigInt(e.coverageEndNs)) fail("checkpoint after sampling fence");
-    for (const episode of [e.firstGap, ...e.details]) {
-      if (episode && episode.ordinal <= cp.gapCount && BigInt(episode.detectedNs) > BigInt(cp.capturedNs))
-        fail("checkpoint predates known gap");
-    }
+    assertMaximumAtCapture(cp, episodes);
     if (previous) {
       if (BigInt(cp.capturedNs) < BigInt(previous.capturedNs)) fail("checkpoint chronology");
       extendsCheckpoint(previous, cp);

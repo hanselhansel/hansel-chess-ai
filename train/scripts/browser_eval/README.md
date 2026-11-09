@@ -10438,8 +10438,20 @@ bounds, chronology, counters, ring consistency and canonical size limits.
 Evidence validation independently requires a reported observer-age tail when the
 fence exceeds last completion by more than500ms, including after earlier loss.
 The checkpoint validator alone has no episode history; graph reconciliation binds
-its reported gap ordinals to retained final detection times and bounds its maximum
-gap duration by the elapsed interval from the original monitor start. Unknown/missing
+its reported gap ordinals to retained final detection times. Its reported maximum
+is bounded at the actual capture using the retained first episode and latest64
+episodes, in addition to the coarse monitor-elapsed bound. For each retained
+episode already claimed by the checkpoint, the available duration ends at the
+earlier of capture and that episode's real end (or capture while open). A completed
+earlier episode may supply a larger genuine maximum than the current episode.
+
+For a claimed ordinal range whose details were dropped, the validator uses only
+the conservative interval between the previous retained episode's real end and
+the next retained episode's real start, clipped to capture. It creates no omitted
+episode or inferred historical maximum. Reported maxima cannot exceed the maximum
+of these available interval bounds. Bounds reject contradictions such as borrowing
+an episode's future duration; they do not recover deliberately unavailable details
+or prove the exact historical maximum within an omitted interval. Unknown/missing
 fields or literals throw bounded `SCHEMA_*` errors from the primitive validators;
 ledger admission/coherence/overflow failures use `SCHEMA_COHERENCE`. Unsupported
 canonical values can throw the canonical codec's `CANONICAL_*` errors. No error
@@ -10488,3 +10500,9 @@ closed schema or makes an overridden proof claim authoritative.
 The independent review found five important issues. Local fixes now independently reject a fabricated clean tail over500ms, require eligible-strength cleanup/check/fault/stop coherence even when aggregate status is inconclusive, bind those final facts to reducer input, make incomplete monitoring or nonpassed strict parent resources ineligible, and reject backdated ledger/graph checkpoints (including future maximum durations). The owning browser-evaluation README now documents every current ledger method and all five TEST fixture factories, including argument fields/defaults, admission conditions, returns, errors and proof limits. Prior implementation status and51-test evidence are retained history; the fix suite is56/56 and qualified typecheck exited0. The correction still needs a fresh independent scoped re-review before Task6.
 
 The earlier intervened fixture control establishes child72128 TERM followed by child/coordinator absence, coordinator72127 exit1 and both coordinator pipe closes. A separate child wait status was not captured. That limitation remains explicit; intervention is not natural closure or Native proof. Original raw evidence remains unchanged. Current fix evidence is W/`separate-verdicts-implementation-evidence/5ff32bac-98cf-4d06-ac6d-093c0277675b/`. Strictv1 staging remains active; no operational v2 publication, Native/browser/model/phase execution or fresh cohort result is claimed.
+
+### Task5 review fix round2 checkpoint (2026-11-10)
+
+Re-review accepted I1, I2, I3 and I5; I4 remained open because the monitor-start bound allowed an earlier checkpoint to borrow a later-origin episode's future duration. The local correction now clips each available retained episode at capture and uses only conservative retained-neighbor interval bounds for dropped ordinal ranges. Missing episode details remain unavailable; no history, policy or schema is reconstructed. Genuine earlier completed maxima and genuine open/completed checkpoints with66/70-episode final rings remain accepted. The exact600ms-to900ms later-origin forgery rejects. The focused suite is59/59; final typecheck and invariant evidence accompany the round2 report. Fresh independent scoped re-review remains pending before Task6.
+
+Only the pure graph checker, its existing resource-quality test owner and affected documentation change. Strictv1 staging, all prior failed/control evidence and the unavailable separate historical child wait status remain unchanged. There is no Native/browser/model/phase execution or v2 publication/passage claim. Round2 evidence: W/`separate-verdicts-implementation-evidence/fd56d529-e22c-4b6a-a142-d08c6b190ce6/`.

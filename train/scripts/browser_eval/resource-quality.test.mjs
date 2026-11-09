@@ -254,3 +254,76 @@ test("unseeded real ledger evidence cannot support strength despite a claimed mo
   assert.equal(verdict.strengthVerdict.status, "ineligible");
   assert(verdict.strengthVerdict.reasons.includes("CLEANUP_UNPROVEN"));
 });
+
+const checkpointGraph = (q, cp) => {
+  const graph = closureInput(v2Graph({ runId: "r", resourceEvidence: q.snapshot() }));
+  graph.checkpoints = [
+    {
+      rssBytes: 5,
+      peakRssBytes: 5,
+      observedPeakRssBytes: 5,
+      rssLimitExceeded: false,
+      accountingValid: false,
+      atMonoNs: cp.capturedNs,
+      qualityCheckpoint: structuredClone(cp),
+    },
+  ];
+  return graph;
+};
+
+test("later-origin episode cannot lend its future900ms maximum to a genuine600ms checkpoint", () => {
+  const q = seeded();
+  q.complete(cycle(10, 500000010));
+  q.noteAge("1000000011");
+  q.noteAge("1100000010");
+  const cp = q.checkpoint("1100000010");
+  assert.equal(cp.maxGapNs, "600000000");
+  q.complete(cycle(500000010, 1400000010));
+  q.close("1400000010");
+  const graph = checkpointGraph(q, cp);
+  assert.equal(q.snapshot().maxGapNs, "900000000");
+  assert.doesNotThrow(() => verifyVerdictClosure(graph));
+  graph.checkpoints[0].qualityCheckpoint.maxGapNs = "900000000";
+  assert.throws(() => verifyVerdictClosure(graph));
+});
+
+test("a genuine checkpoint may retain a prior episode's larger completed maximum", () => {
+  const q = seeded();
+  q.complete(cycle(10, 1000000010));
+  q.noteAge("1600000010");
+  const cp = q.checkpoint("1600000010");
+  assert.equal(cp.maxGapNs, "1000000000");
+  q.complete(cycle(1000000010, 1900000010));
+  q.close("1900000010");
+  assert.doesNotThrow(() => verifyVerdictClosure(checkpointGraph(q, cp)));
+});
+
+test("dropped episodes stay unavailable while retained history bounds the possible maximum at capture", () => {
+  for (const count of [66, 70]) {
+    const q = seeded();
+    q.complete(cycle(10, 1000000010));
+    q.noteAge("2100000010");
+    const cp = q.checkpoint("2100000010");
+    assert.equal(cp.maxGapNs, "1100000000");
+    q.complete(cycle(1000000010, 2500000010));
+    const closedCp = q.checkpoint("2500000010");
+    let end = 2500000010n;
+    for (let ordinal = 3; ordinal <= count; ordinal += 1) {
+      q.complete(cycle(end, end + 500000001n));
+      end += 500000001n;
+    }
+    q.close(String(end));
+    const final = q.snapshot();
+    assert.equal(final.detailsDropped, count - 64);
+    assert.equal(final.firstGap.ordinal, 1);
+    assert.equal(
+      final.details.some((d) => d.ordinal === 2),
+      false,
+    );
+    const graph = checkpointGraph(q, cp);
+    graph.checkpoints.push(checkpointGraph(q, closedCp).checkpoints[0]);
+    assert.doesNotThrow(() => verifyVerdictClosure(graph));
+    graph.checkpoints[0].qualityCheckpoint.maxGapNs = "1500000000";
+    assert.throws(() => verifyVerdictClosure(graph));
+  }
+});
