@@ -81,7 +81,7 @@ export function makeEnvironmentFilesFixture(t, { python = false, changeText = nu
       streams.push(stream);
       if (!automatic && payloads.includes(file)) {
         held += 1;
-        if (held === 16) enter();
+        if (held === 1) enter();
       } else {
         queueMicrotask(() => stream.finish());
       }

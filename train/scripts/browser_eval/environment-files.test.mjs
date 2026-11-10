@@ -17,15 +17,17 @@ test("full inventory uses bounded independent reads with stable sorted current h
   const f = fixture(t);
   const pending = f.own(f.files.inventory(f.root));
   await f.entered;
-  assert.equal(f.streams.length, 16);
-  assert.equal(f.live(), 16);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(f.streams.length, 1);
+  assert.equal(f.live(), 1);
+  assert.equal(f.peak(), 1);
   f.release();
   const result = await pending;
   const expected = [...f.data].map(([file, bytes]) => ({ path: path.relative(f.root, file),
     byteLength: bytes.length, sha256: sha256Bytes(bytes) })).sort((a, b) => a.path.localeCompare(b.path));
   assert.deepEqual(result.files, expected);
   assert.equal(result.sha256, sha256Bytes(canonicalBytes({ files: expected, links: [] })));
-  assert.equal(f.peak(), 16);
+  assert.equal(f.peak(), 1);
   assert.equal(f.streams.every((stream) => stream.end === f.originalEnd && stream.closed), true);
   await f.lifetime.whenSettled();
 });
@@ -35,19 +37,25 @@ test("first arbitrary nil failure joins all issued closes and admits no later fi
   const pending = f.own(f.files.inventory(f.root));
   let settled = false;
   pending.then(() => { settled = true; }, () => { settled = true; });
+  let zero = false;
   await f.entered;
-  f.streams[0].emit("error", undefined);
-  f.streams[0].close();
+  const owner = f.lifetime.whenSettled().then(() => { zero = true; });
+  const first = f.streams[0];
+  first.emit("error", undefined);
+  first.emit("error", new Error("later failure on same stream"));
   await new Promise((resolve) => setImmediate(resolve));
   assert.equal(settled, false);
-  assert.equal(f.streams.length, 16);
-  f.streams[1].emit("error", new Error("later failure"));
-  f.streams[1].close();
+  assert.equal(zero, false);
+  assert.equal(first.destroyed, true);
+  assert.equal(first.closed, false);
+  assert.equal(f.streams.length, 1);
+  first.close();
   f.release();
   await assert.rejects(pending, (error) => error === undefined);
-  assert.equal(f.streams.length, 16);
-  assert.equal(f.streams.every((stream) => stream.closed), true);
-  await f.lifetime.whenSettled();
+  await owner;
+  assert.equal(zero, true);
+  assert.equal(f.streams.length, 1);
+  assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
 });
 
 test("all issued reads borrow the original end and expiry cannot settle held closes", async (t) => {
@@ -64,7 +72,7 @@ test("all issued reads borrow the original end and expiry cannot settle held clo
   f.release();
   await assert.rejects(pending, (error) => error.code === "ACCOUNTING_UNAVAILABLE");
   await zero;
-  assert.equal(f.streams.length, 16);
+  assert.equal(f.streams.length, 1);
   assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
 });
 
@@ -83,7 +91,7 @@ test("one fresh pass derives both full outputs, reads external payloads and neve
   const f = fixture(t, { python: true });
   const pending = f.own(f.files.pythonInstalled("/venv"));
   await f.entered;
-  assert.equal(f.peak(), 16);
+  assert.equal(f.peak(), 1);
   f.release();
   const result = await pending;
   const entries = [...f.data].map(([file, bytes]) => ({ path: path.relative("/venv", file),
@@ -105,7 +113,7 @@ test("one fresh pass derives both full outputs, reads external payloads and neve
   assert.notEqual(second.inventory.sha256, result.inventory.sha256);
   assert.equal(f.streams.filter((stream) => f.payloads.includes(stream.file)).length, 90);
   assert.equal(f.streams.filter((stream) => stream.file === "/venv/bin/demo").length, 2);
-  assert.equal(f.peak(), 16);
+  assert.equal(f.peak(), 1);
   assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
 });
 
@@ -210,7 +218,7 @@ test("ordinary RECORD resolution yields a real event-loop turn before all rows e
   await observed;
   assert.ok(seen > 0 && seen < f.payloads.length, `observer saw ${seen} of ${f.payloads.length} ordinary rows`);
   await f.entered;
-  assert.equal(f.peak(), 16);
+  assert.equal(f.peak(), 1);
   f.release();
   const result = await pending;
   const entries = [...f.data].map(([file, bytes]) => ({ path: path.relative("/venv", file),
@@ -248,7 +256,7 @@ test("expiry at a real cooperative turn admits no later row and joins every issu
   globalThis.setImmediate = function (callback, ...args) {
     return Reflect.apply(immediate, this, [function (...values) {
       tickets.push(() => Reflect.apply(callback, this, values));
-      if (tickets.length === 16) entered();
+      if (tickets.length === 1) entered();
     }, ...args]);
   };
   let pending;
@@ -263,7 +271,7 @@ test("expiry at a real cooperative turn admits no later row and joins every issu
     pending.then(() => { settled = true; }, () => { settled = true; });
     await turnEntries;
     streamsAtYield = f.streams.length;
-    assert.equal(tickets.length, 16);
+    assert.equal(tickets.length, 1);
     assert.ok(expiredAt > 0 && expiredAt < f.payloads.length);
     assert.equal(f.budget.deadlineMonoMs(), f.originalEnd);
     f.lifetime.whenSettled().then(() => { zero = true; });
@@ -281,41 +289,34 @@ test("expiry at a real cooperative turn admits no later row and joins every issu
   assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
 });
 
-test("first nil turn failure joins competing issued turns before rejection", async (t) => {
+test("first pre-issue nil turn failure admits no later row and joins owned closes", async (t) => {
   const immediate = globalThis.setImmediate;
-  const tickets = [];
   let count = 0;
-  let entered;
-  const turnEntries = new Promise((resolve) => { entered = resolve; });
+  let issued = 0;
+  let atFailure;
   const resolved = new Set();
   const f = fixture(t, { python: true, payloadCount: 513, onResolve: (file) => {
     if (f.payloads.includes(file)) resolved.add(file);
   } });
   globalThis.setImmediate = function (callback, ...args) {
     count += 1;
-    if (count === 1) throw undefined; // Controlled definite pre-issue failure.
-    return Reflect.apply(immediate, this, [function (...values) {
-      tickets.push(() => Reflect.apply(callback, this, values));
-      if (tickets.length === 15) entered();
-    }, ...args]);
+    if (count === 1) {
+      atFailure = resolved.size;
+      throw undefined; // Definite failure before issuing any callback.
+    }
+    issued += 1;
+    return Reflect.apply(immediate, this, [callback, ...args]);
   };
-  let pending;
-  let settled = false;
-  let atFailure;
   try {
-    pending = f.own(f.files.pythonInstalled("/venv"));
-    pending.then(() => { settled = true; }, () => { settled = true; });
-    await turnEntries;
-    atFailure = resolved.size;
-    assert.equal(settled, false);
-    assert.equal(tickets.length, 15);
-    assert.ok(atFailure < f.payloads.length);
+    await assert.rejects(f.own(f.files.pythonInstalled("/venv")), (error) => error === undefined);
   } finally {
-    for (const invoke of tickets) invoke();
     globalThis.setImmediate = immediate;
   }
-  await assert.rejects(pending, (error) => error === undefined);
+  assert.equal(count, 1);
+  assert.equal(issued, 0);
+  assert.ok(atFailure > 0 && atFailure < f.payloads.length);
   assert.equal(resolved.size, atFailure);
+  assert.equal(f.budget.deadlineMonoMs(), f.originalEnd);
   assert.equal(f.streams.every((stream) => stream.closed && stream.end === f.originalEnd), true);
   await f.lifetime.whenSettled();
 });

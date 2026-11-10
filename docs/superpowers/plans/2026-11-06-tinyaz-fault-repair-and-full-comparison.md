@@ -2157,3 +2157,65 @@ This diagnostic CHECK cannot serve as a scientific prerequisite. Historical2300m
 cause stays UNKNOWN; old12/40 comparison remains ineligible, old persisted cleanup
 UNPROVEN, Task3/full40 INCOMPLETE. At this pre-commit validation checkpoint,
 Task15 final audit/green commit remains pending. Later state is in the W progress ledger.
+
+
+## Task 17: Approved serial verification repair and fresh full40 execution
+
+Hansel explicitly approved the reviewed serial-verification amendment on2026-11-11. The exact immutable requirements are E17/approved-serial-verification.md (SHA821b448edd2f0d930228333703e48a568be0897edaeafa0785e76b880309cd83), recorded approval E17/approval.json. E17=/Users/hansel/Workspace/github/hanselhansel/hansel-chess-ai/.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/507bc314-6904-4be0-bbef-f3a33c1e94fe. Base f75871d2069a31ddfa3e286feb5a780551e37d8b, same feature checkout. This acceptance supersedes the proposal's historical pending-approval label. Model weights, runtime127 and every original clock/proof/resource/science limit remain exact.
+
+Sol High is the implementer, no children. StageA writes only the approved TEST/fixture migrations and new independent-pool TEST plus before-use contracts, leaving both production widths OLD16. Root alone executes the two selected semanticRED tests from the approved document through unchanged170-line owner; migrated FIXED-only ownership controls are not OLDRED. StageB then changes only approved production widths and matching docs; same causalTEST bytes, covering/whole-owner/explicitserial suite and exact preserved-control body on currentbytes must qualify. No worker runtime/test/import/Native/browser/commit/push while Root owns these gates.
+
+The fresh scoped SolMax implementation/code-doc review is Approved with no Critical/Important findings after GREEN5/5, affected owners83/83 and full89 serial1077/1077. Its sole Minor expected optional-observer warning qualification is recorded separately. Hansel approved E17/control-binding-proposed-correction.md SHA86efd98290b2a90057c87a74c8d860df35a0a8530a3c86b1f24b777c0b51ef1e in E17/control-binding-approval.json after the same-body old-data control correctly rejected changed source bytes before any scan. Final diff/source-to-doc/protected/model/wholeSection3/oldhelper/evidence audit now precedes the reviewed green source/docs commit and Root feature publication. Root then runs ONE fresh strict committed CHECK. Only its successful CLOSED graph, exact input equality, actual owner/pipe/body/descriptor cleanup and both passed resource verdicts admit the SAME147-line control with ONLY fresh workspaceRoot/candidate literals. The control must qualify before13-case parity and preflight, then ONE new40-game/20-pair/64-visit comparison under24h and all original shorter limits. External control qualification rejects any original1000ms scan-start age excess or late/missing/failed closure. Fresh frozen verifier bytes and sealed records require descriptive path/call-count/timing comparison, not a paired causal ratio. Control and fresh phases are UNRUN, with no latency-cure claim. Count-only progress, no partial outcome tuning, no extra diagnostic CHECK or automatic retry. All old failures/diagnostic runs remain ineligible and cannot be parents. No extra planning/review beyond concrete findings.
+
+Before-use paths/tests/data/risks are exactly the accepted amendment. Source/TEST/control files below400 readable lines. Additional test owner needed to maintain that bound requires a concrete Root before-use map ruling; no adjacent refactor or new runtime owner. Final actual code-to-doc comparison and current result documentation remain required.
+
+
+### Task17 approved serial-verification contract (Stage B)
+
+The approved amendment is E17/approved-serial-verification.md, SHA256
+`821b448edd2f0d930228333703e48a568be0897edaeafa0785e76b880309cd83`.
+E17 is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/507bc314-6904-4be0-bbef-f3a33c1e94fe`.
+User approval supersedes that immutable proposal's historical pending label.
+Root qualified the two semantic RED owners on OLD16: natural1/3.950107750s,
+three tamper children passed, environment16 streams and snapshot16 actual OSFDs
+failed the expected1 assertions. All583 input pins and actual command closure
+were verified. Stage B now sets frozen-input batches (FROZEN_READ_WIDTH) and each
+existing file-worker/directory pool (FILE_WORK_WIDTH) to1. Distinct pool instances and
+the independent footprint observer may overlap. This is no global semaphore.
+The separate completed===16 cooperative yield, full measurements/hash/path-set/
+environment checks, first observed error and issued-work joins stay unchanged.
+The new independent-pool TEST stays outside the127 functional runtime paths.
+Migrated nil/expiry/peer ownership controls are FIXED-only, never OLD16 RED.
+Serial work can lengthen setup/integrity or leave host contention unresolved.
+Original90s setup/command,30s readiness,5s Native cleanup,1000ms scan-start
+freshness,24h comparison and all other proof/resource/science limits remain.
+M stays9706840 bytes/SHA b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee.
+The same causal TEST/fixture bytes remain frozen across OLD16 and FIXED1.
+Root qualified same-byte GREEN5/5, affected whole owners and full89 serial
+1077/1077 without skipped/cancelled tests, with exact586 pins and actual command
+closure. Source/tests are ready. The same-body old-data control naturally1 in
+5.596536167s before any scan: genuine reopen rejected changed current source
+bytes in environment-files.mjs. Its root/content and actual owners stayed closed
+and unchanged. This establishes no latency repair or completed control.
+Hansel approved the binding/order correction in E17/control-binding-approval.json,
+exact proposal SHA86efd98290b2a90057c87a74c8d860df35a0a8530a3c86b1f24b777c0b51ef1e.
+This acceptance supersedes the proposal's historical pending-approval label.
+Scoped implementation/code-to-doc quality is Approved with no Critical/Important
+findings. Binding readiness has no findings. The sole Minor evidence issue is
+qualified in E17/task-17-validation-qualification.md: the passing optional-observer
+fault test emits expected null/undefined warnings. Frozen stdout stays preserved;
+the serial suite passed but was not warning-free.
+The accepted sequence is final Root diff/input audit, reviewed green feature
+commit/publication, then ONE successful CLOSED strict committed CHECK, then the
+SAME147-line control with ONLY fresh workspaceRoot/candidate string literals,
+then13-case parity,preflight and ONE40-game/20-pair/64-visit comparison. CHECK's
+valid graph, actual input equality, physical owner/body/descriptor cleanup and
+both passed resource verdicts are required before the control. No strict CHECK
+is bypassed, replaced or added as an extra diagnostic run. Root externally rejects
+late/missing/failed closure or any scan-start age over original1000ms. All original
+caps, identity/contents checks, weights and diagnostic-only control status stay
+unchanged. Fresh verifier bytes and sealed records change the dataset; compare
+actual path/call counts and timings descriptively, with no paired causal ratio.
+The rebound control and fresh phases are UNRUN; commit/publication remain pending
+Root release. This establishes no latency cure or completed full40. Old failures
+and diagnostic runs remain ineligible; Task17 and Task3/full40 are INCOMPLETE.

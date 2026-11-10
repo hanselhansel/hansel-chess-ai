@@ -2,7 +2,7 @@ import { privateFs as phaseFs } from "./private-fs.mjs";
 // Immutable capture tests execute Git data operations and raw model byte
 // checks only. Fixture runtime sources are DATA and are never imported.
 import assert from "node:assert/strict";
-import { promises as fsp, realpathSync } from "node:fs";
+import fs, { promises as fsp, realpathSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -256,7 +256,38 @@ test("WORKTREE capture retains original inventories, readonly links and immutabl
   }
   // Synthetic setup DATA is intentionally unable to obtain genuine
   // environment provenance, even after all frozen bytes match.
-  await assert.rejects(verify(), /initial capture provenance/);
+  const originalOpen = fs.openSync;
+  const originalClose = fs.closeSync;
+  const refs = [...result.inputs.baseline.files, ...result.inputs.candidate.files,
+    ...result.inputs.harness.files, ...result.inputs.setup, result.inputs.model];
+  const targets = new Set(refs.map((ref) => path.join(f.workspaceRoot, ref.path)));
+  const opened = new Set();
+  const active = new Set();
+  let peak = 0;
+  fs.openSync = function (target, ...args) {
+    const fd = originalOpen.call(this, target, ...args);
+    if (targets.has(target)) {
+      opened.add(target);
+      active.add(fd);
+      peak = Math.max(peak, active.size);
+    }
+    return fd;
+  };
+  fs.closeSync = function (fd, ...args) {
+    const result = originalClose.call(this, fd, ...args);
+    active.delete(fd); // Only a successful original physical close retires it.
+    return result;
+  };
+  try {
+    await assert.rejects(verify(), /initial capture provenance/);
+    assert.equal(opened.size, targets.size);
+    assert.equal(active.size, 0);
+    assert.equal(peak, 1, "frozen input reads must not overlap open handles");
+  } finally {
+    fs.openSync = originalOpen;
+    fs.closeSync = originalClose;
+    await f.context.lifetime.whenSettled();
+  }
   const freshOwner = createWatchdogLifetime();
   registerFixtureTeardown(t, { afterSettle: () => freshOwner.whenSettled() });
   await assert.rejects(own(t, () => reopenInputs({

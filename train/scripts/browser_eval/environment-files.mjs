@@ -9,6 +9,7 @@ import { waitHandle } from "./process-budget.mjs";
 import { isAbs, isObj, exactFields } from "./protocol-values.mjs";
 import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
 
+const FILE_WORK_WIDTH = 1;
 const TEXT_CAP = 8 * 1024 * 1024;
 const BIN_CAP = 512 * 1024 * 1024;
 const fail = (detail) => {
@@ -140,7 +141,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
         }
       }
     };
-    await Promise.allSettled(Array.from({ length: Math.min(16, items.length) }, worker));
+    await Promise.allSettled(Array.from({ length: Math.min(FILE_WORK_WIDTH, items.length) }, worker));
     if (failed) {
       throw first;
     }
@@ -196,7 +197,7 @@ export function createEnvironmentFiles(context, adapters = {}) {
     const linkFacts = [];
     let cursor = 0;
     while (cursor < pending.length) {
-      const batch = pending.slice(cursor, cursor + 16);
+      const batch = pending.slice(cursor, cursor + FILE_WORK_WIDTH);
       cursor += batch.length;
       await parallel(batch, async (dir) => {
         const before = await call("inventory stat", () => statFile(dir));

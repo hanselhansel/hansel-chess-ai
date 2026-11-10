@@ -18,6 +18,7 @@ import { inspectReopenedInputs } from "./snapshot-reopen.mjs";
 import { createSnapshotIO } from "./snapshot-io.mjs";
 import { runSetupCommand } from "./setup-process.mjs";
 
+const FROZEN_READ_WIDTH = 1;
 const CAPTURES = new WeakMap();
 const PACKAGES = ["package.json", "package-lock.json"];
 const MODEL_PATH = "public/weights/tinyaz-m.bin";
@@ -255,10 +256,10 @@ export async function verifyIdentity(options, context) {
     throw fail("manifest identity changed");
   }
   const observed = new Map();
-  for (let offset = 0; offset < refs.length; offset += 16) {
+  for (let offset = 0; offset < refs.length; offset += FROZEN_READ_WIDTH) {
     let failed = false;
     let first;
-    const batch = refs.slice(offset, offset + 16);
+    const batch = refs.slice(offset, offset + FROZEN_READ_WIDTH);
     await Promise.allSettled(batch.map(async (ref) => {
       try {
         context.budget.assertLive("snapshot concurrent input");
