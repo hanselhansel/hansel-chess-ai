@@ -1307,6 +1307,12 @@ late/missing/failed closure or any scan-start age over original1000ms. All origi
 caps, identity/contents checks, weights and diagnostic-only control status stay
 unchanged. Fresh verifier bytes and sealed records change the dataset; compare
 actual path/call counts and timings descriptively, with no paired causal ratio.
-The rebound control and fresh phases are UNRUN; commit/publication remain pending
-Root release. This establishes no latency cure or completed full40. Old failures
-and diagnostic runs remain ineligible; Task17 and Task3/full40 are INCOMPLETE.
+At the historical source-commit checkpoint, the rebound control/fresh phases
+were UNRUN and commit/publication awaited Root release. Current evaluated
+candidate d98db3f is published: strict CHECK passed, rebound control passed,
+parity13/13 passed, and strict preflight failed at596.034ms>500ms during baseline's
+fourth fresh request, before main final integrity. Task17 repair/control gates
+are COMPLETE; Task3/full40 is INCOMPLETE, with no cohort or Elo claim. See the
+[current prerequisite-results report](2026-11-11-tinyaz-serial-verification-prerequisites.md) for exact times, pins,
+closure distinctions and UNKNOWN underlying delay cause. No latency-cure claim,
+retry, new control or comparison follows. Old failures stay preserved/ineligible.
