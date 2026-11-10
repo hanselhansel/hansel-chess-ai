@@ -1765,3 +1765,232 @@ remain for Task12 triage. The historical closure/proof limits and future Native,
 phase, runtime and independent-review gates retain their existing meanings.
 
 Owning contract: [exact v2 root grammar and diagnostics](../../../train/scripts/browser_eval/README.md#task10-r1-exact-root-grammar-and-diagnostic-disclosure-2026-11-10).
+
+### Task11 source-preparation interface ruling (2026-11-10)
+
+Before source use, admit only two minimal factory adaptations: native-fixture-
+admission createMonitor forwards optional evaluationPolicy=null/phase=null to
+its same genuine monitor, and cli-shutdown-test-fixtures accepts exact v1(default)
+or v2 protocolPath with matching workspace version/policy and selected actual
+8s TEST protocol byte ref before sealing. No other existing TEST source edit.
+Owning README/spec contain full signatures/defaults/returns/errors/IO/proof limits.
+
+Prepare planned separate-verdicts-native.test.mjs with genuine Native/transport/
+validator/handles/lifetime/clock/bytes, original60s group55s work5s cleanup,
+10s actor4MiB. One transparent650ms real periodic Node delivery hold per compare
+and strict-v2-check control; same bytes/order/original receipt, actual delayed
+body settlement, sticky compare loss and later timely cleanup, strict hard fault
+and genuine physical teardown. No Native/RSS fabrication or4GiB allocation.
+
+Prepare admitted W/actual-native-cap-v2-control.mjs (local writeClosed,
+observeCollectorHook,runCap; no exports): fresh exclusive UUID argv root,
+current genuine captureEnvironment with original90s setup budget/lifetime and
+actual debt join even on error; exact v2 fixture/identity; existing controlled
+SDK/body/input reopen; synthetic8s check/actual5s Native cleanup; actual CLI,
+driver,collector exit/BOTH closes and owner/body settlement; raw/readback
+fsync+close. Independent20s containment records before TERM and must stay unused.
+Natural2/PHASE_TIMEOUT and zero unrelated faults define TIME-cap evidence.
+Scripted RSS-positive/at-limit/post-fence controls stay scripted, never actual
+Native RSS-overage evidence. No old environment/workspace/release reuse.
+
+Freeze full source supplement/diff/pins, exact85 argv (Task10 explicit83 plus
+originalNative/newNative), cap argv/fresh root, unchanged170-line Task10 manager
+and new static config. Root dispatches fresh isolated Max source/code-doc review
+BEFORE actual Native, then issues separate exact GO to its sole executor.
+No runtime/tests/imports/phase/network/commit/publication during source prep.
+After actual Root receipts, compare final code and docs, audit protected23/M/
+wholeSection3/e78/approval/oldhelpers/NativePython, preserve all failures, update
+seven shared docs with actual proof limits and make one green local commit.
+Task11 stays incomplete until actual gates and fresh completion review pass.
+
+Task11 explicit-v2 only: add selected actual temporary protocol artifact ref to
+sorted inputs.harness.files in control.json, matching workspace byte/path/SHA
+with inputs/harness/ prefix. Controlled reopen forwards the same inputs/workspace
+into genuine version/policy/commonIdentity-SHA manifest construction; generic
+fixture refs remain synthetic. V1 default inputs stay exact. No snapshot waiver.
+
+Task11 source fix R1 I1, source preparation only: replace the two rejecting
+logical persistence-Promise retainers with existing issueActual neutral raw
+receipts plus openActual's separate genuine OwnedFile close debt. Use existing
+writeAll partial-write loops/sync/actual close and preserve first arbitrary
+error via presence flags. Successful close after write/sync failure releases
+physical debt but fails the control; ambiguous open/close remains held. Preserve
+setup error report and all original bounds. Map existing covering assertions,
+freeze fix-only diff against E33461fd3 reviewed source snapshot and new UUID
+manager/config/pins/full source. Fresh scoped Max review precedes any execution;
+all runtime/test outputs stay future, no green commit during preparation.
+
+Task11 source R2 I1: the R1 statement that ambiguous close stays held was not
+established for its selected Node FileHandles. A logical idempotent second-close
+fulfillment could falsely retire descriptor debt. Preserve that failed history;
+change ONLY both TEST persistence open calls to existing privateFs.open beneath
+same neutral/OwnedFile/writeAll owners. Its original ambiguous-close rejection
+and no-second-OS-close guard remain unchanged. Map private-fs.test79-116 to this
+selected backend, without execution. Fresh fix-only diff versus R1 supplement,
+new UUID/same manager/exact85/cap shape, scoped Max review and separate Root GO
+remain required. No production/helper/factory/Native/delivery/bound edits.
+
+Task11 runtime-fault R3 before-use scope: preserve actual1021/1021 Native85 and
+14+3 actual actor receipts, no repeat. Actual cap failed/intervened before CLI:
+basename setup copying collided at RECORD; no actual historical error/JS stack
+captured and descriptor proof remains UNPROVEN. Failed root/evidence stay exact.
+Repair ONLY W cap copy/local persistSetup(fresh,out,lifetime,budget): prevalidate
+unique confined complete target plan (including file/directory conflicts) before
+output file opens; preserve full inputs/setup-relative paths and original bytes;
+create only needed directories via actual issueActual/privateFs; same writeClosed/
+privateFs/openActual/writeAll/sync/close; verify all actual artifact paths/counts/
+bytes/hashes and return setupEvidence with derived counts. Keep90s/20s/8s/5s and
+all existing ownership/error semantics. No EEXIST waiver or changed helper.
+Fresh source-only package uses same170line manager, CAP-ONLY exact argv/fresh
+root and unchanged Native dependency attestation. Scoped source Max review then
+Root fresh cap GO/GREEN precede final docs/audit/greencommit/completion review.
+
+Task11 R4 readback-close correction (before source use): R3 fixed the RECORD
+collision but introduced a separate Important I3. Its issueActual/privateFs.readFile
+readback could retire the neutral receipt after opaque fs.readFileSync threw
+from an issued internal close, without owning that descriptor separately. R3's
+complete setup-close claim was unsupported for this read path; previous write
+I1 remains closed. Preserve all prior source/report prefixes and failed evidence.
+
+Only persistSetup readback now reuses existing createBackendReader with the SAME
+original setup BudgetHandle, SAME lifetime.retainActual, privateFs.lstat adapter
+and existing createPrivateReadStream. Before any stream issue, require the
+observed file path in the already validated complete expected-artifact plan.
+Derive its byte cap from that artifact's original planned bytes, then invoke
+readFact(absolutePath,expected.byteLength,tag,true). The existing reader returns
+streamed {sha256,byteLength}, counts/caps chunks, checks stat/restat identity and
+owns a preregistered receipt until real stream close. The existing private raw
+stream guards each effect and emits physical close only after actual close;
+unknown issued open/close remains held through public failure or expiry. No
+opaque whole-file read remains in setup inventory readback. Exact full sorted
+path/count/byte/hash inventory comparison remains mandatory.
+
+No new reader/module/API/deadline/lifetime/dependency, helper edit or test owner.
+Whole-plan-before-IO, hierarchy, writes/first-error presence, original90s setup,
+20s independent containment,8s TEST/5s cleanup and Native sources stay exact.
+Existing reader/private-FS assertions are mapped without execution in the R4
+report. Actual Native85 proof remains retained on unchanged dependencies, with
+no repeat. R4 remains SOURCE_READY/unrun pending fresh scoped Max I3/new-breakage
+review and separate exact Root cap GO; no green commit or completion claim.
+
+
+### Task11 R5 timestamp binding repair (before source creation)
+
+Fresh cap3bc32bd1 failed naturally after successful setup hierarchy/readback
+(22 setup files/14 RECORDs). CLI natural2/PHASE_TIMEOUT and driver/collector
+actual0/BOTH closes do not qualify the cap: SCHEMA_COHERENCE resource event facts
+made Recorder sticky; no final/completion exists. Preserve that failed root,
+actual raw receipts and all prior failures. No historical result is rescued.
+
+Root admits M `record-schema-v2.mjs` ONLY the resource payload timestamp
+coherence predicate: bind legacy `atMonoNs` to `qualityCheckpoint.lastCompleteNs`,
+not its later `capturedNs`. This repairs drift from accepted e78 lines142-143.
+Actual Native observation completion time and actual checkpoint capture time
+retain their separate meanings. Producer, Native clocks/freshness/epoch, ledger,
+v1 schema and model bytes remain unchanged. Retain lastTimely<=lastComplete<=
+captured, closed fields, graph capture<=final fence and all maximum/counter/
+peak/cap reconciliation guards. No approved design decision changes.
+
+Root admits C `separate-verdicts-resource-events.test.mjs`, TEST-only under400
+lines, excluded from the runtime union. It uses genuine resourcePayload and real
+record schema/graph verification with distinct valid observation/capture clocks,
+falsified observation/capture and graph-fence negatives. Existing records and
+watchdog tests are unchanged, including capture11/finalFence10 rejection and
+v1 golden. No extra helper/module/export/dependency is admitted.
+
+TDD source preparation keeps production OLD. Stage the causal test and inert
+old/fixed schema text profiles differing only in the admitted predicate. Freeze
+exact SCRIPTED RED, same-test GREEN and related-owner argv with qualified runtime
+pins and the same170line manager in a fresh UUID package. Root alone executes
+and polls after an exact scripted GO. Only after actual RED closure may Root
+promote exact fixed bytes; no automatic chaining or pre-RED activation.
+
+After actual scripted proof, fresh isolated Max source/code-doc PASS precedes
+separate exact Root GO for full86 serial owners (exact previous85 plus this
+TEST), then another exact GO for one fresh cap. Production changed, so earlier
+1021/1021 Native85 remains historical and cannot validate final R5 source.
+No app/type/Python repeats without dependency cause. Final code-doc/protected23/
+M/wholeSection3/e78/approval audit and all required actual gates precede a green
+commit and completion. Preparation executes no Node/Python/import/test/Native,
+model/browser/phase/network, commit or push. Task11 remains incomplete.
+
+R5 precise TEST-fixture exception (declared before edit): only two timestamp
+assignments in existing resource-quality.test.mjs may change. In the
+age-only episode payload, `atMonoNs: "600000010"` becomes
+`atMonoNs: captured.lastCompleteNs`. In checkpointGraph, `atMonoNs: cp.capturedNs`
+becomes `atMonoNs: cp.lastCompleteNs`. Actual q.noteAge advances capture/age,
+not Native completion. Preserve all ledger inputs, capture values, mutations,
+assertions and every other byte. These same TEST bytes apply to both OLD and
+FIXED profiles; causal before/after input maps differ only at production schema.
+No line growth, new TEST helper or runtime union change. All graph negatives,
+including capture11/finalFence10, remain mandatory.
+
+
+### Task11 R5 actual scripted proof and source-review checkpoint
+
+Root's exact SCRIPTED release completed naturally on unchanged TEST bytes.
+OLD schema RED was1/4 pass, exit1: valid observation10/capture12 was rejected,
+forged observation12 accepted, and the schema prevented the isolated fence
+negative. After actual wait/BOTH EOF/raw+journal closure, Root promoted exactly
+the inert FIXED313line schema56694779. Only atMonoNs===lastCompleteNs changed.
+Same-test GREEN passed4/4 exit0. Related13 owners passed220/220 exit0 in
+57.192576709s, no failures/cancelled/skipped/todo. All three commands retained
+actual wait/BOTH EOF/fsynced+closed raw/journal, managerErrors[], no signals or
+intervention and stable611 OLD or FIXED pins. The maps differ only at schema.
+Original records/watchdog/v1 golden, chronology/fence/max/counter/peak/cap guards
+and all Native/producer/helper/model bytes remain exact. This is scripted proof.
+
+Promotion's Perl emitter produced two print-spacing warnings and completed0;
+Root verified exact FIXED bytes/all611 pins before GREEN. The warning note and
+all receipts/raws remain in becad3ca-8520-4d21-8ba1-295eb85935a2. Passing tests
+were not repeated to remove noise. Earlier failed/intervened caps stay ineligible.
+
+Current FIXED source is frozen for fresh isolated Max source/code-doc review in
+W/separate-verdicts-implementation-evidence/4103de8f-9f45-4224-bdf7-dfec389e83b8/.
+Only documentation/status/metadata changed after those commands. New config
+contains only future exact Native86 (previous85 plus the new TEST) and one fresh
+cap. Native86 and cap remain UNRUN. Fresh Max PASS, then separate exact Root GO
+for each command, actual closure/receipt audits and final code-doc/protected
+audit precede a green commit/completion review. Prior Native85 is historical,
+not final-source qualification. No Native/model/phase/network/commit/push ran
+during this documentation/package step. Task11 remains incomplete.
+
+
+### Task11 local Native and controlled TIME-cap validation (2026-11-10)
+
+Fresh scoped R5 source/spec/code-doc review passed. The exact86-owner serial
+harness passed1025/1025, zero failed/cancelled/skipped/todo, natural0 in
+145.793413s. Outer4500 closed0. Actual wait/BOTH EOF/raw+journal fsync/close and
+all647 before/after/current input pins were verified. Original14 and new3 direct
+Native actors retain actual exits, BOTH pipe closes and settled ownership.
+Compare's real delayed delivery kept coverage loss sticky through timely recovery
+and healthy cleanup; strict check retained its hard accounting fault.
+
+Fresh controlled v2 TIME-cap operator passed0 in25.119047s, outer86481 closed0.
+Its archived CLI naturally exited2/PHASE_TIMEOUT; driver/collector exited0 with
+BOTH closes. Setup verified23 artifact hashes/sizes (22 setup files/14 RECORDs
+plus fresh environment). Containment was unused, no forced flag or sink error,
+Native cleanup verified/accountingValid true, and all body/lifetime markers
+fulfilled. The sealed completion and final resource event match; two actual
+checkpoints preserve distinct Native completion and later capture timestamps.
+
+The cap aggregate and BOTH resource verdicts remain INCONCLUSIVE. Resource reasons
+are NATIVE_UNPROVEN and RECORDS_UNPROVEN because SDK/body/input-reopen and full
+scientific inputs are controlled. This passes the TIME-cap/environment/process/
+cleanup component control only. It is not a strict CHECK prerequisite,
+scientific/cohort/strength/RSS-overage result. Earlier failed/intervened caps
+remain preserved and ineligible. No historical result is repaired.
+
+OPEN Important finding, assigned by Root to mandatory Task12 broader review:
+the pre-existing graph verifier can admit jointly forged completion clocks before
+ledger start when later cycle counts increase. R5 fixed the separate observation/
+capture binding; it did not close this older gap. Do not publish or release a
+phase/cohort before Task12 triage. Fresh Task11 completion review must pass before
+Task12 admission. No push, merge, deployment or operational release is implied.
+
+Final receipts/audits and ignored cap source bytes are retained in
+W/separate-verdicts-implementation-evidence/4103de8f-9f45-4224-bdf7-dfec389e83b8/;
+W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
+Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
+explicit86 roster and readable source below400 lines remain required and audited.
+This status append changes no source/TEST/helper/manager or model bytes.

@@ -7,6 +7,7 @@ import { canonicalBytes, sha256Bytes } from "./canonical-json.mjs";
 import { captureSetupBackendIdentity } from "./process-backend.mjs";
 import { createBackendIdentityExpectation } from "./process-backend-reader.mjs";
 import { assertEnvironment } from "./identity-schema.mjs";
+import { V2_POLICY } from "./evaluation-policy.mjs";
 
 const HELPER_REFS = ["process-macos-abi.py", "process-macos-native.py", "process-macos.py"]
   .map(name => `train/scripts/browser_eval/${name}`);
@@ -34,7 +35,11 @@ export async function bindCliFixtureNativeEnvironment(nativeEnvironment, harness
   return supplied;
 }
 
-export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null } = {}) {
+export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null,
+  protocolPath = "train/fixtures/browser-protocol.json" } = {}) {
+  if (!["train/fixtures/browser-protocol.json", "train/fixtures/browser-protocol-v2.json"].includes(protocolPath)) {
+    throw new Error("CLI fixture protocol path");
+  }
   const supplied = nativeEnvironment === null ? null : structuredClone(nativeEnvironment);
   if (supplied !== null) assertEnvironment(supplied);
   const env = await makeWorkspace();
@@ -51,8 +56,8 @@ export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null
   await fs.symlink(path.join(repoRoot, "node_modules"), path.join(workspaceRoot, "inputs/harness/node_modules"));
   const fixtures = path.join(workspaceRoot, "inputs/harness/train/fixtures");
   await fs.mkdir(fixtures, { recursive: true });
-  for (const name of ["browser-protocol.json", "browser-parity.json", "browser-openings.json"]) {
-    if (name === "browser-protocol.json") {
+  for (const name of [path.basename(protocolPath), "browser-parity.json", "browser-openings.json"]) {
+    if (name === path.basename(protocolPath)) {
       const protocol = JSON.parse(await fs.readFile(path.join(repoRoot, "train/fixtures", name), "utf8"));
       // Match the existing TEST-only short-clock constants hook, before sealing.
       protocol.limits.timing.phaseMs.check = 8000;
@@ -63,11 +68,19 @@ export async function prepareCliShutdownFixture({ mode, nativeEnvironment = null
     await fs.chmod(path.join(fixtures, name), 0o444);
   }
   const workspace = structuredClone(env.ws);
-  const protocolPath = "train/fixtures/browser-protocol.json";
+  if (protocolPath === "train/fixtures/browser-protocol-v2.json") {
+    workspace.schemaVersion = 2;
+    workspace.commonIdentity.evaluationPolicy = structuredClone(V2_POLICY);
+  }
   const protocolBytes = await fs.readFile(path.join(workspaceRoot, "inputs/harness", protocolPath));
   workspace.commonIdentity.fixtures.protocol = {
     path: protocolPath, byteLength: protocolBytes.length, sha256: sha256Bytes(protocolBytes),
   };
+  if (workspace.schemaVersion === 2) {
+    env.inputs.harness.files.push({ ...workspace.commonIdentity.fixtures.protocol,
+      path: `inputs/harness/${protocolPath}` });
+    env.inputs.harness.files.sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
+  }
   if (supplied !== null) workspace.commonIdentity.environment =
     await bindCliFixtureNativeEnvironment(supplied, path.join(workspaceRoot, "inputs/harness"));
   workspace.commonIdentity.environment.node.invocationPath = process.execPath;

@@ -231,7 +231,7 @@ test("graph rejects a checkpoint reporting an episode before its retained detect
     observedPeakRssBytes: 5,
     rssLimitExceeded: false,
     accountingValid: false,
-    atMonoNs: "600000010",
+    atMonoNs: captured.lastCompleteNs,
     qualityCheckpoint: structuredClone(captured),
   };
   graph.checkpoints = [payload];
@@ -264,7 +264,7 @@ const checkpointGraph = (q, cp) => {
       observedPeakRssBytes: 5,
       rssLimitExceeded: false,
       accountingValid: false,
-      atMonoNs: cp.capturedNs,
+      atMonoNs: cp.lastCompleteNs,
       qualityCheckpoint: structuredClone(cp),
     },
   ];

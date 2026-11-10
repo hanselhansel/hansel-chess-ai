@@ -183,7 +183,7 @@ export function createNativeFixtureAdmission({ inputs, state, bounds, clock, con
       retainEntry(`${channel}:${direction}`, { type: t, requestId: msg.requestId ?? null, seq: msg.seq }, at);
     }
   };
-  const createMonitor = ({ runId: monitorRunId, horizon = null } = {}) => {
+  const createMonitor = ({ runId: monitorRunId, horizon = null, evaluationPolicy = null, phase = null } = {}) => {
     if (
       !strNE(monitorRunId) ||
       !(monitorRunId === runId || monitorRunId.startsWith(`${runId}:`)) ||
@@ -209,7 +209,7 @@ export function createNativeFixtureAdmission({ inputs, state, bounds, clock, con
     };
     const real = createProtocolValidator({ runId: monitorRunId });
     const wrapped = wrapProtocol(mrec, real);
-    const options = { runId: monitorRunId, pythonExecutable, helperPath, protocol: wrapped, clock, spawnImpl: io.spawnImpl, recordRoot: inputs.recordRoot, lifetime };
+    const options = { runId: monitorRunId, pythonExecutable, helperPath, protocol: wrapped, clock, spawnImpl: io.spawnImpl, recordRoot: inputs.recordRoot, lifetime, evaluationPolicy, phase };
     if (horizon === null) options.getDeadlineMonoMs = () => bounds.deadlineMonoMs;
     else options.horizon = horizon;
     mrec.protocol = real;

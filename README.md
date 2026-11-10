@@ -590,3 +590,67 @@ remain for Task12 triage. The historical closure/proof limits and future Native,
 phase, runtime and independent-review gates retain their existing meanings.
 
 Owning contract: [exact v2 root grammar and diagnostics](train/scripts/browser_eval/README.md#task10-r1-exact-root-grammar-and-diagnostic-disclosure-2026-11-10).
+
+### Task11 Native/control source preparation (2026-11-10)
+
+Task10's actual fresh review is PASS at07e3035. Task11 is SOURCE PREPARATION
+ONLY. New genuine Native compare/strict-check delivery controls retain real
+transport/validator/clock/handles/lifetime, original60s group55s work5s reserve,
+10s actor4MiB. A transparent bounded650ms Node delivery hold on one periodic
+reply observes compare quality loss/recovery versus original strict hard fault.
+The separate fresh v2 archived CLI control acquires its environment through
+current genuine captureEnvironment, keeps existing controlled SDK/body/input
+reopen, synthetic8s TEST clock and actual5s Native cleanup. Its cap is TIME /
+PHASE_TIMEOUT. Actual RSS-overage is not claimed; scripted RSS controls remain
+scripted. No4GiB allocation, lower limit, old environment/workspace reuse or
+new Native authority. Only two declared TEST factories gain minimal optional
+policy/phase or exact v1/v2 protocol selection/actual-byte binding adaptations.
+
+All runtime checks are FUTURE and unrun for Task11. Fresh isolated Max source/
+code-doc review and a separate exact Root execution GO precede the explicit85
+serial owner command and current-byte cap control. Root alone executes/polls.
+Actual exits, BOTH pipes, raw/journal/descriptor/body/owner settlement and no
+intervention remain required. Historical failed evidence and unproven limits
+are preserved. No model/browser/scoring/real phase/cohort/release, commit or
+publication occurred during this preparation. Full interfaces/mechanisms and
+proof limits are in the owning browser-evaluation README and W/v2-task-11-report.md.
+
+
+### Task11 local Native and controlled TIME-cap validation (2026-11-10)
+
+Fresh scoped R5 source/spec/code-doc review passed. The exact86-owner serial
+harness passed1025/1025, zero failed/cancelled/skipped/todo, natural0 in
+145.793413s. Outer4500 closed0. Actual wait/BOTH EOF/raw+journal fsync/close and
+all647 before/after/current input pins were verified. Original14 and new3 direct
+Native actors retain actual exits, BOTH pipe closes and settled ownership.
+Compare's real delayed delivery kept coverage loss sticky through timely recovery
+and healthy cleanup; strict check retained its hard accounting fault.
+
+Fresh controlled v2 TIME-cap operator passed0 in25.119047s, outer86481 closed0.
+Its archived CLI naturally exited2/PHASE_TIMEOUT; driver/collector exited0 with
+BOTH closes. Setup verified23 artifact hashes/sizes (22 setup files/14 RECORDs
+plus fresh environment). Containment was unused, no forced flag or sink error,
+Native cleanup verified/accountingValid true, and all body/lifetime markers
+fulfilled. The sealed completion and final resource event match; two actual
+checkpoints preserve distinct Native completion and later capture timestamps.
+
+The cap aggregate and BOTH resource verdicts remain INCONCLUSIVE. Resource reasons
+are NATIVE_UNPROVEN and RECORDS_UNPROVEN because SDK/body/input-reopen and full
+scientific inputs are controlled. This passes the TIME-cap/environment/process/
+cleanup component control only. It is not a strict CHECK prerequisite,
+scientific/cohort/strength/RSS-overage result. Earlier failed/intervened caps
+remain preserved and ineligible. No historical result is repaired.
+
+OPEN Important finding, assigned by Root to mandatory Task12 broader review:
+the pre-existing graph verifier can admit jointly forged completion clocks before
+ledger start when later cycle counts increase. R5 fixed the separate observation/
+capture binding; it did not close this older gap. Do not publish or release a
+phase/cohort before Task12 triage. Fresh Task11 completion review must pass before
+Task12 admission. No push, merge, deployment or operational release is implied.
+
+Final receipts/audits and ignored cap source bytes are retained in
+W/separate-verdicts-implementation-evidence/4103de8f-9f45-4224-bdf7-dfec389e83b8/;
+W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
+Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
+explicit86 roster and readable source below400 lines remain required and audited.
+This status append changes no source/TEST/helper/manager or model bytes.
