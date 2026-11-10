@@ -5676,3 +5676,14 @@ Native1059/1059 closed with Root audits. Controlled cap remains aggregate/resour
 INCONCLUSIVE. [Owning behavior and evidence limits](../../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
 Direct code-to-doc comparison preserves accepted e78/approval and whole Section3.
 Scoped independent re-review is pending; Task12 and phase/full40 release stay open.
+
+Task14 factual outcome (2026-11-10): Task12 scoped re-review passed all9 groups;
+4709b15 was feature-published. Fresh strict parents passed0/BOTH resources/gaps0.
+The ONE full40 failed at descriptive12games/6pairs on Store age2300>1000ms, then
+Recorder sticky. No final/completion/verification/final-resource event or eligible
+graph exists; fulfilled markers do not prove persisted Native cleanup. The quiet
+five-scan producer control did not reproduce timing and establishes no live cause.
+[Owning evidence and limits](../../../train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
+This changes no API, guard, scan-start timestamp, e78 decision or science.
+Task14 records a failed handoff; Task3/full40 remains INCOMPLETE. No automatic retry or
+all-drift closure follows this result.

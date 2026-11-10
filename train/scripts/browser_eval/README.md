@@ -12122,3 +12122,53 @@ clock, deadline or owner was added. Protected23/M, whole Section3, e78/approval,
 old six helpers and runtime union126 remain exact. Failed e84/d85 evidence stays
 ineligible; f1's bounded actual cause qualified I5 RED without rescuing d85's
 hidden-cause receipt. W/v2-task-12-report.md records exact receipts and limits.
+
+### Task14 failed comparison handoff and idle control (2026-11-10)
+
+Task12 is complete: the ONE fresh scoped Max re-review passed all six Important
+and three Minor groups. Candidate4709b15 was published and remote-verified on the
+feature branch only. Fresh strict CHECK170.507240167s,13-case PARITY45.588580125s
+and PREFLIGHT189.763412333s each naturally0 with authoritative graphs, BOTH
+resource verdicts passed and gapCount0. These parent results do not pass compare.
+
+The ONE released full40 failed and is consumed. Descriptive progress reached
+12/40 games and6/20 pairs; p07-g1 remained incomplete. The outer wrapper naturally1
+in13281.469110750s, CLI naturally2, readback naturally1. Root verified actual
+direct-owner wait/BOTH pipes/raw/journal closure, no external intervention and
+568 exact frozen/current inputs. First fault was STORE_ACCOUNTING: scan-start
+age2300ms exceeded the unchanged1000ms limit. RECORDER_STICKY retained that cause.
+Final/completion/verification and mandatory final-resource event are absent.
+There is no authoritative comparison graph, scientific/Elo eligibility or verified
+persisted Native cleanup proof. Fulfilled cleanup/lifetime markers and fallback
+inconclusive stdout are not substitutes for persisted graph authority.
+
+The last ordinary checkpoint ONLY reports gapCount2/maxGap761577541ns and observed
+= admitted peak1889845248B with capfalse. These are not final verdicts or a
+whole-run maximum. v2 periodic-quality softening operated before the distinct
+hard Store refusal. The retained contract worked; no contract violation or
+underlying host/IO/scheduler/GC/cardinality cause has been demonstrated.
+
+Root's ONE bounded post-failure producer-only control naturally0 in0.326586042s.
+Five real scans had decision ages44/35/32/30/30ms, accountingValidtrue and identical
+chargedBytes46178304. All issued scans/lifetime joined under the original90s
+budget;572 input pins and actual wait/BOTH EOF/raw/journal closure were verified.
+The stored1399-file/76-descendant-directory entry/path set matched afterward in
+recorded size, mtime, inode/dev, SHA and symlink targets;77 walked directories
+includes the root. Root-entry metadata was not separately inventoried, so this
+is no cross-control root-identity proof. Each producer scan checks root identity
+within that scan. The inventory's42751546 logical
+bytes and these quiet scan results are post-failure facts only. No live browser,
+model, Store or Native work ran, and the host was not isolated. The control did
+not reproduce2300ms timing under those conditions; it does not localize or fix
+historical cause, rescue the cohort, or prove in-run cap/persisted cleanup.
+
+Task14's failed-gate handoff is documentation only, pending one result-doc review.
+Task3/full40 objective remains INCOMPLETE. No automatic retry or guessed repair.
+A future fix/new cohort needs causal evidence and applicable reviewed authority.
+Store/observer/trace/operator APIs, scan-start clock,1000ms guard, policy and
+science are unchanged. M9706840B/SHA b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee,
+protected23, whole Section3, e78/approval, old six helpers and runtime union126
+remain exact. Other unavailable/deferred drifts stay open. Exact diagnosis,
+Root audits/control and Task14 report are retained in W/separate-verdicts-
+implementation-evidence/62980a1e-bd40-469e-b6bf-395ae86d8af5; failed E13cd549506
+artifacts and every old document prefix are preserved.

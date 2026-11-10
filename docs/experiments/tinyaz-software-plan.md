@@ -1196,3 +1196,13 @@ closed with Root audits. Controlled cap remains aggregate/resource INCONCLUSIVE.
 [Owning status and limits](../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
 Historical failures remain ineligible. Scoped re-review, Task12 completion,
 publication, strict phases and one fresh full40 remain open.
+
+Task14 failed-attempt handoff (2026-11-10): reviewed4709b15 was feature-published;
+fresh strict parents passed0/BOTH resource verdicts/gaps0. The ONE full40 failed
+at descriptive12/40 games,6/20 pairs after13281.469110750s. First Store scan-start
+age2300>1000ms caused downstream Recorder sticky. No authoritative graph,
+scientific/Elo eligibility or verified persisted Native cleanup exists.
+Five quiet scans did not reproduce timing; historical cause remains UNKNOWN.
+[Owning outcome, last-checkpoint qualification and control limits](../../train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
+Task14 records the failed handoff. Task3/full40 remains INCOMPLETE; release is
+consumed and no automatic retry is authorized. All old failures stay ineligible.

@@ -572,3 +572,12 @@ implemented and locally validated. Causal49/49, related410/410 and Native1059/10
 closed with Root audits. Controlled cap remains aggregate/resource INCONCLUSIVE.
 [Owning status and limits](browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
 Scoped independent re-review is pending; Task12 and phase/full40 release stay open.
+
+Task14 failed-attempt handoff (2026-11-10): Task12 scoped review passed all9 groups
+and4709b15 was feature-published. Fresh strict CHECK/PARITY/PREFLIGHT passed0,
+BOTH resource verdicts passed/gaps0. The ONE compare stopped at descriptive12/40,
+6/20 after Store age2300>1000ms and downstream sticky failure. No final graph,
+eligibility or verified persisted Native cleanup. Quiet producer scans did not
+reproduce the timing; historical cause remains UNKNOWN.
+[Owning outcome and control limits](browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
+Task14 is a failed handoff; Task3/full40 remains INCOMPLETE with no automatic retry.

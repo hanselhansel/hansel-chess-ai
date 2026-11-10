@@ -673,3 +673,12 @@ implemented and locally validated. Causal49/49, related410/410 and Native1059/10
 closed with Root audits. The controlled cap remains aggregate/resource
 INCONCLUSIVE. [Owning status and limits](train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
 Scoped independent re-review is pending; Task12 and phase/full40 release stay open.
+
+Task14 failed-attempt handoff (2026-11-10): Task12 passed its scoped review and
+candidate4709b15 was feature-published. Fresh strict parents passed0 with BOTH
+resource verdicts passed/gaps0. The ONE full40 failed at descriptive12/40 games,
+6/20 pairs: Store scan-start age2300>1000ms, then Recorder sticky. No authoritative
+comparison graph, eligibility or verified persisted cleanup exists. Five quiet
+post-failure scans did not reproduce the delay; cause remains UNKNOWN.
+[Evidence and limits](train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
+Task14 documents the failed handoff. Task3/full40 remains INCOMPLETE; no automatic retry.

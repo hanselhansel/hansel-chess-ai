@@ -533,3 +533,11 @@ Native1059/1059 closed with Root audits. Controlled cap remains aggregate/resour
 INCONCLUSIVE. [Owning status and limits](../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
 Scoped re-review, Task12 completion and phase/full40 release remain open. Earlier
 failed attempts remain ineligible.
+
+Current failed attempt (2026-11-10): reviewed/published4709b15 passed fresh strict
+CHECK/PARITY/PREFLIGHT0 with BOTH resources passed/gaps0. Its ONE full40 failed
+at descriptive12/40 games and6/20 pairs on Store age2300>1000ms and Recorder
+sticky. No final graph, eligibility or verified persisted cleanup. Five quiet
+producer scans did not reproduce timing; the historical cause remains UNKNOWN.
+[Outcome and evidence limits](../../train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
+Task14 documents this failed handoff; Task3/full40 is INCOMPLETE. No automatic retry.

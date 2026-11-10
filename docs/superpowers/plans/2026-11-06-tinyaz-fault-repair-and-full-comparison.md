@@ -2035,3 +2035,23 @@ code-to-doc/protected audit accompanies the local green change. Independent
 scoped Max re-review is pending; Task12 remains open. Publication, strict phases
 and full40 need later Root gates. Exact evidence and limits: W/v2-task-12-report.md
 and [the owning status](../../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
+
+### Task14 failed-gate handoff status (2026-11-10)
+
+Task12 completed its ONE scoped Max review, all9 groups addressed, and4709b15 was
+feature-published. Fresh strict CHECK/PARITY/PREFLIGHT each passed0, BOTH resources
+passed/gaps0. Task13 consumed its ONE comparison release: descriptive12/40 games,
+6/20 pairs, outer1/13281.469110750s, CLI2/readback1. Store age2300>1000ms correctly
+latched accounting sticky; no final/completion/verification/final-resource event,
+analysis eligibility or verified persisted Native cleanup. Direct-owner closure
+and fulfilled cleanup/lifetime markers retain their separate, narrower meanings.
+
+Task14 retains the failed evidence, read-only diagnosis and ONE actual quiet
+producer control. Five ages44/35/32/30/30ms did not reproduce historical timing;
+no live cause/fix/cap/cleanup/eligibility claim follows. Seven-doc status updates
+and protected/source/diff audit require no source suite rerun because runtime,
+TEST, interfaces, guards and contracts are unchanged. One fresh scoped Max
+result-doc review follows the local documentation commit. Task14 failed-handoff
+completion cannot mark Task3/full40 complete. No automatic retry or further fix wave.
+See [the owning outcome](../../../train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10)
+and E14/task14-report.md. Other unavailable/deferred drifts remain open.
