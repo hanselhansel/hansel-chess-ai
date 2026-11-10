@@ -11986,3 +11986,139 @@ W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
 Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
 explicit86 roster and readable source below400 lines remain required and audited.
 This status append changes no source/TEST/helper/manager or model bytes.
+
+### Task12 single repair wave, before-use map (2026-11-10)
+
+The actual five fresh review shards produced six Important and three Minor
+finding groups. W/v2-task-12-findings.md records their coverage and limits.
+This is SOURCE PREPARATION. Production remains OLD until actual causal RED
+closure and Root promotion of exact inert FIXED bytes. No runtime gate has run.
+
+Existing-owner repair API and TEST map, declared before source edits:
+
+- `receipt-verdicts-v2.mjs`: same pure `verifyVerdictClosure` and
+  `verifyResourcePrefixExtension`; bind observations to ledger start/capture,
+  enforce timely/completed deltas and stable clocks, and require an admitted
+  observation for admitted peaks or an ordinary completion for observed peaks.
+  Only final observed-positive-cap retention with real additional late-drop
+  evidence may bypass the observed-completion guard. It never admits new
+  completion/timely counters, freshness or admitted peaks after the fence.
+- `resource-quality.mjs`: shared checkpoint/full-evidence producer-possibility
+  guards, same ledger API. Seeded continuous evidence has equal completed/timely
+  counts and qualified/timely/complete clocks. Bootstrap remains timely.
+- `record-schema-v2.mjs`: ordinary seeded RSS/current/admitted/observed facts are
+  present and coherent. Current RSS cannot exceed the observed peak. Untimely
+  current may exceed admitted peak. `atMonoNs` remains actual last completion,
+  with distinct actual checkpoint capture. Closed fields and v1 stay strict.
+- `process-stop.mjs` `teardownSend` forwards the SAME borrowed original stop
+  handle to `process-transport.mjs` `sendNoAck` and its existing queued frame.
+  Drain rechecks that handle before actual write after backpressure. Optional
+  absent-handle callers retain deliberate legacy compatibility. No new bound,
+  timer, grace, retry, wire field, owner or physical-settlement shortcut.
+- `process-framing.mjs` `createCollectorFrameHandler` routes malformed decoded
+  top-level envelopes through transport `failOnce`; recognizable replies keep
+  same-handle checks before protocol acceptance and contained attribution.
+- `watchdog-verdict-policy.mjs` `createWatchdogResourceChecks` synchronously
+  invokes the original fault/first-stop authority on ordinary retained cap
+  admission. This freezes PGNs, closes admission, captures the original cleanup
+  bound and wakes shutdown. Existing stop stability and v1 defaults remain.
+  RSS diagnostics here and in `watchdog-resource-policy.mjs` select v2 observed
+  peak and v1 admitted fallback, matching existing shutdown selection.
+- `process-proof.mjs` and `native-supervision.test.mjs`: introductory comments
+  only. Proof behavior and Native TEST bodies are unchanged.
+- W/`separate-verdicts-verify-phase-v2.mjs` reuses released pinned
+  `receipt-files.confinedRead` with the same genuine lifetime/io for raw logs,
+  journal, workspace and completion. Failed reads retain mandatory real close;
+  ambiguous issued open/close holds debt. No idempotent FileHandle close proof.
+- W/`separate-verdicts-owner-controls-v2.mjs` adds genuine read-error/physical
+  close and ambiguous-debt controls. Existing four real child cases and two
+  genuine graph cases retain exact exit0/2 and raw/journal/closure assertions.
+- Existing TEST leaves `separate-verdicts-resource-events.test.mjs`,
+  `separate-verdicts-terminal.test.mjs`, `accounting-trace-io.test.mjs`, and
+  `process-lifecycle.test.mjs` host causal schema/graph, actual-facade,
+  transport/framer, and stop/backpressure cases. Existing resource-quality and
+  watchdog-resource whole owners remain covering checks. No new TEST/runtime
+  leaf, Node flag, production seam or unconditional ignored-W test import.
+
+Seven shared docs receive factual status links. The experiment index's stale
+first current label becomes historical. Original M1/M2 warnings stay deliberate;
+Task6's pronoun is already closed. Accepted e78/approval, whole Section3,
+protected23/M, six old helpers, runtime union126, immutable weights and science
+remain exact. Source files stay below400 readable physical lines.
+
+W/v2-task-12-report.md will bind inert OLD/FIXED profiles, identical TEST bytes,
+explicit qualified commands, current source pins and original170-line manager.
+Root alone releases and executes each stage. Actual OLD semantic RED precedes
+exact FIXED promotion and identical GREEN, covering scripted owners, serial86,
+W controls, one fresh component cap and one scoped fresh Max re-review. No phase,
+cohort, publication or scientific/strict-prerequisite claim follows preparation.
+The final green change includes actual receipts and direct code-to-doc comparison.
+
+Task12 before-use capacity ruling: the shared388-line
+`separate-verdicts-test-fixtures.mjs` stays unchanged. The existing roomy
+`separate-verdicts-terminal.test.mjs` owns a local cap-only factory using the
+necessary genuine facade/channel/Recorder/Store/cleanup/lifetime and PGN setup,
+with transparent synchronous first-stop/wake observations and actual held-pipe
+teardown. It exports no API and adds no configuration seam or owner. The
+process-lifecycle TEST remains unchanged; stop/backpressure coverage fits in
+accounting-trace-io TEST. All TEST bytes are identical in OLD/FIXED profiles.
+
+Task12 same-wave causal preparation continuation: the first Root-run OLD command
+closed naturally1 with47 tests (17 pass,30 fail), but both shutdown controls
+stopped before their target because their literal probe had string startUsec.
+The existing identity helper supplies numeric microseconds. The TEST now requires
+actual sample/probe tuple, same-live reply, write(false) and retained drain
+listener before queuing shutdown. No production behavior is changed for this
+fixture correction. The failed e84f8a9e package/receipt is immutable.
+
+The FIXED-only admission side effect is explicitly v2 and only while ordinary
+admission is active. Default v1 rssExceeded remains a boolean getter. Finish cap
+handling still stops a newly known cap after finish was admitted and retains the
+same previously captured cleanup bound. v2 repeated cap stops deduplicate against
+the existing stop state; no new latch or deadline is added. Existing roomy TESTs
+characterize genuine v1 factory behavior and v2 cap-after-finish behavior. New
+source package d85bf532 is preparation only, pending a fresh exact Root GO.
+
+Task12 before-use diagnostic-only continuation: corrected d85 OLD scripted
+control closed49 tests (19 pass,30 intended failures). Preserve that qualification;
+no scripted49 repeat is needed for the W-only diagnostic. W RED closed naturally1
+but its top AggregateError omitted nested errors, so I5 attribution is unproven.
+Only the existing W owner-controls top catch adds actual nested-cause code,
+message and stack output, bounded to eight causes and8192 additional bytes.
+Existing exceptions, assertions, finally, original stack, exit and owners remain.
+Fresh f1f8f468 package releases W RED only after exact Root GO; all11 inert FIXED
+owners and three TESTs stay byte-identical. No cause is inferred from the wrapper.
+
+### Task12 FIXED implementation and local validation (2026-11-10)
+
+All six Important and three Minor review groups are implemented and locally
+validated. Root promoted the exact11 FIXED profiles only after qualified OLD
+causal controls. Independent scoped Max re-review remains pending. Task12 is
+still open; this status grants no publication, strict phase or full40 release.
+
+Actual final evidence is W/separate-verdicts-implementation-evidence/
+8254596d-ce7e-4224-808a-07a92d8178ab. Causal49/49, W controls natural0,28 whole
+scripted owners410/410 and full serial86 owners1059/1059 all closed under the
+original qualified commands. Root audited real wait/BOTH EOF/raw+journal closure,
+769 stable input maps, original14 plus new3 Native actors and29 compatibility
+child receipts. The deliberate null/undefined bookkeeping warnings remain.
+
+The fresh component TIME-cap wrapper naturally0 and archived CLI naturally2/
+PHASE_TIMEOUT with0 unplanned faults. Driver/collector exited0 with BOTH pipe
+closes; cleanup verified/accountingValid and actual lifetime fulfilled. The sealed
+graph and mandatory final resource event match. Aggregate and BOTH resource
+verdicts remain INCONCLUSIVE, NATIVE_UNPROVEN and RECORDS_UNPROVEN, because science
+and SDK/input acquisition are controlled. This is no strict CHECK, RSS-overage,
+cohort or scientific proof. Containment was unused. Immutable config's redundant
+capRoot is stale d85; the actual fresh825 argv is authoritative and recorded by
+Root GO. The config was preserved.
+
+Direct code-to-doc comparison confirms the same pure graph/schema APIs, distinct
+completion/capture clocks, narrow final late observed-cap exception, borrowed
+stop handle through queued writes, failOnce envelope containment, explicit-v2
+ordinary cap stop, unchanged default-v1 getter and admitted-finish cleanup bound,
+and genuine confinedRead/OwnedFile readback debt. No runtime leaf, wire field,
+clock, deadline or owner was added. Protected23/M, whole Section3, e78/approval,
+old six helpers and runtime union126 remain exact. Failed e84/d85 evidence stays
+ineligible; f1's bounded actual cause qualified I5 RED without rescuing d85's
+hidden-cause receipt. W/v2-task-12-report.md records exact receipts and limits.

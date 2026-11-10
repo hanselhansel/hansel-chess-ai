@@ -1175,3 +1175,24 @@ W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
 Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
 explicit86 roster and readable source below400 lines remain required and audited.
 This status append changes no source/TEST/helper/manager or model bytes.
+
+Task12 repair preparation (2026-11-10): the actual completed review feeds one
+combined existing-owner repair wave. See [the before-use contract](../../train/scripts/browser_eval/README.md#task12-single-repair-wave-before-use-map-2026-11-10)
+and W/v2-task-12-report.md. Production remains OLD; preparation supplies no new
+runtime, strict prerequisite, cohort or scientific result. Prior failed attempts
+and component-cap limitations remain unchanged.
+
+Task12 same-wave preparation continues after the first Root-run OLD diagnostic.
+Failed e84f8a9e evidence stays immutable; corrected TEST/v2 selection package
+requires new exact Root GO. W/v2-task-12-report.md records the causal diagnosis.
+
+Task12 retains the qualified49-case OLD control. A bounded W-only nested-error
+diagnostic is source-prepared for a fresh exact Root gate; I5 attribution remains
+unproven. W/v2-task-12-report.md preserves the actual receipts and qualifications.
+
+Task12 current status (2026-11-10): six Important and three Minor groups are
+implemented and locally validated. Causal49/49, related410/410 and Native1059/1059
+closed with Root audits. Controlled cap remains aggregate/resource INCONCLUSIVE.
+[Owning status and limits](../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
+Historical failures remain ineligible. Scoped re-review, Task12 completion,
+publication, strict phases and one fresh full40 remain open.

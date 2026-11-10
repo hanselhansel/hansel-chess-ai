@@ -8,7 +8,9 @@ import { accountingTrace } from "./accounting-trace.mjs";
 import { privateFs, createPrivateReadStream } from "./private-fs.mjs";
 import { createCollectorTransport } from "./process-transport.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
-import { collectorFixture, fakeClock, sampleReply } from "./supervision-test-fixtures.mjs";
+import { processMonitorLifetime } from "./processes.mjs";
+import { createMonitorFixture, monitorBootstrapScript, startMonitorFixture } from "./process-monitor-test-fixtures.mjs";
+import { collectorFixture, fakeClock, sampleReply, identity } from "./supervision-test-fixtures.mjs";
 const turn = () => new Promise((resolve) => setImmediate(resolve));
 const select = (start, finish, requestId) => {
   const fact = { startedNs: String(start), finishedNs: String(finish), lastValidNs: String(start),
@@ -147,3 +149,79 @@ test("original write throw and expired reply cannot become a successful traced r
   }
   await turn();
 });
+
+test("decoded null LF faults the real framer and rejects an outstanding request without reaping", async () => {
+  const fixture = collectorFixture({ runId: "null-frame", script: { muteSample: true } });
+  const clock = fakeClock(), faults = [];
+  const transport = createCollectorTransport({ child: fixture.child, protocol: fixture.protocol,
+    runId: "null-frame", clock, onFault: error => faults.push(error) });
+  const handle = createBudgetHandle({ deadlineMonoMs: clock.nowMs() + 1000, clock, nowMonoMs: clock.nowMs });
+  fixture.ready();
+  const request = transport.send("sample", { owned: [], inspectPids: [], probes: [] }, "null-held", handle);
+  // Always observe rejection before pushing malformed wire bytes. OLD throws
+  // out of the stdout listener; finally then physically closes the fake child.
+  const rejected = assert.rejects(request, { code: "IPC_INVALID" });
+  let physical = false; transport.whenReaped().then(() => { physical = true; });
+  try {
+    assert.doesNotThrow(() => fixture.child.emitOut(Buffer.from("null\n")));
+    await rejected;
+    assert.equal(faults.length, 1); assert.equal(transport.failed, true);
+    assert.equal(physical, false);
+    fixture.child.exit(2); fixture.child.stdout.emitClose(); await turn();
+    assert.equal(physical, false, "fault and exit cannot replace BOTH close events");
+    fixture.child.stderr.emitClose(); await transport.whenReaped();
+    assert.equal(physical, true);
+  } finally {
+    fixture.exit(2); transport.close(); await rejected; await transport.whenReaped();
+  }
+});
+
+for (const expired of [true, false]) {
+  test(`queued original-stop shutdown ${expired ? "cannot write after C" : "writes before C and retains physical debt"}`, async () => {
+    const f = createMonitorFixture({ script: monitorBootstrapScript() });
+    let stop = null;
+    try {
+      await startMonitorFixture(f);
+      const write = f.fixture.child.stdin.write;
+      let blocked = false;
+      f.fixture.child.stdin.write = (...args) => {
+        const frame = JSON.parse(String(args[0]));
+        if (frame.type === "shutdown") { f.fixture.written.push(frame); return true; }
+        const result = write(...args);
+        if (frame.type === "sample") { blocked = true; return false; }
+        return result;
+      };
+      const tuple = identity(9000), before = f.fixture.written.length;
+      const prior = f.monitor.probeIdentity(tuple);
+      assert.equal(await prior, "same-live"); // Actual reply, still awaiting drain.
+      assert.equal(f.fixture.written.length, before + 1);
+      assert.equal(f.fixture.written.at(-1).type, "sample");
+      assert.deepEqual(f.fixture.written.at(-1).probes, [tuple]);
+      assert.equal(blocked, true);
+      assert.equal(f.fixture.child.stdin.listenerCount("drain"), 1);
+      stop = f.monitor.stopAndReap({ deadlineMonoMs: f.clock.nowMs() + 50 });
+      const outcome = stop.then(value => ({ value }), error => ({ error }));
+      await turn();
+      const shutdowns = () => f.fixture.written.filter(frame => frame.type === "shutdown");
+      assert.equal(shutdowns().length, 0, "shutdown is queued behind actual backpressure");
+      let physical = false;
+      processMonitorLifetime(f.monitor).whenSettled().then(() => { physical = true; });
+      if (expired) f.clock.jumpWithoutTimers(51);
+      f.fixture.child.stdin.emit("drain");
+      assert.equal(shutdowns().length, expired ? 0 : 1);
+      if (expired) { f.clock.advance(0); assert.equal((await outcome).error.code, "CLEANUP_UNPROVEN"); }
+      assert.equal(physical, false, "deadline refusal never fabricates physical settlement");
+      f.fixture.child.exit(0); f.fixture.child.stdout.emitClose(); await turn();
+      assert.equal(physical, false);
+      f.fixture.child.stderr.emitClose();
+      if (!expired) assert.equal((await outcome).value.exitCode, 0);
+      await processMonitorLifetime(f.monitor).whenSettled();
+      assert.equal(physical, true);
+    } finally {
+      f.fixture.exit(0);
+      if (stop) await stop.catch(() => {});
+      else await f.monitor.stopAndReap().catch(() => {});
+      await processMonitorLifetime(f.monitor).whenSettled(); f.cleanup();
+    }
+  });
+}

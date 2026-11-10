@@ -257,15 +257,17 @@ export function createCollectorTransport({
     });
   };
 
-  // The no-ack write: same validated frame, no pending entry or wait;
-  // a null handle means teardown never gates shutdown on a spent one.
-  const sendNoAck = (type, fields, requestId) => {
+  // The no-ack write has no pending reply. Stop supplies its SAME borrowed
+  // handle, retained in the queue and rechecked before actual write. Legacy
+  // absent-handle callers deliberately retain their original unbounded form.
+  const sendNoAck = (type, fields, requestId, handle = null) => {
     if (failed) throw tErr("transport failed");
     if (exited) throw tErr("collector exited");
     if (writeQueue.length >= MAX_PENDING_WRITES) {
       throw tErr("write queue");
     }
-    enqueueFrame(type, fields, requestId, null);
+    if (handle !== null) handle.assertLive("send deadline");
+    enqueueFrame(type, fields, requestId, handle);
     if (type === "shutdown") ended = true;
     return true;
   };

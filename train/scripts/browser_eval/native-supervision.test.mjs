@@ -1,7 +1,7 @@
 // One serial REAL Native group over the actual harness: real Darwin/arm64
 // libproc collector, real selected-Python and Node fixtures, real lsof
 // gates, real signals, real watchdog driver wire and bounded evidence —
-// source-only, UNEXECUTED until safety clearance. The Phase2-4 normal
+// actual prior runs are retained; each new execution needs Root GO. Phase2-4 normal
 // cases plus the local sendClose live in the closed TEST leaf
 // native-normal-test-cases.mjs, invoked ONCE inside this group; this
 // suite retains the N01 bootstrap, the WD/EOF lanes and the ONE finally.

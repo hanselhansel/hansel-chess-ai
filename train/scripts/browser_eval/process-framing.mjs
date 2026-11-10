@@ -112,6 +112,10 @@ export function createCollectorFrameHandler({ pending, protocol, onInbound,
       failOnce(makeError("frame decode"));
       return;
     }
+    if (msg === null || typeof msg !== "object" || Array.isArray(msg)) {
+      failOnce(makeError("frame envelope"));
+      return;
+    }
     // The pending entry stays owned until BOTH the same-handle
     // actual-clock check and protocol acceptance succeed: a late
     // acknowledgement arriving after its request expired can never be

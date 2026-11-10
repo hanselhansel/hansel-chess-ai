@@ -60,17 +60,19 @@ export function createWatchdogResourceChecks({
   const rssExceeded = () => {
     try {
       const mo = readObservation();
-      return mo !== null && mo.rssLimitExceeded === true;
+      if (mo === null || mo.rssLimitExceeded !== true) return false;
+      if (v2 && state.stopReq === null && state.finishReq === null) stopOnOverage(mo);
+      return true;
     } catch (error) {
       if (v2) { recordFault(error); latchStop(error.code ?? "ACCOUNTING_UNAVAILABLE"); }
       return false;
     }
   };
 
-  const stopFinishOnOverage = () => {
-    const mo = readObservation();
+  const stopOnOverage = (mo) => {
     if (mo !== null && mo.rssLimitExceeded === true) {
-      const e = fail("RESOURCE_RSS", `peak ${mo.peakRssBytes}`);
+      if (v2 && state.stopReq !== null) return true;
+      const e = fail("RESOURCE_RSS", `peak ${v2 ? mo.observedPeakRssBytes : mo.peakRssBytes}`);
       // Retain the actual separate current/peak/flag/time/verdict for the
       // rapid high -> lower -> finish race through the existing resource
       // lane — the fault detail alone never replaces real observations.
@@ -87,5 +89,6 @@ export function createWatchdogResourceChecks({
     return false;
   };
 
+  const stopFinishOnOverage = () => stopOnOverage(readObservation());
   return Object.freeze({ rssExceeded, stopFinishOnOverage, readObservation, payload });
 }

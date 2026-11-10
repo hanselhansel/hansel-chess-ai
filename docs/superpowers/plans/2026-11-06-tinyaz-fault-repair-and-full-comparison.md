@@ -1994,3 +1994,44 @@ W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
 Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
 explicit86 roster and readable source below400 lines remain required and audited.
 This status append changes no source/TEST/helper/manager or model bytes.
+
+### Task12 combined fix-wave execution map (2026-11-10, before use)
+
+The [owning before-use API/TEST map](../../../train/scripts/browser_eval/README.md#task12-single-repair-wave-before-use-map-2026-11-10)
+is authoritative for this bounded repair. Existing owners are receipt-verdicts-v2,
+resource-quality, record-schema-v2, process-stop, process-transport,
+process-framing, watchdog-verdict-policy, watchdog-resource-policy; comment-only
+process-proof/native-supervision TEST; W verifier and W owner controls. Causal
+TESTs use resource-events, terminal, accounting-trace-io and process-lifecycle.
+No new source/TEST leaf, runtime owner or execution authority is created.
+
+Prepare tests against OLD, exact inert FIXED profiles and frozen explicit
+command/config/pins with unchanged170-line manager. Root reviews before SCRIPTED
+GO, inspects actual semantic RED closure before promotion, then releases identical
+GREEN and covering owners. Root separately releases serial86, W controls and one
+fresh current-byte controlled cap. Preserve every failed receipt. One scoped
+fresh Max re-review covers combined diff and actual evidence. Keep seven docs
+current with the same final green change and compare affected contracts directly
+to final code, paths, interfaces, side effects and commands before local commit.
+Production remains OLD and all new runtime gates are UNRUN at this append.
+
+Task12 same-wave continuation: preserve failed OLD e84f8a9e receipt and all source
+snapshots. Correct only the invalid TEST probe tuple and FIXED-only v2 admission
+selection/finish-cap dedup, with genuine v1 and cap-after-finish characterization
+in existing roomy TESTs. Freeze fresh d85bf532 OLD/FIXED package before new Root
+GO. No automatic promotion, new fix wave, runtime authority or deadline.
+
+Task12 W-only diagnostic preparation: retain d85's qualified49-case OLD gate.
+Preserve its unqualified W-red receipt. Add only bounded actual nested-cause
+output in the existing W control top catch, then freeze a fresh W-RED-only
+command/config/pins and await exact Root GO. No source promotion or scripted49
+repeat follows hidden AggregateError output. Existing owners/bounds remain exact.
+
+Task12 current implementation status (2026-11-10): all six Important and three
+Minor groups implemented and locally validated. Exact FIXED causal49/49, W0,
+related410/410 and Native86 1059/1059 have actual Root-audited closure. The fresh
+TIME-cap is component-only, aggregate/resource INCONCLUSIVE. The final direct
+code-to-doc/protected audit accompanies the local green change. Independent
+scoped Max re-review is pending; Task12 remains open. Publication, strict phases
+and full40 need later Root gates. Exact evidence and limits: W/v2-task-12-report.md
+and [the owning status](../../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).

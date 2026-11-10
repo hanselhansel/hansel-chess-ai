@@ -80,7 +80,11 @@ const resourcePayload = (p) => {
     schemaFail("SCHEMA_FORMAT", "resource event facts");
   assertQualityCheckpoint(p.qualityCheckpoint);
   if (
+    [p.rssBytes, p.peakRssBytes, p.observedPeakRssBytes].some((value) => value === null) ||
     p.atMonoNs !== p.qualityCheckpoint.lastCompleteNs ||
+    p.rssBytes > p.observedPeakRssBytes ||
+    (p.qualityCheckpoint.completedCycles === p.qualityCheckpoint.timelyCycles &&
+      p.peakRssBytes !== p.observedPeakRssBytes) ||
     p.peakRssBytes > p.observedPeakRssBytes ||
     p.rssLimitExceeded !== p.observedPeakRssBytes > 4294967296
   )

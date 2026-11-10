@@ -1,5 +1,4 @@
-// Pure bounded ledger. The monitor supplies original-clock facts and owns
-// the sole instance. No IO, timers, Native calls or proof authority here.
+// Pure bounded monitor-owned ledger. No IO, timers, Native calls or proof authority.
 import { canonicalBytes } from "./canonical-json.mjs";
 import {
   CHECK,
@@ -13,7 +12,6 @@ import {
 } from "./schema-primitives.mjs";
 import { RECORDED_PHASES } from "./schema-constants.mjs";
 import { V2_POLICY } from "./evaluation-policy.mjs";
-
 const CAUSES = ["PERIODIC_COMPLETION_GAP", "PERIODIC_NATIVE_DURATION", "PERIODIC_OBSERVER_AGE"];
 const HARD =
   "SCIENCE IDENTITY NATIVE TIMESTAMP UNION AGGREGATE TRANSPORT BACKEND PERMISSION PROOF STORE DISK GRAPH TIMEOUT CLEANUP PHASE_CHECK ABANDONED".split(
@@ -82,7 +80,6 @@ const detail = (v) => {
     ns(v.nativeMaxDurationNs);
   }
 };
-
 export function assertQualityCheckpoint(v) {
   bounded(v, 1024);
   shape(
@@ -99,12 +96,13 @@ export function assertQualityCheckpoint(v) {
   ns(v.capturedNs);
   ns(v.maxGapNs);
   causeCounts(v.causeCounts);
-  if (v.timelyCycles > v.completedCycles || v.coverageLost !== v.gapCount > 0) fail("checkpoint counters");
+  if (v.timelyCycles === 0 || v.timelyCycles > v.completedCycles || v.coverageLost !== v.gapCount > 0 ||
+    (!v.coverageLost && (v.timelyCycles !== v.completedCycles || v.lastTimelyNs !== v.lastCompleteNs)))
+    fail("checkpoint counters");
   if (v.completedCycles === 0 || ns(v.lastTimelyNs) > ns(v.lastCompleteNs) || ns(v.lastCompleteNs) > ns(v.capturedNs))
     fail("checkpoint chronology");
   for (const c of CAUSES) if (v.causeCounts[c] > v.gapCount) fail("checkpoint cause count");
 }
-
 export function assertResourceEvidence(v) {
   bounded(v, 65536);
   exactOnly(v, EVIDENCE_FIELDS, "resourceEvidence");
@@ -142,7 +140,9 @@ export function assertResourceEvidence(v) {
   )
     fail("ring count");
   if (v.gapCount === 0) {
-    if (v.firstGap !== null || v.lastGap !== null || ns(v.maxGapNs) !== 0n) fail("empty gaps");
+    if (v.firstGap !== null || v.lastGap !== null || ns(v.maxGapNs) !== 0n ||
+      v.timelyCycles !== v.completedCycles || v.lastCoverageQualifiedNs !== v.lastTimelyNs ||
+      v.lastTimelyNs !== v.lastCompleteNs) fail("continuous resource evidence");
   } else {
     detail(v.firstGap);
     detail(v.lastGap);
@@ -208,13 +208,14 @@ export function assertResourceEvidence(v) {
       if (v.completedCycles !== 0) fail("missing peak");
     } else nat(v[k]);
   }
-  if (v.peakRssBytes > v.observedPeakRssBytes || v.rssLimitExceeded !== v.observedPeakRssBytes > CAP)
+  if ((!v.coverageLost && v.peakRssBytes !== v.observedPeakRssBytes &&
+      !(v.lateDrops.count > 0 && v.rssLimitExceeded)) ||
+    v.peakRssBytes > v.observedPeakRssBytes || v.rssLimitExceeded !== v.observedPeakRssBytes > CAP)
     fail("peak/cap coherence");
   if (!Array.isArray(v.hardReasons)) fail("hard reasons");
   sortedUnique(v.hardReasons, "hard reasons");
   v.hardReasons.forEach((c) => oneOf(c, HARD, "hard reason"));
 }
-
 export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
   let open = null;
   let clockNs = null;

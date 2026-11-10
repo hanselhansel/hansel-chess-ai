@@ -53,7 +53,7 @@ export function armResourcePolling({ capabilities, state, timing, control, makeE
         throw fail("ACCOUNTING_UNAVAILABLE", detail.slice(0, 4096));
       }
       if (mo.rssLimitExceeded === true || mo.rssBytes > L.resources.rssBytes)
-        throw fail("RESOURCE_RSS", `peak ${mo.peakRssBytes}`);
+        throw fail("RESOURCE_RSS", `peak ${evaluationPolicy !== null ? mo.observedPeakRssBytes : mo.peakRssBytes}`);
     } catch (e) {
       latchResource(e, emitResource);
       return;

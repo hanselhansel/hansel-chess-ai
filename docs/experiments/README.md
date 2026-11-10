@@ -1,6 +1,6 @@
 # Tinyaz local software verification
 
-Latest attempt (2026-11-07): `6ff0128` reached 30/40 acknowledged games and
+Historical attempt (2026-11-07): `6ff0128` reached 30/40 acknowledged games and
 15/20 pairs, then shutdown hung. One supervisor TERM closed the command and
 both pipes; final/completion records remain absent. It is incomplete and
 intervention-qualified, with no valid final graph or eligible analysis.
@@ -513,3 +513,23 @@ W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
 Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
 explicit86 roster and readable source below400 lines remain required and audited.
 This status append changes no source/TEST/helper/manager or model bytes.
+
+Current repair status (2026-11-10): Task12 prepares one combined fix wave from the
+completed whole-change review. [Owning contract and exact before-use map](../../train/scripts/browser_eval/README.md#task12-single-repair-wave-before-use-map-2026-11-10).
+Production remains OLD; all new runtime/phase/cohort gates are UNRUN. Historical
+failures remain ineligible; Task11 component cap remains resource-inconclusive.
+
+Task12 same-wave preparation continues after the first Root-run OLD diagnostic.
+Failed e84f8a9e evidence stays immutable; corrected TEST/v2 selection package
+requires new exact Root GO. W/v2-task-12-report.md records the causal diagnosis.
+
+Task12 retains the qualified49-case OLD control. A bounded W-only nested-error
+diagnostic is source-prepared for a fresh exact Root gate; I5 attribution remains
+unproven. W/v2-task-12-report.md preserves the actual receipts and qualifications.
+
+Current implementation status (2026-11-10): Task12's six Important and three Minor
+groups are implemented and locally validated. Causal49/49, related410/410 and
+Native1059/1059 closed with Root audits. Controlled cap remains aggregate/resource
+INCONCLUSIVE. [Owning status and limits](../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
+Scoped re-review, Task12 completion and phase/full40 release remain open. Earlier
+failed attempts remain ineligible.

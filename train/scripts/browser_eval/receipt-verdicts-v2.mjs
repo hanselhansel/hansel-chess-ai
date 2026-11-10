@@ -15,6 +15,10 @@ const stamp = (s) => (s === null ? -1n : BigInt(s));
 
 const extendsCheckpoint = (before, after) => {
   for (const k of counterFields) if (after[k] < before[k]) fail(`regressed ${k}`);
+  if (after.timelyCycles - before.timelyCycles > after.completedCycles - before.completedCycles)
+    fail("timely admissions exceed completions");
+  if (after.timelyCycles === before.timelyCycles && after.lastTimelyNs !== before.lastTimelyNs)
+    fail("fabricated timely clock");
   for (const c of Object.keys(before.causeCounts))
     if (after.causeCounts[c] < before.causeCounts[c]) fail("regressed causes");
   if (
@@ -32,6 +36,18 @@ const extendsCheckpoint = (before, after) => {
       after.timelyCycles !== before.timelyCycles)
   )
     fail("fabricated completion clocks");
+};
+
+const extendsPeaks = (before, after, beforePeaks, afterPeaks, lateObservedCap = false) => {
+  for (const key of ["peakRssBytes", "observedPeakRssBytes"])
+    if (afterPeaks[key] < beforePeaks[key]) fail("lost resource peak");
+  if (beforePeaks.rssLimitExceeded && !afterPeaks.rssLimitExceeded) fail("lost resource cap");
+  if (afterPeaks.peakRssBytes > beforePeaks.peakRssBytes && after.timelyCycles === before.timelyCycles)
+    fail("admitted peak without timely admission");
+  if (afterPeaks.observedPeakRssBytes > beforePeaks.observedPeakRssBytes &&
+    after.completedCycles === before.completedCycles && !(lateObservedCap &&
+      after.lateDropCount > before.lateDropCount && afterPeaks.rssLimitExceeded &&
+      afterPeaks.observedPeakRssBytes > 4294967296)) fail("observed peak without completion");
 };
 
 // A retained episode can contribute only its duration reached by capture.
@@ -121,15 +137,15 @@ export function verifyVerdictClosure(input) {
     if (payload.kind !== undefined) fail("checkpoint/final variant");
     const cp = payload.qualityCheckpoint;
     assertQualityCheckpoint(cp);
+    if (BigInt(cp.lastCompleteNs) < BigInt(e.startedNs) || BigInt(cp.lastTimelyNs) < BigInt(e.startedNs))
+      fail("checkpoint observation predates monitor start");
     if (BigInt(cp.maxGapNs) > BigInt(cp.capturedNs) - BigInt(e.startedNs)) fail("checkpoint maximum predates capture");
     if (BigInt(cp.capturedNs) > BigInt(e.coverageEndNs)) fail("checkpoint after sampling fence");
     assertMaximumAtCapture(cp, episodes);
     if (previous) {
       if (BigInt(cp.capturedNs) < BigInt(previous.capturedNs)) fail("checkpoint chronology");
       extendsCheckpoint(previous, cp);
-      for (const k of ["peakRssBytes", "observedPeakRssBytes"])
-        if (payload[k] < previousPayload[k]) fail("lost checkpoint peak");
-      if (previousPayload.rssLimitExceeded && !payload.rssLimitExceeded) fail("lost checkpoint cap");
+      extendsPeaks(previous, cp, previousPayload, payload);
     }
     previous = cp;
     previousPayload = payload;
@@ -137,8 +153,7 @@ export function verifyVerdictClosure(input) {
   if (previous) {
     const finalCheckpoint = { ...e, lateDropCount: e.lateDrops.count };
     extendsCheckpoint(previous, finalCheckpoint);
-    for (const k of ["peakRssBytes", "observedPeakRssBytes"]) if (e[k] < previousPayload[k]) fail("lost final peak");
-    if (previousPayload.rssLimitExceeded && !e.rssLimitExceeded) fail("lost final cap");
+    extendsPeaks(previous, finalCheckpoint, previousPayload, e, true);
   }
   const parentRunIds = completion.prerequisites.map((parent) => parent.runId).sort();
   const resourceRunIds = facts.prerequisiteResources
@@ -165,7 +180,6 @@ export function verifyResourcePrefixExtension(prefix, parent) {
     stamp(prefix.lastCoverageQualifiedNs) > stamp(parent.lastCoverageQualifiedNs)) fail("prefix parent clocks");
   extendsCheckpoint({ ...prefix, lateDropCount: prefix.lateDrops.count },
     { ...parent, lateDropCount: parent.lateDrops.count });
-  for (const key of ["peakRssBytes", "observedPeakRssBytes"])
-    if (parent[key] < prefix[key]) fail("lost prefix peak");
-  if (prefix.rssLimitExceeded && !parent.rssLimitExceeded) fail("lost prefix cap");
+  extendsPeaks({ ...prefix, lateDropCount: prefix.lateDrops.count },
+    { ...parent, lateDropCount: parent.lateDrops.count }, prefix, parent, true);
 }

@@ -67,6 +67,7 @@ export function createProcessStop({ state, clock, authority }) {
           "shutdown",
           {},
           authority.nextRid("shutdown"),
+          handle,
         );
       } catch {
         handle.assertLive("teardown deadline");

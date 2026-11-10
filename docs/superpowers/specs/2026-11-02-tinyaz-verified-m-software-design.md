@@ -5651,3 +5651,28 @@ W/v2-task-11-report.md carries exact commands, receipt hashes and proof limits.
 Protected23/M, whole Section3, e78/approval, old six helpers, runtime union126,
 explicit86 roster and readable source below400 lines remain required and audited.
 This status append changes no source/TEST/helper/manager or model bytes.
+
+### Task12 repair preparation (2026-11-10)
+
+One combined existing-owner fix wave addresses the actual completed whole-change
+review. The precise before-use symbol/TEST map and retained semantics are in
+[the owning contract](../../../train/scripts/browser_eval/README.md#task12-single-repair-wave-before-use-map-2026-11-10).
+Production remains OLD; causal tests and inert FIXED profiles are prepared only.
+Accepted e78/approval and whole Section3 are preserved. No gate, phase or cohort
+has been executed by this preparation. W/v2-task-12-report.md tracks exact pins,
+Root release gates, actual results and final code-to-doc comparison.
+
+Task12 same-wave preparation continues after the first Root-run OLD diagnostic.
+Failed e84f8a9e evidence stays immutable; corrected TEST/v2 selection package
+requires new exact Root GO. W/v2-task-12-report.md records the causal diagnosis.
+
+Task12 retains the qualified49-case OLD control. A bounded W-only nested-error
+diagnostic is source-prepared for a fresh exact Root gate; I5 attribution remains
+unproven. W/v2-task-12-report.md preserves the actual receipts and qualifications.
+
+Task12 current status (2026-11-10): six Important and three Minor groups are
+implemented and locally validated. Exact FIXED causal49/49, related410/410 and
+Native1059/1059 closed with Root audits. Controlled cap remains aggregate/resource
+INCONCLUSIVE. [Owning behavior and evidence limits](../../../train/scripts/browser_eval/README.md#task12-fixed-implementation-and-local-validation-2026-11-10).
+Direct code-to-doc comparison preserves accepted e78/approval and whole Section3.
+Scoped independent re-review is pending; Task12 and phase/full40 release stay open.

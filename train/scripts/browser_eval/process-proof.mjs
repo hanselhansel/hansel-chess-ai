@@ -1,13 +1,13 @@
-// process-proof.mjs owns the native registration/probe/signal/listener
-// IO proof extracted from processes.mjs under the proof-split decision.
+// process-proof.mjs owns native registration/probe/signal proof and delegates
+// listener proof to process-listeners.mjs under the proof-split decision.
 // It keeps no registry, spawn or wire of its own: every proof runs over
 // the monitor's same ownership/protocol/transport/deadline state through
 // explicit callbacks, every request consumes the caller's borrowed
 // BudgetHandle (assertLive/remainingMs, one narrow-only absolute
-// horizon), and a fresh native result is never replaced by a cached or
-// invented verdict. Deadline capture/budget helpers live in
+// horizon). Retained exact terminal-gone facts require original health,
+// scope and live-handle guards. Deadline capture/budget helpers live in
 // process-budget.mjs and the RSS cycle/projection/inspectPids wire
-// wrapper in process-observation.mjs; this owner does the native IO proof only.
+// wrapper in process-observation.mjs; this owner adds no independent proof authority.
 import { createProcessListenerProof } from "./process-listeners.mjs";
 import { realpathSync } from "node:fs";
 import { resolvePythonProcessImage } from "./process-backend-reader.mjs";
