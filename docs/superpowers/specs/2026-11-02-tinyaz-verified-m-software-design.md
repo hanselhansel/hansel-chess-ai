@@ -5687,3 +5687,64 @@ five-scan producer control did not reproduce timing and establishes no live caus
 This changes no API, guard, scan-start timestamp, e78 decision or science.
 Task14 records a failed handoff; Task3/full40 remains INCOMPLETE. No automatic retry or
 all-drift closure follows this result.
+
+### Task15 passive scan diagnostics preparation (2026-11-10)
+
+This status appendix changes no approved e78 requirement or whole Section3.
+Root declared one passive footprint-trace leaf, two TEST leaves and the existing
+trace/observer/Store/runtime-roster hooks before use. B1 creates the leaf and
+causal tests with hooks/roster still OLD126. Exact APIs, count-limited strong-key
+retention (no transitive byte-bound claim), context-failure quarantine, clocks,
+error paths, packet/snapshot limits and causal ownership are in the harness
+README's Task15 contract. B2 alone connects runtime127 after actual semantic RED.
+Original Store monotonicNow and throw expressions remain authoritative, original
+observer sample/promise/body behavior remains, and diagnostics have no proof/debt,
+stop, ordinary-issuance or accounting-policy authority.
+
+ONE future short genuine WORKTREE/v2 CHECK uses real M64-visit inference and
+unchanged600000/30000/90000/5000ms phase/readiness/command/cleanup limits, original
+caps, monitor gaps and1000ms scan-start freshness. Root sole execution and actual
+wait/BOTHpipe/raw/journal/input/physical cleanup remain separate from genuine
+WORKTREE graph readback. Natural-exit test-only export uses the exact cached
+archived trace; missing attribution cannot qualify it. It is no scientific parent,
+comparison/cohort or production delay fix. No Task15 runtime command has run.
+Historical2300ms cause remains UNKNOWN; old full40 is consumed and Task3/full40
+INCOMPLETE. Final source-to-doc/protected/e78/approval/old-evidence audit, green
+commit, independent review and Root feature publication remain separate gates.
+
+Task15 B2 connects the declared passive hooks and runtime127 after Root's actual
+OLD-hook RED (33 tests27pass/6 intended missing-attribution failures, natural1,
+0.381963542s,587 exact inputs and actual wait/BOTHpipe/raw/journal closure).
+Original Store const now/throw and observer clone/promise/body behavior remain;
+no freshness, Native, caps, cleanup, ownership, scientific or e78 decision changes.
+The SAME four causal TEST files apply to pending GREEN; only the separately
+before-use-declared private-fs-phase count/membership regression assertion changes.
+GREEN/covering/serial88, independent review and ONE live WORKTREE diagnostic CHECK
+remain UNRUN. Historical2300ms cause UNKNOWN; no full40 release or eligibility.
+
+Task15 scripted GREEN passed33/33 (natural0/0.366397458s). Whole01 then passed
+112/113; its sole failure was an obsolete snapshot runtime-prefix expectation.
+Root declared the exact115-prefix digest, preserved historical114 digest after
+filtering only the new leaf, unchanged12-entry tail and explicit leaf membership.
+Only that inventory TEST changes; tested runtime order/source and four causal
+TEST bytes stay unchanged. Whole02/serial88-02 remain UNRUN; old whole failure
+and unrun serial01 are preserved. No live CHECK or full40 release follows.
+
+Task15 current scripted gates: GREEN33/33, whole02 113/113 and serial88 1076/1076
+passed with actual wait/BOTHpipe/raw/journal/input closure. The earlier whole01
+112/113 inventory-expectation failure remains preserved; production source and
+four causal TESTs were unchanged for the passing whole02/serial gates. ONE real
+WORKTREE/v2 diagnostic CHECK and independent review remain UNRUN. These scripted
+results do not identify the historical2300ms cause or complete Task3/full40.
+
+Task15 actual validation: scoped source review and schema rereview passed; the
+ONE real M64-visit WORKTREE/v2 CHECK naturally0 in166.025079250s. Separate genuine
+readback naturally0 in0.247289209s verified the closed graph, both resource verdicts
+passed, persisted cleanup and original task/lifetime joins. Root verified597/729
+stable inputs and127 archived-source bindings with actual wait/BOTHpipe/raw/journal
+closure. The trace recorded416 scans/415 consumers, unavailable0/overflow0; its
+last16 consumer ages9..44ms are a rolling window, not a full-run latency maximum.
+This diagnostic CHECK cannot serve as a scientific prerequisite. Historical2300ms
+cause stays UNKNOWN; old12/40 comparison remains ineligible, old persisted cleanup
+UNPROVEN, Task3/full40 INCOMPLETE. At this pre-commit validation checkpoint,
+Task15 final audit/green commit remains pending. Later state is in the W progress ledger.

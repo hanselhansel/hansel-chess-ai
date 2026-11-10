@@ -2055,3 +2055,105 @@ result-doc review follows the local documentation commit. Task14 failed-handoff
 completion cannot mark Task3/full40 complete. No automatic retry or further fix wave.
 See [the owning outcome](../../../train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10)
 and E14/task14-report.md. Other unavailable/deferred drifts remain open.
+
+## Task 15: Scan-correlated workspace timing diagnostics
+
+Dependency: Task14 failed-gate handoff complete. The user requested continuing diagnosis of the new concrete Store freshness failure. Full40 remains incomplete; its old release is consumed. This task adds passive attribution and ONE short real-inference development CHECK, not a guessed fix or another cohort. No accounting/guard/science decision changes.
+
+Read E15/task15-proposal.md (SHA256 cd0b6cd37496f0347cd339a594110369ab951b021c528a4594d2be126ca2b259) and E15/task15-root-rulings.md (SHA256 6a8c88a5117fee1607a45f89a85aef257835f17ab2f3226d127f2654968eda0e) as the exact requirements and before-use map. E15 is W/separate-verdicts-implementation-evidence/55ea3e6a-6428-40c8-a676-9f065ff15fce. Root rulings settle routine diagnostic implementation details; original approved requirements remain binding.
+
+Declare before creation: one passive footprint-trace.mjs leaf and footprint-trace.test.mjs/footprint-trace-io.test.mjs; modify only accounting-trace.mjs, workspace-footprint.mjs, artifact-store.mjs, snapshot-files.mjs and two existing accounting-trace TEST owners, plus seven shared documentation paths. Runtime union becomes127 only by adding the diagnostic leaf. All source/TEST/control files stay below400 readable lines. Full API/state/capacity/clock/error/ownership documentation precedes use. No new runtime backend/configuration, clock/proof/debt authority, Native/Python/helper/model/training/fixture change or capture-policy relaxation.
+
+Stages: Sol High prepares the leaf and causal tests with OLD hooks; Root executes reviewed genuine integration RED. Then connect declared hooks, run covering GREEN/whole owners and explicit88-file serial suite through actual owners; obtain independent scoped code/doc review. Root separately releases ONE fresh WORKTREE diagnostic CHECK using genuine64-visit M inference, exact v2 fixture, original CHECK600000ms and all shorter readiness30000/command90000/cleanup5000ms and resource caps. Preload merely exports cached archived trace at natural exit. This CHECK can never serve as a comparison prerequisite. Actual wait/BOTHpipe/raw/journal/physical cleanup/input equality and separately owned graph readback are required; missing attribution is not success. No automatic retry or next phase.
+
+Final code-to-doc comparison covers actual identity binding, original promise/body/sample/error behavior, Store roles/decision clock, line/state bounds, exact interfaces/commands and diagnostic limitations. Audit protected23/M, whole Section3/e78/approval, v1 fixture, old six helpers and all old evidence. A final green implementation/doc commit, scoped review and Root feature publication remain separate. Historical2300ms cause stays unknown until new causal evidence warrants a conclusion; no scientific/Elo/whole40 or all-drift closure claim.
+
+### Task15 B1 before-use API and causal-owner elaboration
+
+Root's preceding Task15 release/map remains authoritative. B1 adds only the
+passive leaf, two new TESTs, two declared existing TEST amendments and these
+seven shared contracts. Existing production hooks and snapshot-files runtime126
+remain OLD; no runtime command/import/test/Native/browser/model/cohort runs.
+The full method/retention/clock/error/packet/snapshot contract is the harness
+README Task15 section. Safe IDs and four count-limited maps (scan8/sample32/
+consumer16/error8) never supply validity/proof/debt authority. Strong keys retain
+bounded-count identities, not bounded transitive object graphs. Failed nested
+context setup quarantines inherited attribution, including async continuations.
+Store's original const now/throw error and original observer clone return stay
+outside observational methods. Exact packets preserve separately scoped useful
+process-wide overlapping FS context within original12x96/64-marker bounds.
+
+The two new TEST owners and accounting-trace TEST amendments precede the leaf.
+Genuine integration RED must fail on absent attribution with all APIs/imports
+present. Holds distinguish actual privateFs delivery continuation from later
+consumer delay and always release/join original work. The SAME TEST bytes apply
+to later GREEN; no copied-threshold assertion or physical-debt shortcut.
+Root's unchanged170-line Python manager owns exact reviewed RED argv/config/input
+pins in E15; no generic JS runner exists for WORKTREE. A later separate GO connects
+only declared hooks/runtime127, then covering GREEN/whole-owner/explicit88 gates
+and independent review precede ONE genuine development WORKTREE CHECK. Test-only
+beforeExit export and genuine frozen WORKTREE/check/v2 readback are separately
+concrete owned commands. Diagnostic CHECK is never a scientific prerequisite.
+
+Final direct code/doc comparison covers actual APIs/roles/times/sample/promise/
+error/body-once semantics, count/line/output bounds, runtime127 and TEST exclusion,
+original clock/cap/cleanup contracts and exact command/resource ownership.
+Protected23/M/wholeSection3/e78/approval/v1fixture/old-six-helper/old-evidence audit
+and all actual gates precede one green commit; Root review/publication remain
+separate. E15/task-15-report.md records preparation and later actual receipts.
+No guessed delay fix/new full40. Historical cause UNKNOWN; Task3/full40 INCOMPLETE.
+
+Task15 B2 before-use map addition: M browser_eval/private-fs-phase.test.mjs solely exact runtime127 expectation and added diagnostic-leaf membership; all uniqueness/import-closure/physical-FD checks retained. OLD-hook phase keeps original126. Four causal TESTs stay identical through OLD/FIXED. This is a regression expectation for the declared dependency, not a guard change.
+
+### Task15 B2 current authority and gate preparation
+
+The preceding initial-rulings6a8c88a5 reference identifies the initial snapshot.
+Current amended Root-rulings SHAaa2df17b11a99bfc87b755dd664fa8a37e21e2d4ee3e66df5f9d69d577e26e51
+is authoritative for B2; it adds ONLY private-fs-phase.test.mjs's obsolete126->127
+count and explicit footprint-trace membership, preserving all lifecycle controls.
+E15/task-15-brief.md retains its initial prefix and records this current amendment.
+No approved e78/accounting decision changes.
+
+Root qualified normal OLD-hook RED: natural1/0.381963542s,33 tests27pass/6 intended
+attribution failures, no skipped/cancelled tests,587 stable pins, actual wait/BOTH
+EOF/raw/journal closure and no errors/signals/intervention. Sticky A->B->B passed.
+B2 connects only accounting-trace/observer/Store hooks and runtime127. All four
+causal TEST files stay identical; Store original clock/throw and observer original
+sample allocation/return/promise chain remain. Separate frozen GREEN/whole-owner/
+explicit88 packages use the unchanged170-line owner. Root releases each command;
+no worker runtime, commit/push or automatic succession. Live preload/readback
+package follows actual test closure. All live/scientific gates stay UNRUN and
+Task3/full40 INCOMPLETE; historical delay cause UNKNOWN.
+
+
+Ruling: Task15 actual whole-owner run failed only obsolete snapshots.test.mjs runtime-prefix expectation (112/113 pass). Root statically verified old126 entries unchanged/in order, sole footprint-trace addition at index6, old114 digest589718ee exact, new115 digest97b329e3639dc91b101060a307477bccae7b6d437daee777fa79e939d3bfd3d1 and identical v2 tail12. Before-use admit M snapshots.test.mjs only head114->115 with this exact independently derived digest, tail114->115 and explicit new-leaf membership in existing helper list. Keep every freeze/unique/path/test-exclusion/physical control; no runtime/design change or causal TEST mutation. Preserve failed whole and unrun serial01; prepare new whole02/serial02 pins. Costifwrong: closure assertions/full88/review reject any unrelated roster drift.
+
+
+Task15 snapshots expectation ruling clarification: keep the already GREEN-tested runtime order. An additional assertion may filter ONLY the declared footprint-trace leaf from the new115 prefix and retain the original historical114 digest589718ee. This preserves old-prefix evidence alongside new exact115 digest and unchanged12-tail assertion; no other validation is removed.
+
+Task15 scripted GREEN passed33/33 (natural0/0.366397458s). Whole01 then passed
+112/113; its sole failure was an obsolete snapshot runtime-prefix expectation.
+Root declared the exact115-prefix digest, preserved historical114 digest after
+filtering only the new leaf, unchanged12-entry tail and explicit leaf membership.
+Only that inventory TEST changes; tested runtime order/source and four causal
+TEST bytes stay unchanged. Whole02/serial88-02 remain UNRUN; old whole failure
+and unrun serial01 are preserved. No live CHECK or full40 release follows.
+
+Task15 current scripted gates: GREEN33/33, whole02 113/113 and serial88 1076/1076
+passed with actual wait/BOTHpipe/raw/journal/input closure. The earlier whole01
+112/113 inventory-expectation failure remains preserved; production source and
+four causal TESTs were unchanged for the passing whole02/serial gates. ONE real
+WORKTREE/v2 diagnostic CHECK and independent review remain UNRUN. These scripted
+results do not identify the historical2300ms cause or complete Task3/full40.
+
+Task15 actual validation: scoped source review and schema rereview passed; the
+ONE real M64-visit WORKTREE/v2 CHECK naturally0 in166.025079250s. Separate genuine
+readback naturally0 in0.247289209s verified the closed graph, both resource verdicts
+passed, persisted cleanup and original task/lifetime joins. Root verified597/729
+stable inputs and127 archived-source bindings with actual wait/BOTHpipe/raw/journal
+closure. The trace recorded416 scans/415 consumers, unavailable0/overflow0; its
+last16 consumer ages9..44ms are a rolling window, not a full-run latency maximum.
+This diagnostic CHECK cannot serve as a scientific prerequisite. Historical2300ms
+cause stays UNKNOWN; old12/40 comparison remains ineligible, old persisted cleanup
+UNPROVEN, Task3/full40 INCOMPLETE. At this pre-commit validation checkpoint,
+Task15 final audit/green commit remains pending. Later state is in the W progress ledger.

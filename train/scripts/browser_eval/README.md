@@ -12172,3 +12172,337 @@ remain exact. Other unavailable/deferred drifts stay open. Exact diagnosis,
 Root audits/control and Task14 report are retained in W/separate-verdicts-
 implementation-evidence/62980a1e-bd40-469e-b6bf-395ae86d8af5; failed E13cd549506
 artifacts and every old document prefix are preserved.
+
+### Task15 before-use scan diagnostics contract (2026-11-10)
+
+Task15 is passive timing attribution for the new hard Store freshness failure.
+B1 SOURCE PREPARATION creates the leaf and TESTs only. Existing production hooks
+and RUNTIME_PATHS remain OLD126 for genuine integration RED. Future B2 alone adds
+`footprint-trace.mjs` to runtime127 and connects the declared accounting-trace,
+workspace-footprint and artifact-store hooks after Root qualifies that RED.
+No validation, retry, freshness, Native, cleanup, cap or science decision changes.
+The prior full40 release is consumed;12/40 games and6/20 pairs remain descriptive.
+Historical2300ms delay cause remains UNKNOWN. No guessed delay repair is claimed.
+
+`footprint-trace.mjs` imports only built-in `node:async_hooks`. It exports
+`createFootprintTrace({nowNs,cpuUsage}={})` and the process/module-URL-local
+`footprintTrace`. Default diagnostic providers read process.hrtime.bigint and
+process.cpuUsage; they have no validity, deadline, proof or debt authority.
+No constructor IO, timer, exit hook, backend option or dependency is added.
+
+| Method | Passive behavior and original-authority boundary |
+| --- | --- |
+| `issue()` | Optional safe serial ID and scan record. Exhaustion never wraps/reuses IDs. |
+| `run(id,body)` | Scope the original body with AsyncLocalStorage. Return its exact value/promise or rethrow its exact arbitrary error; body executes once, including context setup/teardown faults. A failed nested setup quarantines both bounded nested/inherited records so later asynchronous inherited work cannot be attributed to the parent. No added async work or replacement owner. |
+| `started(observedAtMs)` | Capture the original scan-start millisecond value as data and a later Node hook timestamp for the active scan. |
+| `completed(id,result)` | Capture original body completion, chargedBytes and process-wide CPU delta since issue. No publication, validation or actual-settlement authority. |
+| `published(id,sample)` / `suppressed(id)` | Record real publication and exact lastGood identity, or original older-start suppression. Invalid/interrupted publication remains invalid. |
+| `copy(from,to)` | Observe identity association and returned-clone exposure time; returns no sample authority. Observer must allocate its original clone, call this inert method, then independently return that exact clone through its original Promise.resolve. |
+| `consume(sample,originalNowMs,role)` | Observe the validated sample AFTER original Store shape validation and `const now=monotonicNow()`. Roles are `pre-reservation` or `post-write`. Hook time is not exact await-return or the validity clock. |
+| `bindStaleError(error,sample,originalNowMs,role)` | Bind ONLY the existing stale branch's exact error and unique retained exact-sample/decision/role row. Original `throw error`, error.detail and clock read stay outside diagnostics. Malformed/thrown samples keep original behavior. |
+| `fsBegin(op,startNs)` | Associate already-issued traced FS calls with the active scan, returning only an optional diagnostic scalar ID saved in the existing accountingTrace pending fact. |
+| `fsReturn(id,op,startNs,returnNs,rejected)` / `fsDeliver(id,op,startNs,returnNs,deliveryNs,rejected)` | Count original synchronous-call return and actual private-fs setImmediate delivery, with per-scan sums/maxima. No syscall, callback or promise body is reissued. |
+| `packet(error,budget)` | Bounded scalar scan-local description for STORE_ACCOUNTING or direct own-data cause. Missing/ambiguous bindings stay explicit. Existing accountingTrace combines it with separately labelled useful process-wide overlapping FS context within the original total budget. Native packet behavior remains unchanged. |
+| `snapshot()` | Scalar-copy diagnostic window, schemaVersion1/diagnosticOnly/partialWindow, scans, consumers, failures and stats. No sample/error key or caller object is serialized. Output exceeding65536 bytes becomes explicit overflow with empty evidence arrays, never a complete success. |
+
+The exact emitted snapshot JSON shapes are below. `Ns` is a string matching
+`^\d{1,24}$`; `Duration` is a canonical nonnegative decimal string of at most24
+digits. `Count` is an integer from0 through Number.MAX_SAFE_INTEGER; `Id` is a
+positive safe integer from the shared scan/consumer serial, so IDs can have gaps.
+`FiniteNumber` is any finite JSON number, including negative/fractional values.
+These diagnostic selections add no provider, age, allocation or freshness checks.
+Every listed property is present unless an omission is explicitly stated.
+
+```ts
+type Binding = "exact" | "missing" | "ambiguous";
+type Role = "pre-reservation" | "post-write";
+type Op = string; // matches /^(fs|fd|stream)\.[A-Za-z]{1,12}$/
+type MaxSync = {
+  op: Op; startNs: Ns; returnNs: Ns; rejected: boolean; durationNs: Duration;
+};
+type MaxDelivery = {
+  op: Op; startNs: Ns | null; returnNs: Ns; deliveryNs: Ns;
+  rejected: boolean; durationNs: Duration;
+};
+type FsGroup = {
+  issued: Count; returned: Count; delivered: Count; rejected: Count;
+  syncNs: Duration | null; deliveryNs: Duration | null;
+  maxSync: MaxSync | null; maxDelivery: MaxDelivery | null;
+};
+type Scan = {
+  id: Id; issueNs: Ns | null; startNs: Ns | null;
+  observedAtMs: FiniteNumber | null;
+  completionNs: Ns | null; publicationNs: Ns | null;
+  suppressed: boolean; valid: boolean | null;
+  chargedBytes: FiniteNumber | null;
+  cpuUserUs: Count | null; cpuSystemUs: Count | null;
+  partial: boolean; contextUnavailable: boolean;
+  fs: { lstat: FsGroup; readdir: FsGroup; other: FsGroup };
+};
+type Consumer = {
+  id: Id; binding: Binding; scanId: Id | null; exposureNs: Ns | null;
+  consumeNs: Ns | null; nowMs: FiniteNumber | null; partial: boolean;
+  sampleStartMs: FiniteNumber | null; ageMs: FiniteNumber | null; role: Role;
+};
+type Failure = { binding: Binding; consumer: Consumer | null; scan: Scan | null };
+type Counters = {
+  unavailable: Count; overflow: Count;
+  scanEvicted: Count; sampleEvicted: Count; consumerEvicted: Count; errorEvicted: Count;
+  issuedScans: Count; startedScans: Count; publishedScans: Count; consumedSamples: Count;
+};
+type NormalSnapshot = {
+  schemaVersion: 1; diagnosticOnly: true; partialWindow: true;
+  scans: Scan[]; consumers: Consumer[]; failures: Failure[];
+  stats: Counters & { sampleKeys: Count; errorKeys: Count };
+};
+type OverflowSnapshot = {
+  schemaVersion: 1; diagnosticOnly: true; status: "overflow"; partialWindow: true;
+  scans: []; consumers: []; failures: []; stats: Counters;
+};
+```
+
+Normal snapshots omit `status`. Their arrays have at most8 scans,16 consumers and8
+failures; `sampleKeys` is0..32 and `errorKeys`0..8. Internal `cpuStart`, consumer
+`sample` references and Error/sample identity keys are never emitted. Arrays use
+their maps' insertion order; rebinding an existing error updates its value without
+moving its insertion position. Missing history is not reconstructed.
+
+Scan timestamps start as null until the corresponding hook records a valid Ns.
+`observedAtMs` selects the original scan-start value; `chargedBytes` selects the
+completed result's own data field. Nonfinite/missing/accessor fields become null.
+`valid` is the publication's own boolean accountingValid, otherwise null, including
+before publication. `suppressed` starts false and marks original older-start
+publication suppression; suppression does not create a publication timestamp.
+CPU fields start null and become nonnegative safe-integer user/system deltas only
+when both readings are available and nondecreasing; otherwise both remain null.
+`contextUnavailable` starts false and records setup-failure quarantine. Projected
+`partial` is the retained partial flag, OR any group's issued/returned/delivered
+count mismatch, OR any cumulative unavailable/overflow count. It can therefore
+describe an unrelated earlier diagnostic failure, never its location or cause.
+
+Consumers omit the retained sample key. `nowMs` is the scalar selection of the
+original Store clock read, and `sampleStartMs` the own-data scan-start selection.
+`ageMs` is their subtraction when both are finite, otherwise null. JSON copying
+also emits null for a nonfinite derived subtraction; no extra age range validation
+is applied. `partial` is set at consumption when binding is not exact or either
+selected millisecond field/consumeNs is null; it is not later recomputed. A null
+exposureNs alone does not set it. Unknown/evicted association gives missing/null
+scanId; conflicting sample association gives ambiguous/null scanId. An exposure
+hook can still have a timestamp with missing association. An exact consumer can
+outlive its scan's8-entry window, retaining its original scalar scanId.
+
+Failure rows are frozen scalar copies at stale-error binding. Exact requires both
+a unique consumer and its retained scan, so both nested records are nonnull.
+Missing can retain a unique consumer (including an originally exact consumer whose
+scan evicted) with scan=null, or consumer=null when none matched. Ambiguous has
+scan=null; consumer may be nonnull for a unique conflicting/rebound error or null
+when multiple consumers matched. Prior error ambiguity is sticky. Later map
+eviction, source mutation or cumulative-counter changes do not rewrite a saved
+failure's nested fields; there is no emitted Error field or error message.
+
+FS groups begin with zero counts, sums="0" and null maxima. Counts observe calls,
+returns, deliveries and rejected returns independently. Sum overflow beyond24
+digits makes that sum null permanently; an invalid/reversed span leaves its prior
+sum/max unchanged and marks partial/unavailable. MaxSync requires valid start and
+return. MaxDelivery requires valid return/delivery, but its original start may be
+null. Maxima are replaced only by a strictly larger valid duration; ties retain
+the first. A null maximum means no valid span was retained, never zero duration.
+
+Statistics are cumulative saturated counters, not counts restricted to the arrays.
+`unavailable` counts diagnostic faults/reentry/invalid or missing observations;
+`overflow` counts serial/count/duration/export overflow. The four Evicted fields
+count FIFO key eviction from their respective maps. issuedScans counts inserted
+scan records; startedScans/publishedScans count those hooks reaching their recording
+points; consumedSamples counts inserted consumer rows. None proves validity or
+physical work. Normal sampleKeys/errorKeys report current association-map sizes.
+
+If normal JSON exceeds65536 bytes, snapshot increments overflow and emits exactly
+OverflowSnapshot. Its empty arrays do not clear the underlying maps, and its stats
+omit sampleKeys/errorKeys entirely (not null). A reentrant call or caught diagnostic
+exception returns JavaScript undefined instead of either JSON shape and increments
+unavailable where possible. It emits no synthetic successful/empty snapshot.
+
+The preload's one-line JSON envelope has `diagnosticOnly:true`, integer `pid`,
+canonical string `moduleUrl`, and `status` equal to OBSERVED_PARTIAL_WINDOW,
+DIAGNOSTIC_MISSING or DIAGNOSTIC_OVERFLOW. Its optional `snapshot` property is one
+of the two shapes above. Import/undefined-snapshot failure omits it; an empty but
+available normal snapshot retains it with DIAGNOSTIC_MISSING. Snapshot overflow
+retains the overflow shape with DIAGNOSTIC_OVERFLOW. If the complete prefixed line
+exceeds65536 bytes, the fallback DIAGNOSTIC_OVERFLOW envelope omits snapshot.
+Observed requires positive started/published/consumed counters, a retained
+publication and an exact consumer with nonnull scanId/consumeNs. It does not mean
+complete coverage, phase success, cleanup proof or a scientific prerequisite.
+
+Hard COUNT capacities are scans8, sample-key associations32, consumers16 and
+error-key associations8. Each consumer retains its exact sample identity reference;
+error keys retain exact stale Error references. These bounded strong identity keys
+are never traversed/rendered/serialized. They do NOT establish a hard byte bound on
+arbitrary transitive caller object graphs. Genuine provider samples and internally
+created stale errors are intended operational keys. Existing accountingTrace
+pending64/buckets8/wires16/raws8/cycles8 remain unchanged; pending facts gain one ID.
+Each scan has fixed lstat/readdir/other groups with issued/returned/delivered/
+rejected counts, synchronous/delivery nanosecond sums and maxima. These are call
+counts including restarts/ancestor checks, not a unique topology inventory.
+
+FIFO eviction never re-creates an old scan or matches samples by timestamps.
+Unbound/evicted source-copy identities stay missing; duplicate conflicting sample
+bindings or multiple exact sample/decision/role rows are ambiguous. Failure facts
+freeze scalar consumer/scan copies independently of later scan eviction. An error
+binding evicted from8 is missing, never another scan. Cumulative eviction counters
+are not losses inside a failed interval. Safe counts saturate with overflow;
+serials never wrap. Decimal boundary strings are limited to24 digits. Reversed or
+invalid spans and summed-duration overflow produce partial/unavailable data, never
+invented durations. FS operation labels are validated and bounded. All diagnostic
+selection uses own data descriptors, adding no getter calls or arbitrary rendering.
+Reentrant/throwing diagnostic providers are inert. Missing CPU or clocks cannot
+replace original errors, returned values, samples, promises or physical receipts.
+
+Node boundaries are issue, start hook plus original observedAtMs, completion,
+publication, clone exposure and validated consumption plus ORIGINAL Store nowMs.
+No hook claims kernel arrival. FS pending count mismatch or unavailable context
+makes coverage partial. Process CPU user/system microseconds cover the elapsed
+issue-to-completion process window, including other work and instrumentation.
+They identify neither exclusive scan CPU nor GC, scheduler, device or kernel cause.
+Overhead is positive: context propagation, bounded maps/arithmetic and two CPU
+reads per scan. All packets stay within12 lines of96 characters and the existing
+remaining64-marker budget. First fault and original output limits stay authoritative.
+
+Declared NEW TEST owners are `footprint-trace.test.mjs` (identity/capacity/clock/
+CPU/no-op/body-once/overflow/context-failure controls) and
+`footprint-trace-io.test.mjs` (genuine concurrent scans/unrelated FS, internal delivery
+versus later consumer delay, exact stale role/observation, committed post-write
+failure and1000ms equality). Existing accounting-trace TESTs add exact/missing/
+ambiguous selection with separately scoped process-wide context, and inert clock
+failure over genuine privateFs result/error/FD close. All TEST leaves stay below400
+lines and outside functional runtime inputs. Holds must release/join every original;
+a held outer promise must not be labelled delayed internal fsDeliver. OLD and FIXED
+use identical TEST bytes; OLD must fail attribution assertions, not missing imports.
+Existing workspace-footprint/directory/Store/private-fs/phase/snapshot/run whole
+owners retain original accounting, generation, retirement, reservation and debt cases.
+
+ONE future real control is a fresh development `check --candidate WORKTREE
+--protocol train/fixtures/browser-protocol-v2.json --out <fresh-external-root>`
+under the qualified Node and unchanged170-line Python evidence owner, with exact
+reviewed argv/config/pins in E15. The committed v2 operator cannot accept WORKTREE.
+No new generic runner is introduced. Real CHECK uses current snapshot/environment,
+Native ownership/ACKs, fixture/server/public Playwright, verified M and64 visits,
+SDK/body close and genuine cleanup. No game scoring, parity/preflight/comparison,
+old prerequisites, fake callbacks or scientific parent follows.
+
+Test-only `E15/task15-before-exit-preload.mjs`, declared before creation, is passed
+ONLY through the CLI child's NODE_OPTIONS. Initial cli execve retains environment,
+then the selector admits only the exact archived supervisor CHECK (never driver,
+npm, Vite or bootstrap). Natural once-only beforeExit dynamically imports the exact
+already-used archived sibling footprint-trace canonical URL with no query/transform.
+It exports one bounded scalar diagnostic line<=65536 bytes including prefix/newline,
+module URL and PID. Missing/nonempty-usage or exact bound-consumer checks fail the
+diagnostic independently of original exit status. No production exit hook, timer,
+forced exit, workspace write, new emission during runtime, loader or source change.
+
+Bootstrap setup90s, CHECK600000ms, readiness30000ms, command90000ms, cleanup5000ms
+and inherited cutoffs/TERM+2s/KILL+4s, RSS4GiB/output256MiB, monitor gaps and original
+1000ms scan-start freshness remain unchanged. Root alone releases each exact
+command. Actual direct wait/BOTH raw pipes/fsync/close/journal/input equality and
+real SDK/Native/body/lifetime cleanup remain mandatory and distinct from graph
+success. A separately owned readback can use genuine frozen verifyReceipt with
+real identity/lifetime, explicitly requiring WORKTREE/check/v2/unchanged M. It
+cannot use the committed-candidate W readPhase helper. Missing final/completion
+or trace coverage is never success. Diagnostic CHECK data cannot qualify any
+scientific prerequisite or trigger another control/cohort automatically.
+
+B1 evidence/report is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/55ea3e6a-6428-40c8-a676-9f065ff15fce/task-15-report.md`.
+No Task15 runtime command has run at this preparation checkpoint. Final source/doc,
+protected23/M/wholeSection3/e78/approval/v1fixture/old-six-helper/evidence audit,
+actual gates, independent review, green commit and Root feature publication remain
+separate. Task3/full40 stays INCOMPLETE and the old failed workspace remains immutable.
+Task15 diagnostic fault accounting is conservative: any unavailable/overflow count
+makes subsequent scan projections partial without attributing that cumulative
+fault to a particular scan. Frozen stale-failure projections do not change later.
+
+### Task15 B2 source connection and pending gates
+
+Root qualified actual OLD-hook RED: natural1/0.381963542s,33 tests27pass/6 intended
+missing-attribution failures, no skipped/cancelled tests, all587 pins before==after
+and actual wait/BOTH EOF/raw/journal closure. The earlier A->B->B diagnostic-leaf
+negative was repaired after its separately qualified RED; its same-byte test now
+passed. These are scripted controls, not a historical-delay repair or phase result.
+
+B2 connects only the declared hooks. Original Store const now/throw stay outside
+no-throw consume/stale-error observers (Store399 lines). Observer retains its one
+existing then/finally chain and inFlight promise, independently allocates its
+original clone and returns that same clone after observational association.
+accountingTrace forwards the existing genuine FS boundaries with a scalar scan
+ID and combines exact local evidence with separately labelled overlapping
+process-wide synchronous/delivery context inside12x96/64-marker bounds. Unknown
+Store bindings are explicit before original process-wide fallback; Native packet
+behavior remains unchanged. Runtime is127, adding only footprint-trace. The narrow
+private-fs-phase TEST count becomes127 with explicit leaf membership; all original
+FD lifecycle/closure controls remain. The four causal TEST files are byte-identical
+through OLD and FIXED. Separate exact GREEN, whole-owner and serial88 packages
+are prepared in E15/b2-green-01, b2-whole-01 and b2-serial88-01. No worker execution.
+
+Initial Root-rulings6a8c88a5 is a historical snapshot. Current amended rulings
+SHAaa2df17b11a99bfc87b755dd664fa8a37e21e2d4ee3e66df5f9d69d577e26e51
+adds only the narrow future B2 regression-owner declaration. It is not e78 or an
+accounting-policy amendment. Root executes each exact gate separately. Scripted
+GREEN/whole/serial and ONE later real development CHECK/readback are UNRUN;
+Task3/full40 stays INCOMPLETE and historical2300ms cause UNKNOWN.
+
+Task15 scripted GREEN passed33/33 (natural0/0.366397458s). Whole01 then passed
+112/113; its sole failure was an obsolete snapshot runtime-prefix expectation.
+Root declared the exact115-prefix digest, preserved historical114 digest after
+filtering only the new leaf, unchanged12-entry tail and explicit leaf membership.
+Only that inventory TEST changes; tested runtime order/source and four causal
+TEST bytes stay unchanged. Whole02/serial88-02 remain UNRUN; old whole failure
+and unrun serial01 are preserved. No live CHECK or full40 release follows.
+
+### Task15 actual scripted qualification and live package declarations
+
+Root qualified GREEN33/33 (0.366397458s), whole02 113/113 (21.377882833s) and
+serial88 1076/1076 (149.592480833s), natural0, no skip/cancel/stderr, exact588/589/
+589 before/after pins and actual wait/BOTH EOF/raw/journal closure. Original
+manager852b715b, no errors/signals/intervention. Whole01's112/113 obsolete-prefix
+failure and clean owner closure remain preserved. The initial mistaken GREEN
+manager label failed pre-spawn with no child, then exact green ran once. No worker
+runtime. Scripted qualification does not prove historical cause or a live phase.
+
+Declared test-only controls are E15/task15-before-exit-preload.mjs and
+E15/task15-readback.mjs. Live CHECK and readback use separate immutable configs/
+input maps under E15/live-check-01 and E15/readback-01 with unchanged170-line
+Python owner. Exact fresh external workspace is
+/private/tmp/tinyaz-task15-diagnostic-55ea3e6a-6428-40c8-a676-9f065ff15fce.
+Only the real archived supervisor CHECK installs the natural-beforeExit export.
+One fd2 line including prefix/newline must fit65536 bytes; missing/empty or
+oversized output is explicit diagnostic failure, never original-exit replacement.
+The selector excludes bootstrap/driver/npm/Vite; dynamic import uses the exact
+already-used archived sibling URL. No timer/forced exit/production emission.
+
+The separately owned readback imports genuine archived confinedRead/verifyReceipt,
+original budget/issueActual/lifetime and cleanup predicate. One original90s bound
+covers effect admission and graph wait; every original task and lifetime joins,
+including failure/expiry and mandatory descriptor close. Actual workspace identity
+must be WORKTREE/check/schema2/v2 with unchanged9706840-byte M/SHA b716fe7b.
+Readback requires passed0, both resource verdicts passed and genuine phase-workload
+cleanup bound to the real running supervisor, while scientificEligibility and
+prerequisiteReusable stay false. No committed-candidate helper is bypassed or
+tricked. Missing graph never qualifies. Root releases live then readback separately
+after code/doc review; neither command is run during package preparation.
+
+Task15 actual validation: scoped source review and schema rereview passed; the
+ONE real M64-visit WORKTREE/v2 CHECK naturally0 in166.025079250s. Separate genuine
+readback naturally0 in0.247289209s verified the closed graph, both resource verdicts
+passed, persisted cleanup and original task/lifetime joins. Root verified597/729
+stable inputs and127 archived-source bindings with actual wait/BOTHpipe/raw/journal
+closure. The trace recorded416 scans/415 consumers, unavailable0/overflow0; its
+last16 consumer ages9..44ms are a rolling window, not a full-run latency maximum.
+This diagnostic CHECK cannot serve as a scientific prerequisite. Historical2300ms
+cause stays UNKNOWN; old12/40 comparison remains ineligible, old persisted cleanup
+UNPROVEN, Task3/full40 INCOMPLETE. At this pre-commit validation checkpoint,
+Task15 final audit/green commit remains pending. Later state is in the W progress ledger.
+The unused readback02 input-paths-after-check list mistakenly prefixed repository
+paths onto already absolute archive paths. Root's pre-spawn static check caught
+it; unchanged manager/config pathlib joining was correct. Root preserved that
+malformed list, froze the canonical729-path list and ran the actual readback.
+This was metadata preparation error, not a runtime/graph failure. Exact actual
+receipts and limits are in E15/root-live-and-readback-audit.json and the NEW
+E15/task15-final-report.md; frozen earlier reports/configs/reviews remain unchanged.

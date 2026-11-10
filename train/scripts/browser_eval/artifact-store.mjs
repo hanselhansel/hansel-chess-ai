@@ -29,6 +29,7 @@ import {
 } from "./watchdog-lifetime.mjs";
 import { createStoreCompletionMethods } from "./artifact-completion.mjs";
 import { describeFootprintFailure } from "./workspace-footprint.mjs";
+import { footprintTrace } from "./footprint-trace.mjs";
 
 const ORDINARY = FIXED_LIMITS.resources.ordinaryBytes;
 const TOTAL = FIXED_LIMITS.resources.workspaceBytes;
@@ -97,7 +98,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
   // Every operation samples the whole-workspace footprint before reserving.
   // An exception, malformed sample or stale timestamp is a sticky accounting
   // fault: the store never silently continues on unverifiable usage.
-  const charge = async () => {
+  const charge = async (role) => {
     let sample;
     try {
       sample = await readFootprint();
@@ -122,6 +123,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
       throw error;
     }
     const now = monotonicNow();
+    footprintTrace.consume(sample, now, role);
     if (
       !Number.isFinite(now) ||
       sample.observedAtMs > now ||
@@ -134,6 +136,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
         sample.observedAtMs > now ? "future-start" : "age-exceeded",
         nowMs: Number.isFinite(now) ? now : null, sampleStartMs: sample.observedAtMs,
         ageMs: Number.isFinite(now) ? now - sample.observedAtMs : null });
+      footprintTrace.bindStaleError(error, sample, now, role);
       throw error;
     }
     // observedAtMs is the conservative start of the provider's whole
@@ -181,7 +184,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
   };
 
   const reserve = async (bytes, lane) => {
-    const observed = await charge();
+    const observed = await charge("pre-reservation");
     const unobserved = unobservedTotal();
     if (lane === "ordinary") {
       if (observed + unobserved + pendingTotal() + bytes > ORDINARY) {
@@ -203,7 +206,7 @@ export function createArtifactStore({ workspaceRoot, readFootprint, monotonicNow
   // Post-write accounting must observe committed bytes inside the fixed
   // ceilings; a breach latches the overrun instead of rewriting record.
   const postAccounting = async () => {
-    const observed = await charge();
+    const observed = await charge("post-write");
     if (observed > TOTAL) {
       state.overrun = true;
       fail("STORE_OVERRUN", "post-write ceiling");

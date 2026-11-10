@@ -682,3 +682,48 @@ comparison graph, eligibility or verified persisted cleanup exists. Five quiet
 post-failure scans did not reproduce the delay; cause remains UNKNOWN.
 [Evidence and limits](train/scripts/browser_eval/README.md#task14-failed-comparison-handoff-and-idle-control-2026-11-10).
 Task14 documents the failed handoff. Task3/full40 remains INCOMPLETE; no automatic retry.
+
+Task15 preparation adds passive scan-attribution source and causal TESTs for the
+new Store freshness failure. Existing runtime hooks/roster remain OLD126 until
+Root qualifies integration RED. The declared future runtime127 adds one diagnostic
+leaf; original Store clock/error authority,1000ms scan-start freshness and every
+Native/cleanup/resource/science bound remain unchanged. Exact API/count bounds,
+coverage limits and one future real64-visit M development CHECK are documented in
+[the harness contract](train/scripts/browser_eval/README.md#task15-before-use-scan-diagnostics-contract-2026-11-10).
+No Task15 runtime check has run. The historical2300ms cause stays UNKNOWN, its
+full40 release is consumed and Task3/full40 remains INCOMPLETE. A development
+WORKTREE CHECK and its trace cannot serve as scientific prerequisites.
+
+Task15 B2 source is now connected: exact scan/sample/Store-role attribution and
+runtime127, with original clock/error/promise/cleanup authority unchanged. Root's
+OLD-hook RED naturally1 in0.381963542s,33 tests27pass/6 intended attribution
+failures, with actual wait/BOTHpipe/raw/journal/input closure. SAME causal TEST
+bytes apply to the prepared GREEN. GREEN/whole-owner/serial88 and real diagnostic
+CHECK remain UNRUN. No guessed historical-delay fix or new comparison release.
+
+Task15 scripted GREEN passed33/33 (natural0/0.366397458s). Whole01 then passed
+112/113; its sole failure was an obsolete snapshot runtime-prefix expectation.
+Root declared the exact115-prefix digest, preserved historical114 digest after
+filtering only the new leaf, unchanged12-entry tail and explicit leaf membership.
+Only that inventory TEST changes; tested runtime order/source and four causal
+TEST bytes stay unchanged. Whole02/serial88-02 remain UNRUN; old whole failure
+and unrun serial01 are preserved. No live CHECK or full40 release follows.
+
+Task15 current scripted gates: GREEN33/33, whole02 113/113 and serial88 1076/1076
+passed with actual wait/BOTHpipe/raw/journal/input closure. The earlier whole01
+112/113 inventory-expectation failure remains preserved; production source and
+four causal TESTs were unchanged for the passing whole02/serial gates. ONE real
+WORKTREE/v2 diagnostic CHECK and independent review remain UNRUN. These scripted
+results do not identify the historical2300ms cause or complete Task3/full40.
+
+Task15 actual validation: scoped source review and schema rereview passed; the
+ONE real M64-visit WORKTREE/v2 CHECK naturally0 in166.025079250s. Separate genuine
+readback naturally0 in0.247289209s verified the closed graph, both resource verdicts
+passed, persisted cleanup and original task/lifetime joins. Root verified597/729
+stable inputs and127 archived-source bindings with actual wait/BOTHpipe/raw/journal
+closure. The trace recorded416 scans/415 consumers, unavailable0/overflow0; its
+last16 consumer ages9..44ms are a rolling window, not a full-run latency maximum.
+This diagnostic CHECK cannot serve as a scientific prerequisite. Historical2300ms
+cause stays UNKNOWN; old12/40 comparison remains ineligible, old persisted cleanup
+UNPROVEN, Task3/full40 INCOMPLETE. At this pre-commit validation checkpoint,
+Task15 final audit/green commit remains pending. Later state is in the W progress ledger.

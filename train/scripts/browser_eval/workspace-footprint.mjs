@@ -13,6 +13,7 @@
 // generation so an interrupted walk can never publish a successful partial
 // prefix, and lets the active walk drain.
 import { privateFs as fsp } from "./private-fs.mjs";
+import { footprintTrace } from "./footprint-trace.mjs";
 import path from "node:path";
 
 const realClock = {
@@ -219,6 +220,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
 
   const run = async (gen) => {
     const observedAtMs = clock.nowMonoMs();
+    footprintTrace.started(observedAtMs);
     const firstErrors = [];
     const retirements = [];
     let originalRoot = null;
@@ -286,11 +288,14 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
     }
   };
 
-  const publish = (result, gen) => {
+  const publish = (result, gen, traceId) => {
     // Suppress ONLY obsolete coverage: a strictly older scan start. A
     // same-millisecond or interrupted result still publishes — a fault may
     // never be hidden behind an earlier valid observation.
-    if (result.observedAtMs < lastStart) return;
+    if (result.observedAtMs < lastStart) {
+      footprintTrace.suppressed(traceId);
+      return;
+    }
     lastStart = result.observedAtMs;
     if (
       gen === generation &&
@@ -302,6 +307,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
         chargedBytes: result.chargedBytes,
         accountingValid: true,
       };
+      footprintTrace.published(traceId, lastGood);
       return;
     }
     // An interrupted walk (generation superseded) or a real fault marks the
@@ -314,6 +320,7 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
       errors: result.errors.slice(0, 8),
       ...(gen !== generation ? { interruption: "stopped/generation-changed" } : {}),
     };
+    footprintTrace.published(traceId, lastGood);
   };
 
   const scan = () => {
@@ -322,9 +329,11 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
     }
     if (inFlight) return inFlight;
     const gen = generation;
-    inFlight = run(gen)
+    const traceId = footprintTrace.issue();
+    inFlight = footprintTrace.run(traceId, () => run(gen))
       .then((result) => {
-        publish(result, gen);
+        footprintTrace.completed(traceId, result);
+        publish(result, gen, traceId);
         return current();
       })
       .finally(() => {
@@ -339,7 +348,9 @@ export function createFootprintObserver({ workspaceRoot, clock = realClock }) {
         new Error("ACCOUNTING_UNAVAILABLE footprint never observed"),
       );
     }
-    return Promise.resolve({ ...lastGood });
+    const sample = { ...lastGood };
+    footprintTrace.copy(lastGood, sample);
+    return Promise.resolve(sample);
   };
 
   const readFootprint = () => {

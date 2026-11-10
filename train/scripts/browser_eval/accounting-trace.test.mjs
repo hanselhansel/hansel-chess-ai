@@ -1,6 +1,7 @@
 // PURE genuine fault integration. No actual Native/process/browser/model work.
 import test from "node:test";
 import assert from "node:assert/strict";
+import { footprintTrace } from "./footprint-trace.mjs";
 import { createMonitorFixture, monitorBootstrapScript, startMonitorFixture } from "./process-monitor-test-fixtures.mjs";
 import { processMonitorLifetime } from "./processes.mjs";
 import { createWatchdogLifetime } from "./watchdog-lifetime.mjs";
@@ -207,4 +208,35 @@ test("diagnostic correlation uses issued requestId without reading an injected r
     // Full terminal-history seed, Native partition, allocator/send, then coverage.
     assert.deepEqual(order, ["owned", "owned", "nextRid", "send", "owned"]);
   } finally { handle.dispose(); assert.equal(timer.pendingTimeouts(), 0); }
+});
+
+// Missing exact Store association must stay visible beside process-wide context.
+test("Store packet selects exact scan identity and retains separately scoped overlapping FS", () => {
+  const originalClock = process.hrtime.bigint;
+  let ns = 1000000000n;
+  const trace = createAccountingTrace({ nowNs: () => ns.toString() });
+  try {
+    process.hrtime.bigint = () => ns;
+    const id = footprintTrace.issue(), sample = { observedAtMs: 1000, chargedBytes: 1, accountingValid: true };
+    footprintTrace.run(id, () => footprintTrace.started(1000));
+    const unrelated = trace.fsBegin("fd.sync");
+    ns = 1100000000n; trace.fsReturn(unrelated, false);
+    ns = 1200000000n; trace.fsDeliver(unrelated);
+    footprintTrace.completed(id, sample); footprintTrace.published(id, sample);
+    ns = 2100000000n;
+    const error = Object.assign(new Error("original Store"), { code: "STORE_ACCOUNTING",
+      detail: JSON.stringify({ classification: "age-exceeded", sampleStartMs: 1000, nowMs: 2100, ageMs: 1100 }) });
+    footprintTrace.consume(sample, 2100, "post-write");
+    footprintTrace.bindStaleError(error, sample, 2100, "post-write");
+    const lines = trace.packet(error, 12);
+    assert.ok(lines.some(line => line.includes("binding=exact") && line.includes(`scan=${id}`)));
+    assert.ok(lines.some(line => line.includes("post-write")));
+    assert.ok(lines.some(line => line.includes("process-wide") && line.includes("fd.sync")));
+    assert.ok(lines.every(line => line.length <= 96)); assert.ok(lines.length <= 12);
+    const unbound = Object.assign(new Error("unbound"), { code: "STORE_ACCOUNTING", detail: error.detail });
+    assert.ok(trace.packet(unbound, 12).some(line => line.includes("binding=missing")));
+    footprintTrace.consume(sample, 2100, "post-write");
+    footprintTrace.bindStaleError(unbound, sample, 2100, "post-write");
+    assert.ok(trace.packet(unbound, 12).some(line => line.includes("binding=ambiguous")));
+  } finally { process.hrtime.bigint = originalClock; }
 });

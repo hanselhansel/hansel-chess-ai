@@ -1,5 +1,6 @@
 // Passive bounded scalar window. No clock/proof/debt/IO authority. Node absolute
 // spans are process-wide; Python intervals are subtracted ONLY in their origin.
+import { footprintTrace } from "./footprint-trace.mjs";
 const ns = (value) => (typeof value === "string" && /^\d{1,24}$/.test(value) ? value : null);
 const idString = (value) => typeof value === "string" && /^[A-Za-z0-9:_-]{1,128}$/.test(value);
 const duration = (a, b) =>
@@ -63,7 +64,9 @@ export function createAccountingTrace({ nowNs = () => process.hrtime.bigint().to
       return;
     }
     const id = ++serial;
-    put(pending, id, { op, start: now(), returned: null, rejected: null }, 64);
+    const start = now();
+    put(pending, id, { op, start, returned: null, rejected: null,
+      scanId: footprintTrace.fsBegin(op, start) }, 64);
     return id;
   });
   const fsReturn = protect((id, rejected) => {
@@ -74,6 +77,7 @@ export function createAccountingTrace({ nowNs = () => process.hrtime.bigint().to
     }
     fact.returned = now();
     fact.rejected = rejected === true;
+    footprintTrace.fsReturn(fact.scanId, fact.op, fact.start, fact.returned, fact.rejected);
   });
   const fsDeliver = protect((id) => {
     const fact = pending.get(id),
@@ -83,6 +87,7 @@ export function createAccountingTrace({ nowNs = () => process.hrtime.bigint().to
       return;
     }
     pending.delete(id);
+    footprintTrace.fsDeliver(fact.scanId, fact.op, fact.start, fact.returned, delivered, fact.rejected);
     if (delivered === null) return;
     const key = (BigInt(delivered) / 1000000000n).toString();
     let bucket = buckets.get(key);
@@ -234,10 +239,16 @@ export function createAccountingTrace({ nowNs = () => process.hrtime.bigint().to
       );
     }
     const limit = Number.isSafeInteger(budget) ? Math.max(0, Math.min(budget, 12)) : 0;
-    const truncated = lines.some((line) => line.length > 96) || lines.length + 1 > limit;
+    const association = footprintTrace.packet(error, 9) ?? [];
+    const exact = association[0]?.includes("binding=exact") === true;
+    const selected = exact ? [...association,
+      `process-wide sync ${immediate?.op ?? "missing"} ns=${immediate?.elapsed ?? "?"}`,
+      `process-wide delivery ${delivery?.op ?? "missing"} ns=${delivery?.elapsed ?? "?"}`] :
+      [...(association.length ? [association[0]] : []), ...lines];
+    const truncated = selected.some((line) => line.length > 96) || selected.length + 1 > limit;
     return [
       `v1 partial-window drop=${dropped} unavailable=${unavailable} pending=${pending.size} truncated=${truncated}`,
-      ...lines,
+      ...selected,
     ]
       .slice(0, limit)
       .map((line) => line.slice(0, 96));

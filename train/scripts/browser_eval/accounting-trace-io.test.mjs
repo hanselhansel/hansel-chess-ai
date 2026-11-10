@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { accountingTrace } from "./accounting-trace.mjs";
+import { footprintTrace } from "./footprint-trace.mjs";
 import { privateFs, createPrivateReadStream } from "./private-fs.mjs";
 import { createCollectorTransport } from "./process-transport.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
@@ -225,3 +226,39 @@ for (const expired of [true, false]) {
     }
   });
 }
+
+// Breaking inert diagnostics must not duplicate/replace a genuine syscall or debt.
+test("scan attribution clock faults preserve original FS value error and physical close", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "scan-trace-fault-"));
+  const file = path.join(root, "bytes"); fs.writeFileSync(file, "same bytes");
+  const originalClock = process.hrtime.bigint, originalStat = fs.lstatSync;
+  const error = new Error("original syscall"), id = footprintTrace.issue();
+  let calls = 0;
+  try {
+    fs.lstatSync = (...args) => { calls++; return originalStat(...args); };
+    let actual;
+    try {
+      process.hrtime.bigint = () => { throw null; };
+      actual = footprintTrace.run(id, () => {
+        footprintTrace.started(1000); return privateFs.lstat(file);
+      });
+    } finally { process.hrtime.bigint = originalClock; }
+    assert.equal((await actual).size, 10); assert.equal(calls, 1);
+    fs.lstatSync = () => { calls++; throw error; };
+    let rejected;
+    try {
+      process.hrtime.bigint = () => { throw undefined; };
+      rejected = footprintTrace.run(id, () => {
+        footprintTrace.started(1000); return privateFs.lstat(file);
+      });
+    } finally { process.hrtime.bigint = originalClock; }
+    await assert.rejects(rejected, value => value === error); assert.equal(calls, 2);
+    const handle = await footprintTrace.run(id, () => privateFs.open(file, "r"));
+    assert.equal((await handle.stat()).size, 10);
+    await handle.close(); assert.equal(handle.fd, -1);
+    assert.ok(footprintTrace.snapshot().stats.unavailable > 0);
+  } finally {
+    process.hrtime.bigint = originalClock; fs.lstatSync = originalStat;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
