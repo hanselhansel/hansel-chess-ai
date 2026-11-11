@@ -11,7 +11,8 @@ import { isObj, exactFields } from "./protocol-values.mjs";
 import { createBudgetHandle } from "./process-budget.mjs";
 import { createWatchdogLifetime, assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
 import { issueActual } from "./artifact-files.mjs";
-import { createWatchdog } from "./watchdog.mjs";
+import { createWatchdog, createWatchdogFacade } from "./watchdog.mjs";
+import { captureWatchdogRuntimeConfig } from "./watchdog-config.mjs";
 import { createWatchdogOperations } from "./watchdog-operations.mjs";
 import { createProtocolValidator } from "./supervisor-protocol.mjs";
 import { createPhaseRecorder, writeWorkspaceOnce } from "./records.mjs";
@@ -250,5 +251,93 @@ for (const alreadyComplete of [false, true]) {
     assert.equal(parentOwner.isComplete(), false);
     assert.equal(calls, alreadyComplete ? 1 : 0);
     await lifetime.whenSettled();
+  });
+}
+
+
+// Real shared monitor/state and real nested config/facade admission. This is
+// the pre-heartbeat association boundary, not Native heartbeat/cleanup proof.
+import { monitorV3, v3Workspace } from "./preflight-v3-test-fixtures.mjs";
+import { createV2RecorderWorkspace, v2Workspace } from "./separate-verdicts-test-fixtures.mjs";
+import { V2_POLICY, V3_POLICY } from "./evaluation-policy.mjs";
+
+async function sharedMonitorFacade(t, mode) {
+  let native, parentScope;
+  t.after(async () => {
+    if (parentScope) await finishDriverActualScope(parentScope);
+    if (native) await native.close();
+  });
+  const policy = mode === "v2" ? V2_POLICY : V3_POLICY;
+  const workspace = policy === V2_POLICY ? v2Workspace() : v3Workspace();
+  const env = await createV2RecorderWorkspace(t, { workspace });
+  const lifetime = artifactStoreLifetime(env.store);
+  native = monitorV3({ lifetime, policy: mode === "wrong-policy" ? V2_POLICY : policy,
+    phase: mode === "wrong-phase" ? "check" : "preflight" });
+  await native.start();
+  const clock = { ...native.clock, nowMonoMs: native.clock.nowMs,
+    nowUtc: () => "2026-11-11T00:00:00.000Z" };
+  const top = mode === "top-phase" || mode === "top-run";
+  const parentRunId = mode === "wrong-parent" ? "foreign-parent" : "R1";
+  const runId = top ? mode === "top-run" ? "foreign-parent" : "R1" : `${parentRunId}:watchdog-selftest`;
+  const phase = top ? "check" : "watchdog-selftest";
+  const supervisor = native.monitor._ready().supervisor;
+  const owner = { phase: "preflight", runId: parentRunId, supervisor };
+  const manifest = { ...fixtureManifest({ workspace, inputs: env.inputs, phase, runId,
+    owner: top ? null : owner }), schemaVersion: 2, evaluationPolicy: policy };
+  const recorder = createPhaseRecorder({ store: env.store, workspace, manifest,
+    verifyIdentity: async () => workspace.commonIdentity,
+    verifyCleanup: async () => { throw new Error("no cleanup proof requested by admission control"); } });
+  env.recorders.push(recorder);
+  parentScope = createDriverActualScope({ runId: parentRunId, retainActual: lifetime.retainActual });
+  const context = { monitor: native.monitor, parentRunId, subrunRunId: runId,
+    owner, parentSupervisor: supervisor, commonIdentity: workspace.commonIdentity,
+    workspaceRoot: env.workspaceRoot, inputs: env.inputs, phaseDirectory: "preflight/selftest",
+    deadlineMonoNs: BigInt(clock.nowMonoMs() + 90000) * 1000000n,
+    signal: new AbortController().signal, parentDriverScope: parentScope };
+  if (mode === "wrong-context") context.monitor = {};
+  if (mode === "wrong-subrun") context.subrunRunId = "unrelated-selftest";
+  if (mode === "wrong-owner") context.owner = { ...owner, runId: "unrelated-owner" };
+  const options = { phase, runId, workspace, commonIdentitySha256: manifest.commonIdentitySha256,
+    manifestPath: path.join(env.workspaceRoot, top ? "check/manifest.json" : "preflight/selftest/manifest.json"),
+    protocol: createProtocolValidator({ runId, recordSchemaVersion: 2, evaluationPolicy: policy }),
+    monitor: native.monitor, recorder, lifetime, clock,
+    footprint: { scan: async () => ({ accountingValid: true, chargedBytes: 0 }), stop() {} },
+    cleanup: { run: async () => { throw new Error("no cleanup body requested by admission control"); } },
+    driverEntry: { executable: "/drv/node", expectedExecutable: "/drv/node", args: ["/drv/driver.js"] },
+    ...(top ? {} : { internalContext: context, selftestOwnerSupervisor: supervisor }) };
+  return { native, options, context, runId };
+}
+
+for (const mode of ["valid", "v2", "wrong-parent", "wrong-context", "wrong-subrun",
+  "wrong-owner", "wrong-phase", "wrong-policy", "top-phase", "top-run"]) {
+  test(`shared parent monitor nested facade association: ${mode}`, async (t) => {
+    const f = await sharedMonitorFacade(t, mode);
+    if (["wrong-context", "wrong-subrun", "wrong-owner"].includes(mode)) {
+      assert.throws(() => captureWatchdogRuntimeConfig(f.options), /internalContext.*association/);
+      return;
+    }
+    const captured = captureWatchdogRuntimeConfig(f.options);
+    assert.equal(captured.capabilities.monitor, f.native.monitor);
+    const group = createWatchdogFacade(captured, actual => actual).run();
+    const valid = mode === "valid" || mode === "v2";
+    assert.equal(group.control.admissionOpen(), valid,
+      "original trusted parent binding must admit only its genuine shared monitor");
+    if (!valid) {
+      assert.equal(group.state.stopReq?.reason, "ACCOUNTING_UNAVAILABLE");
+      return;
+    }
+    assert.equal(group.state.stopReq, null);
+    assert.equal(group.control.intentOutcome().unplannedFaultCount, 0);
+    assert.equal(f.native.monitor.fault(), null);
+    const raw = f.native.monitor.lastObservation().resourceQuality;
+    assert.equal(raw.runId, "R1"); assert.equal(raw.monitorRunId, "R1");
+    const prefix = f.native.monitor._captureResourcePrefix({ scopeRunId: f.runId,
+      deadlineMonoMs: Number(f.context.deadlineMonoNs / 1000000n) });
+    assert.equal(prefix.runId, "R1:watchdog-selftest");
+    assert.equal(prefix.monitorRunId, "R1"); assert.equal(prefix.phase, "watchdog-selftest");
+    assert.equal(prefix.gapCount, 0); assert.equal(prefix.coverageLost, false);
+    assert.equal(prefix.pending, false); assert(Object.isFrozen(prefix));
+    assert.equal(f.native.monitor.lastObservation().resourceQuality.runId, "R1",
+      "a nested prefix never rewrites the shared parent ledger");
   });
 }

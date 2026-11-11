@@ -44,7 +44,10 @@ export function createWatchdogResourceChecks({
     if (!mo) throw fail("ACCOUNTING_UNAVAILABLE", "native observation missing");
     assertResourceEvidence(mo.resourceQuality);
     const q = mo.resourceQuality;
-    if (v3 && (q.runId !== runId || q.monitorRunId !== runId || q.policyId !== evaluationPolicy.policyId))
+    // runId is the captured monitor owner, never inferred from this observation.
+    const monitorPhase = phase === "watchdog-selftest" ? "preflight" : phase;
+    if (v3 && (q.runId !== runId || q.monitorRunId !== runId ||
+      q.phase !== monitorPhase || q.policyId !== evaluationPolicy.policyId))
       throw fail("ACCOUNTING_UNAVAILABLE", "V3 resource association");
     if (!Number.isSafeInteger(mo.rssBytes) || mo.rssBytes < 0 || !mo.snapshotComplete ||
       typeof mo.cycleTimely !== "boolean" || q.completedCycles < 1 ||

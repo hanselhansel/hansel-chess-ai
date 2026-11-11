@@ -207,7 +207,7 @@ import { createProcessMonitor, processMonitorLifetime } from "./processes.mjs";
 import { fakeClock, collectorFixture, sampleReply } from "./supervision-test-fixtures.mjs";
 import { monitorBootstrapScript, monitorReadyOptions } from "./process-monitor-test-fixtures.mjs";
 import { PYTHON_EXECUTABLE } from "./schema-constants.mjs";
-export function monitorV3({ phase = "preflight", scope = null, policy = V3_POLICY } = {}) {
+export function monitorV3({ phase = "preflight", scope = null, policy = V3_POLICY, lifetime = undefined } = {}) {
   const clock = fakeClock({ startNs: 1000000000n });
   const script = monitorBootstrapScript();
   const fixture = collectorFixture({ runId: "R1", script });
@@ -221,7 +221,7 @@ export function monitorV3({ phase = "preflight", scope = null, policy = V3_POLIC
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), "preflight-monitor-v3-")));
   for (const name of ["process-macos.py", "process-macos-native.py", "process-macos-abi.py"])
     writeFileSync(path.join(root, name), "# controlled collector\n");
-  const monitor = createProcessMonitor({ runId: "R1", phase, evaluationPolicy: policy,
+  const monitor = createProcessMonitor({ runId: "R1", phase, evaluationPolicy: policy, lifetime,
     preflightQualityReader: scope?.reader ?? null, pythonExecutable: PYTHON_EXECUTABLE,
     helperPath: path.join(root, "process-macos.py"), recordRoot: root,
     protocol: fixture.protocol, clock, spawnImpl: () => fixture.child });

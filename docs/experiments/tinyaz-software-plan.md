@@ -1605,3 +1605,49 @@ and task22-implementation-review-ready-report.md. The earlier full96
 immutable history; neither was reclassified as passing. No Task22 scientific
 CHECK/control/parity/preflight/comparison, commit/publication or Elo result is
 claimed. Root owns fresh review and every subsequent release gate.
+
+
+## Task24 shared-monitor association repair (2026-11-11)
+
+Task22 was reviewed, committed and published as `ad419e90f0761639677be21f01a80ab5806b5f17`.
+Fresh Task23 strict CHECK passed all8 in190.415634s. The ONE replacement
+control qualified in42.812403s with61 scans. Strict parity passed13 cases/all5
+checks in56.408613s with genuine sealed completion and no resource gaps.
+Fresh preflight failed in55.304011s (experiment2/readback1/operator1), with no
+parent completion and0 comparison cohorts. Old evidence remains immutable.
+
+The nested facade incorrectly required raw shared-monitor resource IDs to
+match its own subrun. Actual raw observations remain parent-owned; the later
+strict prefix alone has nested runId/parent monitorRunId. This is an approved
+shared-prefix implementation bug, not a policy change. Root causal RED ran13
+existing-owner tests:8 passed,5 intended assertion failures,0 skip/cancel,
+natural exit1 with658 exact pins and actual process/BOTH raw/journal closure.
+The same two TEST/support hashes remain fixed. Root reran the same13 causal
+tests GREEN13/13 (natural exit0,1.067095542s), then full96 GREEN1172/1172
+(natural exit0,225.858033375s). The13 are a subset of1172. All gates preserved
+664 exact before/after/current pins, actual process/BOTH raw/journal closure,
+zero skip/cancel and no intervention. Python58/19/8, app scripts191/core184
+and typecheck passed serially on the same664 pins. The two deliberate null
+and undefined bookkeeping-observer warnings remain expected and unsuppressed.
+Fresh native independent SolMax review returned specPASS/qualityPASS with no
+findings. It inspected causal raw/receipts/journals and the full-gate summary;
+it did not inspect every full-gate raw file. Root final code-to-doc acceptance,
+green commit, publication and fresh prerequisite verification remain pending.
+The already approved ONE40-game comparison remains unconsumed (0 cohorts);
+Root phase GO is still pending.
+
+The facade captures the expected monitor ID from the original validated private
+context, forwards it to both admission/finish and polling checks, and keeps
+policy/phase/run association exact. Nested selftest stays strict. V1/V2,
+runtime135/TEST96, model, original limits, IPC and prefix/cleanup proofs remain.
+The secondary parent heartbeat-after-stop followed failed selftest admission;
+no independent initiating IPC defect is established and no IPC change is made.
+The ONE replacement diagnostic control allowance is exhausted. Only renewal
+for ONE further diagnostic control requires user confirmation. The original
+ONE40-game comparison authorization remains valid after fresh prerequisites;
+Root has not issued phase GO. No failed-run rescue is authorized.
+Evidence: E24/root-task24-all-required-checks-summary.json,
+task24-sol-max-source-review.md and root-task24-causal-red-acceptance.json,
+where E24 is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/80f6cd8d-9745-44ca-b237-e2a8955acebe`.
+Task23 actual phase/owner evidence remains in E23
+`c5827fc8-64ae-428c-bd58-a29186e35e79`. Worker imports/tests are UNRUN.

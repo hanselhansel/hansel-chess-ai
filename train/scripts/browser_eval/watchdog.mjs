@@ -184,7 +184,7 @@ export function createWatchdogFacade({ config, capabilities }, runLifecycle = ru
     makeError: fail,
     evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null,
     phase: config.phase,
-    runId: config.runId,
+    runId: config.resourceMonitorRunId,
     preflightQualityReader: capabilities.preflightQualityScope?.reader ?? null,
     nowNs: () => clock.nowMonoNs(),
   });

@@ -6,7 +6,7 @@ import { assertPreflightQualityScope } from "./process-preflight-quality.mjs";
 // preserves its named re-export and Operations preserves its existing API.
 // No timer, IO, spawn, Native action or second authority at construction.
 import path from "node:path";
-import { copyDeep, isObj, isIdentity } from "./protocol-values.mjs";
+import { copyDeep, eq, isObj, isIdentity } from "./protocol-values.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
 import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
 import { processMonitorLifetime } from "./processes.mjs";
@@ -165,6 +165,19 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
   }
   if (selftestPhase && !isIdentity(selftestOwnerSupervisor))
     throw fail("IPC_INVALID", "selftestOwnerSupervisor");
+  // Raw observations stay parent-owned; only the later prefix is rebound.
+  let resourceMonitorRunId = runId;
+  if (selftestPhase && workspace.commonIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3") {
+    const context = internalContext;
+    if (context.monitor !== monitor || !strNE(context.parentRunId) ||
+      context.subrunRunId !== runId || runId !== `${context.parentRunId}:watchdog-selftest` ||
+      !isObj(context.owner) || context.owner.phase !== "preflight" ||
+      context.owner.runId !== context.parentRunId ||
+      !eq(context.owner.supervisor, selftestOwnerSupervisor) ||
+      !eq(context.parentSupervisor, selftestOwnerSupervisor))
+      throw fail("IPC_INVALID", "internalContext resource association");
+    resourceMonitorRunId = context.parentRunId;
+  }
   if (!selftestPhase && phase !== "preflight" && expectedSelfTest !== null)
     throw fail("IPC_INVALID", "expectedSelfTest phase");
 
@@ -233,6 +246,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
   const config = Object.freeze({
     phase,
     runId,
+    resourceMonitorRunId,
     commonIdentitySha256,
     workspace: copyDeep(workspace),
     manifestPath: `${manifestPath}`,

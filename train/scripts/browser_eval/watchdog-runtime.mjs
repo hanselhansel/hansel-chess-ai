@@ -290,7 +290,7 @@ export async function runWatchdogLifecycle({ config, capabilities, state, timing
       );
 
       armResourcePolling({ capabilities, state, timing, control, makeError: fail,
-        evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null, phase: config.phase, runId: config.runId });
+        evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null, phase: config.phase, runId: config.resourceMonitorRunId });
       await control.wake;
     }
     return await control.shutdown();
