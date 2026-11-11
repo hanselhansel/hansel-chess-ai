@@ -1,23 +1,15 @@
-// watchdog-config.mjs is the pure config/context leaf under the final
-// readable-owners decision (19): it owns the WHOLE
-// captureWatchdogRuntimeConfig constructor/run-context validation and
-// derivation (moved from watchdog-runtime.mjs) plus the WHOLE pure
-// createWatchdogOperationContext ctx literal assembly (moved from
-// watchdog-operations.mjs). watchdog-runtime.mjs and
-// watchdog-operations.mjs preserve their original private import APIs by
-// re-exporting these names. It also derives the shared-owner capability
-// fields — lifetime, nativeHorizon and ONE frozen io — through the pure
-// brand/association readers imported below, and owns the whole pure
-// createWatchdogAwaiter stop-aware wait producer moved from
-// watchdog-shutdown.mjs. No timer, IO, spawn, Native action or second
-// authority.
+// Pure constructor/run-context capture and validation, shared-owner capability
+// derivation, and the whole stop-aware createWatchdogAwaiter producer.
+// The whole createWatchdogOperationContext body now belongs to
+// watchdog-operation-context.mjs under the approved V3 Split B; this module
+// preserves its named re-export and Operations preserves its existing API.
+// No timer, IO, spawn, Native action or second authority at construction.
 import path from "node:path";
 import { copyDeep, isObj, isIdentity } from "./protocol-values.mjs";
 import { phaseRecorderLifetime } from "./records.mjs";
-import { assertWatchdogLifetime, reportStoppedFault } from "./watchdog-lifetime.mjs";
+import { assertWatchdogLifetime } from "./watchdog-lifetime.mjs";
 import { processMonitorLifetime } from "./processes.mjs";
 import { assertNativeHorizon } from "./process-horizon.mjs";
-import { issueActual } from "./artifact-files.mjs";
 import { createDriverActualScope } from "./watchdog-driver.mjs";
 
 const fail = (code, detail) => {
@@ -279,80 +271,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
   return { config, capabilities };
 }
 
-// The WHOLE operation-context literal: the sole assembly point, receiving the
-// same grouped run context as the lifecycle owner. noteFinish binds the
-// corrected main-control callback (synchronous admission close, null-reason
-// PGN freeze, captured cleanup bound, wake) — never an assignment-only copy.
-export function createWatchdogOperationContext({
-  config,
-  capabilities,
-  state,
-  timing,
-  control,
-}) {
-  const { monitor, clock, lifetime, io, driverActualScope } = capabilities;
-  return Object.freeze({
-    phase: config.phase,
-    runId: config.runId,
-    commonIdentitySha256: config.commonIdentitySha256,
-    workspaceRoot: config.workspaceRoot,
-    manifestRel: config.manifestRel,
-    commonIdentity: config.workspace.commonIdentity,
-    workspaceId: config.workspace.workspaceId,
-    monitor,
-    clock,
-    // The SAME owner registrar, the EXACT derived io object and the ONE
-    // opaque driver actual scope forward unchanged — the operation owner
-    // verifies them, never a rewrap or copy.
-    retainActual: lifetime.retainActual,
-    io,
-    driverActualScope,
-    nowMonoMs: timing.now,
-    workEndMonoMs: () => state.workEnd,
-    phaseEndMonoMs: () => state.phaseEnd,
-    opDeadline: timing.opDeadline,
-    send: (type, fields, settleMs) =>
-      state.channel.send(type, fields, Math.max(1, settleMs)),
-    workRemainingMs: timing.workRemainingMs,
-    cleanupRemainingMs: timing.cleanupRemainingMs,
-    recordFault: control.recordFault,
-    requestStop: control.requestStop,
-    reportOrdinaryFault: (error) => reportStoppedFault(lifetime, config.phase === "watchdog-selftest" ? "selftest" : "phase", error),
-    stopped: control.stopped,
-    stopReason: () => (state.stopReq ? state.stopReq.reason : null),
-    admissionOpen: control.admissionOpen,
-    armOperation: timing.armOperation,
-    disarmOperation: timing.disarmOperation,
-    operationDeadline: () =>
-      state.liveOp ? state.liveOp.deadlineMonoMs : null,
-    noteHeartbeat: () => {
-      state.lastHb = timing.now();
-    },
-    noteHelloOk: () => {
-      state.helloOk = true;
-      state.lastHb = timing.now();
-    },
-    noteDriverClosed: () => {
-      state.driverClosed = true;
-      control.resolveWake();
-    },
-    noteFinish: control.noteFinish,
-    onFirstStop: (fn) => control.firstStopHooks.add(fn),
-    parentSupervisor: () => (state.running ? copyDeep(state.running) : null),
-    channelPid: () => (state.channel ? state.channel.pid : null),
-    driverIdentity: () =>
-      state.driverIdentity ? copyDeep(state.driverIdentity) : null,
-    manifestInputs: () => state.records.manifestInputs(),
-    selftest: state.selftest,
-    finalIntegrity: capabilities.finalIntegrity,
-    startFinalIntegrity: (body) => {
-      if (state.admissionTask !== null) throw fail("IPC_INVALID", "integrity task overlap");
-      const actual = issueActual(lifetime.retainActual, body);
-      state.admissionTask = actual.finally(() => { state.admissionTask = null; });
-      return state.admissionTask;
-    },
-  });
-}
+export { createWatchdogOperationContext } from "./watchdog-operation-context.mjs";
 
 // createWatchdogAwaiter is the stop-aware wait producer under the SAME
 // grouped run context: it receives the trusted {timing,control,makeError}

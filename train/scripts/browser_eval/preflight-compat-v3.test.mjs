@@ -19,13 +19,14 @@ test("runtime closure is explicit, unique and includes every new runtime helper"
     ...["evaluation-policy", "resource-quality", "verdicts-v2", "record-fields", "record-schema-v2",
       "receipt-verdicts-v2", "process-runtime-start", "watchdog-resource-policy", "watchdog-verdict-policy",
       "record-finalization-v2", "receipt-verification-v2"].map(name => `train/scripts/browser_eval/${name}.mjs`)]);
-  assert.equal(RUNTIME_PATHS.length, 128);
+  assert.equal(RUNTIME_PATHS.length, 129);
   assert.equal(
     sha256Bytes(canonicalBytes(RUNTIME_PATHS.slice(0, 127))),
     "33e70d7c66132f0804c63ed3a452831ebaec20dabc6dbf5957d47efe8315e3a8",
   );
   assert.deepEqual(RUNTIME_PATHS.slice(127), [
     "train/scripts/browser_eval/resource-quality-schema.mjs",
+    "train/scripts/browser_eval/watchdog-operation-context.mjs",
   ]);
   for (const filename of RUNTIME_PATHS) assert.equal((await fsp.stat(path.join(SOURCE, filename))).isFile(), true);
   assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);

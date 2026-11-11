@@ -354,7 +354,8 @@ included); the three Python sources stay exactly
 | `watchdog-child-test-fixtures.mjs` | 398 | `forkDriverFixture`, `createObservedDriver`, `drivers`, `liveStart`, `closeFacts`, `FINISH`, `closeDriverFacts`, `cleanupMonitorFixture`, `SUP`, `COL`, `fixture`, `instrumentRecorderFs` |
 | `watchdog-cleanup-test-fixtures.mjs` | 391 | `row`, `ROWS`, `OBS`, `args`, `closeDriverFacts`, `drivers`, `SUP`, `COL`, `fixture`, `advanceBy`, `drive`, `makeArgs`, `makeEvidenceWorkspace` |
 | `watchdog-cleanup.mjs` | 348 | `createCleanupController` |
-| `watchdog-config.mjs` | 373 | `captureWatchdogRuntimeConfig`, `createWatchdogOperationContext`, `createWatchdogAwaiter` |
+| `watchdog-config.mjs` | 318 | `captureWatchdogRuntimeConfig`, `createWatchdogOperationContext`, `createWatchdogAwaiter` |
+| `watchdog-operation-context.mjs` | 89 | `createWatchdogOperationContext` (whole pure group; Config/Operations re-export) |
 | `watchdog-drain-test-fixtures.mjs` | 379 | `yieldTurn`, `heldGate`, `createRunDrainBinding`, `drain`, `advanceBy`, `issueFixtureBody`, `drive`, `watchdogTestClock`, `liveStart`, `closeFacts`, `FINISH` |
 | `watchdog-driver-actual.mjs` | 296 | `driverError`, `createDriverActualScope`, `finishDriverActualScope`, `beginDriverActualAttempt`, `observeDriverPhysicalChild` |
 | `watchdog-driver-test-fixtures.mjs` | 264 | `forkDriverFixture`, `createObservedDriver`, `drivers`, `watchdogTestClock` |
@@ -2144,10 +2145,12 @@ authority, no wrapper and no second cleanup controller.
 
 ### watchdog-config.mjs
 
-`captureWatchdogRuntimeConfig(options)` and
-`createWatchdogOperationContext(groupedContext)` are the two exact
-private exports under the final readable-owners decision (19); this
-owner joins the functional runtime input union as a pure leaf.
+Current Split B exports are `captureWatchdogRuntimeConfig(options,
+defaultClock?)`, `createWatchdogAwaiter({timing,control,makeError})` and the
+preserved named re-export `createWatchdogOperationContext(groupedContext)`
+from `watchdog-operation-context.mjs`. This owner remains a pure leaf in the
+functional runtime union; the historical corrective entries below retain
+their dated declarations.
 `captureWatchdogRuntimeConfig` owns the whole constructor/run-context
 validation and derivation: the captured ordinary config (`phase`,
 `runId`, `commonIdentitySha256`, `workspace`, `manifestPath`,
@@ -2164,7 +2167,8 @@ workspace/driver/context values are copied and frozen while genuine
 capability refs pass through. It returns `{config, capabilities}` —
 `capabilities` holds the same `protocol`, `monitor`, `footprint`,
 `recorder`, `cleanup`, `clock`, `spawnImpl`, `runInternalSelfTest` and
-`pgnEvidence` refs. `createWatchdogOperationContext` owns the whole pure
+`pgnEvidence` refs. Config re-exports `createWatchdogOperationContext` from
+`watchdog-operation-context.mjs`, which owns the whole pure
 `ctx` literal assembly over the same grouped
 `{config, capabilities, state, timing, control}` context: every required
 field plus the private accessors `driverIdentity()` (the proven tuple
@@ -2238,6 +2242,25 @@ roster wording above is DATED, superseded by this EXACT3 (preserved
 history). The full contract is the spec's `#### Corrective 66 whole
 physical-observer and awaiter owner binding (declared before use)`.
 
+### watchdog-operation-context.mjs
+
+The Split B pure leaf exports only
+`createWatchdogOperationContext({config,capabilities,state,timing,control})`.
+It owns the complete unchanged context group formerly in Config, including
+all original accessors/callbacks and frozen return shape. It forwards the same
+`monitor`, `clock`, `lifetime.retainActual`, derived `io`, opaque
+`driverActualScope`, state/timing/control references and `finalIntegrity`.
+The original `startFinalIntegrity` callback still rejects overlapping tasks,
+issues actual work through the same registrar and clears the same state slot
+on settlement. Construction only assembles references and callbacks.
+
+Its only imports are `copyDeep` from protocol values, `reportStoppedFault`
+from lifetime and `issueActual` from artifact files. The local pure error
+factory preserves `watchdog-config ${code}: ${detail}` and `.code`. It has no
+Config import, additional API, V3 scope, owner, latch, timer, proof or writer.
+Config re-exports the factory and Operations re-exports it from Config, so
+existing callers keep the same API and function identity.
+
 ### watchdog-runtime.mjs
 
 `runWatchdogLifecycle(context)` is the private lifecycle export under
@@ -2254,8 +2277,9 @@ armed AT RUN ENTRY before any bootstrap await, AbortSignal wiring with
 listener removal at settlement (a pre-aborted context latches the real
 parent reason and launches no driver or collector), records/operations
 composition (the `ctx` literal assembled once by
-`createWatchdogOperationContext` in watchdog-operations.mjs — this
-owner no longer carries a duplicate literal), the ordered
+`createWatchdogOperationContext` through watchdog-operations.mjs and Config
+from `watchdog-operation-context.mjs`, the whole literal owner; runtime
+carries no duplicate literal), the ordered
 footprint -> manifest -> monitor -> running -> fork -> hello ->
 registerRoot -> start bootstrap whose every awaited step is stop-aware
 (raced against `control.wake` under its own bound) and rechecked before
@@ -2446,7 +2470,8 @@ and awaiter owner binding (declared before use)`.
 
 `createWatchdogOperationContext` is re-exported through this owner from
 watchdog-config.mjs so the lifecycle's existing import shape is
-preserved; the whole `ctx` literal assembly lives there (the grouped
+preserved; Config re-exports from `watchdog-operation-context.mjs`, where
+the whole `ctx` literal assembly lives (the grouped
 context fields of decision 15 plus the operation accessors
 `driverIdentity()` — the proven tuple retained by
 bootstrap `registerRoot` — and `operationDeadline()` — the currently
@@ -12623,15 +12648,15 @@ Neither this staged TEST nor source/docs constitute a runtime phase receipt.
 
 ## Task18 Stage B: current resource schema and roster contracts (2026-11-11)
 
-The current authored Split A roster is128, preserving the exact original127
+At the historical Task18 source-ready checkpoint, the Split A roster was128, preserving the exact original127
 prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
 The schema/primitive group is moved whole with original V2 validation; public
 validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
 fixture, scope, graph or operator is activated. The compat leaf replaces the
 archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
-Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
-actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
-publication is claimed. All project execution remains Root-owned.
+Task20 runtime135/TEST96 were approved future work at that checkpoint. The
+following dated Task18 gate update records its later covering result. The
+Task19 section below records the current source-ready state.
 
 Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
 exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
@@ -12671,7 +12696,7 @@ files. `snapshots.test.mjs` retains all its other cases. The private-FS owner
 asserts128 and scans all current runtime module owners for async FS defaults.
 No test/import result is claimed from these authored checks.
 
-Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+Historical Task18 gate update before commit (2026-11-11): Root's complete covering gate passed100/100,
 zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
 wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
 review is Approved with zero Critical/Important/Minor findings. Source remains
@@ -12679,3 +12704,44 @@ the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
 final documentation audit and separate green-commit release remain pending.
 Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
 is claimed. Audit: E20/root-task18-covering-audit.json.
+
+## Task19 Split B: context extraction source ready (2026-11-11)
+
+Task18 Split A is green-reviewed and locally committed at
+`c1ef53d6e05aa2cdb31aa7bc529e8b8fe2cbd7c5`. Its Root covering gate passed
+100/100; those results cover Split A only. Current authored Split B has129
+functional inputs: the exact original128 prefix followed only by
+`train/scripts/browser_eval/watchdog-operation-context.mjs`. The same90 TEST
+owners remain. Root's complete16-owner covering gate passed102/102, zero
+fail/skip/cancel, natural exit0 in9.105876124929637s. All595 before/after/current
+pins were exact; actual wait, BOTH EOF/raw/pipe and journal closure were
+verified, with stderr0. Audit: E20/root-task19-covering-audit.json. Fresh scoped
+Sol Max spec and quality reviews are Approved, zero Critical/Important/Minor
+findings. Final Root code-to-document audit and separate local green-commit
+release remain pending. Task19 stays IN PROGRESS; no commit, publication,
+V3 activation or phase result is claimed here.
+
+The new pure leaf owns the whole unchanged
+`createWatchdogOperationContext({config,capabilities,state,timing,control})`
+group. Its body and comments move byte for byte. The exact grouped references,
+frozen return fields, capability identity and error text/code are preserved.
+Config retains its named re-export; Operations retains its existing Config
+re-export. Config still owns the unchanged whole capture and awaiter groups.
+The new leaf imports only the existing protocol-value, lifetime and actual-IO
+helpers; its local pure error factory preserves the original Config prefix.
+There is no Config back-import or added authority. Private V3 scope forwarding
+waits for the later real implementation.
+
+Compat now asserts129 with the exact schema/context suffix, retaining every
+original prefix/hash/membership/existence/uniqueness/frozen/import/exclusion
+check. Private-FS asserts129 and scans the full current runtime closure. No
+TEST leaf, fixture, policy, operator, Python, model, science or limit changes.
+Task20's135 runtime/96 TEST transition remains prospective. Original failed
+evidence and the archived recognition TEST remain unchanged and ineligible.
+
+Root alone runs the complete affected watchdog/config/operations/lifecycle,
+terminal, compat and private-FS owners. The implementer has performed static
+reads, edits, byte comparisons and Git inspection only. Source-ready evidence
+is E20/task-19-source-ready-report.md and E20/task-19-source-ready-pins.json;
+E20 is the existing `5415eb97-ed40-4c92-8633-01764e186014` evidence directory.
+The experiment index and existing ledger remain the current status owners.

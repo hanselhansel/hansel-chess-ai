@@ -712,15 +712,15 @@ imports, Native, browser/model, phase, commit or publication are claimed here.
 
 ## Task18 Stage B: authored capacity split (2026-11-11)
 
-The current authored Split A roster is128, preserving the exact original127
+At the historical Task18 source-ready checkpoint, the Split A roster was128, preserving the exact original127
 prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
 The schema/primitive group is moved whole with original V2 validation; public
 validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
 fixture, scope, graph or operator is activated. The compat leaf replaces the
 archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
-Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
-actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
-publication is claimed. All project execution remains Root-owned.
+Task20 runtime135/TEST96 were approved future work at that checkpoint. The
+following dated Task18 gate update records its later covering result. The
+Task19 section below records the current source-ready state.
 
 Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
 exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
@@ -732,7 +732,7 @@ exclusively in E20/recognition-test-original.mjs and removed from the runtime
 TEST directory until identical restoration with Task20. E20 is
 `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
 
-Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+Historical Task18 gate update before commit (2026-11-11): Root's complete covering gate passed100/100,
 zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
 wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
 review is Approved with zero Critical/Important/Minor findings. Source remains
@@ -740,3 +740,44 @@ the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
 final documentation audit and separate green-commit release remain pending.
 Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
 is claimed. Audit: E20/root-task18-covering-audit.json.
+
+## Task19 Split B: context extraction source ready (2026-11-11)
+
+Task18 Split A is green-reviewed and locally committed at
+`c1ef53d6e05aa2cdb31aa7bc529e8b8fe2cbd7c5`. Its Root covering gate passed
+100/100; those results cover Split A only. Current authored Split B has129
+functional inputs: the exact original128 prefix followed only by
+`train/scripts/browser_eval/watchdog-operation-context.mjs`. The same90 TEST
+owners remain. Root's complete16-owner covering gate passed102/102, zero
+fail/skip/cancel, natural exit0 in9.105876124929637s. All595 before/after/current
+pins were exact; actual wait, BOTH EOF/raw/pipe and journal closure were
+verified, with stderr0. Audit: E20/root-task19-covering-audit.json. Fresh scoped
+Sol Max spec and quality reviews are Approved, zero Critical/Important/Minor
+findings. Final Root code-to-document audit and separate local green-commit
+release remain pending. Task19 stays IN PROGRESS; no commit, publication,
+V3 activation or phase result is claimed here.
+
+The new pure leaf owns the whole unchanged
+`createWatchdogOperationContext({config,capabilities,state,timing,control})`
+group. Its body and comments move byte for byte. The exact grouped references,
+frozen return fields, capability identity and error text/code are preserved.
+Config retains its named re-export; Operations retains its existing Config
+re-export. Config still owns the unchanged whole capture and awaiter groups.
+The new leaf imports only the existing protocol-value, lifetime and actual-IO
+helpers; its local pure error factory preserves the original Config prefix.
+There is no Config back-import or added authority. Private V3 scope forwarding
+waits for the later real implementation.
+
+Compat now asserts129 with the exact schema/context suffix, retaining every
+original prefix/hash/membership/existence/uniqueness/frozen/import/exclusion
+check. Private-FS asserts129 and scans the full current runtime closure. No
+TEST leaf, fixture, policy, operator, Python, model, science or limit changes.
+Task20's135 runtime/96 TEST transition remains prospective. Original failed
+evidence and the archived recognition TEST remain unchanged and ineligible.
+
+Root alone runs the complete affected watchdog/config/operations/lifecycle,
+terminal, compat and private-FS owners. The implementer has performed static
+reads, edits, byte comparisons and Git inspection only. Source-ready evidence
+is E20/task-19-source-ready-report.md and E20/task-19-source-ready-pins.json;
+E20 is the existing `5415eb97-ed40-4c92-8633-01764e186014` evidence directory.
+The experiment index and existing ledger remain the current status owners.

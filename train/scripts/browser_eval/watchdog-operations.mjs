@@ -1,8 +1,8 @@
 // watchdog-operations.mjs owns validated
 // driver dispatch and the fixed-first preflight runInternalSelfTest handshake
 // over the SAME shared run context supplied by watchdog.mjs.
-// createWatchdogOperationContext now lives in watchdog-config.mjs under the
-// final readable-owners decision (19) and is re-exported here so the
+// createWatchdogOperationContext lives in watchdog-operation-context.mjs.
+// watchdog-config.mjs preserves its named re-export, re-exported here so the
 // lifecycle keeps the original private import API. Dispatch semantics are
 // unchanged: hello/
 // heartbeat/end/finish/closed update lifecycle state synchronously; register/
