@@ -1,23 +1,15 @@
-// Owned completion-temp capability and publication owner. A module
-// private WeakMap binds each frozen opaque PreparedCompletion to its
-// pinned entry: store-owner token, normalized root/phase, fixed
-// canonical <phase>/completion.json target, exclusive original temp
-// path, {dev,ino} file identity captured from the adopted writer,
-// intended bytes/hash, the same io registrar, the {writer,failedReader}
-// resource slots and transaction stage. A strong owner+phase map
-// retains every capability for pure recovery — including an
-// uncontained attempt whose thrown primary error is nonextensible —
-// independently of WeakMap key reachability. Raw publish returns
-// internally only after the real rename/dirsync — never after store
-// accounting, readback or seal — and failed containment preserves
-// actual bytes in the EXACT original temp with required sync and fresh
-// canonical absence proof through the private observation leaf, which
-// also performs the bounded prepared readback under the SAME owned
-// slots. No caller io/path/ref override, constructor, plain object
-// import, setter, status, queue or safe-exit authority exists here.
-// Imports only artifact-files leaves, its observation leaf and the
-// canonical hash utility — never receipt-verification or the Store.
+// Owned completion capability. Private tokens bind store owner, normalized
+// root/phase, fixed canonical target, exclusive temp, pinned file identity,
+// intended bytes/hash, identical IO, resource slots and transaction stage.
+// Strong owner/phase recovery retains failed attempts independently of GC.
+// Publication requires actual rename/dirsync; Store accounting, full readback
+// and seal remain authoritative. Failed containment preserves the original
+// owned temp, actual close, directory sync and canonical absence through the
+// same observation leaf. Prepared readback borrows that leaf and original
+// optional context. No caller path/IO/ref override or proof authority exists.
+// Imports remain leaves, never receipt-verification or Store.
 
+import { assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
 import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
 import { sha256Bytes } from "./canonical-json.mjs";
@@ -237,9 +229,16 @@ export async function prepareCompletionFile({ storeOwner, root, phaseDirectory, 
 // temp must still be exactly the prepared file, then real rename and
 // required directory sync. The stage flips the instant the rename
 // lands so a sync failure is contained through the published path,
-// never double-renamed. The internal ref is settled by rename/dirsync,
-// not by accounting, readback or seal.
-export async function publishCompletionFile(prepared, storeOwner) {
+// never double-renamed. The internal ref requires actual rename/dirsync.
+export async function publishCompletionFile(prepared, storeOwner, verificationContext) {
+  const guard = () => {
+    if (verificationContext) {
+      const budget = originalContextBudget(verificationContext);
+      assertBudgetHandle(budget);
+      budget.assertLive("V3 completion publication");
+    }
+  };
+  guard();
   const entry = entryOf(prepared);
   ownedBy(entry, storeOwner);
   if (entry.stage !== "prepared") fail("STORE_STATE", `publish ${entry.stage}`);
@@ -251,6 +250,7 @@ export async function publishCompletionFile(prepared, storeOwner) {
   const retain = io.retainActual;
 
   const canonicalStat = await lstatOrNull(retain, entry.canonicalAbs);
+  guard();
   if (canonicalStat !== null) fail("STORE_EXISTS", entry.canonicalRel);
 
   const tempStat = await issueActual(retain, () =>
@@ -260,13 +260,16 @@ export async function publishCompletionFile(prepared, storeOwner) {
     fail("STORE_STATE", "prepared temp replaced");
   }
 
+  guard();
   await issueActual(retain, () => fsp.rename(entry.tempAbs, entry.canonicalAbs));
   entry.stage = "published";
   await dirSync(entry.phaseAbs, io);
+  guard();
 
   const published = await issueActual(retain, () =>
     fsp.lstat(entry.canonicalAbs, { bigint: true }),
   );
+  guard();
   if (!isSameFile(published, entry.fileId)) {
     fail("ARTIFACT_INTEGRITY", "published identity");
   }
@@ -363,7 +366,7 @@ export function recoverPreparedCompletion(storeOwner, phaseDirectory) {
 // ref snapshots; canonicalRef is the projected fixed target derived
 // from ACTUAL verified temp bytes, never a published receipt or a
 // verification token.
-export async function readPreparedCompletion(prepared) {
+export async function readPreparedCompletion(prepared, verificationContext) {
   const entry = entryOf(prepared);
   if (entry.stage !== "prepared") fail("STORE_STATE", `read ${entry.stage}`);
   // A latched primary fault sticks: rethrow the exact first retained
@@ -381,6 +384,7 @@ export async function readPreparedCompletion(prepared) {
       sha256: entry.sha256,
       io: entry.io,
       ownedFiles: entry.ownedFiles,
+      ...(verificationContext === undefined ? {} : { verificationContext }),
     });
   } catch (error) {
     retainPrimary(entry, error);

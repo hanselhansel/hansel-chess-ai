@@ -91,6 +91,8 @@ def check_ref(root, ref, readonly=False):
 
 
 V1_PROTOCOL = "train/fixtures/browser-protocol.json"
+V3_PROTOCOL = "train/fixtures/browser-protocol-v3.json"
+V3_POLICY = {"policyId": "tinyaz-separate-verdicts-v3", "recordSchemaVersion": 2, "softPhases": ["preflight", "compare"]}
 V2_PROTOCOL = "train/fixtures/browser-protocol-v2.json"
 V2_POLICY = {"policyId": "tinyaz-separate-verdicts-v2", "recordSchemaVersion": 2, "softPhase": "compare"}
 
@@ -100,7 +102,15 @@ def validate_selection(workspace, protocol_path, protocol):
     version = workspace["schemaVersion"]
     if type(version) is not int or version not in (1, 2):
         fail("workspace version")
-    expected_path = V1_PROTOCOL if version == 1 else V2_PROTOCOL
+    selected = identity.get("evaluationPolicy")
+    if version == 1:
+        expected_policy, expected_path = None, V1_PROTOCOL
+    elif selected == V2_POLICY:
+        expected_policy, expected_path = V2_POLICY, V2_PROTOCOL
+    elif selected == V3_POLICY:
+        expected_policy, expected_path = V3_POLICY, V3_PROTOCOL
+    else:
+        fail("exact v2 policy")
     if protocol_path != expected_path or identity["fixtures"]["protocol"]["path"] != expected_path:
         fail("requested protocol binding")
     if type(protocol.get("schemaVersion")) is not int or protocol["schemaVersion"] != version:
@@ -110,7 +120,7 @@ def validate_selection(workspace, protocol_path, protocol):
         expected_keys.add("evaluationPolicy")
         for value in (identity, protocol):
             policy = value.get("evaluationPolicy")
-            if policy != V2_POLICY or type(policy.get("recordSchemaVersion")) is not int:
+            if policy != expected_policy or type(policy.get("recordSchemaVersion")) is not int:
                 fail("exact v2 policy")
     elif "evaluationPolicy" in identity or "evaluationPolicy" in protocol:
         fail("v1 policy")
@@ -124,7 +134,8 @@ def validate_manifest_selection(workspace, manifest, version):
         fail("manifest version")
     if version == 2:
         policy = manifest.get("evaluationPolicy")
-        if policy != V2_POLICY or type(policy.get("recordSchemaVersion")) is not int:
+        expected_policy = workspace["commonIdentity"].get("evaluationPolicy")
+        if expected_policy not in (V2_POLICY, V3_POLICY) or policy != expected_policy or type(policy.get("recordSchemaVersion")) is not int:
             fail("manifest policy")
     elif "evaluationPolicy" in manifest:
         fail("v1 manifest policy")
@@ -156,7 +167,7 @@ def main(argv=None):
     workspace = args.out
     if not workspace.is_absolute() or workspace.resolve() != workspace:
         fail("absolute canonical workspace")
-    selected = {value: name for name in (V1_PROTOCOL, V2_PROTOCOL)
+    selected = {value: name for name in (V1_PROTOCOL, V2_PROTOCOL, V3_PROTOCOL)
                 for value in (name, str(repo / name))}
     if args.protocol not in selected:
         fail("fixed protocol")

@@ -6,12 +6,12 @@ import { issueActual } from "./artifact-files.mjs";
 
 const L = FIXED_LIMITS;
 
-export function armResourcePolling({ capabilities, state, timing, control, makeError: fail, evaluationPolicy = null, phase = null }) {
+export function armResourcePolling({ capabilities, state, timing, control, makeError: fail, evaluationPolicy = null, phase = null, runId = null }) {
   const { clock, monitor, footprint, io } = capabilities;
   if (evaluationPolicy !== null && typeof clock.nowMonoNs !== "function")
     throw fail("ACCOUNTING_UNAVAILABLE", "v2 clock nowMonoNs");
   const checks = createWatchdogResourceChecks({ monitor, state, ...control, makeError: fail,
-    evaluationPolicy, phase, nowNs: () => clock.nowMonoNs() });
+    evaluationPolicy, phase, runId, preflightQualityReader: capabilities.preflightQualityScope?.reader ?? null, nowNs: () => clock.nowMonoNs() });
   // The resource interval's Native check never waits on footprint IO.
   // Every bounded observation is retained through the existing
   // "resource" event lane with the ACTUAL sample's own atMonoNs,

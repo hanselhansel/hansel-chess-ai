@@ -14,7 +14,8 @@ const projectOutcome = (outcome) => {
   const { schemaVersion, policyId, status, exitCode, stopReason, strengthVerdict,
     resourceVerdict, closureResourceVerdict, completionRef } = outcome;
   return { schemaVersion, policyId, status, exitCode, stopReason, strengthVerdict,
-    resourceVerdict, closureResourceVerdict, completionRef };
+    resourceVerdict, closureResourceVerdict, completionRef,
+    ...(policyId === "tinyaz-separate-verdicts-v3" ? { scientificReadinessVerdict: outcome.scientificReadinessVerdict } : {}) };
 };
 
 // Passive post-return diagnostics only. No timer, wait, proof or status work.

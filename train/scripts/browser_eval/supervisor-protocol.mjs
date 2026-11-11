@@ -7,7 +7,7 @@
 // collector-protocol.mjs against that shared authority. No timers, clocks
 // or process launch here; OS facts remain native duties.
 
-import { assertPolicyBinding } from "./evaluation-policy.mjs";
+import { assertPolicyBinding, protocolPathForPolicy } from "./evaluation-policy.mjs";
 import { FIXED_LIMITS } from "./record-schema.mjs";
 import {
   base,
@@ -32,7 +32,7 @@ export const RESOURCE_LIMITS = FIXED_LIMITS.resources;
 export function createProtocolValidator({ runId, recordSchemaVersion = 1, evaluationPolicy = null }) {
   if (!strNE(runId)) fail("runId");
   assertPolicyBinding({ schemaVersion: recordSchemaVersion, evaluationPolicy,
-    protocolPath: recordSchemaVersion === 2 ? "train/fixtures/browser-protocol-v2.json" : "train/fixtures/browser-protocol.json" });
+    protocolPath: protocolPathForPolicy(evaluationPolicy) });
 
   // Run-global registries: every request/operation/record/artifact/query ID
   // claimed by any channel lives in one map, so cross-channel reuse fails.

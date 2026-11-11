@@ -52,3 +52,13 @@ Rules-only validation requires distinct nonterminal White-to-move end
 positions. Compare uses both color-swapped games in each pair before the
 next pair. Preflight consumes its separate A/A fixture and no final opening.
 No browser, model or strength game runs while validating these JSON inputs.
+
+## browser-protocol-v3.json (Task20, 2026-11-11)
+
+The new data-only protocol keeps experimental schemaVersion2 and the exact
+V2 conventions, limits, required checks, five requests per arm, A/A FEN and
+20-pair/40-game schedule. Only evaluationPolicy changes to the exact closed
+V3 literal with ordered softPhases `["preflight","compare"]`. Selection is
+explicit by exact path/policy/layout, never fixture inventory or schema2 alone.
+V1/V2 fixture bytes remain unchanged. The file is a method input, not proof
+of readiness, monitoring coverage, an executed phase or a strength result.

@@ -232,6 +232,8 @@ export const driverD2S = (ctx, st, message) => {
         typeof message.analysisEligible === "boolean",
       "finish fields",
     );
+    if (ctx.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3")
+      need(st, !["scientificReadinessVerdict", "preflightEvidence"].some((k) => Object.hasOwn(message.summary, k)), "reserved V3 science");
     // A passed finish can never recover a run after a sticky fault.
     need(st, !(ctx.failed && message.requestedStatus === "passed"), "passed after fault");
     st.finished = true;

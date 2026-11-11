@@ -34,9 +34,10 @@ import {
   createWatchdogLifetime,
 } from "./watchdog-lifetime.mjs";
 import { bindProcessHorizon } from "./process-horizon.mjs";
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { protocolPathForPolicy, isPeriodicQualityPhase } from "./evaluation-policy.mjs";
 import { createResourceQuality, assertResourceEvidence } from "./resource-quality.mjs";
 import { eqLiteral, freezeDeep } from "./schema-primitives.mjs";
+import { allowsPreflightPeriodic, closePreflightPeriodic } from "./process-preflight-quality.mjs";
 import { RECORDED_PHASES } from "./schema-constants.mjs";
 import { createProcessAccounting } from "./process-accounting.mjs";
 import { createBoundedQueue } from "./process-budget.mjs";
@@ -84,6 +85,7 @@ export function createProcessMonitor({
   expectedBackendIdentity = undefined,
   evaluationPolicy = null,
   phase = null,
+  preflightQualityReader = null,
 }) {
   if (
     !strNE(runId) ||
@@ -108,10 +110,14 @@ export function createProcessMonitor({
     throw acct("monitor options");
   }
   if (evaluationPolicy !== null) {
-    eqLiteral(evaluationPolicy, V2_POLICY, "monitor evaluationPolicy");
+    protocolPathForPolicy(evaluationPolicy);
     if (!RECORDED_PHASES.includes(phase) || phase === "watchdog-selftest") throw acct("monitor phase");
   } else if (phase !== null) throw acct("monitor policy/phase");
-  const quality = evaluationPolicy === null ? null : createResourceQuality({ runId, phase });
+  if (preflightQualityReader !== null) {
+    if (phase !== "preflight" || evaluationPolicy?.policyId !== "tinyaz-separate-verdicts-v3") throw acct("scope phase");
+    allowsPreflightPeriodic(preflightQualityReader, runId);
+  }
+  const quality = evaluationPolicy === null ? null : createResourceQuality({ runId, phase, evaluationPolicy });
   // One ledger and immutable per-handle diagnostic end. Neither grants IO.
   const cycleMetadata = new WeakMap();
   const lifetimeOwner =
@@ -226,7 +232,8 @@ export function createProcessMonitor({
   const { proofs, observation, runCycle } = createProcessAccounting({
     runId, pythonExecutable, protocol, ownership, send, enqueue, nextRid,
     requireHealthy, lsofQueries: () => state.lsof, ownUid: () => state.ownUid,
-    clock, quality, softCompare: quality !== null && phase === "compare",
+    clock, quality, softCompare: () => isPeriodicQualityPhase(evaluationPolicy, phase) &&
+      (phase === "compare" || (preflightQualityReader !== null && allowsPreflightPeriodic(preflightQualityReader, runId))),
     state: () => ({ lastObservation: lastObs, lastValidNs, stickyFault,
       stopping: state.stopping, pending: state.tickQueued,
       sampling: state.timer !== null, nowMonoNs: clock.nowMonoNs() }),
@@ -235,6 +242,7 @@ export function createProcessMonitor({
   });
 
   const authority = {
+    closePreflightQuality: () => { if (preflightQualityReader !== null) closePreflightPeriodic(preflightQualityReader, runId); },
     op,
     ownOperation,
     enqueue,

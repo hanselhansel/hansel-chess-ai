@@ -2,7 +2,7 @@
 // schema primitives/constants and pure policy binding. record-schema.mjs
 // re-exports the two public entrypoints unchanged.
 
-import { assertPolicyBinding } from "./evaluation-policy.mjs";
+import { assertPolicyBinding, protocolPathForPolicy } from "./evaluation-policy.mjs";
 
 import {
   arr,
@@ -290,7 +290,7 @@ export function assertCommonIdentity(value) {
   for (const key of Object.keys(FIXTURE_PATHS)) {
     shape(value.fixtures[key], REF_SPEC, `${n}.fixtures.${key}`);
     if (value.fixtures[key].path !== (key === "protocol" && version === 2
-      ? "train/fixtures/browser-protocol-v2.json" : FIXTURE_PATHS[key])) {
+      ? protocolPathForPolicy(value.evaluationPolicy) : FIXTURE_PATHS[key])) {
       schemaFail("SCHEMA_LITERAL", `${n}.fixtures.${key}.path`);
     }
   }

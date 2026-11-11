@@ -33,6 +33,7 @@ export function createWatchdogOperationContext({
     commonIdentity: config.workspace.commonIdentity,
     workspaceId: config.workspace.workspaceId,
     monitor,
+    preflightQualityScope: capabilities.preflightQualityScope,
     clock,
     // The SAME owner registrar, the EXACT derived io object and the ONE
     // opaque driver actual scope forward unchanged — the operation owner
@@ -86,4 +87,3 @@ export function createWatchdogOperationContext({
     },
   });
 }
-

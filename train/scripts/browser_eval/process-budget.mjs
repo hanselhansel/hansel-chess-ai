@@ -1,13 +1,13 @@
-// process-budget.mjs is the leaf owner of the original
-// absolute-deadline helpers shared by the monitor, proofs, transport,
-// lsof and backend: trusted {deadlineMonoMs} option validation and the
-// capture-before-enqueue horizon clamp, the ONE narrow-only mutable
-// BudgetHandle carrying that horizon through a whole operation, its
-// subscription/sleep/poll wait lifecycles, and the serialized bounded
-// queue. It keeps no registry, starts no process, performs no native
-// call or import-side IO, owns no fallback clock/duration/authority,
-// and never extends a captured horizon: a later narrower deadline may
-// shrink a bound but an admitted request's horizon never grows.
+// Original min-only operation budgets, waits and one serialized bounded queue.
+export { originalContextBudget } from "./protocol-values.mjs";
+const HANDLES = new WeakMap();
+export const assertBudgetHandle = (handle) => {
+  const originals = HANDLES.get(handle);
+  if (!originals || Object.keys(originals).some((key) => {
+    const own = Object.getOwnPropertyDescriptor(handle, key);
+    return !own || !Object.hasOwn(own, "value") || own.value !== originals[key];
+  })) throw new TypeError("genuine original BudgetHandle required");
+};
 import { isObj } from "./protocol-values.mjs";
 
 const acct = (detail) => {
@@ -16,7 +16,6 @@ const acct = (detail) => {
   return e;
 };
 
-// One captured absolute horizon, computed BEFORE any enqueue:
 // min(nowMonoMs + fixed operation ceiling, constructorDeadlineMs,
 // laterDeadlineMs, callOptions.deadlineMonoMs). Every bound that is
 // present must be a finite absolute monotonic millisecond value in the
@@ -122,7 +121,7 @@ export function createBudgetHandle({ deadlineMonoMs, clock, nowMonoMs }) {
     timer = clock.setTimeout(fire, left);
   };
   arm();
-  return {
+  const handle = {
     // The current effective absolute bound in the shared hrtime-ms
     // domain; it only ever decreases under narrow().
     deadlineMonoMs: () => bound,
@@ -176,6 +175,8 @@ export function createBudgetHandle({ deadlineMonoMs, clock, nowMonoMs }) {
       waiters.clear();
     },
   };
+  HANDLES.set(handle, { ...handle });
+  return handle;
 }
 
 // Subscribe an already-issued settlement promise to a handle's expiry,

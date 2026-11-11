@@ -305,7 +305,7 @@ export function createStoreCompletionMethods(completionContext) {
           prepared,
           preparedVerification,
         );
-        const read = await requiredIo(() => readPreparedCompletion(prepared));
+        const read = await requiredIo(() => readPreparedCompletion(prepared, association.verificationContext));
         if (
           read.workspaceRoot !== association.workspaceRoot ||
           read.workspaceRoot !== root ||
@@ -333,7 +333,7 @@ export function createStoreCompletionMethods(completionContext) {
           }
         }
         const completionRef = await requiredIo(() =>
-          publishCompletionFile(prepared, storeOwner),
+          publishCompletionFile(prepared, storeOwner, association.verificationContext),
         );
         await postAccounting();
         const verified = await requiredIo(() =>
@@ -345,6 +345,7 @@ export function createStoreCompletionMethods(completionContext) {
             },
             new Map(),
             io,
+            association.verificationContext,
           ),
         );
         for (const claim of entry.claims) activePaths.delete(claim);

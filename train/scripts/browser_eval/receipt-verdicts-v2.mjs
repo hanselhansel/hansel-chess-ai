@@ -2,13 +2,15 @@
 // cannot read files, mint a prepared token, publish or prove actual closure.
 import { assertArtifactRef, eqLiteral, exactOnly, schemaFail } from "./schema-primitives.mjs";
 import { assertRecordV2 } from "./record-schema-v2.mjs";
+import { deriveVerdictsV3 } from "./verdicts-v3.mjs";
 import { deriveVerdicts } from "./verdicts-v2.mjs";
 import { assertQualityCheckpoint, assertResourceEvidence } from "./resource-quality.mjs";
 
 const fail = (detail) => schemaFail("SCHEMA_COHERENCE", detail);
 const bundle = (v) =>
   Object.fromEntries(
-    ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "status", "exitCode"].map((k) => [k, v[k]]),
+    ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "status", "exitCode",
+      ...(v.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" ? ["scientificReadinessVerdict"] : [])].map((k) => [k, v[k]]),
   );
 const counterFields = ["completedCycles", "timelyCycles", "gapCount"];
 const stamp = (s) => (s === null ? -1n : BigInt(s));
@@ -38,7 +40,9 @@ const extendsCheckpoint = (before, after) => {
     fail("fabricated completion clocks");
 };
 
-const extendsPeaks = (before, after, beforePeaks, afterPeaks, lateObservedCap = false) => {
+const hardObservedFinal = (e) => e.policyId === "tinyaz-separate-verdicts-v3" &&
+  e.closureKind === "monitor-stop" && e.hardReasons.includes("NATIVE");
+const extendsPeaks = (before, after, beforePeaks, afterPeaks, lateObservedCap = false, hardObserved = false) => {
   for (const key of ["peakRssBytes", "observedPeakRssBytes"])
     if (afterPeaks[key] < beforePeaks[key]) fail("lost resource peak");
   if (beforePeaks.rssLimitExceeded && !afterPeaks.rssLimitExceeded) fail("lost resource cap");
@@ -47,7 +51,7 @@ const extendsPeaks = (before, after, beforePeaks, afterPeaks, lateObservedCap = 
   if (afterPeaks.observedPeakRssBytes > beforePeaks.observedPeakRssBytes &&
     after.completedCycles === before.completedCycles && !(lateObservedCap &&
       after.lateDropCount > before.lateDropCount && afterPeaks.rssLimitExceeded &&
-      afterPeaks.observedPeakRssBytes > 4294967296)) fail("observed peak without completion");
+      afterPeaks.observedPeakRssBytes > 4294967296) && !hardObserved) fail("observed peak without completion");
 };
 
 // A retained episode can contribute only its duration reached by capture.
@@ -153,7 +157,7 @@ export function verifyVerdictClosure(input) {
   if (previous) {
     const finalCheckpoint = { ...e, lateDropCount: e.lateDrops.count };
     extendsCheckpoint(previous, finalCheckpoint);
-    extendsPeaks(previous, finalCheckpoint, previousPayload, e, true);
+    extendsPeaks(previous, finalCheckpoint, previousPayload, e, true, hardObservedFinal(e));
   }
   const parentRunIds = completion.prerequisites.map((parent) => parent.runId).sort();
   const resourceRunIds = facts.prerequisiteResources
@@ -163,7 +167,8 @@ export function verifyVerdictClosure(input) {
     })
     .sort();
   eqLiteral(resourceRunIds, parentRunIds, "parent resource coverage");
-  const reduced = deriveVerdicts(facts);
+  const reduced = facts.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3"
+    ? deriveVerdictsV3(facts) : deriveVerdicts(facts);
   eqLiteral(bundle(final), reduced, "final reducer equality");
   eqLiteral(bundle(completion), reduced, "completion reducer equality");
   return reduced;
@@ -181,5 +186,5 @@ export function verifyResourcePrefixExtension(prefix, parent) {
   extendsCheckpoint({ ...prefix, lateDropCount: prefix.lateDrops.count },
     { ...parent, lateDropCount: parent.lateDrops.count });
   extendsPeaks({ ...prefix, lateDropCount: prefix.lateDrops.count },
-    { ...parent, lateDropCount: parent.lateDrops.count }, prefix, parent, true);
+    { ...parent, lateDropCount: parent.lateDrops.count }, prefix, parent, true, hardObservedFinal(parent));
 }

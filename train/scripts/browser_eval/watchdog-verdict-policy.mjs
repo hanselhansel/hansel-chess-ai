@@ -1,7 +1,8 @@
 // Whole original sticky-RSS and finish-boundary projection/retention group.
 // No owned state, stop latch, clock, timer or ledger. Pure capture only.
 import { assertResourceEvidence, assertQualityCheckpoint } from "./resource-quality.mjs";
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { protocolPathForPolicy, isPeriodicQualityPhase } from "./evaluation-policy.mjs";
+import { allowsPreflightPeriodic } from "./process-preflight-quality.mjs";
 import { eqLiteral } from "./schema-primitives.mjs";
 
 export function resourcePayload(mo, capturedNs) {
@@ -30,15 +31,21 @@ export function createWatchdogResourceChecks({
   evaluationPolicy = null,
   phase = null,
   nowNs = null,
+  runId = null,
+  preflightQualityReader = null,
 }) {
   const v2 = evaluationPolicy !== null;
-  if (v2) eqLiteral(evaluationPolicy, V2_POLICY, "watchdog resource policy");
+  if (v2) protocolPathForPolicy(evaluationPolicy);
+  const v3 = evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3";
+  if (v3 && (typeof runId !== "string" || !runId)) throw fail("ACCOUNTING_UNAVAILABLE", "V3 resource run binding");
   const readObservation = () => {
     const mo = monitor.lastObservation();
     if (!v2) return mo;
     if (!mo) throw fail("ACCOUNTING_UNAVAILABLE", "native observation missing");
     assertResourceEvidence(mo.resourceQuality);
     const q = mo.resourceQuality;
+    if (v3 && (q.runId !== runId || q.monitorRunId !== runId || q.policyId !== evaluationPolicy.policyId))
+      throw fail("ACCOUNTING_UNAVAILABLE", "V3 resource association");
     if (!Number.isSafeInteger(mo.rssBytes) || mo.rssBytes < 0 || !mo.snapshotComplete ||
       typeof mo.cycleTimely !== "boolean" || q.completedCycles < 1 ||
       mo.peakRssBytes !== q.peakRssBytes || mo.observedPeakRssBytes !== q.observedPeakRssBytes ||
@@ -48,7 +55,9 @@ export function createWatchdogResourceChecks({
     if (monitor.fault?.() !== null || q.hardReasons.length ||
       (q.coverageEndNs !== null && state.finishReq === null && state.stopReq === null))
       throw fail("ACCOUNTING_UNAVAILABLE", "native hard fault");
-    if (!mo.accountingValid && !(phase === "compare" && q.phase === "compare" && q.coverageLost))
+    if (!mo.accountingValid && !(isPeriodicQualityPhase(evaluationPolicy, phase) && q.phase === phase &&
+      q.policyId === evaluationPolicy.policyId && q.runId === q.monitorRunId && q.coverageLost &&
+      (phase === "compare" || preflightQualityReader !== null && allowsPreflightPeriodic(preflightQualityReader, runId))))
       throw fail("ACCOUNTING_UNAVAILABLE", "native current proof");
     return mo;
   };

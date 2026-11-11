@@ -28,7 +28,7 @@
 // facade -> methods -> wire -> driver-protocol + pure primitives.
 // Functional runtime input.
 
-import { assertPolicyBinding } from "./evaluation-policy.mjs";
+import { assertPolicyBinding, protocolPathForPolicy } from "./evaluation-policy.mjs";
 import {
   copyDeep,
   exactFields,
@@ -73,7 +73,7 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
   const manifestCopy = freezeDeep(copyDeep(manifest));
   const version = manifestCopy.schemaVersion ?? 1;
   assertPolicyBinding({ schemaVersion: version, evaluationPolicy: manifestCopy.evaluationPolicy ?? null,
-    protocolPath: version === 2 ? "train/fixtures/browser-protocol-v2.json" : "train/fixtures/browser-protocol.json" });
+    protocolPath: protocolPathForPolicy(manifestCopy.evaluationPolicy ?? null) });
   if (version === 1 && Object.hasOwn(manifestCopy, "evaluationPolicy")) throw bridgeError("v1 policy");
   if (manifestCopy.runId !== runId) throw bridgeError("manifest runId");
   if (!phases.includes(manifestCopy.phase)) throw bridgeError("manifest phase");
@@ -170,7 +170,8 @@ export function createDriverCapabilities({ runId, manifest, transport, signal })
     }
     if (!isObj(c.summary)) throw bridgeError("summary");
     if (version === 2 && ["strengthVerdict", "resourceVerdict", "closureResourceVerdict",
-      "resourceEvidence", "qualityCheckpoint", "supervisorOutcome"].some(key => Object.hasOwn(c.summary, key))) {
+      "resourceEvidence", "qualityCheckpoint", "supervisorOutcome",
+      ...(manifestCopy.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" ? ["scientificReadinessVerdict", "preflightEvidence"] : [])].some(key => Object.hasOwn(c.summary, key))) {
       throw bridgeError("supervisor summary namespace");
     }
     if (typeof c.analysisEligible !== "boolean") throw bridgeError("analysisEligible");

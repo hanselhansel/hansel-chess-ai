@@ -4,6 +4,7 @@
 // and the close -> evidence-path hash -> final -> completion order. Nothing
 // in this module is a second writer.
 
+import { compileFinalV3 } from "./record-finalization-v3.mjs";
 import { compileFinalV2 } from "./record-finalization-v2.mjs";
 import { assertCleanupProofV2 } from "./record-schema-v2.mjs";
 import { deriveFinalGameEvidence } from "./pgn-summary.mjs";
@@ -220,7 +221,8 @@ export function buildCompletion({ headFields, commonIdentitySha256, status, prer
     artifacts,
     expectedSelfTest,
     ...(headFields.schemaVersion === 2 ? Object.fromEntries(
-      ["evaluationPolicy", "strengthVerdict", "resourceVerdict", "closureResourceVerdict"]
+      ["evaluationPolicy", "strengthVerdict", "resourceVerdict", "closureResourceVerdict",
+        ...(final.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" ? ["scientificReadinessVerdict"] : [])]
         .map((key) => [key, final[key]])) : {}),
   };
   assertRecord("completion", completion);
@@ -269,7 +271,9 @@ export function buildFinalFromClosedFacts(input) {
   }
 
   if (headFields.schemaVersion === 2) {
-    return compileFinalV2({ ...facts, requiredChecks }).final;
+    const compile = facts.expectedIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3"
+      ? compileFinalV3 : compileFinalV2;
+    return compile({ ...facts, requiredChecks }).final;
   }
   const faults = Number.isSafeInteger(request.unplannedFaultCount)
     ? request.unplannedFaultCount

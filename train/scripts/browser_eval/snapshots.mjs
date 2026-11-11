@@ -107,7 +107,7 @@ export async function captureInputs(options, context) {
     path.join(context.repoRoot, FIXTURE_PATHS.protocol) ? FIXTURE_PATHS.protocol : serializable.protocolPath }));
   const producerSetup = ownSetup(setupFiles);
   if (!strNE(own.candidate) || own.candidate.length > 200 || !isAbs(own.workspaceRoot) ||
-    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json"].includes(own.protocolPath)) {
+    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json", "train/fixtures/browser-protocol-v3.json"].includes(own.protocolPath)) {
     throw fail("capture selection");
   }
   assertEnvironment(own.environment);

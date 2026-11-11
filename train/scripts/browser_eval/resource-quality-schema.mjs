@@ -10,7 +10,7 @@ import {
   sortedUnique,
 } from "./schema-primitives.mjs";
 import { RECORDED_PHASES } from "./schema-constants.mjs";
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { V2_POLICY, V3_POLICY } from "./evaluation-policy.mjs";
 
 const CAUSES = ["PERIODIC_COMPLETION_GAP", "PERIODIC_NATIVE_DURATION", "PERIODIC_OBSERVER_AGE"];
 const HARD =
@@ -106,7 +106,7 @@ export function assertQualityCheckpoint(v) {
 export function assertResourceEvidence(v) {
   bounded(v, 65536);
   exactOnly(v, EVIDENCE_FIELDS, "resourceEvidence");
-  if (v.schemaVersion !== 2 || v.policyId !== V2_POLICY.policyId) fail("resource policy");
+  if (v.schemaVersion !== 2 || ![V2_POLICY.policyId, V3_POLICY.policyId].includes(v.policyId)) fail("resource policy");
   for (const k of ["runId", "monitorRunId"]) if (!CHECK.strNE(v[k])) fail(k);
   oneOf(v.phase, RECORDED_PHASES, "resource phase");
   oneOf(v.closureKind, ["monitor-stop", "selftest-prefix"], "closureKind");
@@ -208,7 +208,10 @@ export function assertResourceEvidence(v) {
       if (v.completedCycles !== 0) fail("missing peak");
     } else nat(v[k]);
   }
-  if ((!v.coverageLost && v.peakRssBytes !== v.observedPeakRssBytes &&
+  const hardObserved = v.policyId === V3_POLICY.policyId && v.closureKind === "monitor-stop" &&
+    v.phase !== "watchdog-selftest" && Array.isArray(v.hardReasons) && v.hardReasons.includes("NATIVE") &&
+    v.timelyCycles === v.completedCycles && (v.completedCycles > 0 || v.peakRssBytes === null);
+  if ((!v.coverageLost && v.peakRssBytes !== v.observedPeakRssBytes && !hardObserved &&
       !(v.lateDrops.count > 0 && v.rssLimitExceeded)) ||
     v.peakRssBytes > v.observedPeakRssBytes || v.rssLimitExceeded !== v.observedPeakRssBytes > CAP)
     fail("peak/cap coherence");

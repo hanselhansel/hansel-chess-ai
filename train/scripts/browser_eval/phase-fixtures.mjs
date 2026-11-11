@@ -1,6 +1,6 @@
 // Fixed protocol/opening validation and deterministic schedule data only.
 // Actual chess.js rules verify prefixes; no engine or model executes here.
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { protocolPathForPolicy } from "./evaluation-policy.mjs";
 import { Chess } from "chess.js";
 import { exactFields, isObj, strNE } from "./protocol-values.mjs";
 import { deepEqual, freezeDeep } from "./schema-primitives.mjs";
@@ -44,7 +44,7 @@ const fields = (value, names, detail) => {
 export function validateProtocolFixture(value) {
   fields(value, ["schemaVersion", "conventions", "limits", "requiredCheckIds", "preflight", "comparison",
     ...(value?.schemaVersion === 2 ? ["evaluationPolicy"] : [])], "protocol fields");
-  if (value.schemaVersion === 2 && !deepEqual(value.evaluationPolicy, V2_POLICY)) throw fail("protocol policy");
+  if (value.schemaVersion === 2 && (value.evaluationPolicy === null || !protocolPathForPolicy(value.evaluationPolicy))) throw fail("protocol policy");
   if (![1, 2].includes(value.schemaVersion) || !deepEqual(value.conventions, PROTOCOL_IDS) ||
     !deepEqual(value.limits, FIXED_LIMITS) || !deepEqual(value.requiredCheckIds, REQUIRED_CHECK_IDS)) {
     throw fail("protocol literals");

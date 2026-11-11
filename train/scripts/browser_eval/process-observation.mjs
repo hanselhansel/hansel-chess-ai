@@ -8,6 +8,7 @@ import { accountingTrace } from "./accounting-trace.mjs";
 // transport-bound send and one request allocator, every cycle consumes
 // the caller's borrowed BudgetHandle, and the admitted observation
 // commits through the monitor's explicit callbacks only.
+import { V3_POLICY } from "./evaluation-policy.mjs";
 import { TIMING_LIMITS } from "./supervisor-protocol.mjs";
 import {
   copyDeep,
@@ -38,6 +39,7 @@ export function createProcessObservation({
   commitCycle,
   quality = null,
   softCompare = false,
+  markFault = null,
 }) {
   if (
     !isObj(ownership) ||
@@ -72,7 +74,7 @@ export function createProcessObservation({
   const assertNoTerminalReappearance = (reply) => checkReply(reply, terminal);
 
   // The private peak aggregate: the running maximum of actual
-  // whole-union rssBytes across every ADMITTED complete cycle, plus
+  // whole-union rssBytes across admitted cycles and V3 safe hard observations, plus
   // the sticky 4 GiB overage flag. Both survive lower later samples
   // and accounting faults, neither ever clears, and an overage alone
   // never latches the monitor fault or blocks healthy cleanup.
@@ -91,7 +93,11 @@ export function createProcessObservation({
     if (state().stopping) throw acct("monitor stopping");
     if (quality !== null && quality.snapshot().completedCycles === 0 && metadata.purpose !== "bootstrap")
       throw acct("missing strict bootstrap");
-    const soft = quality !== null && softCompare && metadata.purpose === "periodic" &&
+    const v3 = quality !== null && quality.snapshot().policyId === V3_POLICY.policyId;
+    if (v3 && typeof markFault !== "function") throw acct("V3 hard-fault binding");
+    let strictNativeError = null;
+    const eligible = () => typeof softCompare === "function" ? softCompare() : softCompare;
+    const soft = quality !== null && eligible() && metadata.purpose === "periodic" &&
       quality.snapshot().completedCycles > 0;
     requireHealthy();
     const startedNs = nowNs();
@@ -116,25 +122,36 @@ export function createProcessObservation({
       if (
         (!soft && nativeNs > BigInt(TIMING_LIMITS.sampleGapMs) * 1000000n)
       ) {
-        throw acct("native interval");
+        if (!v3) throw acct("native interval");
+        strictNativeError = acct("native interval");
+        markFault(strictNativeError);
       }
       nativeDurationNs += nativeNs;
       if (nativeNs > nativeMaxDurationNs) nativeMaxDurationNs = nativeNs;
       coverageRounds += 1;
       // This census precedes THIS reply's gone reads. Only prior absence
       // (earlier admitted cycles/coverage rounds) can contradict it.
-      checkReply(res, new Set([...terminal, ...staged]));
-      ownership.observeDiscovery(res.discovered);
-      for (const s of res.samples) found.set(identityKey(s.identity), s);
-      for (const g of res.gone) {
-        staged.add(identityKey(g));
-        found.set(identityKey(g), "gone");
+      try {
+        checkReply(res, new Set([...terminal, ...staged]));
+        ownership.observeDiscovery(res.discovered);
+        for (const s of res.samples) found.set(identityKey(s.identity), s);
+        for (const g of res.gone) {
+          staged.add(identityKey(g));
+          found.set(identityKey(g), "gone");
+        }
+        const fresh = ownership
+          .ownedIdentities()
+          .filter((i) => !found.has(identityKey(i)));
+        if (strictNativeError !== null && fresh.length > 0) throw acct("coverage unsettled", "UNION");
+        if (fresh.length === 0) break;
+        if (round >= COVERAGE_ROUNDS) throw acct("coverage unsettled", "UNION");
+      } catch (error) {
+        if (strictNativeError !== null) {
+          markFault(error);
+          throw strictNativeError;
+        }
+        throw error;
       }
-      const fresh = ownership
-        .ownedIdentities()
-        .filter((i) => !found.has(identityKey(i)));
-      if (fresh.length === 0) break;
-      if (round >= COVERAGE_ROUNDS) throw acct("coverage unsettled", "UNION");
       res = await send(
         "sample",
         {
@@ -150,23 +167,58 @@ export function createProcessObservation({
     const samples = [...found.values()].filter((s) => s !== "gone");
     const gone = found.size - samples.length;
     let rssBytes = 0;
-    for (const s of samples) {
-      if (!Number.isSafeInteger(s.residentBytes) || s.residentBytes < 0) throw acct("rss aggregate", "AGGREGATE");
-      rssBytes += s.residentBytes;
-      if (!Number.isSafeInteger(rssBytes) || rssBytes < 0) {
-        throw acct("rss aggregate", "AGGREGATE");
+    try {
+      for (const s of samples) {
+        if (!Number.isSafeInteger(s.residentBytes) || s.residentBytes < 0) throw acct("rss aggregate", "AGGREGATE");
+        rssBytes += s.residentBytes;
+        if (!Number.isSafeInteger(rssBytes) || rssBytes < 0) {
+          throw acct("rss aggregate", "AGGREGATE");
+        }
       }
+    } catch (error) {
+      if (strictNativeError !== null) {
+        markFault(error);
+        throw strictNativeError;
+      }
+      throw error;
     }
     const current = state();
-    if (quality !== null && current.stopping) {
-      // Only decoded attempts reaching this guard are attributable. The
-      // immutable end is diagnostic; the SAME live handle still decides.
-      const d = { requestId, observedAtNs: String(nowNs()), originalEndNs: metadata.originalEndNs };
+    const d = quality !== null && current.stopping
+      ? { requestId, observedAtNs: String(nowNs()), originalEndNs: metadata.originalEndNs } : null;
+    const retainError = (error) => {
+      if (v3) {
+        markFault(error);
+        quality.noteObservedAggregate(rssBytes);
+      }
+      return error;
+    };
+    const retainActualLate = (primary) => {
+      if (!current.stopping || quality.snapshot().coverageEndNs === null) return;
+      try { quality.noteLateDrop(d, rssBytes); }
+      catch (error) { markFault(error); }
+      // The actual late metadata never replaces the original error.
+      return primary;
+    };
+    if (strictNativeError !== null) {
+      quality.noteObservedAggregate(rssBytes);
       try { handle.assertLive("observation commit"); }
-      catch (error) { quality.noteLateDrop(d); throw error; }
-      quality.noteLateDrop(d, soft ? rssBytes : null);
+      catch (error) { markFault(error); }
+      retainActualLate(strictNativeError);
+      throw strictNativeError;
+    }
+    if (quality !== null && current.stopping) {
+      // Actual fence first; later scope/gap predicates cannot mint evidence.
+      try { handle.assertLive("observation commit"); }
+      catch (error) {
+        if (v3) { retainError(error); retainActualLate(error); }
+        else quality.noteLateDrop(d);
+        throw error;
+      }
+      try { quality.noteLateDrop(d, v3 || soft ? rssBytes : null); }
+      catch (error) { throw retainError(error); }
       return Object.freeze({ kind: "fenced-observation" });
     }
+    if (soft && !eligible()) throw retainError(acct("periodic scope revoked before commit"));
     const { lastValidNs, stickyFault } = current;
     const previousNs = lastValidNs === null ? null : BigInt(lastValidNs);
     const intervalMs =
@@ -185,14 +237,15 @@ export function createProcessObservation({
         coverageRounds, stickyPresent: stickyFault !== null,
       };
       accountingTrace.cycle(diagnostic, requestId);
-      throw acct(`sample interval ${JSON.stringify(diagnostic)}`);
+      throw retainError(acct(`sample interval ${JSON.stringify(diagnostic)}`));
     }
     if (quality !== null) {
       const timely = finishedNs - startedNs <= 500000000n && nativeMaxDurationNs <= 500000000n;
       const cycle = { startedNs: String(startedNs), finishedNs: String(finishedNs),
         nativeMaxDurationNs: String(nativeMaxDurationNs), rssBytes, requestId, handleLive: true };
       // The original guard precedes every ledger/terminal/observation commit.
-      handle.assertLive("observation commit");
+      try { handle.assertLive("observation commit"); }
+      catch (error) { throw retainError(error); }
       if (quality.snapshot().completedCycles === 0) quality.bootstrap(cycle);
       else quality.complete(cycle);
       const q = quality.snapshot();

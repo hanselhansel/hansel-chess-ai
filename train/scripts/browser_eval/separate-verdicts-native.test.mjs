@@ -35,9 +35,14 @@ function deliveryObserver({ lifetime, readSnapshot }) {
     const held = [];
     let timer = null;
     let settle = null;
-    const release = () => {
+    const release = (forced = false) => {
       if (state.delivered) return;
       clearTimeout(timer);
+      const remaining = BigInt(state.startedNs) + BigInt(DELAY_MS) * 1000000n - process.hrtime.bigint();
+      if (!forced && remaining > 0n) {
+        timer = setTimeout(release, Number((remaining + 999999n) / 1000000n));
+        return;
+      }
       state.releasedNs = process.hrtime.bigint().toString();
       meta.retainDiagnostic("delivery-release", { runId: meta.monitorRunId,
         startedNs: state.startedNs, releasedNs: state.releasedNs,
@@ -79,7 +84,7 @@ function deliveryObserver({ lifetime, readSnapshot }) {
       if (state.heldBytes > 65536 || snapshot.bytes.produced + snapshot.bytes.retained +
         state.heldBytes * 4 > MAX_BYTES) {
         state.error ??= "delivery retention bound";
-        release();
+        release(true);
       }
       return this.listenerCount(event) > 0;
     };

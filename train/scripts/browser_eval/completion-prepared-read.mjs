@@ -17,6 +17,7 @@
 
 import { createHash } from "node:crypto";
 import { privateFs as fsp } from "./private-fs.mjs";
+import { assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
 import {
   issueActual,
   ownedFileCloseReceipt,
@@ -66,7 +67,16 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
     sha256,
     io,
     ownedFiles,
+    verificationContext,
   }) {
+    const guard = () => {
+      if (verificationContext !== undefined) {
+        const budget = originalContextBudget(verificationContext);
+        assertBudgetHandle(budget);
+        budget.assertLive("V3 prepared read");
+      }
+    };
+    guard();
     if (typeof workspaceRoot !== "string" || workspaceRoot.length === 0) {
       fail("STORE_ARGS", "workspaceRoot");
     }
@@ -117,9 +127,11 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
     const pinnedId = Object.freeze({ dev: fileId.dev, ino: fileId.ino });
     const byteCeiling = BigInt(byteLength);
 
+    guard();
     const before = await issueActual(retain, () =>
       fsp.lstat(tempAbs, { bigint: true }),
     );
+    guard();
     if (!isSameFile(before, pinnedId)) {
       fail("STORE_STATE", "prepared temp replaced");
     }
@@ -128,6 +140,7 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
     // owns the shared uncertain latch and the failedReader slot
     // checks BEFORE issuing the open and pins the adopted handle on
     // the SAME slot before the next await.
+    guard();
     const handle = await acquire({ retain, tempAbs, ownedFiles });
     // Brand the adopted handle through the existing genuine close
     // receipt BEFORE relying on its methods: a forged or mock
@@ -141,7 +154,9 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
     let primary;
     let readFailed = false;
     try {
+      guard();
       const opened = await handle.stat({ bigint: true });
+      guard();
       if (!isSameFile(opened, pinnedId)) {
         fail("STORE_STATE", "prepared temp replaced");
       }
@@ -149,12 +164,14 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
         Math.max(1, Math.min(READ_CHUNK, byteLength)),
       );
       for (;;) {
+        guard();
         const { bytesRead } = await handle.read(
           buffer,
           0,
           buffer.length,
           read,
         );
+        guard();
         if (bytesRead === 0) break;
         read += bytesRead;
         hash.update(buffer.subarray(0, bytesRead));
@@ -212,9 +229,11 @@ export const createPreparedCompletionReader = ({ acquireReader }) => {
     // Fresh post-close path observation: the still-owned original
     // must remain exactly the pinned regular file — a lost, replaced
     // or grown temp is never returned as verified bytes.
+    guard();
     const after = await issueActual(retain, () =>
       fsp.lstat(tempAbs, { bigint: true }),
     );
+    guard();
     if (
       !isSameFile(after, pinnedId) ||
       read !== byteLength ||

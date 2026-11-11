@@ -6,6 +6,8 @@
 // references: all state, write authority, error channels and the seal
 // outcome stay the recorder's.
 
+import { createBudgetHandle, assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
+import { collectPreflightEvidenceV3 } from "./preflight-evidence-v3.mjs";
 import { canonicalBytes } from "./canonical-json.mjs";
 import { phaseArtifactRefs } from "./artifact-store.mjs";
 import { buildCompletion, buildFinalFromClosedFacts } from "./record-finalization.mjs";
@@ -51,6 +53,15 @@ export function createRecorderFinalizer({
   // The valid binding tuple, the optional bookkeeping observer, the
   // private sealed A bundle and the cached seal promise stay
   // recorder-private — never caller facts or wire state.
+  const isV3 = mf.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3";
+  let verificationContext;
+  const guard = () => {
+    if (isV3) {
+      const budget = originalContextBudget(verificationContext);
+      assertBudgetHandle(budget);
+      budget.assertLive("V3 producer seal");
+    }
+  };
   let bound = null;
   let observer = null;
   let pending = null;
@@ -158,20 +169,33 @@ export function createRecorderFinalizer({
   // status feed with no postseal verification, retry or
   // reclassification.
   const sealBody = async (sealed) => {
+    guard();
     const artifactRefs = await phaseArtifactRefs(
       { workspaceRoot: store.root, phaseDirectory: phaseDir },
       io,
+      verificationContext,
     );
+    guard();
     const v2 = {};
     if (mf.schemaVersion === 2) {
       v2.events = await readVerdictEventsV2({ workspaceRoot: store.root,
-        eventsRef: sealed.eventsRef, headFields: headFields() }, io);
+        eventsRef: sealed.eventsRef, headFields: headFields() }, io, verificationContext);
       v2.verifiedParents = [];
       for (const parent of sealed.parents) {
         v2.verifiedParents.push(await verifyReceiptGraph({ workspaceRoot: store.root,
-          completionRef: parent.completion, expectedIdentity: ws.commonIdentity }, new Map(), io));
+          completionRef: parent.completion, expectedIdentity: ws.commonIdentity }, new Map(), io, verificationContext));
       }
     }
+    if (isV3) {
+      v2.verifiedSelfTest = sealed.nested === null ? null : await verifyReceiptGraph({
+        workspaceRoot: store.root, completionRef: sealed.nested.completion,
+        expectedIdentity: ws.commonIdentity }, new Map(), io, verificationContext);
+      const captured = sealed.capture.finalInputs();
+      v2.preflightEvidence = mf.phase === "preflight" ? await collectPreflightEvidenceV3({
+        workspaceRoot: store.root, manifest: mf, inventory: artifactRefs,
+        events: v2.events, summary: captured.request.summary }, { io, budget: verificationContext.budget }) : null;
+    }
+    guard();
     const final = buildFinalFromClosedFacts({
       ...v2,
       ...sealed.capture.finalInputs(),
@@ -179,9 +203,11 @@ export function createRecorderFinalizer({
       eventsRef: sealed.eventsRef,
     });
     await store.writeOnce(`${phaseDir}/final.json`, canonicalBytes(final), "final");
+    guard();
     const artifacts = await phaseArtifactRefs(
       { workspaceRoot: store.root, phaseDirectory: phaseDir },
       io,
+      verificationContext,
     );
     const completion = buildCompletion({
       headFields: headFields(),
@@ -192,6 +218,7 @@ export function createRecorderFinalizer({
       expectedSelfTest: sealed.nested,
       final,
     });
+    guard();
     const prepared = await store.prepareCompletion({
       phaseDirectory: phaseDir,
       bytes: canonicalBytes(completion),
@@ -201,7 +228,7 @@ export function createRecorderFinalizer({
       verification = await verifyPreparedReceiptGraph({
         preparedCompletion: prepared,
         expectedIdentity: ws.commonIdentity,
-      });
+      }, verificationContext);
     } catch (error) {
       // Only the SAME genuine prepared capability is contained and the
       // original primary is preserved after its truthful safe
@@ -210,7 +237,9 @@ export function createRecorderFinalizer({
       await store.containPreparedCompletion(prepared, error);
       throw error;
     }
+    guard();
     const result = await store.publishPreparedCompletion(prepared, verification);
+    guard();
     state.finalized = true;
     state.sealedResult = result;
     return result;
@@ -277,7 +306,13 @@ export function createRecorderFinalizer({
         prerequisites,
         expectedSelfTest,
       });
-      await captureEvidenceA(bundle, deadlineMonoMs);
+      if (isV3) {
+        need(verificationContext === undefined, "V3 original cutoff already captured");
+        verificationContext = Object.freeze({ budget: createBudgetHandle({
+          deadlineMonoMs, clock: { setTimeout, clearTimeout }, nowMonoMs: bound.nowMonoMs }) });
+      }
+      try { await captureEvidenceA(bundle, deadlineMonoMs); }
+      catch (error) { verificationContext?.budget.dispose(); throw error; }
     },
 
     // Settlement half of the timed pair: no arguments, no replacement
@@ -296,7 +331,9 @@ export function createRecorderFinalizer({
       if (state.sticky !== null) fail("RECORDER_STICKY", state.sticky);
       const sealed = pending;
       sealPromise = sealEvidenceB(sealed);
-      const result = await sealPromise;
+      let result;
+      try { result = await sealPromise; }
+      finally { verificationContext?.budget.dispose(); }
       if (observer !== null) {
         observer.notifySettled({ hasPrimary: false, primary: null });
       }
@@ -308,6 +345,7 @@ export function createRecorderFinalizer({
     // cannot establish operational timing, is never usable once bound
     // and is itself no lifecycle-admitted outer attempt.
     async finalize({ intent, checks, prerequisites, expectedSelfTest }) {
+      if (isV3) fail("RECORDER_STATE", "V3 requires original timed cutoff");
       if (bound !== null) fail("RECORDER_STATE", "runtime bound");
       const bundle = captureFinalizationRequest({
         intent,

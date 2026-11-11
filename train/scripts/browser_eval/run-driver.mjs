@@ -243,7 +243,7 @@ export async function executeDriver({ manifestPath, workspaceRoot, repoRoot }) {
             const bytes = await io.readAt(workspaceRoot, filename);
             const completionRef = { path: filename, byteLength: bytes.length, sha256: sha256Bytes(bytes) };
             const verified = await verifyReceipt({ workspaceRoot, completionRef,
-              expectedIdentity: workspace.commonIdentity }, { retainActual: lifetime.retainActual });
+              expectedIdentity: workspace.commonIdentity }, { retainActual: lifetime.retainActual }, { budget: current });
             current.assertLive("selftest receipt read");
             if (capabilities.signal.aborted) throw capabilities.signal.reason;
             selftestEvidence = { completionRef, final: verified.final };

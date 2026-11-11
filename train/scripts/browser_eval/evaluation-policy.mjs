@@ -7,15 +7,20 @@ export const V2_POLICY = freezeDeep({
   recordSchemaVersion: 2,
   softPhase: "compare",
 });
+export const V3_POLICY = freezeDeep({
+  policyId: "tinyaz-separate-verdicts-v3",
+  recordSchemaVersion: 2,
+  softPhases: ["preflight", "compare"],
+});
+const V3_PATH = "train/fixtures/browser-protocol-v3.json";
 const V1_PATH = "train/fixtures/browser-protocol.json";
 const V2_PATH = "train/fixtures/browser-protocol-v2.json";
 
 export function assertPolicyBinding({ schemaVersion, evaluationPolicy, protocolPath }) {
   if (schemaVersion === 1 && evaluationPolicy === null && protocolPath === V1_PATH) return;
-  if (schemaVersion !== 2 || protocolPath !== V2_PATH) {
+  if (schemaVersion !== 2 || evaluationPolicy === null || protocolPath !== protocolPathForPolicy(evaluationPolicy)) {
     schemaFail("SCHEMA_LITERAL", "policy/version/protocol binding");
   }
-  eqLiteral(evaluationPolicy, V2_POLICY, "evaluationPolicy");
 }
 
 // Receives the validated fixture declaration and its explicitly selected path.
@@ -50,5 +55,22 @@ export function policyForProtocol(protocol, protocolPath = V1_PATH) {
     "protocol preflight",
   );
   eqLiteral(protocol.comparison, { openingCount: 20, gameCount: 40 }, "protocol comparison");
-  return protocol.schemaVersion === 1 ? null : V2_POLICY;
+  return protocol.schemaVersion === 1 ? null
+    : protocolPath === V3_PATH ? V3_POLICY : V2_POLICY;
+}
+
+export function protocolPathForPolicy(evaluationPolicy) {
+  if (evaluationPolicy === null) return V1_PATH;
+  if (evaluationPolicy?.policyId === V3_POLICY.policyId) {
+    eqLiteral(evaluationPolicy, V3_POLICY, "evaluationPolicy");
+    return V3_PATH;
+  }
+  eqLiteral(evaluationPolicy, V2_POLICY, "evaluationPolicy");
+  return V2_PATH;
+}
+
+export function isPeriodicQualityPhase(evaluationPolicy, phase) {
+  const selected = protocolPathForPolicy(evaluationPolicy);
+  return selected === V2_PATH ? phase === "compare"
+    : selected === V3_PATH && ["preflight", "compare"].includes(phase);
 }

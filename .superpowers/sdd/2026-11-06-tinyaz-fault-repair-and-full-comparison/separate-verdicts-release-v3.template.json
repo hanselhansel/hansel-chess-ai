@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 3,
+  "status": "PREPARATION_ONLY",
+  "controller": "/root",
+  "approvedUtc": null,
+  "candidate": null,
+  "repositoryRoot": "/Users/hansel/Workspace/github/hanselhansel/hansel-chess-ai",
+  "branch": "feat/tinyaz-browser-harness",
+  "safetyPath": null,
+  "safetySha256": null,
+  "orchestrationScriptsSha256": {
+    "task-3-stream.mjs": null,
+    "task-3-process-owner.mjs": null,
+    "task-3-control-child.mjs": null,
+    "separate-verdicts-shared-v3.mjs": null,
+    "separate-verdicts-graph-v3.mjs": null,
+    "separate-verdicts-owned-command-v3.mjs": null,
+    "separate-verdicts-verify-phase-v3.mjs": null,
+    "separate-verdicts-owner-controls-v3.mjs": null
+  },
+  "workspaceRoot": null,
+  "orchestrationRoot": null,
+  "approvedComparisonCohorts": 1,
+  "progressPrefix": "TINYAZ_COMPARE_PROGRESS ",
+  "resourcesPrefix": "TINYAZ_RESOURCES ",
+  "constraints": {
+    "compareCeilingMs": 86400000,
+    "readinessMs": 30000,
+    "commandMs": 90000,
+    "nativeCleanupMs": 5000,
+    "rssBytes": 4294967296,
+    "workspaceBytes": 268435456,
+    "plannedPairs": 20,
+    "plannedGames": 40,
+    "visits": 64,
+    "baselineCommit": "bb76439ea7bb4ae84bf15fe1276d75dc336d3cec",
+    "modelBytes": 9706840,
+    "modelSha256": "b716fe7b9a663c8c839f49cefd592ebc7ba771452057bac2404c24f48d2af4ee"
+  },
+  "evaluationPolicy": {
+    "policyId": "tinyaz-separate-verdicts-v3",
+    "recordSchemaVersion": 2,
+    "softPhases": [
+      "preflight",
+      "compare"
+    ]
+  },
+  "protocolRef": {
+    "path": "train/fixtures/browser-protocol-v3.json",
+    "byteLength": 2348,
+    "sha256": "c181ad7e61374b792038cdf502b4734724ab1dde27adf10d3132843d6c9d77a8"
+  },
+  "runtimeIdentity": {
+    "node": {
+      "invocationPath": null,
+      "realPath": null,
+      "sha256": null,
+      "version": null
+    },
+    "python": {
+      "invocationPath": null,
+      "realPath": null,
+      "sha256": null,
+      "version": null,
+      "processImage": {
+        "realPath": null,
+        "sha256": null
+      },
+      "executable": null,
+      "prefix": null,
+      "basePrefix": null
+    }
+  }
+}

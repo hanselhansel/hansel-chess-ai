@@ -153,6 +153,7 @@ export function createProcessStop({ state, clock, authority }) {
       }
       const h = authority.op({ deadlineMonoMs: bound }, TIMING_LIMITS.commandMs);
       const lifetime = authority.ownOperation(h);
+      authority.closePreflightQuality?.();
       state.stopping = true;
       authority.closeCoverage?.();
       if (state.timer !== null) {

@@ -29,6 +29,7 @@ export function createProcessAccounting({
     clock,
     state,
     commitCycle,
+    markFault,
     quality,
     softCompare,
   });

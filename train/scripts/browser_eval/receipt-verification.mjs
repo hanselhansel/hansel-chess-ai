@@ -29,13 +29,21 @@ import { freezeDeep } from "./schema-primitives.mjs";
 import { isCleanupProven } from "./record-finalization.mjs";
 import { assertReadEffect, issueActual, phaseArtifactRefs, storeFail } from "./artifact-files.mjs";
 import { confinedRead, loadRecord, verifyInputRefs } from "./receipt-files.mjs";
-import { verifyReceiptVerdictsV2 } from "./receipt-verification-v2.mjs";
+import { verifyReceiptVerdictsV2, verifyReceiptVerdictsV3, selftestOutcome } from "./receipt-verification-v2.mjs";
+import { assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
 import { readPreparedCompletion } from "./completion-publication.mjs";
 
 const fail = (code, detail) => {
   const error = new Error(`receipt-verification ${code}: ${detail}`);
   error.code = code;
   throw error;
+};
+
+const guardV3 = (identity, context) => {
+  if (identity.evaluationPolicy?.policyId !== "tinyaz-separate-verdicts-v3") return;
+  const budget = originalContextBudget(context);
+  assertBudgetHandle(budget);
+  budget.assertLive("V3 receipt graph");
 };
 
 const sameRef = (a, b) =>
@@ -82,39 +90,7 @@ const lstatOrNull = async (retain, abs, io) => {
 // weaken declared bindings or alias into frozen results.
 const copy = (value) => parseCanonicalBytes(canonicalBytes(value));
 
-// The exact internal selftest owner/outcome/cleanup binding shared by the
-// nested admission inside verifyReceiptGraph and the public
-// live-verification API. Returns a failure detail or null.
-export const selftestOutcome = (ev, parentRunId, parentSupervisor) => {
-  const owner = ev.manifest.owner;
-  if (
-    owner === null ||
-    owner.phase !== "preflight" ||
-    owner.runId !== parentRunId ||
-    !canonicalBytes(owner.supervisor).equals(canonicalBytes(parentSupervisor))
-  ) {
-    return "owner";
-  }
-  const f = ev.final;
-  if (f.schemaVersion === 2 && (f.resourceVerdict.status !== "passed" ||
-    f.closureResourceVerdict.status !== "passed" ||
-    f.resourceEvidence.monitorRunId !== parentRunId)) return "resource prefix";
-  if (
-    f.status !== "inconclusive" ||
-    f.exitCode !== 2 ||
-    f.stopReason !== "HEARTBEAT_TIMEOUT" ||
-    f.analysisEligible !== false ||
-    f.unplannedFaultCount !== 0 ||
-    f.summary.scoredGames !== 0 ||
-    !f.requiredChecks.every((x) => x.status === "passed")
-  ) {
-    return "outcome";
-  }
-  if (!isCleanupProven(f.cleanup, "selftest-workload", parentSupervisor)) {
-    return "cleanup";
-  }
-  return null;
-};
+export { selftestOutcome } from "./receipt-verification-v2.mjs";
 
 // Merges one verified child's transitive entries into the run closure,
 // rejecting two different receipts that claim the same phase.
@@ -146,14 +122,17 @@ const verifyCompletion = async (
   memo,
   io,
   prepared,
+  verificationContext,
 ) => {
+  const guard = () => guardV3(expectedIdentity, verificationContext);
+  guard();
   const completion = parseCanonicalBytes(bytes);
   assertRecord("completion", completion);
   const phaseDir = path.posix.dirname(completionRef.path);
   const wantDir = completion.phase === "watchdog-selftest" ? "preflight/selftest" : completion.phase;
   if (phaseDir !== wantDir) fail("EVIDENCE_MISMATCH", "phase directory");
 
-  let inventory = await phaseArtifactRefs({ workspaceRoot: root, phaseDirectory: phaseDir }, io);
+  let inventory = await phaseArtifactRefs({ workspaceRoot: root, phaseDirectory: phaseDir }, io, verificationContext);
   if (prepared !== null) {
     // The prepared transaction contributes exactly ONE owned temp to
     // the complete actual inventory: it may be removed only after the
@@ -166,7 +145,9 @@ const verifyCompletion = async (
       fail("EVIDENCE_MISMATCH", "prepared temp");
     }
     const tempAbs = path.resolve(root, prepared.temporaryRef.path);
+    guard();
     const tempStat = await lstatOrNull(registrar(io), tempAbs, io);
+    guard();
     if (tempStat === null || !isSameFile(tempStat, prepared.fileId)) {
       fail("EVIDENCE_MISMATCH", "prepared temp");
     }
@@ -178,17 +159,19 @@ const verifyCompletion = async (
   ) {
     fail("EVIDENCE_INCOMPLETE", "artifact inventory");
   }
+  guard();
   const byPath = new Map(inventory.map((r) => [r.path, r]));
   const loadBound = (name, kind) => {
     const declared = byPath.get(`${phaseDir}/${name}`);
     if (declared === undefined) fail("EVIDENCE_INCOMPLETE", name);
-    return loadRecord(root, `${phaseDir}/${name}`, kind, declared, io);
+    guard();
+    return loadRecord(root, `${phaseDir}/${name}`, kind, declared, io, verificationContext);
   };
   const manifest = await loadBound("manifest.json", "manifest");
   const running = await loadBound("running.json", "running");
   const final = await loadBound("final.json", "final");
-  const workspace = await loadRecord(root, "workspace.json", "workspace", undefined, io);
-  await verifyInputRefs(root, manifest.value.inputs, io);
+  const workspace = await loadRecord(root, "workspace.json", "workspace", undefined, io, verificationContext);
+  await verifyInputRefs(root, manifest.value.inputs, io, verificationContext);
   for (const check of final.value.requiredChecks) {
     for (const r of check.evidence) {
       const declared = byPath.get(r.path);
@@ -198,6 +181,7 @@ const verifyCompletion = async (
     }
   }
 
+  guard();
   const canonIdentity = canonicalBytes(expectedIdentity);
   if (!canonIdentity.equals(canonicalBytes(workspace.value.commonIdentity))) {
     fail("EVIDENCE_MISMATCH", "commonIdentity");
@@ -244,6 +228,7 @@ const verifyCompletion = async (
       { workspaceRoot: root, completionRef: nestedRef, expectedIdentity },
       memo,
       io,
+      verificationContext,
     );
     const detail = selftestOutcome(nested, completion.runId, running.value.supervisor);
     if (detail !== null) fail("SELFTEST_INVALID", detail);
@@ -261,6 +246,7 @@ const verifyCompletion = async (
       },
       memo,
       io,
+      verificationContext,
     );
     parents.push(child);
     if (child.phase !== parent.phase || child.runId !== parent.runId) {
@@ -273,10 +259,13 @@ const verifyCompletion = async (
   }
   closure.sort((a, b) => (a.phase < b.phase ? -1 : 1));
 
-  if (completion.schemaVersion === 2) await verifyReceiptVerdictsV2({
+  const verifyVerdicts = completion.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3"
+    ? verifyReceiptVerdictsV3 : verifyReceiptVerdictsV2;
+  if (completion.schemaVersion === 2) await verifyVerdicts({
     workspaceRoot: root, workspace: workspace.value, manifest: manifest.value,
     running: running.value, final: final.value, completion, inventory, parents, nested,
-  }, io);
+  }, io, verificationContext);
+  guard();
   const evidence = freezeDeep({
     workspaceId: completion.workspaceId,
     runId: completion.runId,
@@ -297,8 +286,11 @@ const verifyCompletion = async (
 // confined and bound to their declared refs, then the shared full
 // core runs. Each real graph invocation carries its own fresh memo
 // supplied by the caller.
-export async function verifyReceiptGraph({ workspaceRoot, completionRef, expectedIdentity }, memo, io) {
-  registrar(io);
+export async function verifyReceiptGraph({ workspaceRoot, completionRef, expectedIdentity }, memo, io, verificationContext) {
+  guardV3(expectedIdentity, verificationContext);
+  const retain = registrar(io);
+  if (expectedIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" && retain === null)
+    storeFail("STORE_ARGS", "V3 actual graph registrar required");
   const root = path.resolve(workspaceRoot);
   const prior = memo.get(completionRef.path);
   if (prior !== undefined) {
@@ -309,11 +301,12 @@ export async function verifyReceiptGraph({ workspaceRoot, completionRef, expecte
     }
     return prior;
   }
-  const bytes = await confinedRead(root, completionRef.path, "completion", io);
+  const bytes = await confinedRead(root, completionRef.path, "completion", io, verificationContext);
+  guardV3(expectedIdentity, verificationContext);
   if (bytes.length !== completionRef.byteLength || sha256Bytes(bytes) !== completionRef.sha256) {
     fail("EVIDENCE_MISMATCH", "completion ref");
   }
-  return verifyCompletion(root, completionRef, bytes, expectedIdentity, memo, io, null);
+  return verifyCompletion(root, completionRef, bytes, expectedIdentity, memo, io, null, verificationContext);
 }
 
 // Identity-keyed private association from each minted
@@ -333,11 +326,13 @@ const VERIFIED = new WeakMap();
 // The fixed canonical target must be absent; the same full core then
 // runs over the ACTUAL verified bytes with its own fresh memo. Only
 // genuine success mints the opaque token.
-export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedIdentity }) {
+export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedIdentity }, verificationContext) {
+  guardV3(expectedIdentity, verificationContext);
   assertCommonIdentity(expectedIdentity);
   if (!isToken(preparedCompletion)) storeFail("STORE_ARGS", "prepared capability");
   const identity = freezeDeep(copy(expectedIdentity));
-  const read = await readPreparedCompletion(preparedCompletion);
+  const read = await readPreparedCompletion(preparedCompletion, verificationContext);
+  guardV3(expectedIdentity, verificationContext);
   const retain = read.io.retainActual;
   const root = path.resolve(read.workspaceRoot);
   // The fixed canonical target must still be absent: this verifier
@@ -354,7 +349,9 @@ export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedI
     new Map(),
     read.io,
     { temporaryRef: read.temporaryRef, fileId: read.fileId },
+    verificationContext,
   );
+  guardV3(expectedIdentity, verificationContext);
   const preparedVerification = Object.freeze({});
   VERIFIED.set(preparedVerification, {
     prepared: preparedCompletion,
@@ -364,6 +361,7 @@ export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedI
     temporaryRef: read.temporaryRef,
     fileId: read.fileId,
     expectedIdentity: identity,
+    ...(identity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" ? { verificationContext } : {}),
     consumed: false,
   });
   return preparedVerification;
@@ -391,5 +389,6 @@ export function consumePreparedVerification(preparedCompletion, preparedVerifica
     temporaryRef: entry.temporaryRef,
     fileId: entry.fileId,
     expectedIdentity: entry.expectedIdentity,
+    ...(entry.verificationContext ? { verificationContext: entry.verificationContext } : {}),
   });
 }

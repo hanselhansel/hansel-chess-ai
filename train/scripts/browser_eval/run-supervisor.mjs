@@ -1,4 +1,5 @@
 // Fixed operational assembly. No injected proof/capture/verifier callbacks.
+import { createPreflightQualityScope } from "./process-preflight-quality.mjs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { canonicalBytes, parseCanonicalBytes, parseJSONBytes, sha256Bytes } from "./canonical-json.mjs";
@@ -50,7 +51,7 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
     const bytes = await sourceIO.readAt(workspaceRoot, filename);
     const completionRef = refFor(filename, bytes);
     const verified = await verifyReceipt({ workspaceRoot, completionRef,
-      expectedIdentity: workspace.commonIdentity }, io);
+      expectedIdentity: workspace.commonIdentity }, io, { budget });
     budget.assertLive("parent receipt verified");
     parents.push({ phase: verified.phase, runId: verified.runId, completion: completionRef });
   }
@@ -65,6 +66,9 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
     const nativeHorizon = createNativeHorizon();
     detach = nativeHorizon.reader.subscribe((bound) => phaseBudget.narrow(bound));
     const runId = `${phase}-${randomUUID()}`;
+    const preflightQualityScope = phase === "preflight" &&
+      workspace.commonIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3"
+      ? createPreflightQualityScope({ runId, phase, evaluationPolicy: workspace.commonIdentity.evaluationPolicy }) : null;
     const driverBinding = workspace.schemaVersion === 2 ? { recordSchemaVersion: 2,
       evaluationPolicy: workspace.commonIdentity.evaluationPolicy } : {};
     const protocol = createProtocolValidator({ runId, ...driverBinding });
@@ -76,6 +80,7 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
       helperPath: path.join(harnessRoot, "train/scripts/browser_eval/process-macos.py"),
       recordRoot: harnessRoot, protocol, horizon: nativeHorizon.reader, lifetime,
       expectedBackendIdentity: environment.monitoring,
+      preflightQualityReader: preflightQualityScope?.reader ?? null,
       ...(workspace.schemaVersion === 2 ? { phase, evaluationPolicy: workspace.commonIdentity.evaluationPolicy } : {}) });
     const footprint = createFootprintObserver({ workspaceRoot });
     const store = createArtifactStore({ workspaceRoot, lifetime, monotonicNow: now,
@@ -91,6 +96,7 @@ export async function executeSupervisor({ phase, workspaceRoot, repoRoot, captur
         phase: manifest.phase, runId: manifest.runId, commonIdentitySha256: manifest.commonIdentitySha256,
         workspace, manifestPath: path.join(workspaceRoot,
           manifest.phase === "watchdog-selftest" ? "preflight/selftest/manifest.json" : `${manifest.phase}/manifest.json`),
+        preflightQualityScope: internalContext === null ? preflightQualityScope : null,
         protocol: runProtocol, monitor, footprint, recorder, cleanup, finalIntegrity,
         driverEntry: { executable: environment.node.invocationPath, expectedExecutable: environment.node.realPath,
           args: [cli, "--driver", "--workspace-root", workspaceRoot, "--repo-root", repoRoot,

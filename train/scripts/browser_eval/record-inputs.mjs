@@ -76,13 +76,14 @@ export function validateFinalizationIntent(request, manifest = null) {
       fail("RECORDER_INPUT", "v2 supervisor intent fields");
     }
     const reserved = ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "resourceEvidence",
-      "qualityCheckpoint", "supervisorOutcome"];
+      "qualityCheckpoint", "supervisorOutcome",
+      ...(manifest.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3" ? ["scientificReadinessVerdict", "preflightEvidence"] : [])];
     if (reserved.some((key) => Object.hasOwn(request.summary ?? {}, key))) {
       fail("RECORDER_INPUT", "reserved supervisor summary");
     }
     assertResourceEvidence(request.resourceEvidence);
     const e = request.resourceEvidence;
-    if (e.runId !== manifest.runId || e.phase !== manifest.phase || e.coverageEndNs === null ||
+    if (e.policyId !== manifest.evaluationPolicy.policyId || e.runId !== manifest.runId || e.phase !== manifest.phase || e.coverageEndNs === null ||
       (manifest.phase !== "watchdog-selftest" && e.pending)) {
       fail("RECORDER_INPUT", "unclosed resource evidence");
     }

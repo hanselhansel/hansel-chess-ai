@@ -1,6 +1,6 @@
 # Tinyaz V3 preflight: approved software design
 
-Status: APPROVED implementation; Task19 Split B covering/review GREEN, IN PROGRESS (2026-11-11). Task18 Split A is green-reviewed and locally committed at c1ef53d6e05aa2cdb31aa7bc529e8b8fe2cbd7c5 after Root covering100/100 and scoped Sol Max approval. Current authored Split B is runtime129/TEST90, preserving the exact original128 prefix and all V1/V2 behavior. Root's complete16-owner covering gate passed102/102, zero fail/skip/cancel, natural exit0 in9.105876124929637s,595 exact before/after/current pins, actual wait/BOTH EOF/raw/pipe and journal closure, stderr0 (E20/root-task19-covering-audit.json). Fresh scoped Sol Max spec and quality reviews are Approved with zero Critical/Important/Minor findings. Final Root code-to-document audit and separate local green-commit release remain pending; Task19 is not complete. V3 selection, fixture, private scope forwarding, graph, operators and phase execution remain prospective. The exact E19/implementation-approval.json record and its approved proposal SHA256 ad4b3d8a710c1dc4af24e305a946ed7b4e8a83035efec89e4973f9fad30638a8 retain their conditional fresh-execution scope. Root qualified the recognition-only OLD RED; E20/recognition-test-original.mjs remains archived for identical Task20 restoration. Existing docs/experiments/README.md and docs/experiments/tinyaz-software-plan.md remain status owners; no duplicate status file is created.
+Status: APPROVED design; implementation REVIEWED and required tests VALIDATED (2026-11-11). Source is READY for Root green commit/publication action. Gate10 full96 passed1140/1140, handoff6/6 and required Python/app/typecheck passed; fresh scoped Sol Max re-review passed and all four production findings are addressed. Runtime135/TEST96 and changed inputs78 remain exact. Scientific execution is separately gated and ALL V3 scientific phases remain UNRUN at this checkpoint, with no phase GO/Elo/cure claim. This status records no commit/publication. Original approved functional sections1..14 remain byte-identical. E20 is W/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014; final evidence is E20/task20-final-commit-docs-ready-report.md and Root gate10 audits. Every prior result remains immutable history.
 
 This amendment proposes one v3 policy. A future preflight may finish every scientific and safety check after a periodic monitoring timing-quality loss. It must report that resource failure. Only a genuine complete, sealed and independently verified preflight graph can admit a future comparison. There is no bypass flag, threshold increase, failed-run repair or automatic retry.
 
@@ -404,3 +404,105 @@ cli.mjs
 ```
 
 Additional exact entry/operator sources: `train/scripts/check_browser_parity.py`, `W/separate-verdicts-owned-command-v2.mjs`, `W/separate-verdicts-verify-phase-v2.mjs`, `W/separate-verdicts-owner-controls-v2.mjs`, `W/separate-verdicts-release-v2.template.json`. Selected existing TEST/support contracts (same browser_eval prefix): `native-fixture-admission.mjs`, `separate-verdicts-monitor.test.mjs`, `separate-verdicts-native.test.mjs`, `separate-verdicts-compat.test.mjs`, `separate-verdicts-records.test.mjs`, `separate-verdicts-terminal.test.mjs`, `prerequisites-evidence.test.mjs`, `prerequisites.test.mjs`, `snapshots.test.mjs`, `private-fs-phase.test.mjs`, `phase-runners.test.mjs`, `resource-quality.test.mjs`, `pgn-evidence.test.mjs`. For this fix round, read E19's two accepted review reports, preserved draft2 and the fix diff; source focus is pgn-format.mjs:replayCheckpointPgn, process-budget.mjs, receipt-files.mjs, record-finalizer.mjs, receipt-verification.mjs, receipt-verification-v2.mjs, artifact-completion.mjs, completion-publication.mjs and the two old W command/verifier modules. These are selected read-only review inputs, not permission to run tests, imports or phases.
+
+## Task20 versioned implementation checkpoint
+
+The connected V3 implementation and exact135/96 rosters are authored with
+Root private-validation ruling E20/task20-private-validation-ruling.md.
+The harness README records current APIs, scope/error/ownership/budget and
+operator side effects. Functional sections1..14 above retain approved authority.
+All Root same-byte tests, Native controls and independent source reviews remain
+pending. No test pass, green commit, publication, fresh CHECK or phase GO is
+claimed by this implementation checkpoint.
+
+
+## Task20 reviewed implementation checkpoint2 (requirements unchanged)
+
+Root's exact private map v2 and production GO authorize existing-contract
+repairs for original handle association, event/prepared per-effect propagation,
+scope original IO/budget, schema2 non-null policy and real Python main V3
+selection. The authored implementation keeps changed inputs77/runtime135/
+TEST96, original numeric limits, proof ownership and canonical sections1–14.
+Required real close and failed-publication containment stay independent from
+positive admission guards. Root causal GREEN/full verification are pending;
+worker ran no runtime or tests. This checkpoint grants no scientific phase GO.
+
+
+## Task20 implementation and required tests validated (2026-11-11)
+
+Current implementation and required test gates are validated on the frozen
+Task20 source. Root's gate08 serial96 run passed1139/1139, with zero failures,
+skips or cancellations, natural exit0 in207.788426958 seconds. Isolated legacy
+Native passed1/1; Python Native58/58, wire19/19 and terminal8/8; app scripts
+191/191 and core184/184; `tsc --noEmit` exited0. Every owner retained652 exact
+before/after/current pins, actual process/BOTH raw pipe/journal closure and no
+intervention. Earlier causal55/new-seven63 are passing subsets, not additional
+counts. Prior failed runs and the external intervention remain immutable history.
+The full suite's two TinyazBookkeepingObserverWarning messages are deliberate
+null/undefined observer fault controls. They are expected and were not suppressed.
+
+Current changed inputs78 preserve functional runtime135, exact96 TEST leaves,
+protected23/model weights, old protocol data/operators and the original
+scientific/numeric contracts. The tested runtime/SOURCE/TEST bytes are frozen.
+Original-context, per-effect prepared/event guards, actual CLI selection and
+closed schema2 policy fixes match the affected contracts. Implementation and
+tests validated does not establish a scientific phase result.
+
+Fresh scoped Sol Max review, Root acceptance, commit/publication and Task21
+remain pending. ALL V3 scientific CHECK/control/parity/preflight/full40 phases
+remain UNRUN. No phase GO, timing cure, continuous RSS proof or Elo claim follows.
+Root's authoritative gate audits/raw receipts are under E20/task20-gates-08/,
+with `root-task20-gates-08-<label>-audit.json` and
+`root-task20-remaining-test-gates-summary.json` in E20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+The final code-to-document comparison and docs-only pins/delta accompany
+`E20/task20-green-docs-ready-report.md`. Earlier appended checkpoints retain
+their dated scope; this is the current implementation/test status.
+
+
+### Task20 final collector handoff repair. Source ready, rerun pending
+
+Root's actual terminal causal RED passed5/6 and failed the one intended handoff
+regression, natural exit1 in11.776329000 seconds,657 exact pins, no skips,
+cancellations or intervention, and complete raw/owner closure. Both actual
+scenarios used substituted genuine B: expiry-at-handoff admitted114 metadata,
+23 opens,46 reads and2 replays after A expiry; held metadata admitted113/23/46/2.
+Both owners genuinely settled. This establishes the residual without a setup
+fault. Earlier1139/1139 and other green gates remain dated history.
+
+The minimum receipt-verification-v2 repair now revalidates original association,
+genuine handle methods and actual cutoff immediately after events await, before
+collector handoff and after the awaited collector. The collector receives the
+handle returned by that guard, never a raw mutable-field projection. Its same
+one-carrier, original IO and real close/debt behavior remain unchanged. V1/V2
+omitted-context routes keep their existing behavior. Runtime135/TEST96 and
+changed inputs78 remain exact; the causal TEST bytes are unchanged.
+
+Current repair GREEN, final full96/Python/app/typecheck, fresh scoped review,
+Root acceptance, commit/publication and Task21 remain pending. All V3 scientific
+phases remain UNRUN. No phase GO, cure, continuous coverage or Elo claim follows.
+Worker ran no runtime or tests. Required semantics are unchanged; this repairs
+implementation to the original approved handle contract.
+
+
+## Task20 reviewed and tested source ready for Root green commit (2026-11-11)
+
+Root gate10 full96 passed1140/1140, natural exit0 in207.116713958 seconds,
+with zero failures, skips, cancellations or intervention. The identical
+handoff regression passed6/6 with zero collector/post-expiry effects in both
+settled scenarios. Python58/19/8, scripts191, core184 and `tsc --noEmit` passed.
+Recorded owners retained662 exact execution pins and complete actual process,
+BOTH raw pipe and journal closure. Two deliberate null/undefined observer
+warnings remain qualified and unsuppressed. Subsets are not added to totals;
+prior1139/1139 and every failed run remain their dated immutable history.
+
+Fresh scoped Sol Max re-review passed and closed the last original-handle
+residual; all four production findings are addressed. The reviewed/tested
+source is READY for Root's green commit/publication action. Runtime135/TEST96,
+changed inputs78, protected23, original limits and proof ownership remain.
+Scientific execution is separately gated. ALL V3 scientific CHECK/control/
+parity/preflight/full40 phases remain UNRUN at this checkpoint, without phase
+GO, timing cure or Elo claim. This status does not record a commit/publication.
+Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
+E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
+comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.

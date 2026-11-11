@@ -20,6 +20,8 @@ import {
   assertCommonIdentity,
   REQUIRED_PARENT_PHASES,
 } from "./record-schema.mjs";
+import { classifyVerifiedParentV3 } from "./preflight-readiness-v3.mjs";
+import { assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
 import { freezeDeep } from "./schema-primitives.mjs";
 import { isCleanupProven } from "./record-finalization.mjs";
 import { issueActual, storeFail } from "./artifact-files.mjs";
@@ -76,7 +78,7 @@ const track = (retain, thunk) =>
 // weaken declared bindings or alias into frozen results.
 const copy = (value) => parseCanonicalBytes(canonicalBytes(value));
 
-export async function verifyReceipt({ workspaceRoot, completionRef, expectedIdentity }, io) {
+export async function verifyReceipt({ workspaceRoot, completionRef, expectedIdentity }, io, verificationContext) {
   registrar(io);
   assertArtifactRef(completionRef);
   assertCommonIdentity(expectedIdentity);
@@ -86,12 +88,15 @@ export async function verifyReceipt({ workspaceRoot, completionRef, expectedIden
     { workspaceRoot, completionRef: ref, expectedIdentity: identity },
     new Map(),
     io,
+    verificationContext,
   );
 }
 
-const requirePassedParent = async (ev, probeIdentity) => {
+const requirePassedParent = async (ev, probeIdentity, phase, identity) => {
   const f = ev.final;
-  const pass =
+  const v3 = identity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3";
+  const admitted = v3 ? classifyVerifiedParentV3({ forPhase: phase, expectedIdentity: identity, evidence: ev }) : null;
+  const pass = v3 ? admitted.scientificAdmissible :
     f.status === "passed" &&
     f.exitCode === 0 &&
     (f.schemaVersion !== 2 || (f.resourceVerdict.status === "passed" &&
@@ -105,7 +110,7 @@ const requirePassedParent = async (ev, probeIdentity) => {
   }
 };
 
-export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents, probeIdentity }, io) {
+export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents, probeIdentity }, io, verificationContext) {
   registrar(io);
   const root = path.resolve(workspaceRoot);
   if (!PHASES.includes(phase)) fail("PREREQUISITE_INVALID", "phase");
@@ -119,6 +124,16 @@ export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents
   });
   assertCommonIdentity(commonIdentity);
   const ownIdentity = copy(commonIdentity);
+  const guard = () => {
+    if (ownIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3") {
+      if (!verificationContext || Object.keys(verificationContext).join() !== "budget" || registrar(io) === null)
+        fail("PREREQUISITE_INVALID", "V3 original verification context/io required");
+      const budget = originalContextBudget(verificationContext);
+      assertBudgetHandle(budget);
+      budget.assertLive("V3 parent gone admission");
+    }
+  };
+  guard();
   if (
     (phase === "preflight" || phase === "compare") &&
     ownIdentity.candidate.kind === "WORKTREE"
@@ -133,6 +148,7 @@ export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents
         { workspaceRoot: root, completionRef: ref, expectedIdentity: ownIdentity },
         memo,
         io,
+        verificationContext,
       ),
     );
   }
@@ -146,7 +162,9 @@ export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents
   const admitted = [];
   const byPhase = new Map();
   for (const ev of verified) {
-    await requirePassedParent(ev, probeIdentity);
+    guard();
+    await requirePassedParent(ev, probeIdentity, phase, ownIdentity);
+    guard();
     admitted.push({ phase: ev.phase, runId: ev.runId, completion: ev.completionRef });
     addClosure(byPhase, [], [
       ...ev.closure,
@@ -154,6 +172,7 @@ export async function admitPhase({ workspaceRoot, phase, commonIdentity, parents
     ]);
   }
   admitted.sort((a, b) => required.indexOf(a.phase) - required.indexOf(b.phase));
+  guard();
   const closure = [...byPhase.values()].sort((a, b) => (a.phase < b.phase ? -1 : 1));
   return freezeDeep({
     phase,
@@ -170,7 +189,7 @@ export async function verifyInternalSelfTest({
   parentSupervisor,
   expectedIdentity,
   probeIdentity,
-}, io) {
+}, io, verificationContext) {
   registrar(io);
   const root = path.resolve(workspaceRoot);
   if (typeof parentRunId !== "string" || parentRunId.length === 0) {
@@ -186,12 +205,23 @@ export async function verifyInternalSelfTest({
     { workspaceRoot: root, completionRef: ref, expectedIdentity: identity },
     new Map(),
     io,
+    verificationContext,
   );
   const bad = (detail) => fail("SELFTEST_INVALID", detail);
   if (ev.phase !== "watchdog-selftest") bad("phase");
   const detail = selftestOutcome(ev, parentRunId, supervisor);
   if (detail !== null) bad(detail);
+  if (identity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3") {
+    const budget = originalContextBudget(verificationContext);
+    assertBudgetHandle(budget);
+    budget.assertLive("V3 selftest parent probe");
+  }
   const parentLive = await probe(probeIdentity, supervisor);
+  if (identity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3") {
+    const budget = originalContextBudget(verificationContext);
+    assertBudgetHandle(budget);
+    budget.assertLive("V3 selftest parent admission");
+  }
   if (parentLive !== "same-live") bad("parent not live");
   return freezeDeep({
     runId: ev.runId,

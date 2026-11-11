@@ -137,6 +137,12 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/receipt-verification-v2.mjs",
   "train/scripts/browser_eval/resource-quality-schema.mjs",
   "train/scripts/browser_eval/watchdog-operation-context.mjs",
+  "train/fixtures/browser-protocol-v3.json",
+  "train/scripts/browser_eval/preflight-readiness-v3.mjs",
+  "train/scripts/browser_eval/preflight-evidence-v3.mjs",
+  "train/scripts/browser_eval/verdicts-v3.mjs",
+  "train/scripts/browser_eval/record-finalization-v3.mjs",
+  "train/scripts/browser_eval/process-preflight-quality.mjs",
 ]);
 
 const fail = (detail) => {

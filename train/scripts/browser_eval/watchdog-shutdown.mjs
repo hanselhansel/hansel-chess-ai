@@ -72,6 +72,8 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
         ...(res.final.schemaVersion === 2 ? { schemaVersion: 2,
           policyId: res.final.evaluationPolicy.policyId, strengthVerdict: copyDeep(res.final.strengthVerdict),
           resourceVerdict: copyDeep(res.final.resourceVerdict), closureResourceVerdict: copyDeep(res.final.closureResourceVerdict),
+          ...(res.final.evaluationPolicy.policyId === "tinyaz-separate-verdicts-v3"
+            ? { scientificReadinessVerdict: copyDeep(res.final.scientificReadinessVerdict) } : {}),
           completionRef: copyDeep(res.completionRef) } : {}),
       };
     }

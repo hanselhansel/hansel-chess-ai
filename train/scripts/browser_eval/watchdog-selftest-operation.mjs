@@ -1,5 +1,6 @@
 // WHOLE original fixed-first preflight handshake, moved for readable capacity.
 // Parent pause, original bound, actual abort and receipt/ACK ordering stay here.
+import { createBudgetHandle } from "./process-budget.mjs";
 import { copyDeep, isObj } from "./protocol-values.mjs";
 import { verifyInternalSelfTest } from "./prerequisites.mjs";
 const fail = (code, detail) => {
@@ -84,7 +85,17 @@ export async function runSelftestBegin(ctx, records, runInternalSelfTest, msg, a
         ? copyDeep(result.completionRef)
         : null;
     if (!completionRef) throw fail("SELFTEST_UNAVAILABLE", "no completionRef");
-    const verified = await verifyInternalSelfTest({
+    const v3 = ctx.commonIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3";
+    const budget = v3 ? createBudgetHandle({ deadlineMonoMs: arm.deadlineMonoMs,
+      clock: { setTimeout, clearTimeout }, nowMonoMs: ctx.nowMonoMs }) : null;
+    const assertLive = () => {
+      budget.assertLive("selftest verified admission");
+      if (ctx.stopped() || !ctx.admissionOpen() || controller.signal.aborted)
+        throw fail("OPERATION_TIMEOUT", "selftest admission closed");
+    };
+    let verified;
+    try {
+      const input = {
       workspaceRoot: ctx.workspaceRoot,
       completionRef,
       parentRunId: ctx.runId,
@@ -108,7 +119,12 @@ export async function runSelftestBegin(ctx, records, runInternalSelfTest, msg, a
           deadlineMonoMs: arm.deadlineMonoMs,
         });
       },
-    }, ctx.io);
+      };
+      verified = ctx.preflightQualityScope === null || ctx.preflightQualityScope === undefined
+        ? await verifyInternalSelfTest(input, ctx.io, budget === null ? undefined : { budget })
+        : await ctx.preflightQualityScope.verifyAndOpen(input, { io: ctx.io, budget }, assertLive);
+      if (v3) assertLive();
+    } finally { budget?.dispose(); }
     st.completionRef = copyDeep(verified.completionRef);
     st.verified = verified;
     const remainingMs = Math.floor(arm.deadlineMonoMs - ctx.nowMonoMs());

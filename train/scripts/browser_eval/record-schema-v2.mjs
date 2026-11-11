@@ -22,7 +22,8 @@ import {
 } from "./schema-constants.mjs";
 import { assertCommonIdentity } from "./identity-schema.mjs";
 import { RECORD_FIELDS } from "./record-fields.mjs";
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { V2_POLICY, V3_POLICY, protocolPathForPolicy } from "./evaluation-policy.mjs";
+import { assertVerdictsV3 } from "./verdicts-v3.mjs";
 import { assertVerdicts } from "./verdicts-v2.mjs";
 import { assertResourceEvidence, assertQualityCheckpoint } from "./resource-quality.mjs";
 
@@ -34,12 +35,18 @@ const FIELDS = {
   completion: [...RECORD_FIELDS.completion, ...additions],
 };
 const verdictFields = (v) => {
-  eqLiteral(v.evaluationPolicy, V2_POLICY, "record policy");
-  assertVerdicts(
+  if (v.evaluationPolicy === null) schemaFail("SCHEMA_LITERAL", "schema2 policy required");
+  protocolPathForPolicy(v.evaluationPolicy);
+  const v3 = deepEqual(v.evaluationPolicy, V3_POLICY);
+  const assert = v3 ? assertVerdictsV3 : assertVerdicts;
+  assert(
     Object.fromEntries(
-      ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "status", "exitCode"].map((k) => [k, v[k]]),
+      ["strengthVerdict", "resourceVerdict", "closureResourceVerdict", "status", "exitCode",
+        ...(v3 ? ["scientificReadinessVerdict"] : [])].map((k) => [k, v[k]]),
     ),
   );
+  if (v3 && (v.phase === "preflight") === (v.scientificReadinessVerdict.status === "not-applicable"))
+    schemaFail("SCHEMA_COHERENCE", "readiness phase");
   const expected = v.phase === "watchdog-selftest" ? "selftest-prefix" : "phase";
   if (
     v.resourceVerdict.scope !== expected ||
@@ -194,7 +201,8 @@ const VALIDATORS = {
   manifest(v, n) {
     exactOnly(v, FIELDS.manifest, n);
     head(v, n);
-    eqLiteral(v.evaluationPolicy, V2_POLICY, "manifest policy");
+    if (v.evaluationPolicy === null) schemaFail("SCHEMA_LITERAL", "schema2 policy required");
+    protocolPathForPolicy(v.evaluationPolicy);
     vInputs(v.inputs, `${n}.inputs`);
     eqLiteral(v.limits, FIXED_LIMITS, `${n}.limits`);
     eqLiteral(v.requiredCheckIds, [...REQUIRED_CHECK_IDS[v.phase]], `${n}.requiredCheckIds`);
@@ -236,7 +244,7 @@ const VALIDATORS = {
   },
 
   final(v, n) {
-    exactOnly(v, FIELDS.final, n);
+    exactOnly(v, [...FIELDS.final, ...(deepEqual(v.evaluationPolicy, V3_POLICY) ? ["scientificReadinessVerdict"] : [])], n);
     head(v, n);
     outcome(v, n);
     verdictFields(v);
@@ -255,7 +263,8 @@ const VALIDATORS = {
     if (v.cleanup.scope !== scope) schemaFail("SCHEMA_LITERAL", `${n}.cleanup.scope`);
     if (!CHECK.obj(v.summary)) schemaFail("SCHEMA_TYPE", `${n}.summary`);
     assertResourceEvidence(v.resourceEvidence);
-    if (v.resourceEvidence.runId !== v.runId || v.resourceEvidence.phase !== v.phase)
+    if (v.resourceEvidence.runId !== v.runId || v.resourceEvidence.phase !== v.phase ||
+      v.resourceEvidence.policyId !== v.evaluationPolicy.policyId)
       schemaFail("SCHEMA_COHERENCE", "resource evidence binding");
     if (v.analysisEligible !== v.strengthVerdict.analysisEligible)
       schemaFail("SCHEMA_COHERENCE", "analysis eligibility");
@@ -282,7 +291,7 @@ const VALIDATORS = {
   },
 
   completion(v, n) {
-    exactOnly(v, FIELDS.completion, n);
+    exactOnly(v, [...FIELDS.completion, ...(deepEqual(v.evaluationPolicy, V3_POLICY) ? ["scientificReadinessVerdict"] : [])], n);
     if (v.kind !== "tinyaz-phase-completion") schemaFail("SCHEMA_LITERAL", `${n}.kind`);
     head(v, n);
     outcome(v, n);

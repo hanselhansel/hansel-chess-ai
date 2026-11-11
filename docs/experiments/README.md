@@ -733,3 +733,244 @@ reads, edits, byte comparisons and Git inspection only. Source-ready evidence
 is E20/task-19-source-ready-report.md and E20/task-19-source-ready-pins.json;
 E20 is the existing `5415eb97-ed40-4c92-8633-01764e186014` evidence directory.
 The experiment index and existing ledger remain the current status owners.
+
+## Task20 connected V3 implementation checkpoint (2026-11-11)
+
+The approved V3 implementation is authored on `feat/tinyaz-browser-harness`
+from committed Split B `32ede424e787b40ccfd9f887880c6b2d9125d797`.
+Root alone runs gates and commissions independent review. The implementer has
+performed source edits, static reads, hashes, Python AST parsing and Git
+inspection only. No project import, test, Native operation, browser, model,
+phase, commit or publication was executed by the implementer. Test results
+remain UNRUN at this checkpoint. Historical results above retain their dated
+scope. No new scientific or runtime phase result is claimed.
+
+Current functional membership is135, preserving the exact original127 prefix.
+Its ordered suffix is resource-quality-schema.mjs, watchdog-operation-context.mjs,
+train/fixtures/browser-protocol-v3.json, preflight-readiness-v3.mjs,
+preflight-evidence-v3.mjs, verdicts-v3.mjs, record-finalization-v3.mjs and
+process-preflight-quality.mjs. All mjs names use train/scripts/browser_eval/.
+The exact96 TEST owners include seven V3 leaves. The restored policy leaf is
+byte-identical to the qualified recognition-only OLD RED. Timing, graph and
+Native controls are FIXED contrasts and prospective implementation validation.
+
+V3 is selected only by the exact browser-protocol-v3.json path, layout2 and
+`{policyId:"tinyaz-separate-verdicts-v3",recordSchemaVersion:2,softPhases:["preflight","compare"]}`.
+V1/V2 fixtures, V2 policy literal, old W sources, model/metadata, all hard limits
+and statistics remain unchanged. V3 final/completion add only the derived
+scientificReadinessVerdict. The complete graph independently reconstructs it.
+Ready preflight with allowed completed periodic quality loss keeps failed
+local/closure resource grades and aggregate inconclusive/2. Only V3 compare
+admits that exact verified parent; finalizer-gone probes remain mandatory.
+A full40 scientific comparison can remain eligible while retaining the actual
+failed preflight resource grade and PREREQUISITE_RESOURCE_FAILURE. This never
+certifies continuous RSS coverage, a latency cure or Elo.
+
+The approved functional contract remains the canonical V3 software design.
+The current API, test map, immutable-byte checks, roster/import closure,
+code-to-document comparison and Root gate commands are recorded in
+`task-20-source-ready-report.md` and `task-20-source-ready-pins.json` under
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+
+### Task20 runtime repair1. Root rerun pending
+
+Root's identical recognition owner passed1/1 with natural exit0. The first
+seven-owner gate then recorded49 tests,25 passes,24 failures and natural exit1,
+with zero skipped or cancelled tests. Both raw streams and the process journal
+closed. These results are retained history, not a successful V3 gate.
+
+Four fixture binding errors are repaired: ordinary protocol JSON parsing,
+explicit capture-policy selection, complete parent/child discovery census and
+matching fixed Python runtime/monitoring descriptors. Production validation,
+identity, union safety and scientific requirements remain unchanged. All
+repair tests are UNRUN by implementer. Root reruns the seven owners before
+full96 and other required gates. No scientific phase or phase GO is claimed.
+
+
+### Task20 runtime repair2. Diagnostic execution pending
+
+Root's second new-seven gate recorded44 tests,40 passes and4 failures. The
+held-read graph child exceeded its original timeout and Root sent an attested
+external SIGTERM after217 seconds. The gate is ineligible as a pass. Exact
+pins and both raw streams/journal closed. Full96 and later gates remain unrun.
+
+Three control repairs restore immutable file mode, full raw-handle adoption
+and an original-target650ms monotonic delivery hold. The terminal verifier's
+underlying error was removed by old fixture cleanup. Its actual failed raw
+logs/receipt/journal now remain retained and appear in the assertion so Root
+can diagnose that cause. No production guard or phase authority changed.
+Repair tests are UNRUN by implementer. No new phase GO is claimed.
+
+
+### Task20 runtime repair3. Root new-seven rerun pending
+
+Root's terminal diagnostic failed0/1 with natural exit1 in4.639127042 seconds,
+exact630 pins and complete raw/owner closure, without intervention. Its actual
+retained error was `ReferenceError: path is not defined` in the generated test
+loader. Adding the missing `node:path` import repairs that fixture dependency.
+No identity/environment validation changed. Worker repair tests remain UNRUN;
+Root resumes new-seven. Earlier failed evidence remains factual history.
+
+
+### Task20 production review. Causal TEST-only checkpoint
+
+Root's new-seven gate passed49/49 in47.197463084 seconds with natural exit0,
+no skipped/cancelled tests or intervention,633 exact pins and closed raw owner
+streams/journal. Its seven genuine Native controls completed with no errors.
+Full96 remains pending. A separate static review identified four production
+gaps in actual Python selection, original-context binding, per-effect event/
+prepared reads and schema2 null policy. New causal tests are authored under
+the existing96-owner roster while production stays unchanged for Root RED.
+Worker has run no tests. No scientific phase or new phase GO is claimed.
+
+
+### Task20 causal test qualification and map correction
+
+Root's first causal run reported29 tests,19 passes and10 failures, natural
+exit1 in27.461022209 seconds,638 exact pins and complete raw owner closure.
+Nine failures establish their claimed gaps. The held-publication counter
+included required containment reads; its count needs the corrected control.
+The revised control separately permits and verifies real cleanup, while scope
+controls cover original budget/IO replacement during graph and probe awaits.
+Production stays unchanged. Exact proposed changed-input count77 preserves
+runtime135/TEST96. Worker tests remain UNRUN; Root reruns causal controls.
+
+
+### Task20 reviewed production repair1. Root GREEN pending
+
+Root's corrected causal RED recorded55 tests,41 passes and14 intended target
+failures, natural exit1 in44.867840958 seconds, no skips/cancellations or
+intervention,643 exact pins and closed raw streams/owner journal. All target
+assertions were reached, including required real containment before the
+positive prepared-open failure and four original scope-reference mutations.
+This result remains RED evidence; no passing repair execution is claimed.
+
+The reviewed source repair now binds each verification wrapper to its original
+genuine handle, propagates context through event/prepared positive effects,
+retains original scope IO/budget across graph/probe awaits, rejects schema2
+null policy and admits V3 in the actual fixed Python CLI selector. Actual
+close/containment debt, legacy V1/V2 behavior, scientific criteria and numeric
+limits remain. Exact changed inputs77 retain runtime135/TEST96. Worker ran no
+tests. Root causal GREEN55/new7/full96/Python/app/typecheck and fresh scoped
+review remain pending. No scientific phase, strength result or phase GO follows.
+
+
+### Task20 legacy Native timer stimulus repair. Root rerun pending
+
+Root's causal GREEN passed55/55 and new-seven passed63/63, both with natural
+exit0, no skipped/cancelled tests or intervention, exact pins and closed raw
+owner streams/journal. The first full96 run reported1139 tests,1138 passes and
+one failure, natural exit1 in207.124385083 seconds,648 exact pins and complete
+raw/owner closure. Its only failure was the legacy Native test's650ms stimulus.
+The retained CHECK hold was649321708ns,678292ns below650000000ns; the comparison
+hold was652685000ns and both observer diagnostics had no errors.
+
+The existing legacy TEST now mirrors the V3 delivery hook: it rechecks the
+original captured hrtime target and rearms only remaining time if a timer
+arrives early. Retention overflow still force-releases with a failed diagnostic.
+The650ms assertion,500ms policy, original work/cleanup bounds, actual held
+bytes/order and required lifetime/process/pipe/FD closure remain unchanged.
+No production, protocol-fixture, operator or model byte changed. Exact changed
+inputs78 retain runtime135 and TEST96. Worker repair tests are UNRUN. Root
+reruns this Native owner, full96 and remaining Python/app/typecheck gates.
+No scientific phase or new phase GO is claimed.
+
+
+## Task20 implementation and required tests validated (2026-11-11)
+
+Current implementation and required test gates are validated on the frozen
+Task20 source. Root's gate08 serial96 run passed1139/1139, with zero failures,
+skips or cancellations, natural exit0 in207.788426958 seconds. Isolated legacy
+Native passed1/1; Python Native58/58, wire19/19 and terminal8/8; app scripts
+191/191 and core184/184; `tsc --noEmit` exited0. Every owner retained652 exact
+before/after/current pins, actual process/BOTH raw pipe/journal closure and no
+intervention. Earlier causal55/new-seven63 are passing subsets, not additional
+counts. Prior failed runs and the external intervention remain immutable history.
+The full suite's two TinyazBookkeepingObserverWarning messages are deliberate
+null/undefined observer fault controls. They are expected and were not suppressed.
+
+Current changed inputs78 preserve functional runtime135, exact96 TEST leaves,
+protected23/model weights, old protocol data/operators and the original
+scientific/numeric contracts. The tested runtime/SOURCE/TEST bytes are frozen.
+Original-context, per-effect prepared/event guards, actual CLI selection and
+closed schema2 policy fixes match the affected contracts. Implementation and
+tests validated does not establish a scientific phase result.
+
+Fresh scoped Sol Max review, Root acceptance, commit/publication and Task21
+remain pending. ALL V3 scientific CHECK/control/parity/preflight/full40 phases
+remain UNRUN. No phase GO, timing cure, continuous RSS proof or Elo claim follows.
+Root's authoritative gate audits/raw receipts are under E20/task20-gates-08/,
+with `root-task20-gates-08-<label>-audit.json` and
+`root-task20-remaining-test-gates-summary.json` in E20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+The final code-to-document comparison and docs-only pins/delta accompany
+`E20/task20-green-docs-ready-report.md`. Earlier appended checkpoints retain
+their dated scope; this is the current implementation/test status.
+
+
+### Task20 final review handoff residual. TEST-only checkpoint
+
+The prior required green gate results remain factual frozen history. Fresh
+scoped final review found one Important residual: verdict reconstruction reads
+the mutable wrapper budget after the real event-helper await and can project
+a genuine later handle into a new collector carrier. Later graph rejection
+does not undo positive IO after the original cutoff. Candidate review approval,
+Root acceptance, commit/publication and Task21 remain pending; all V3 scientific
+phases remain UNRUN with no phase GO or Elo/cure claim.
+
+One new existing-terminal-leaf regression exercises actual complete graphs,
+real event helper guards and real collectors. An observational microtask hook
+mutates the same wrapper only after the helper's final original-handle guard.
+It tests expiry at that handoff and expiry while genuine collector metadata is
+held. It requires no subsequent positive metadata/open/read/replay, actual
+issued-work/FD settlement and graph rejection. Production stays unchanged for
+Root's causal RED. Worker tests remain UNRUN. Runtime135/TEST96 stay exact.
+
+
+### Task20 final collector handoff repair. Source ready, rerun pending
+
+Root's actual terminal causal RED passed5/6 and failed the one intended handoff
+regression, natural exit1 in11.776329000 seconds,657 exact pins, no skips,
+cancellations or intervention, and complete raw/owner closure. Both actual
+scenarios used substituted genuine B: expiry-at-handoff admitted114 metadata,
+23 opens,46 reads and2 replays after A expiry; held metadata admitted113/23/46/2.
+Both owners genuinely settled. This establishes the residual without a setup
+fault. Earlier1139/1139 and other green gates remain dated history.
+
+The minimum receipt-verification-v2 repair now revalidates original association,
+genuine handle methods and actual cutoff immediately after events await, before
+collector handoff and after the awaited collector. The collector receives the
+handle returned by that guard, never a raw mutable-field projection. Its same
+one-carrier, original IO and real close/debt behavior remain unchanged. V1/V2
+omitted-context routes keep their existing behavior. Runtime135/TEST96 and
+changed inputs78 remain exact; the causal TEST bytes are unchanged.
+
+Current repair GREEN, final full96/Python/app/typecheck, fresh scoped review,
+Root acceptance, commit/publication and Task21 remain pending. All V3 scientific
+phases remain UNRUN. No phase GO, cure, continuous coverage or Elo claim follows.
+Worker ran no runtime or tests. Required semantics are unchanged; this repairs
+implementation to the original approved handle contract.
+
+
+## Task20 reviewed and tested source ready for Root green commit (2026-11-11)
+
+Root gate10 full96 passed1140/1140, natural exit0 in207.116713958 seconds,
+with zero failures, skips, cancellations or intervention. The identical
+handoff regression passed6/6 with zero collector/post-expiry effects in both
+settled scenarios. Python58/19/8, scripts191, core184 and `tsc --noEmit` passed.
+Recorded owners retained662 exact execution pins and complete actual process,
+BOTH raw pipe and journal closure. Two deliberate null/undefined observer
+warnings remain qualified and unsuppressed. Subsets are not added to totals;
+prior1139/1139 and every failed run remain their dated immutable history.
+
+Fresh scoped Sol Max re-review passed and closed the last original-handle
+residual; all four production findings are addressed. The reviewed/tested
+source is READY for Root's green commit/publication action. Runtime135/TEST96,
+changed inputs78, protected23, original limits and proof ownership remain.
+Scientific execution is separately gated. ALL V3 scientific CHECK/control/
+parity/preflight/full40 phases remain UNRUN at this checkpoint, without phase
+GO, timing cure or Elo claim. This status does not record a commit/publication.
+Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
+E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
+comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.

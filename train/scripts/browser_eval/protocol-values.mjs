@@ -1,8 +1,7 @@
-// Stateless closed driver/collector/native compound field validators and
-// shared predicates/constants for the supervisor protocol. No registry or
-// channel factory here: identifier reservation, signal/exec/teardown
-// authorization and per-channel state remain owned by
-// supervisor-protocol.mjs, which passes that authority to the handlers.
+// Closed driver/collector/native validators and original-context association.
+// Shared predicates remain used by the supervisor protocol. The private
+// association owns no IO, clock, handle or verification authority. Process
+// registry and channel authorization stay in supervisor-protocol.mjs.
 
 import { assertProcessIdentity } from "./record-schema.mjs";
 import { canonicalBytes, parseCanonicalBytes } from "./canonical-json.mjs";
@@ -22,6 +21,19 @@ export const isObj = (v) => {
   if (v === null || typeof v !== "object" || Array.isArray(v)) return false;
   const p = Object.getPrototypeOf(v);
   return p === Object.prototype || p === null;
+};
+
+const CONTEXT_BUDGETS = new WeakMap();
+export const originalContextBudget = (context) => {
+  if (!isObj(context)) throw new TypeError("VerificationContextV3 required");
+  const keys = Reflect.ownKeys(context);
+  const field = Object.getOwnPropertyDescriptor(context, "budget");
+  if (keys.length !== 1 || keys[0] !== "budget" || !field || !Object.hasOwn(field, "value"))
+    throw new TypeError("original budget data property required");
+  if (!CONTEXT_BUDGETS.has(context)) CONTEXT_BUDGETS.set(context, field.value);
+  if (CONTEXT_BUDGETS.get(context) !== field.value)
+    throw new TypeError("original verification budget replaced");
+  return field.value;
 };
 
 export const strNE = (v) => typeof v === "string" && v.length > 0;

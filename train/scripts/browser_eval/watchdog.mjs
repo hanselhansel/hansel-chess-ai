@@ -148,6 +148,7 @@ export function createWatchdogFacade({ config, capabilities }, runLifecycle = ru
   // the run. Late end/finish can never revive it.
   const latchStop = (reason) => {
     if (state.stopReq !== null) return;
+    capabilities.preflightQualityScope?.close();
     state.stopReq = {
       reason: strNE(reason) ? reason : "REQUESTED",
       atMonoNs: nowNs(),
@@ -182,6 +183,8 @@ export function createWatchdogFacade({ config, capabilities }, runLifecycle = ru
     makeError: fail,
     evaluationPolicy: config.workspace.commonIdentity.evaluationPolicy ?? null,
     phase: config.phase,
+    runId: config.runId,
+    preflightQualityReader: capabilities.preflightQualityScope?.reader ?? null,
     nowNs: () => clock.nowMonoNs(),
   });
   const requestStop = (reason) => latchStop(reason);
@@ -207,6 +210,7 @@ export function createWatchdogFacade({ config, capabilities }, runLifecycle = ru
       latchStop("FINAL_INTEGRITY");
       return;
     }
+    capabilities.preflightQualityScope?.close();
     state.finishReq = copyDeep(msg);
     state.ops?.closeOrdinaryAdmission();
     captureCleanupBound();

@@ -1,6 +1,6 @@
 // Pure bounded monitor-owned ledger. No IO, timers, Native calls or proof authority.
 import { CHECK, freezeDeep, oneOf, shape } from "./schema-primitives.mjs";
-import { V2_POLICY } from "./evaluation-policy.mjs";
+import { V2_POLICY, V3_POLICY, protocolPathForPolicy } from "./evaluation-policy.mjs";
 import {
   CAUSES,
   HARD,
@@ -20,12 +20,14 @@ import {
 
 export { assertQualityCheckpoint, assertResourceEvidence } from "./resource-quality-schema.mjs";
 
-export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
+export function createResourceQuality({ runId, phase, evaluationPolicy = V2_POLICY, monitorRunId = runId }) {
+  if (evaluationPolicy === null) fail("resource policy");
+  protocolPathForPolicy(evaluationPolicy);
   let open = null;
   let clockNs = null;
   const s = {
     schemaVersion: 2,
-    policyId: V2_POLICY.policyId,
+    policyId: evaluationPolicy.policyId,
     runId,
     phase,
     monitorRunId,
@@ -115,6 +117,13 @@ export function createResourceQuality({ runId, phase, monitorRunId = runId }) {
     if (s.completedCycles === 0 || s.coverageEndNs !== null) fail("inactive ledger");
   };
   return Object.freeze({
+    ...(evaluationPolicy.policyId === V3_POLICY.policyId ? {
+      noteObservedAggregate(rssBytes) {
+        nat(rssBytes);
+        if (s.closureKind !== "monitor-stop" || !s.hardReasons.includes("NATIVE")) fail("hard observed aggregate");
+        peak(rssBytes, false);
+      },
+    } : {}),
     bootstrap(c) {
       if (s.completedCycles !== 0 || !inspectCycle(c)) fail("strict bootstrap");
       clockNs = ns(c.finishedNs);

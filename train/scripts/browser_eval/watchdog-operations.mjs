@@ -11,6 +11,7 @@
 // the unchanged wire recordSeq. No copied registry, second writer, phase-clock
 // reset, wire field, process launcher, direct kill or final-writer authority.
 import { copyDeep, isObj } from "./protocol-values.mjs";
+import { createBudgetHandle } from "./process-budget.mjs";
 import { verifyInternalSelfTest } from "./prerequisites.mjs";
 import { issueActual } from "./artifact-files.mjs";
 import { runSelftestBegin } from "./watchdog-selftest-operation.mjs";
@@ -205,6 +206,9 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
     const assertEffectLive = () => {
       if (ctx.nowMonoMs() >= deadlineMonoMs) throw fail("OPERATION_TIMEOUT", "proof effect past cleanup fence");
     };
+    const verificationBudget = ctx.commonIdentity.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3"
+      ? createBudgetHandle({ deadlineMonoMs,
+        clock: { setTimeout, clearTimeout }, nowMonoMs: ctx.nowMonoMs }) : null;
     const proofIo = Object.freeze({ retainActual: ctx.io.retainActual, assertEffectLive });
     try {
       // Prearm the verifier body through the SAME actual retainer BEFORE
@@ -232,6 +236,7 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
             },
           },
           proofIo,
+          verificationBudget === null ? undefined : { budget: verificationBudget },
         ),
       );
       assertEffectLive();
@@ -242,7 +247,7 @@ export function createWatchdogOperations({ ctx, records, runInternalSelfTest = n
     } catch (error) {
       ctx.recordFault(error);
       return null;
-    }
+    } finally { verificationBudget?.dispose(); }
   };
 
   // Validated d2s dispatch. Control messages mutate lifecycle synchronously so

@@ -12745,3 +12745,468 @@ reads, edits, byte comparisons and Git inspection only. Source-ready evidence
 is E20/task-19-source-ready-report.md and E20/task-19-source-ready-pins.json;
 E20 is the existing `5415eb97-ed40-4c92-8633-01764e186014` evidence directory.
 The experiment index and existing ledger remain the current status owners.
+
+## Task20 connected V3 implementation checkpoint (2026-11-11)
+
+The approved V3 implementation is authored on `feat/tinyaz-browser-harness`
+from committed Split B `32ede424e787b40ccfd9f887880c6b2d9125d797`.
+Root alone runs gates and commissions independent review. The implementer has
+performed source edits, static reads, hashes, Python AST parsing and Git
+inspection only. No project import, test, Native operation, browser, model,
+phase, commit or publication was executed by the implementer. Test results
+remain UNRUN at this checkpoint. Historical results above retain their dated
+scope. No new scientific or runtime phase result is claimed.
+
+Current functional membership is135, preserving the exact original127 prefix.
+Its ordered suffix is resource-quality-schema.mjs, watchdog-operation-context.mjs,
+train/fixtures/browser-protocol-v3.json, preflight-readiness-v3.mjs,
+preflight-evidence-v3.mjs, verdicts-v3.mjs, record-finalization-v3.mjs and
+process-preflight-quality.mjs. All mjs names use train/scripts/browser_eval/.
+The exact96 TEST owners include seven V3 leaves. The restored policy leaf is
+byte-identical to the qualified recognition-only OLD RED. Timing, graph and
+Native controls are FIXED contrasts and prospective implementation validation.
+
+V3 is selected only by the exact browser-protocol-v3.json path, layout2 and
+`{policyId:"tinyaz-separate-verdicts-v3",recordSchemaVersion:2,softPhases:["preflight","compare"]}`.
+V1/V2 fixtures, V2 policy literal, old W sources, model/metadata, all hard limits
+and statistics remain unchanged. V3 final/completion add only the derived
+scientificReadinessVerdict. The complete graph independently reconstructs it.
+Ready preflight with allowed completed periodic quality loss keeps failed
+local/closure resource grades and aggregate inconclusive/2. Only V3 compare
+admits that exact verified parent; finalizer-gone probes remain mandatory.
+A full40 scientific comparison can remain eligible while retaining the actual
+failed preflight resource grade and PREREQUISITE_RESOURCE_FAILURE. This never
+certifies continuous RSS coverage, a latency cure or Elo.
+
+The approved functional contract remains the canonical V3 software design.
+The current API, test map, immutable-byte checks, roster/import closure,
+code-to-document comparison and Root gate commands are recorded in
+`task-20-source-ready-report.md` and `task-20-source-ready-pins.json` under
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+### V3 helper and original-budget contracts
+
+The new pure exports are assertScientificReadinessV3/deriveScientificReadinessV3/
+classifyVerifiedParentV3, assertVerdictsV3/deriveVerdictsV3 and compileFinalV3.
+Their closed shapes and complete reason predicates are the canonical V3
+sections5/8. Independent explicit failed science remains a proven violation
+(failed1) even when original producer claims requested passed. Original claims
+are retained unchanged. Missing/unreadable/bad-bound bytes fail graph creation.
+The pure compiler has no IO, Native, writer or clock authority.
+
+collectPreflightEvidenceV3(options,{io,budget}) reads exactly20 ordered ready/
+move observations plus throughput and the two selected A/A PGNs through the
+same confined graph IO/actual registrar. It verifies byte length/hash, awaits
+retained genuine replayCheckpointPgn promises, rechecks the original budget
+and invokes synchronous validatePreflightEvidenceV3 on detached observations
+and replay tuples. The validator checks fixed64 requests, distinct candidate
+sessions, exact successful operation paths/order, legal moves, deterministic
+signatures, five-latency arithmetic, cold readiness, fixed estimate, both
+colors, terminal draw, frozen checkpoint/event/ref/FEN/result bindings.
+
+VerificationContextV3 is exactly `{budget}`. The budget must be a genuine
+createBudgetHandle object whose original own data-method identities remain
+unchanged. assertBudgetHandle uses a private WeakMap without invoking getters.
+Forged/spread/proxy/noop/modified-original handles reject. Legacy handle shape,
+mutability, clocks, min-only narrow and dispose behavior remain unchanged.
+The same original cutoff survives producer A/B, prepared verification,
+publication and fresh canonical readback. The private prepared association
+carries verificationContext for V3 only. publishCompletionFile accepts that
+private optional third argument and guards pre-rename/publication stages;
+V1/V2 arguments and behavior remain unchanged. Failure still retains actual
+read/replay/FD debt and the first error; no elapsed wait proves physical close.
+
+verifyReceipt(options,io,verificationContext), admitPhase(options,io,context),
+verifyInternalSelfTest(options,io,context), verifyReceiptGraph(options,memo,io,context)
+and verifyPreparedReceiptGraph(options,context) forward the same original V3
+budget through ancestors, nested graphs, event reads and fresh collectors.
+Setup uses its captured budget. Admission, selftest and cleanup use their
+original work/arm/cleanup absolute end. A missing V3 context rejects before
+new graph work. V1/V2 retain optional legacy untimed paths.
+
+### Private scope, resource boundary and closure
+
+createPreflightQualityScope({runId,evaluationPolicy,phase}) returns exactly the
+frozen private `{reader,verifyAndOpen,close}`. Only trusted actual supervisor
+assembly holds control. The monitor receives its opaque reader. Pure
+assertPreflightQualityScope validates the same run/control association.
+verifyAndOpen(input,{io,budget},assertLive) awaits genuine internal-selftest
+verification and the live parent probe, then rechecks original budget and
+admission/abort guards before opening. The fixed-first handshake alone calls
+it. Forged, duplicate, late, wrong-run and stopped activation rejects.
+
+Only private periodic work in eligible exact phases softens the original
+PERIODIC_COMPLETION_GAP/PERIODIC_NATIVE_DURATION/PERIODIC_OBSERVER_AGE causes.
+Bootstrap, public sample, selftest prefix and every explicit proof/cleanup
+remain strict. Scope is checked at dispatch and original precommit fence.
+Ordinary SDK/game close and final integrity retain scope. First accepted
+finish, first stop or monitor shutdown irreversibly revokes it before Native's
+stopping fence. There is no fresh operation clock, timer or second ledger.
+A decoded live-handle settled negative fenced diagnostic remains non-proof;
+lateDrops.count alone is not a readiness blocker. Positive caps, expiry,
+malformed response, unsettled debt or missing independent strict cleanup
+remain hard. Current cleanup requires timely Native accounting and all actual
+identity/listener/workload/collector-last proofs, independently of historical
+coverage. Strict selftest-workload still requires continuous prefix coverage.
+
+### V3 operators and commands
+
+The five new W modules are separate-verdicts-shared-v3.mjs, graph-v3.mjs,
+owned-command-v3.mjs, verify-phase-v3.mjs and owner-controls-v3.mjs.
+The inert separate-verdicts-release-v3.template.json remains PREPARATION_ONLY.
+Operational release schema3 is distinct from experimental record schema2.
+Its exact eight SCRIPTS are the three unchanged task-3 stream/process-owner/
+control-child modules and the five V3 modules. Old W bytes stay immutable.
+Shared and graph are side-effect-free on import and never import a CLI.
+Deferred graph imports occur only after the released archived135 pin barrier.
+
+`node W/separate-verdicts-owned-command-v3.mjs --run <phase> <release>` and
+`node W/separate-verdicts-verify-phase-v3.mjs --verify <phase> <release>` retain
+the closed CLI grammar. Cold CHECK synchronously validates qualified CURRENT
+pins/clean committed source and both roots absent. It creates no graph
+context or metadata promise before launch. Initial CHECK readback still
+requires the full new archive and genuine closed graph. Successors open one
+90s prior-recheck context, await CHECK/parity/preflight in order, recheck pins
+and physically close that context before any output/claim/spawn.
+
+openV3ReadOnlyGraphContext returns `{release,context}` with exact private
+purpose, startedMonoNs, deadlineMonoMs, budget, io, assertLive and close fields.
+The single monotonic end is captured before release/source reads, preserved
+through pins/imports and every recursive replay. close returns settled/budget
+receipts only after actual debt joins. readPhase borrows that context without
+writing saved verification. assertPrior awaits fresh graph bytes; saved
+readback0 is provenance. Only the verifier CLI writes verification.json once,
+after successful graph/pin checks and physical context closure. Readback0,
+experiment2 and operator2 remain distinct. No automatic next phase exists.
+
+### Pending Root gates and controls
+
+The seven V3 owners cover recognition, exact policy/wire/Python compatibility,
+private scope and strict controls, independent readiness/reducer facts, real
+Recorder/prepared/recursive graphs, actual full40 paired compilation and
+operator cold-CHECK/ready2/tamper tripwires. Native uses the unchanged bounded
+650ms delivery stimulus in serial V1/V2/V3 lanes, with real current cleanup,
+stop and actual child/BOTH-pipe/task closure. Unsupported Native platform is
+failure, never skip. Controlled graphs/SDK observations are TEST fixtures,
+never scientific phase or model-search results.
+
+The operator control creates an isolated clean Git checkout and an actual
+qualified-current release. Its TEST-only loader changes repository/plan
+locations while keeping the fixed installed Python. It uses real original
+command owners and genuine independent verifier CLI owners. A successful
+fresh assertPrior precedes selected-PGN tampering; rejection must preserve
+saved verification bytes and leave claim/output absent with zero launches.
+Cold CHECK reaches only a launch-admission tripwire. Occupied roots and a
+missing initial archive reject. No browser/model/CHECK result is invented.
+
+Root runs the identical recognition GREEN, all seven new owners, the explicit
+sorted96-owner serial suite, both isolated Python Native suites, terminal
+identity, app/core/scripts and typecheck. Every changed/new source/test/W
+owner stays below400 readable lines. Full source/TEST/policy/roster pins and
+actual natural exit, raw pipes, journal, FD/timer/task closure are required.
+No future E19 three-binding control is created or executed by this change.
+Root binds it only after a successful fresh committed CHECK and separate GO.
+
+### Task20 private read-boundary budget forwarding
+
+The existing read leaves accept an additional optional private context:
+`confinedRead(root,rel,name,io,context)`,
+`loadRecord(root,rel,kind,declared,io,context)`,
+`verifyInputRefs(root,inputs,io,context)`,
+`confined(root,rel,name,io,context)`, `hashFileRef(abs,rel,io,context)` and
+`phaseArtifactRefs(options,io,context)`. V3 graph/producer calls forward the
+same original context, io and registrar. Every directory metadata/read/hash
+stage guards the genuine original budget before/after actual effects. Owned
+FD close remains exempt from positive admission guards and is always joined.
+V3 hash failure preserves the first read/expiry error across real close failure.
+Omitted context keeps exact V1/V2 effects, optional guards and error behavior.
+
+The collector's mandated second argument stays exactly `{io,budget}`. It
+creates one frozen budget-only view for all its read leaves, borrowing the
+exact original genuine handle, never another handle/end/lifetime. Prepared
+association and graph recursion retain their exact original outer context.
+Read-only W contexts validate the original method identities at every guard
+and retain the original disposer privately for actual timer cleanup.
+
+A producer-path control holds actual metadata at the A/B seal boundary,
+advances its genuine handle's controlled clock to that captured cutoff, and
+requires no subsequent observation/PGN open or replay and no final/completion.
+A separate held-read control verifies the real FD remains open until its actual
+read and close settle, preserving the original error. Both remain UNRUN here.
+
+
+### Task20 observed RSS on a V3 hard failure
+
+Only explicit V3 ledgers expose `noteObservedAggregate(rssBytes)`. Exact V2
+own keys remain `bootstrap,complete,noteAge,setPending,close,noteLateDrop,
+markHard,snapshot,checkpoint`. The private method requires safe integer RSS,
+monitor-stop scope and an existing NATIVE hard reason. It updates only the
+observed peak and sticky >4GiB flag. Bootstrap0 retains null admitted peak
+and admitted clocks. The serialized no-gap peak exception requires V3,
+monitor-stop, non-selftest, NATIVE and equal completed/timely counters.
+All original chronology, safe integer, peak ordering and cap checks apply.
+
+A strict Native-duration failure is latched through the same existing fault
+callback before inspecting later already-decoded union facts. It remains the
+primary Error over supplemental structural, union, aggregation or handle
+failures. Conservative discovery still records ownership obligations. No new
+Native request begins after the known strict failure. Only an already complete
+safe union contributes observed RSS, before throwing the original error.
+Original-handle rejection retains that same safe fact and error. No admitted
+clock, peak, completion, terminal identity or cleanup proof is committed.
+
+With no earlier failure, the actual stopping fence still precedes later scope
+and gap predicates. A live handle yields only the existing fenced diagnostic;
+an expired original handle throws. Actual applicable late metadata uses the
+existing fence/coverage chronology. No bootstrap fence, gap or lateDrop is
+invented. After a prior soft gap, final graph/prefix reconciliation separately
+allows observed-only peak growth only for validated V3 monitor-stop evidence
+with NATIVE hard reason. Every admitted-peak, counter and clock check remains.
+These hard/cap facts force unready science and prevent strength eligibility.
+The focused controls and complete96-owner gates remain UNRUN by implementer.
+
+
+### Task20 runtime repair1 checkpoint (unrun by implementer)
+
+Root's first seven-owner execution recorded25 passes and24 failures. Shared
+fixture setup blocked most genuine graph/Native cases before their assertions.
+The V3 test fixture now reads ordinary protocol JSON through `parseJSONBytes`
+and the existing protocol validator. Canonical graph record parsing stays
+strict. The actual snapshot control supplies explicit V3 capture policy and
+also requires omitted selection to reject. Frozen reopen selects from the
+actual bound workspace and protocol bytes.
+
+The partial-union control now sends a complete discovery census containing
+both live roots and their uncovered child. Ownership admission requires the
+parent's matching full tuple in that same census. It verifies the child becomes
+an owned obligation without a sample or terminal admission, observed RSS stays
+unchanged, the original Native error stays primary and no next request starts.
+The isolated W graph fixture binds both Python runtime fields to the same
+actual fixed installed interpreter descriptor. Identity validation remains
+unchanged. Root alone reruns all seven owners and subsequent required gates.
+
+
+### Task20 runtime repair2 checkpoint. Diagnostic pending
+
+Root's second seven-owner gate recorded40 passes and4 failures across44
+reported tests. The held-read graph child required an external SIGTERM after
+its original timeout, so that gate has no pass eligibility. Retained history
+includes the intervention. Remaining graph cases were not executed there.
+
+The snapshot tamper control restores the original immutable mode after editing
+bytes. The held-read control returns the actual full raw handle, preserving
+stat/read/write/sync/close adoption and real FD-close debt. It races entry
+against early collector settlement and a bounded setup alarm, then releases
+and joins the actual read/close in finally under the original budget.
+The Native delivery hook rechecks the original650ms monotonic target and
+rearms an early timer callback. The observed649875542ns hold remains failed
+history; the500ms policy and Native proof requirements stay unchanged.
+The W owner control preserves actual failing verifier raw logs, closed owner
+receipt and journal, and includes stderr in its assertion. Its underlying
+CHECK verifier failure remains unresolved until Root's diagnostic execution.
+No production admission/validation guard changed. Worker repair tests UNRUN.
+
+
+### Task20 runtime repair3 checkpoint. New-seven rerun pending
+
+Root's terminal diagnostic retained the actual first CHECK verifier error:
+the generated test loader called its stringified rewrite function without
+importing `node:path`. The loader now imports that dependency explicitly.
+The isolated repository/plan mapping and fixed installed Python binding stay
+unchanged. The diagnostic recorded0/1 with natural exit1 and complete raw
+owner closure. Failed evidence remains retained. Worker repair tests UNRUN.
+
+
+### Task20 production review regressions. TEST-only checkpoint
+
+Root's previous new-seven run passed49/49 with natural exit0 and seven real
+Native controls. A separate static review found four production contract gaps;
+that test result does not close them. New causal cases in the existing compat
+and graph leaves cover direct manifest/completion null-policy rejection,
+actual Python CLI V3 selection through the candidate-binding boundary,
+registrar-only event read expiry, mutable original-context handle replacement,
+and held prepared metadata/publication with the same original budget.
+Production remains byte-identical for Root's causal RED execution. No fixes
+or new GREEN results are claimed at this checkpoint. Runtime135/TEST96 stay.
+
+
+### Task20 corrected causal tests and context map. TEST-only v2
+
+Root recorded the first causal29-owner cases as19 passes and10 failures.
+Nine causal gaps reached their intended assertions. The held-publication
+counter also counted mandatory failed-temp containment reads, so its count
+is qualified. Its corrected control distinguishes positive prepared reads
+from the actual canonical-absence transition into failure containment,
+requires real cleanup reads, real FD closure, preserved failed bytes and
+actual store settlement. Cleanup remains allowed after the original cutoff.
+Prepared controls now live as a whole group in the existing terminal leaf.
+
+Four new monitor controls replace the original budget or IO reference during
+genuine scope graph/probe awaits. The proposed implementation captures the
+original handle and IO once plus one budget-only carrier before first await,
+then checks those original references around each graph/probe boundary.
+Production remains unchanged for Root RED and map review. The changed-input
+proposal is exactly77 paths; runtime135 and TEST96 membership stay exact.
+
+
+### Task20 reviewed production repair1. Source ready, Root GREEN pending
+
+The approved private map v2 is implemented after Root's causal RED55 reported
+41 passes and14 intended failures with complete actual raw/owner closure.
+These RED results remain retained evidence. Worker repair tests are UNRUN.
+
+`originalContextBudget(context)` is a private runtime primitive exported by
+protocol-values and re-exported by process-budget. Exactly one own budget data
+property binds each caller wrapper to its first original handle. A replacement,
+accessor or wrong shape rejects without executing a getter. The primitive owns
+no clock, handle, IO, lifetime or proof. Every positive read guard still checks
+that handle's genuine original methods and actual live cutoff. Callers remain
+mutable, and the original wrapper identity passes through prepared association,
+publication and fresh recursive verification. The collector keeps its one
+approved frozen budget-only carrier and unchanged original IO.
+
+Event reconstruction forwards that same context through confinedRead's fifth
+argument. `readPreparedCompletion(prepared,verificationContext)` accepts an
+optional second private argument and forwards it to completion-prepared-read.
+The prepared leaf guards original metadata, acquisition, stat and each read
+before/after actual effects. Post-acquisition checks remain inside the existing
+owned read/close protection. Original read/expiry error stays primary, every
+actual close is joined, and required failed-temp containment remains permitted
+after the cutoff. The pre-publication prepared reread receives the association's
+exact context. Omitted context retains existing V1/V2 read behavior and shapes.
+
+Scope verifyAndOpen retains its original arguments and strict/open/closed
+transition. It captures the two own data references IO/budget once before await,
+creates one budget-only carrier, and checks incoming original references around
+the genuine graph/probe boundaries. A guarded call invokes the original parent
+probe once; reference replacement after graph read cannot admit that probe,
+and replacement during its await cannot open the scope. No IO wrapper or new
+operation budget, deadline, monitor state, sample clock or authority is created.
+
+Direct schema2 manifest and verdict-bearing record boundaries reject null
+policy before policy/path lookup. Exact V2/V3 remain selected explicitly;
+protocolPathForPolicy(null) still denotes V1 in its legitimate role. Python's
+actual main selector accepts V3 relative/absolute fixed paths before the
+unchanged identity/candidate/parity gates and original preparation90 deadline.
+Changed-input membership is77; functional runtime135 and TEST96 are unchanged.
+Root runs causal GREEN55, new7, full96 and the other required gates next.
+
+
+### Task20 legacy Native timer stimulus repair. Root rerun pending
+
+Root's causal GREEN passed55/55 and new-seven passed63/63, both with natural
+exit0, no skipped/cancelled tests or intervention, exact pins and closed raw
+owner streams/journal. The first full96 run reported1139 tests,1138 passes and
+one failure, natural exit1 in207.124385083 seconds,648 exact pins and complete
+raw/owner closure. Its only failure was the legacy Native test's650ms stimulus.
+The retained CHECK hold was649321708ns,678292ns below650000000ns; the comparison
+hold was652685000ns and both observer diagnostics had no errors.
+
+The existing legacy TEST now mirrors the V3 delivery hook: it rechecks the
+original captured hrtime target and rearms only remaining time if a timer
+arrives early. Retention overflow still force-releases with a failed diagnostic.
+The650ms assertion,500ms policy, original work/cleanup bounds, actual held
+bytes/order and required lifetime/process/pipe/FD closure remain unchanged.
+No production, protocol-fixture, operator or model byte changed. Exact changed
+inputs78 retain runtime135 and TEST96. Worker repair tests are UNRUN. Root
+reruns this Native owner, full96 and remaining Python/app/typecheck gates.
+No scientific phase or new phase GO is claimed.
+
+
+## Task20 implementation and required tests validated (2026-11-11)
+
+Current implementation and required test gates are validated on the frozen
+Task20 source. Root's gate08 serial96 run passed1139/1139, with zero failures,
+skips or cancellations, natural exit0 in207.788426958 seconds. Isolated legacy
+Native passed1/1; Python Native58/58, wire19/19 and terminal8/8; app scripts
+191/191 and core184/184; `tsc --noEmit` exited0. Every owner retained652 exact
+before/after/current pins, actual process/BOTH raw pipe/journal closure and no
+intervention. Earlier causal55/new-seven63 are passing subsets, not additional
+counts. Prior failed runs and the external intervention remain immutable history.
+The full suite's two TinyazBookkeepingObserverWarning messages are deliberate
+null/undefined observer fault controls. They are expected and were not suppressed.
+
+Current changed inputs78 preserve functional runtime135, exact96 TEST leaves,
+protected23/model weights, old protocol data/operators and the original
+scientific/numeric contracts. The tested runtime/SOURCE/TEST bytes are frozen.
+Original-context, per-effect prepared/event guards, actual CLI selection and
+closed schema2 policy fixes match the affected contracts. Implementation and
+tests validated does not establish a scientific phase result.
+
+Fresh scoped Sol Max review, Root acceptance, commit/publication and Task21
+remain pending. ALL V3 scientific CHECK/control/parity/preflight/full40 phases
+remain UNRUN. No phase GO, timing cure, continuous RSS proof or Elo claim follows.
+Root's authoritative gate audits/raw receipts are under E20/task20-gates-08/,
+with `root-task20-gates-08-<label>-audit.json` and
+`root-task20-remaining-test-gates-summary.json` in E20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+The final code-to-document comparison and docs-only pins/delta accompany
+`E20/task20-green-docs-ready-report.md`. Earlier appended checkpoints retain
+their dated scope; this is the current implementation/test status.
+
+
+### Task20 final review handoff residual. TEST-only checkpoint
+
+The prior required green gate results remain factual frozen history. Fresh
+scoped final review found one Important residual: verdict reconstruction reads
+the mutable wrapper budget after the real event-helper await and can project
+a genuine later handle into a new collector carrier. Later graph rejection
+does not undo positive IO after the original cutoff. Candidate review approval,
+Root acceptance, commit/publication and Task21 remain pending; all V3 scientific
+phases remain UNRUN with no phase GO or Elo/cure claim.
+
+One new existing-terminal-leaf regression exercises actual complete graphs,
+real event helper guards and real collectors. An observational microtask hook
+mutates the same wrapper only after the helper's final original-handle guard.
+It tests expiry at that handoff and expiry while genuine collector metadata is
+held. It requires no subsequent positive metadata/open/read/replay, actual
+issued-work/FD settlement and graph rejection. Production stays unchanged for
+Root's causal RED. Worker tests remain UNRUN. Runtime135/TEST96 stay exact.
+
+
+### Task20 final collector handoff repair. Source ready, rerun pending
+
+Root's actual terminal causal RED passed5/6 and failed the one intended handoff
+regression, natural exit1 in11.776329000 seconds,657 exact pins, no skips,
+cancellations or intervention, and complete raw/owner closure. Both actual
+scenarios used substituted genuine B: expiry-at-handoff admitted114 metadata,
+23 opens,46 reads and2 replays after A expiry; held metadata admitted113/23/46/2.
+Both owners genuinely settled. This establishes the residual without a setup
+fault. Earlier1139/1139 and other green gates remain dated history.
+
+The minimum receipt-verification-v2 repair now revalidates original association,
+genuine handle methods and actual cutoff immediately after events await, before
+collector handoff and after the awaited collector. The collector receives the
+handle returned by that guard, never a raw mutable-field projection. Its same
+one-carrier, original IO and real close/debt behavior remain unchanged. V1/V2
+omitted-context routes keep their existing behavior. Runtime135/TEST96 and
+changed inputs78 remain exact; the causal TEST bytes are unchanged.
+
+Current repair GREEN, final full96/Python/app/typecheck, fresh scoped review,
+Root acceptance, commit/publication and Task21 remain pending. All V3 scientific
+phases remain UNRUN. No phase GO, cure, continuous coverage or Elo claim follows.
+Worker ran no runtime or tests. Required semantics are unchanged; this repairs
+implementation to the original approved handle contract.
+
+
+## Task20 reviewed and tested source ready for Root green commit (2026-11-11)
+
+Root gate10 full96 passed1140/1140, natural exit0 in207.116713958 seconds,
+with zero failures, skips, cancellations or intervention. The identical
+handoff regression passed6/6 with zero collector/post-expiry effects in both
+settled scenarios. Python58/19/8, scripts191, core184 and `tsc --noEmit` passed.
+Recorded owners retained662 exact execution pins and complete actual process,
+BOTH raw pipe and journal closure. Two deliberate null/undefined observer
+warnings remain qualified and unsuppressed. Subsets are not added to totals;
+prior1139/1139 and every failed run remain their dated immutable history.
+
+Fresh scoped Sol Max re-review passed and closed the last original-handle
+residual; all four production findings are addressed. The reviewed/tested
+source is READY for Root's green commit/publication action. Runtime135/TEST96,
+changed inputs78, protected23, original limits and proof ownership remain.
+Scientific execution is separately gated. ALL V3 scientific CHECK/control/
+parity/preflight/full40 phases remain UNRUN at this checkpoint, without phase
+GO, timing cure or Elo claim. This status does not record a commit/publication.
+Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
+E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
+comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.

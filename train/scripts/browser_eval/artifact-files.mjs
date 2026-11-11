@@ -9,6 +9,7 @@
 // artifact-owned-file.mjs, bound once below with the SAME
 // issueActual/storeFail. No process, model or browser operation here.
 
+import { assertBudgetHandle, originalContextBudget } from "./process-budget.mjs";
 import { createHash, randomBytes } from "node:crypto";
 import { privateFs as fsp } from "./private-fs.mjs";
 import path from "node:path";
@@ -17,6 +18,13 @@ import { isRelPath } from "./schema-primitives.mjs";
 import { createOwnedFileOperations } from "./artifact-owned-file.mjs";
 
 const READ_CHUNK = 65536;
+const checkVerification = (context) => {
+  if (context !== undefined) {
+    const budget = originalContextBudget(context);
+    assertBudgetHandle(budget);
+    budget.assertLive("V3 artifact read");
+  }
+};
 
 // Verifier-only captured effect fence. Actual descriptor closes are exempt.
 export const assertReadEffect = (io) => {
@@ -87,9 +95,14 @@ export const issueActual = (retainActual, issueThunk) => {
 
 // Raw metadata effects pass the real registrar when io is bound; the
 // untimed path invokes the same thunk directly with identical guards.
-const track = (retain, thunk, io) => {
+const track = (retain, thunk, io, context) => {
+  checkVerification(context);
   assertReadEffect(io);
-  return retain === null ? thunk() : issueActual(retain, thunk);
+  const actual = retain === null ? thunk() : issueActual(retain, thunk);
+  return context === undefined ? actual : Promise.resolve(actual).then((value) => {
+    checkVerification(context);
+    return value;
+  });
 };
 
 // The whole OwnedFile acquisition/close owner lives in
@@ -109,7 +122,8 @@ const openTracked = (retain, thunk, io) => {
 
 // Resolves a confined absolute path and rejects any symlink component
 // already present between the workspace root and the target.
-export const confined = async (root, rel, name, io) => {
+export const confined = async (root, rel, name, io, context) => {
+  checkVerification(context);
   const retain = registrar(io);
   const clean = normRel(rel, name);
   const abs = path.resolve(root, clean);
@@ -119,7 +133,7 @@ export const confined = async (root, rel, name, io) => {
     cursor = path.join(cursor, segment);
     let stat;
     try {
-      stat = await track(retain, () => fsp.lstat(cursor), io);
+      stat = await track(retain, () => fsp.lstat(cursor), io, context);
     } catch (error) {
       if (error.code === "ENOENT") break;
       throw error;
@@ -239,28 +253,42 @@ export const writeAtomic = async (abs, bytes, io) => {
 // Streams the file in bounded reads, hashing incrementally, and requires the
 // observed byte count and file identity to match the pre-read stat. This
 // bounds memory and detects concurrent size or inode changes.
-export const hashFileRef = async (abs, rel, io) => {
+export const hashFileRef = async (abs, rel, io, context) => {
+  checkVerification(context);
   const retain = registrar(io);
-  const before = await track(retain, () => fsp.lstat(abs), io);
+  const before = await track(retain, () => fsp.lstat(abs), io, context);
   if (!before.isFile() || before.isSymbolicLink()) {
     storeFail("ARTIFACT_INTEGRITY", `${rel} not regular`);
   }
   const hash = createHash("sha256");
   let read = 0;
+  checkVerification(context);
   const handle = await openTracked(retain, () => fsp.open(abs, "r"), io);
+  let readFailed = false, firstReadError;
   try {
     const buffer = Buffer.alloc(READ_CHUNK);
     for (;;) {
+      checkVerification(context);
       assertReadEffect(io);
       const { bytesRead } = await handle.read(buffer, 0, READ_CHUNK, read);
+      checkVerification(context);
       if (bytesRead === 0) break;
       read += bytesRead;
       hash.update(buffer.subarray(0, bytesRead));
     }
+  } catch (error) {
+    if (context === undefined) throw error;
+    readFailed = true;
+    firstReadError = error;
   } finally {
-    await handle.close();
+    if (context === undefined) await handle.close();
+    else {
+      try { await handle.close(); }
+      catch (error) { if (!readFailed) { readFailed = true; firstReadError = error; } }
+    }
   }
-  const after = await track(retain, () => fsp.lstat(abs), io);
+  if (readFailed) throw firstReadError;
+  const after = await track(retain, () => fsp.lstat(abs), io, context);
   if (
     read !== before.size ||
     after.size !== before.size ||
@@ -295,20 +323,21 @@ export async function inspectArtifactRef({ workspaceRoot, ref }, io) {
   return declared;
 }
 
-export async function phaseArtifactRefs({ workspaceRoot, phaseDirectory }, io) {
+export async function phaseArtifactRefs({ workspaceRoot, phaseDirectory }, io, context) {
+  checkVerification(context);
   const retain = registrar(io);
   const root = path.resolve(workspaceRoot);
-  const { abs, clean } = await confined(root, phaseDirectory, "phaseDirectory", io);
-  const stat = await track(retain, () => fsp.lstat(abs), io);
+  const { abs, clean } = await confined(root, phaseDirectory, "phaseDirectory", io, context);
+  const stat = await track(retain, () => fsp.lstat(abs), io, context);
   if (!stat.isDirectory()) storeFail("STORE_PATH", `${clean} not a directory`);
   const completion = `${clean}/completion.json`;
   const refs = [];
   const walk = async (dirAbs, dirRel) => {
-    const entries = await track(retain, () => fsp.readdir(dirAbs, { withFileTypes: true }), io);
+    const entries = await track(retain, () => fsp.readdir(dirAbs, { withFileTypes: true }), io, context);
     for (const entry of entries) {
       const entryAbs = path.join(dirAbs, entry.name);
       const entryRel = `${dirRel}/${entry.name}`;
-      const st = await track(retain, () => fsp.lstat(entryAbs), io);
+      const st = await track(retain, () => fsp.lstat(entryAbs), io, context);
       if (st.isSymbolicLink()) storeFail("STORE_PATH", `${entryRel} symlink`);
       if (st.isDirectory()) {
         await walk(entryAbs, entryRel);
@@ -316,7 +345,7 @@ export async function phaseArtifactRefs({ workspaceRoot, phaseDirectory }, io) {
       }
       if (!st.isFile()) storeFail("STORE_PATH", `${entryRel} not regular`);
       if (entryRel === completion) continue;
-      refs.push(await hashFileRef(entryAbs, entryRel, io));
+      refs.push(await hashFileRef(entryAbs, entryRel, io, context));
     }
   };
   await walk(abs, clean);

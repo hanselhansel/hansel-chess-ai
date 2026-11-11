@@ -1,3 +1,4 @@
+import { V2_POLICY, V3_POLICY, isPeriodicQualityPhase } from "./evaluation-policy.mjs";
 // watchdog-cleanup.mjs owns the fixed staged cleanup and the privately
 // retained settled proof. Stages anchor to ONE original monotonic start —
 // the trusted cleanupStartMonoMs captured at cleanup entry when supplied,
@@ -305,7 +306,9 @@ export function createCleanupController({
       // the projection disables age checking once sampling has stopped.
       const obs = monitor.lastObservation();
       if (!obs || obs.accountingValid !== true || (obs.resourceQuality &&
-        obs.resourceQuality.phase !== "compare" && obs.coverageContinuous !== true)) accountingValid = false;
+        (snap.scope === "selftest-workload" && obs.resourceQuality.policyId === V3_POLICY.policyId || !isPeriodicQualityPhase(obs.resourceQuality.policyId === V3_POLICY.policyId
+          ? V3_POLICY : obs.resourceQuality.policyId === V2_POLICY.policyId ? V2_POLICY : null,
+        obs.resourceQuality.phase)) && obs.coverageContinuous !== true)) accountingValid = false;
       if (signalFaults > 0 || probeFaults > 0 || eventFaults > 0) accountingValid = false;
       if (snap.scope === "selftest-workload" && typeof monitor._captureResourcePrefix === "function") {
         if (!accountingValid || settlementDebt || survivors.length || listenersRemaining.length)

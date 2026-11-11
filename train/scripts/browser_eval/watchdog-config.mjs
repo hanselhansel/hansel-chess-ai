@@ -1,3 +1,4 @@
+import { assertPreflightQualityScope } from "./process-preflight-quality.mjs";
 // Pure constructor/run-context capture and validation, shared-owner capability
 // derivation, and the whole stop-aware createWatchdogAwaiter producer.
 // The whole createWatchdogOperationContext body now belongs to
@@ -48,6 +49,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
     nativeHorizon,
     onBookkeepingSettlement = null,
     finalIntegrity = null,
+    preflightQualityScope = null,
   } = o;
   let clock;
   if (defaultClock === undefined) {
@@ -104,6 +106,11 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
   if (phaseDeadlineMonoMs !== null &&
     (!Number.isSafeInteger(phaseDeadlineMonoMs) || phaseDeadlineMonoMs <= 0)) {
     throw fail("IPC_INVALID", "phaseDeadlineMonoMs");
+  }
+  if (preflightQualityScope !== null) {
+    if (phase !== "preflight" || workspace.commonIdentity.evaluationPolicy?.policyId !== "tinyaz-separate-verdicts-v3")
+      throw fail("IPC_INVALID", "private scope phase");
+    assertPreflightQualityScope(preflightQualityScope, runId);
   }
   const selftestPhase = phase === "watchdog-selftest";
   // Trusted narrowing/cancel capability: selftest phase only. An absolute
@@ -247,6 +254,7 @@ export function captureWatchdogRuntimeConfig(options, defaultClock = undefined) 
     manifestRel,
   });
   const capabilities = Object.freeze({
+    preflightQualityScope,
     protocol,
     monitor,
     footprint,

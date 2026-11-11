@@ -32,8 +32,8 @@ const selection = (options) => {
   const { phase, candidate, protocolPath, workspaceRoot, repoRoot } = options ?? {};
   if (!PHASES.includes(phase) || typeof candidate !== "string" || candidate.length === 0 || candidate.length > 200 ||
     !path.isAbsolute(workspaceRoot ?? "") || !path.isAbsolute(repoRoot ?? "") ||
-    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json",
-      path.join(repoRoot, FIXTURE_PATHS.protocol), path.join(repoRoot, "train/fixtures/browser-protocol-v2.json")].includes(protocolPath)) {
+    ![FIXTURE_PATHS.protocol, "train/fixtures/browser-protocol-v2.json", "train/fixtures/browser-protocol-v3.json",
+      path.join(repoRoot, "train/fixtures/browser-protocol-v3.json"), path.join(repoRoot, FIXTURE_PATHS.protocol), path.join(repoRoot, "train/fixtures/browser-protocol-v2.json")].includes(protocolPath)) {
     throw fail("fixed phase/candidate/protocol/absolute paths");
   }
   if (["preflight", "compare"].includes(phase) && candidate === "WORKTREE") {
