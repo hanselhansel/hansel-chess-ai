@@ -135,6 +135,7 @@ export const RUNTIME_PATHS = Object.freeze([
   "train/scripts/browser_eval/watchdog-verdict-policy.mjs",
   "train/scripts/browser_eval/record-finalization-v2.mjs",
   "train/scripts/browser_eval/receipt-verification-v2.mjs",
+  "train/scripts/browser_eval/resource-quality-schema.mjs",
 ]);
 
 const fail = (detail) => {

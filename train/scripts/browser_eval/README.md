@@ -12563,3 +12563,119 @@ are COMPLETE; Task3/full40 is INCOMPLETE, with no cohort or Elo claim. See the
 [current prerequisite-results report](../../../docs/experiments/2026-11-11-tinyaz-serial-verification-prerequisites.md) for exact times, pins,
 closure distinctions and UNKNOWN underlying delay cause. No latency-cure claim,
 retry, new control or comparison follows. Old failures stay preserved/ineligible.
+
+## Approved V3 contract and actual Stage A boundary (2026-11-11)
+
+The [canonical V3 software design](../../../docs/superpowers/specs/2026-11-11-tinyaz-preflight-v3-software-design.md)
+is approved and IN PROGRESS. Its sections2..10 declare the exact policy,
+closed shapes, APIs, ownership, budgets, mode transitions and test matrix.
+Their V3 requirements are prospective. The actual runtime remains127 at
+unchanged `67b85fe`, with V1/V2 selection only and strict V2 preflight.
+
+Hansel approved the reviewed V3 contract on 2026-11-11. The exact approval is
+`E19/implementation-approval.json`, status
+`USER_APPROVED_IMPLEMENTATION_AND_FRESH_COMPARISON`, for proposal SHA256
+`ad4b3d8a710c1dc4af24e305a946ed7b4e8a83035efec89e4973f9fad30638a8`.
+E19 is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5e912df4-8fd0-4b5e-ac68-9e9c625a23a0`.
+Historical pending labels are superseded by that exact approval record.
+
+
+Before-use runtime map: preserve every original127 entry as the exact prefix,
+then append only these real paths in this order (all module paths have prefix
+`train/scripts/browser_eval/`):
+
+1. `resource-quality-schema.mjs`: whole existing pure schema/primitive group;
+   first checkpoint128 retains V2 semantics and public validator re-exports.
+2. `watchdog-operation-context.mjs`: whole existing operation-context group;
+   second checkpoint129 retains behavior and existing re-exports.
+3. `train/fixtures/browser-protocol-v3.json`: exact layout2 V3 policy fixture.
+4. `preflight-readiness-v3.mjs`: pure readiness and verified-parent classifier.
+5. `preflight-evidence-v3.mjs`: bounded awaited evidence/replay collector and
+   detached pure validator on the same actual IO owner and original budget.
+6. `verdicts-v3.mjs`: closed V3 verdict reduction, preserving failed resources.
+7. `record-finalization-v3.mjs`: pure compilation from actual verified facts.
+8. `process-preflight-quality.mjs`: private genuine-selftest-gated scope.
+
+The final approved runtime count is135. No future missing file is listed in
+current `RUNTIME_PATHS`. No helpers or fixtures exist from this Stage A change.
+The full exact helper arguments/results and existing-owner changes remain in
+canonical sections7/8. Original hard limits, Native/current cleanup, physical
+closure, model, science, old fixtures and W operators remain mandatory.
+
+Recognition TEST: the sole `preflight-policy-v3.test.mjs` test is named
+`explicit V3 policy selects the V3 protocol path`. Its only project import is
+existing `policyForProtocol`. It reads V1 JSON, sets layout2 and an inline V3
+policy in memory, first asserts selection does not throw, then checks the
+returned literal. It imports no V3 helper/export/fixture. Root's exact command
+is `<released-node> --test --test-concurrency=1 train/scripts/browser_eval/preflight-policy-v3.test.mjs`.
+Expected OLD RED is the first assertion's `ERR_ASSERTION` with
+`SCHEMA_LITERAL: policy/version/protocol binding`. No RED is claimed yet.
+
+Current89 existing TEST owners plus this temporary recognition leaf makes90
+present files. Following Root qualification, preserve the exact TEST bytes/hash
+in E20 evidence, remove only that agent-created leaf, then implement Split A.
+Split A moves the complete actual runtime-roster test from snapshots.test into
+real `preflight-compat-v3.test.mjs`, asserts exact128 membership/import closure,
+and updates private-FS count128. It has90 working TEST owners after the
+recognition leaf is archived. Split B remains90; Task20 restores the identical
+recognition leaf and adds the other five declared V3 leaves for final96.
+Neither this staged TEST nor source/docs constitute a runtime phase receipt.
+
+## Task18 Stage B: current resource schema and roster contracts (2026-11-11)
+
+The current authored Split A roster is128, preserving the exact original127
+prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
+The schema/primitive group is moved whole with original V2 validation; public
+validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
+fixture, scope, graph or operator is activated. The compat leaf replaces the
+archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
+Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
+actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
+publication is claimed. All project execution remains Root-owned.
+
+Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
+exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
+`SCHEMA_LITERAL: policy/version/protocol binding`,582 exact pins and actual
+wait/both-pipe/raw/journal closure. This proves missing recognition only.
+The exact22-line TEST, SHA256
+`ea3bf64a96bd95a839f19c3bac2ffea9fdb36ff1ff947ea2978e9c8a82146765`, is archived
+exclusively in E20/recognition-test-original.mjs and removed from the runtime
+TEST directory until identical restoration with Task20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+`resource-quality-schema.mjs` is a pure runtime leaf. It exports exactly
+`CAUSES,HARD,GAP,CAP,CHECKPOINT_FIELDS,ns,nat,count,counts,lateDetail,fieldSpec,fail,assertQualityCheckpoint,assertResourceEvidence`.
+The complete former schema/primitive group remains byte-identical, including
+V2-only policy validation,500000000ns gap,4294967296-byte cap, scalar/episode/
+counter/chronology checks and bounded evidence. It has no ledger state, IO,
+timer or Native authority. Helpers preserve their existing argument/return/
+error semantics; they are private shared declarations, not a new public API.
+
+`resource-quality.mjs` imports those shared declarations and retains the whole
+original `createResourceQuality({runId,phase,monitorRunId=runId})` factory body.
+It re-exports `assertQualityCheckpoint` and `assertResourceEvidence` under their
+original public names. Snapshot/checkpoint/cycle behavior, mutable state and
+sole ledger ownership do not change. The new leaf imports only the existing
+canonical codec, schema primitives/constants and V2 policy.
+
+`preflight-compat-v3.test.mjs` now owns the complete formerly snapshots.test
+runtime-roster test. Original115 prefix hashes, exact old V2 tail and required
+membership/frozen/unique/excluded-TEST assertions remain. It adds exact current
+count128, canonical SHA256 of original127 prefix
+`33e70d7c66132f0804c63ed3a452831ebaec20dabc6dbf5957d47efe8315e3a8`,
+and exactly one current suffix. It independently parses every runtime module
+with the existing TypeScript dependency, checks literal static/re-export/dynamic
+relative imports resolve to real roster files, rejects computed relative
+imports, and excludes W/docs. It imports only real existing or newly created
+files. `snapshots.test.mjs` retains all its other cases. The private-FS owner
+asserts128 and scans all current runtime module owners for async FS defaults.
+No test/import result is claimed from these authored checks.
+
+Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
+wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
+review is Approved with zero Critical/Important/Minor findings. Source remains
+the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
+final documentation audit and separate green-commit release remain pending.
+Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
+is claimed. Audit: E20/root-task18-covering-audit.json.

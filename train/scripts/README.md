@@ -685,3 +685,58 @@ are COMPLETE; Task3/full40 is INCOMPLETE, with no cohort or Elo claim. See the
 [current prerequisite-results report](../../docs/experiments/2026-11-11-tinyaz-serial-verification-prerequisites.md) for exact times, pins,
 closure distinctions and UNKNOWN underlying delay cause. No latency-cure claim,
 retry, new control or comparison follows. Old failures stay preserved/ineligible.
+
+## Approved prospective V3 checkpoint (Task18 Stage A, 2026-11-11)
+
+The [canonical V3 contract](../../docs/superpowers/specs/2026-11-11-tinyaz-preflight-v3-software-design.md)
+is approved and IN PROGRESS. Current executable behavior remains V1/V2 at
+`67b85fe`, runtime127. The Python selector, public command grammar, original
+hard limits, protected model and all old operators/fixtures remain unchanged.
+
+Hansel approved the reviewed V3 contract on 2026-11-11. The exact approval is
+`E19/implementation-approval.json`, status
+`USER_APPROVED_IMPLEMENTATION_AND_FRESH_COMPARISON`, for proposal SHA256
+`ad4b3d8a710c1dc4af24e305a946ed7b4e8a83035efec89e4973f9fad30638a8`.
+E19 is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5e912df4-8fd0-4b5e-ac68-9e9c625a23a0`.
+Historical pending labels are superseded by that exact approval record.
+
+
+Only `browser_eval/preflight-policy-v3.test.mjs` is newly authored executable
+TEST content here. It reads the existing V1 JSON and constructs V3 in memory,
+importing only the existing selector and Node builtins. Root alone executes
+its pinned OLD recognition RED. It adds one temporary TEST owner to the89
+existing owners; it adds no functional runtime input. After qualification,
+archive its exact bytes and remove only that temporary leaf before the128
+capacity checkpoint. Restore identical bytes with Task20 selection. No tests,
+imports, Native, browser/model, phase, commit or publication are claimed here.
+
+## Task18 Stage B: authored capacity split (2026-11-11)
+
+The current authored Split A roster is128, preserving the exact original127
+prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
+The schema/primitive group is moved whole with original V2 validation; public
+validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
+fixture, scope, graph or operator is activated. The compat leaf replaces the
+archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
+Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
+actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
+publication is claimed. All project execution remains Root-owned.
+
+Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
+exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
+`SCHEMA_LITERAL: policy/version/protocol binding`,582 exact pins and actual
+wait/both-pipe/raw/journal closure. This proves missing recognition only.
+The exact22-line TEST, SHA256
+`ea3bf64a96bd95a839f19c3bac2ffea9fdb36ff1ff947ea2978e9c8a82146765`, is archived
+exclusively in E20/recognition-test-original.mjs and removed from the runtime
+TEST directory until identical restoration with Task20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
+wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
+review is Approved with zero Critical/Important/Minor findings. Source remains
+the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
+final documentation audit and separate green-commit release remain pending.
+Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
+is claimed. Audit: E20/root-task18-covering-audit.json.

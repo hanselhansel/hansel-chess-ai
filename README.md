@@ -784,3 +784,59 @@ are COMPLETE; Task3/full40 is INCOMPLETE, with no cohort or Elo claim. See the
 [current prerequisite-results report](docs/experiments/2026-11-11-tinyaz-serial-verification-prerequisites.md) for exact times, pins,
 closure distinctions and UNKNOWN underlying delay cause. No latency-cure claim,
 retry, new control or comparison follows. Old failures stay preserved/ineligible.
+
+## Approved prospective V3 preflight contract (2026-11-11)
+
+The [approved V3 software design](docs/superpowers/specs/2026-11-11-tinyaz-preflight-v3-software-design.md)
+is IN PROGRESS at Task18 Stage A. It separates complete scientific readiness
+from allowed periodic resource-quality loss under the exact new V3 policy.
+Current production remains the unchanged V1/V2 source at `67b85fe`, with127
+functional runtime inputs. V2 preflight remains strict. V3 selection, fixture,
+readiness graph, scope and operators are not implemented at this checkpoint.
+
+Hansel approved the reviewed V3 contract on 2026-11-11. The exact approval is
+`E19/implementation-approval.json`, status
+`USER_APPROVED_IMPLEMENTATION_AND_FRESH_COMPARISON`, for proposal SHA256
+`ad4b3d8a710c1dc4af24e305a946ed7b4e8a83035efec89e4973f9fad30638a8`.
+E19 is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5e912df4-8fd0-4b5e-ac68-9e9c625a23a0`.
+Historical pending labels are superseded by that exact approval record.
+
+
+The sole new TEST leaf is a prospective selector-recognition assertion. Root
+must qualify its expected OLD semantic RED before functional changes. No V3
+runtime, Native, browser, phase or comparison result follows from this stage.
+The existing failed V2 preflight and incomplete Task3/full40 remain preserved;
+see the [prerequisite report](docs/experiments/2026-11-11-tinyaz-serial-verification-prerequisites.md).
+Root owns execution and review gates; the active plan records the later128,
+129 and135 runtime checkpoints and conditional fresh-comparison sequence.
+
+## Task18 Stage B: authored capacity split (2026-11-11)
+
+The current authored Split A roster is128, preserving the exact original127
+prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
+The schema/primitive group is moved whole with original V2 validation; public
+validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
+fixture, scope, graph or operator is activated. The compat leaf replaces the
+archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
+Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
+actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
+publication is claimed. All project execution remains Root-owned.
+
+Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
+exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
+`SCHEMA_LITERAL: policy/version/protocol binding`,582 exact pins and actual
+wait/both-pipe/raw/journal closure. This proves missing recognition only.
+The exact22-line TEST, SHA256
+`ea3bf64a96bd95a839f19c3bac2ffea9fdb36ff1ff947ea2978e9c8a82146765`, is archived
+exclusively in E20/recognition-test-original.mjs and removed from the runtime
+TEST directory until identical restoration with Task20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
+wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
+review is Approved with zero Critical/Important/Minor findings. Source remains
+the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
+final documentation audit and separate green-commit release remain pending.
+Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
+is claimed. Audit: E20/root-task18-covering-audit.json.

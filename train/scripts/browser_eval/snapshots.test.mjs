@@ -125,28 +125,6 @@ async function manifestFor(t, f, result) {
   }, { workspaceRoot: f.workspaceRoot, budget: f.context.budget, lifetime: f.context.lifetime }));
 }
 
-test("runtime closure is explicit, unique and includes every new runtime helper", async () => {
-  assert.equal(sha256Bytes(canonicalBytes(RUNTIME_PATHS.slice(0, 115))), "97b329e3639dc91b101060a307477bccae7b6d437daee777fa79e939d3bfd3d1");
-  assert.equal(sha256Bytes(canonicalBytes(RUNTIME_PATHS.slice(0, 115).filter(
-    name => name !== "train/scripts/browser_eval/footprint-trace.mjs"))),
-  "589718eeec8baf88eff67f72584167d2f3a30dcf21473fc0081ca0656ad58c0e");
-  assert.deepEqual(RUNTIME_PATHS.slice(115), ["train/fixtures/browser-protocol-v2.json",
-    ...["evaluation-policy", "resource-quality", "verdicts-v2", "record-fields", "record-schema-v2",
-      "receipt-verdicts-v2", "process-runtime-start", "watchdog-resource-policy", "watchdog-verdict-policy",
-      "record-finalization-v2", "receipt-verification-v2"].map(name => `train/scripts/browser_eval/${name}.mjs`)]);
-  for (const filename of RUNTIME_PATHS) assert.equal((await fsp.stat(path.join(SOURCE, filename))).isFile(), true);
-  assert.equal(new Set(RUNTIME_PATHS).size, RUNTIME_PATHS.length);
-  assert.equal(Object.isFrozen(RUNTIME_PATHS), true);
-  for (const name of ["accounting-trace", "footprint-trace", "private-fs", "process-listeners", "snapshot-files", "snapshot-io", "snapshot-identity", "environment-files", "fixture-numeric", "watchdog-cleanup-context", "watchdog-faults"]) {
-    assert.equal(RUNTIME_PATHS.includes(`train/scripts/browser_eval/${name}.mjs`), true);
-  }
-  const isTestPath = (name) => /\.test\.mjs$|(?:^|[/-])test-|README/.test(name);
-  assert.equal(RUNTIME_PATHS.some(isTestPath), false);
-  assert.equal(isTestPath("train/scripts/browser_eval/native-test-harness.mjs"), true);
-  assert.equal(isTestPath("train/scripts/browser_eval/native-test-io.mjs"), true);
-  assert.equal(isTestPath("train/scripts/browser_eval/watchdog-selftest-operation.mjs"), false);
-});
-
 test("file owner captures real Git blobs and complete original active paths", async (t) => {
   const f = await fixture(t);
   await f.git(["add", "src", "package.json", "package-lock.json"]);

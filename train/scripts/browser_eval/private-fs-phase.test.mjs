@@ -145,7 +145,7 @@ test("real Recorder publication and retained receipt reads avoid every async pri
 test("explicit functional closure has no remaining harness async FS defaults", async () => {
   const { RUNTIME_PATHS } = await import("./snapshot-files.mjs");
   const root = new URL("../../../", import.meta.url);
-  assert.equal(RUNTIME_PATHS.length, 127);
+  assert.equal(RUNTIME_PATHS.length, 128);
   assert.equal(RUNTIME_PATHS.includes("train/scripts/browser_eval/private-fs.mjs"), true);
   assert.equal(RUNTIME_PATHS.includes("train/scripts/browser_eval/footprint-trace.mjs"), true);
   for (const name of RUNTIME_PATHS.filter((p) => p.endsWith(".mjs"))) {

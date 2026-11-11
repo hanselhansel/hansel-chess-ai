@@ -2225,3 +2225,120 @@ are COMPLETE; Task3/full40 is INCOMPLETE, with no cohort or Elo claim. See the
 [current prerequisite-results report](../../experiments/2026-11-11-tinyaz-serial-verification-prerequisites.md) for exact times, pins,
 closure distinctions and UNKNOWN underlying delay cause. No latency-cure claim,
 retry, new control or comparison follows. Old failures stay preserved/ineligible.
+
+
+## Task 18: Approved V3 contracts, recognition RED and first capacity split
+
+Hansel approved the reviewed prospective V3 amendment on2026-11-11. Normative source is `.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5e912df4-8fd0-4b5e-ac68-9e9c625a23a0/preflight-separate-verdicts-proposed-amendment.md`, SHA256 `ad4b3d8a710c1dc4af24e305a946ed7b4e8a83035efec89e4973f9fad30638a8`; implementation-approval.json records the exact answer and conditional fresh-execution scope. Historical pending labels are superseded by that approval, not rewritten. Current base67b85fe is clean and published. Use the existing feature checkout. Model/protected inputs and old evidence remain unchanged.
+
+Sol High implements serially, no children. Root/Sol Max reviews and alone executes all tests/runtime gates. Before functional changes, copy the approved contract into new tracked `docs/superpowers/specs/2026-11-11-tinyaz-preflight-v3-software-design.md`, changing only title/approval metadata and explicit original E19 reference resolution. Preserve all functional requirements; append a precedence/status pointer to the established verified-M design outside protected whole Section3. Update root/train-scripts/harness contracts with approved prospective V3 versus actual current-stage behavior; remaining affected documentation follows its corresponding code change. Preserve valid content.
+
+First write ONLY the exact selector-recognition TEST from amendment section10 in `train/scripts/browser_eval/preflight-policy-v3.test.mjs`; production remains executable67b85fe. Stop for Root's pinned same-byte OLD semantic RED. After Root qualifies it, archive the exact TEST bytes/hashes into new implementation evidence and remove only that agent-created temporary leaf, so it does not fail intermediate capacity checkpoints. Restore those identical bytes with selector implementation in Task20. No missing import/fixture/runtime or unrelated assertion qualifies as RED; this RED proves recognition only.
+
+Then implement amendment section8 Split A: extract the whole pure resource schema/primitive group into declared `resource-quality-schema.mjs` with original V2 behavior and public re-exports intact. Add only that functional suffix path: old127 prefix plus one, total128. Move the complete existing runtime-roster test from snapshots.test into real new `preflight-compat-v3.test.mjs` and assert the exact128 roster/closure; update private-fs-phase explicit count128. Existing89 TEST leaves plus compat equals90. No placeholders, compression, new policy activation or unseen owner. Changed source/TEST stays below400 readable lines. Update affected contracts to current128, approved future135. Root runs the complete covering schema/ledger/snapshot/compat/private-FS owners through the qualified actual owner, checks imports/protected pins, obtains scoped spec/quality review, then the implementer commits the green change and matching docs after Root's final actual diff/code-to-doc audit. No push or phase by the implementer.
+
+## Task 19: Second V3 capacity split
+
+Use the approved amendment section8 Split B after Task18 is complete. Sol High moves the whole existing createWatchdogOperationContext group into declared watchdog-operation-context.mjs, preserving existing config/operations re-exports and behavior. Append only this second suffix path: total129, still90 TEST owners. No private V3 scope fields until the real later implementation. Update exact compat/private-FS roster expectations, run whole affected config/operations/watchdog/closure owners and import checks, review spec/quality and actual code-to-doc diff, then commit green source/docs. Routine internal/test splits use the amendment's explicit Root before-use map/review rule; policy/API/ownership/proof changes retain design approval requirements.
+
+## Task 20: Complete approved V3 policy, proof graph and operators
+
+Implement the exact approved amendment, including its two reviewed fix rounds and cold-CHECK branch. This is the connected policy/Native-scope/schema/readiness/evidence/compiler/parent/reducer/receipt/CLI/Python/operator feature. The full exact existing-owner map is amendment section7, future helper/contracts/counts section8, acyclic W source and operational3 release section9, and all tests section10. Do not infer schema2=>V2 or trust producer readiness labels. Old V1/V2 semantics, fixtures, all old W executables, model/training/science and numeric caps stay unchanged. Complete real six remaining runtime files and exact final suffix135; exactly seven new TEST leaves produce96. Restore identical recognition TEST bytes and Root qualifies GREEN plus separate FIXED timing/proof contrasts. Keep source/TEST/W source below400 without placeholders or compression.
+
+Every meaningful source change includes affected contracts/status and commands in the same green commit. Root runs named new/affected owners, explicit whole96 serial suite, genuine Native/graph/operator/Python and appropriate unchanged-app checks from the amendment; no worker runs tests/imports/Native/model/phase concurrently. Required checks include retained async budgeted replay, full prepared/ordinary reconstruction, truthful resource failure, actual fresh parent rechecks, cold-CHECK absence, positive caps and all hard negatives. Source/schema/ownership findings receive scoped fixes and re-review. Only actual same-byte green evidence, fresh scoped implementation review and final source-to-doc/protected/old-fixture/operator/import audit permit green commit/publication. No execution GO follows from a test pass alone.
+
+## Task 21: Fresh V3 prerequisites, approved control and one full comparison
+
+After the approved implementation is green, reviewed, committed and published, Root makes an entirely new operational3 release with exact candidate/runtime/source/policy/protocol/operator pins and canonical absent roots. Old E18 V2 failed preflight and all old data remain immutable and cannot be parents. Root alone runs strict V3 CHECK; only its successful CLOSED graph admits the explicitly approved ONE147-line read-only control with exactly candidate/workspace/protocolPath substitutions, reversed-original hash proof and original90s/1000ms qualification. Then strict parity13 and one fully sealed scientifically ready V3 preflight. Readiness2/resource-failed is admissible only under the exact full-proof V3 rule; readback0 does not turn experiment2 into resource pass. All Native/current cleanup/store/identity/hard cap proof remains mandatory.
+
+Only then Root releases ONE40-game/20-pair/64-visit cohort under unchanged24h comparison and original shorter bounds, with count-only progress and no outcome tuning. Own the actual experiment, both pipes/raw/journal, graph readback and source/model equality to closure; report separate science/resource/closure/aggregate grades and exact statistical scope. No automatic retry or rescue. Task3 is complete only after this authorized comparison has an authoritative final outcome. Keep final current documentation, actual code-to-doc comparison and reporting/source commits distinct. No main merge, deployment, training or weight change is included.
+
+## Task18 Stage A: approved contract publication and recognition handoff
+
+Status: IN PROGRESS, before functional edits. The complete
+[canonical V3 contract](../specs/2026-11-11-tinyaz-preflight-v3-software-design.md)
+copies the approved proposal's functional sections byte-for-byte. Its metadata
+resolves E19 to the original evidence directory and names the exact approval.
+The Root-authored Tasks18..21 outline above is preserved.
+
+Actual source remains `67b85fe`, V1/V2 behavior, runtime127. The standalone
+recognition TEST makes90 present owners (89 existing plus one temporary leaf).
+No V3 production helper or fixture is created at Stage A. Root must execute
+and qualify the unchanged-source semantic RED from canonical section10 before
+this implementer resumes. Root retains all test/import/Native/browser/phase,
+review, publication and release gates. Evidence sink is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+- Stage A: canonical full contracts, README/status precedence and exact sole
+  recognition TEST. Static diff/pin audit only. Stop quiescent for Root RED.
+- After qualified RED: archive identical TEST bytes/hash in new evidence and
+  remove only that temporary leaf. Split A then extracts the complete schema
+  group and real compat roster owner: runtime128, working TEST owners90.
+- Task19: unchanged whole operation-context extraction: runtime129/TEST90.
+- Task20: exact remaining six runtime inputs, closed V3 dispatch/scope/facts/
+  replay/graphs/CLI/Python/operators and final runtime135/TEST96. Restore the
+  identical recognition TEST for GREEN. Canonical sections7/8/9/10 own the
+  complete source/API/shape/count/operator/test maps; no guessed owner is used.
+- At each meaningful code checkpoint: update affected contracts in the same
+  change, compare final actual code/diff against documents, obtain Root's
+  affected checks and scoped review, then commit only the green reviewed change.
+- Task21: only after reviewed green publication and Root's exact releases,
+  fresh strict CHECK, approved one-use three-binding control, parity13, sealed
+  scientifically ready V3 preflight and ONE unchanged40/20/64 comparison.
+
+Current scientific measurements remain in the unchanged dated prerequisite
+report. Existing experiment status owners are `docs/experiments/README.md` and
+`docs/experiments/tinyaz-software-plan.md`; the amendment's named
+`tinyaz-software-status.md` is absent. Root ruled to maintain the existing
+layout rather than create a duplicate status owner. Python/fixture contracts
+and dated result facts follow corresponding later actual behavior changes.
+
+## Task18 Stage B: Split A source ready, gates pending
+
+The current authored Split A roster is128, preserving the exact original127
+prefix and appending only `train/scripts/browser_eval/resource-quality-schema.mjs`.
+The schema/primitive group is moved whole with original V2 validation; public
+validator re-exports and the sole ledger factory remain unchanged. No V3 policy,
+fixture, scope, graph or operator is activated. The compat leaf replaces the
+archived recognition leaf, giving90 current TEST owners. Task19 runtime129 and
+Task20 runtime135/TEST96 remain approved future work. Source is ready for Root's
+actual tests and scoped review; Task18 is IN PROGRESS and no green commit or
+publication is claimed. All project execution remains Root-owned.
+
+Root qualified the sole OLD recognition RED on unchanged `67b85fe`: natural
+exit1 in0.2093892078846693s, intended first doesNotThrow ERR_ASSERTION from
+`SCHEMA_LITERAL: policy/version/protocol binding`,582 exact pins and actual
+wait/both-pipe/raw/journal closure. This proves missing recognition only.
+The exact22-line TEST, SHA256
+`ea3bf64a96bd95a839f19c3bac2ffea9fdb36ff1ff947ea2978e9c8a82146765`, is archived
+exclusively in E20/recognition-test-original.mjs and removed from the runtime
+TEST directory until identical restoration with Task20. E20 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/5415eb97-ed40-4c92-8633-01764e186014`.
+
+The complete original schema/primitive group moved to its approved leaf;
+factory body remains byte-identical and public validator re-exports remain.
+Only snapshot-files' final resource-quality-schema entry is added to the
+functional roster. The full old runtime-roster TEST moved from snapshots.test
+to preflight-compat-v3.test, preserving old assertions and adding exact128/
+prefix/suffix/static-and-dynamic-import closure. Private-FS count is128.
+All changed SOURCE/TEST stays below400 readable lines. No future placeholder,
+missing import, fixture or other helper was introduced.
+
+Root's next gates: whole affected schema/ledger/snapshot/compat/private-FS
+owners with actual command closure, import/protected/old-fixture/operator pin
+checks, scoped spec/quality review and final actual diff/code-to-doc audit.
+Only Root's green review instruction permits the implementer to commit matching
+source/docs. No push or experimental phase is performed by the implementer.
+This checkpoint's new report and pins are E20/task-18-stage-b-report.md and
+E20/task-18-stage-b-pins.json. Stage A reports, source pins and raw RED evidence
+are immutable. Dated prerequisite facts and Python/fixture contracts stay
+unchanged because this whole-group extraction changes none of their behavior.
+
+Task18 gate update (2026-11-11): Root's complete covering gate passed100/100,
+zero skip/cancel, natural0 in19.657593500s, with587 exact pins and actual
+wait/BOTH raw-pipe/journal closure. Scoped Sol Max spec/code-to-document quality
+review is Approved with zero Critical/Important/Minor findings. Source remains
+the reviewed Split A runtime128/TEST90 with unchanged V1/V2 behavior. Root's
+final documentation audit and separate green-commit release remain pending.
+Task18 is IN PROGRESS; no commit, publication, V3 activation or phase result
+is claimed. Audit: E20/root-task18-covering-audit.json.
