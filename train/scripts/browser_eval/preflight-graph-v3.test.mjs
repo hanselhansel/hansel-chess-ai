@@ -161,37 +161,50 @@ test("new compiler/classifier/scope arguments reject extra, missing and mistyped
   assert.throws(() => createPreflightQualityScope({ runId: "R1", evaluationPolicy: V3_POLICY }));
 });
 
-test("actual producer seal stops after held metadata crosses its original cutoff without new open/read/replay", async (t) => {
-  const { privateFs } = await import("./private-fs.mjs");
-  const originalStat = privateFs.lstat;
-  const originalOpen = privateFs.open;
-  let fakeNow = now(), opensAfterCutoff = 0, heldMetadata = 0, root;
-  try {
-    await assert.rejects(createV3GraphFixture(t, { recorderNow: () => fakeNow,
-      beforePreflightSeal: async ({ env, deadlineMonoMs }) => {
-        root = env.workspaceRoot;
-        privateFs.open = (...args) => {
-          opensAfterCutoff += 1;
-          return originalOpen(...args);
-        };
-        privateFs.lstat = async (...args) => {
-          const value = await originalStat(...args);
-          if (heldMetadata === 0 && String(args[0]) === path.join(root, "preflight")) {
-            heldMetadata += 1;
-            await new Promise(setImmediate);
-            fakeNow = deadlineMonoMs;
-          }
-          return value;
-        };
-      } }), /ACCOUNTING_UNAVAILABLE/);
-    assert.equal(heldMetadata, 1);
-    assert.equal(opensAfterCutoff, 0, "no observation/PGN open or replay follows spent metadata");
-    await assert.rejects(fs.stat(path.join(root, "preflight/final.json")), { code: "ENOENT" });
-    await assert.rejects(fs.stat(path.join(root, "preflight/completion.json")), { code: "ENOENT" });
-  } finally {
-    privateFs.lstat = originalStat;
-    privateFs.open = originalOpen;
-  }
+test("actual producer seal stops at fixed B after held metadata without new open/read/replay", async () => {
+  const root = path.resolve(import.meta.dirname);
+  const code = `
+import assert from "node:assert/strict";
+import {registerHooks} from "node:module";
+import {pathToFileURL} from "node:url";
+const root=${JSON.stringify(root)}, state={budget:null};globalThis.__heldReceipt=state;
+const hook=registerHooks({load(url,ctx,next){
+ const result=next(url,ctx);
+ if(url!==pathToFileURL(root+"/record-finalizer.mjs").href)return result;
+ const source=(typeof result.source==="string"?result.source:Buffer.from(result.source).toString()), needle="const sealBody = async (sealed) => {";
+ assert(source.includes(needle));return {...result,source:source.replace(needle,
+  needle+"\\n globalThis.__heldReceipt.budget=verificationContext?.budget;")};
+}});
+const closes=[],load=name=>import(pathToFileURL(root+"/"+name+".mjs").href);
+let originalStat,originalOpen,privateFs;
+try{
+ const {createV3GraphFixture,now}=await load("preflight-v3-test-fixtures");
+ ({privateFs}=await load("private-fs"));originalStat=privateFs.lstat;originalOpen=privateFs.open;
+ let clock=now(),opens=0,held=0,workspaceRoot,firstEnd;
+ await assert.rejects(createV3GraphFixture({after:fn=>closes.push(fn)},{recorderNow:()=>clock,
+  beforePreflightSeal:async({env})=>{
+   workspaceRoot=env.workspaceRoot;
+   privateFs.open=(...args)=>{opens+=1;return originalOpen(...args)};
+   privateFs.lstat=async(...args)=>{
+    const value=await originalStat(...args);
+    if(!held&&args[0]===workspaceRoot+"/preflight"){
+     held+=1;firstEnd=state.budget.deadlineMonoMs();clock=firstEnd;
+    }
+    return value;
+   };
+  }}),/ACCOUNTING_UNAVAILABLE/);
+ assert.equal(held,1);assert.equal(opens,0,"spent metadata cannot admit open/read/replay");
+ assert.equal(state.budget.deadlineMonoMs(),firstEnd,"original B end remains fixed");
+ const {promises:fs}=await import("node:fs");
+ for(const name of ["final.json","completion.json"])
+  await assert.rejects(fs.stat(workspaceRoot+"/preflight/"+name),{code:"ENOENT"});
+}finally{
+ if(privateFs){privateFs.lstat=originalStat;privateFs.open=originalOpen;}
+ for(const close of closes)await close();hook.deregister();delete globalThis.__heldReceipt;
+}
+`;
+  const result = await child(process.execPath, ["--input-type=module", "-e", code]);
+  assert.equal(result.exit, 0, result.stderr);
 });
 
 import { child } from "./separate-verdicts-compat-fixtures.mjs";

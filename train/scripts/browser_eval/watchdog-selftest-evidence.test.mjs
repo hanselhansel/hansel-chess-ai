@@ -312,3 +312,75 @@ for (const releaseAfter of [4501, 5001]) test(`failed verifier containment retai
     await dispose();
   }
 });
+
+
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { createPhaseRecorder, phaseRecorderLifetime } from "./records.mjs";
+import { createV2RecorderWorkspace } from "./separate-verdicts-test-fixtures.mjs";
+import { v3Workspace, qualityV3, createV3GraphFixture, now } from "./preflight-v3-test-fixtures.mjs";
+import { fixtureManifest, fixtureRunning, proof } from "./test-fixtures.mjs";
+import { createBudgetHandle } from "./process-budget.mjs";
+import { createPreflightQualityScope, allowsPreflightPeriodic } from "./process-preflight-quality.mjs";
+
+for (const expires of [false, true]) test(`nested receipt keeps original parent ceiling, expires=${expires}`, async (t) => {
+  const workspace = v3Workspace(), env = await createV2RecorderWorkspace(t, { workspace });
+  const runId = "parent:watchdog-selftest", supervisor = identity(4242);
+  const manifest = { ...fixtureManifest({ workspace, inputs: env.inputs, phase: "watchdog-selftest", runId,
+    owner: { phase: "preflight", runId: "parent", supervisor } }), schemaVersion: 2,
+    evaluationPolicy: workspace.commonIdentity.evaluationPolicy };
+  let clock = now(), proofs = 0, metadata = 0;
+  const captureEnd = clock + 1000, parentEnd = clock + 60000;
+  const recorder = createPhaseRecorder({ store: env.store, workspace, manifest,
+    verifyIdentity: async () => { proofs += 1; return workspace.commonIdentity; },
+    verifyCleanup: async ({ claimedProof }) => { proofs += 1; return proof(claimedProof.scope, claimedProof.expectedFinalizer); } });
+  env.recorders.push(recorder);
+  recorder.bindRuntime({ lifetime: phaseRecorderLifetime(recorder), nowMonoMs: () => clock,
+    receiptCeilingMonoMs: parentEnd });
+  await recorder.writeManifest();
+  await recorder.writeRunning({ ...fixtureRunning({ manifest, supervisor }), schemaVersion: 2 });
+  await recorder.closeEvidenceBeforeCutoff({ intent: { status: "inconclusive", exitCode: 2,
+    stopReason: "HEARTBEAT_TIMEOUT", unplannedFaultCount: 0, analysisEligible: false,
+    summary: { scoredGames: 0 }, resourceEvidence: qualityV3({ phase: "watchdog-selftest", runId }) },
+    checks: [], prerequisites: [], expectedSelfTest: null }, { deadlineMonoMs: captureEnd });
+  assert.equal(proofs, 2);
+  clock = captureEnd + 1;
+  const { privateFs } = await import("./private-fs.mjs"), lstat = privateFs.lstat;
+  privateFs.lstat = async (...args) => {
+    const value = await lstat(...args);
+    if (args[0] === path.join(env.workspaceRoot, "preflight/selftest")) {
+      metadata += 1;
+      if (expires) clock = parentEnd;
+    }
+    return value;
+  };
+  try {
+    if (expires) {
+      await assert.rejects(recorder.sealClosedEvidence(), /ACCOUNTING_UNAVAILABLE/);
+      await assert.rejects(fs.stat(path.join(env.workspaceRoot, "preflight/selftest/completion.json")), { code: "ENOENT" });
+    } else assert.equal((await recorder.sealClosedEvidence()).verified.final.cleanup.verified, true);
+    assert(metadata > 0, "receipt entered between original nested C and parent end");
+    assert.equal(proofs, 2, "B never re-invokes timely A's Native/identity verifiers");
+    await artifactStoreLifetime(env.store).whenSettled();
+  } finally { privateFs.lstat = lstat; }
+});
+
+for (const stop of ["deadline", "abort"]) test(`nested receipt cannot open parent periodic scope after ${stop}`, async (t) => {
+  const f = await createV3GraphFixture(t), controller = new AbortController();
+  let clock = now(), probes = 0;
+  const end = clock + 90000, budget = createBudgetHandle({ deadlineMonoMs: end,
+    nowMonoMs: () => clock, clock: { setTimeout, clearTimeout } });
+  const scope = createPreflightQualityScope({ phase: "preflight", runId: f.main.manifest.runId,
+    evaluationPolicy: f.workspace.commonIdentity.evaluationPolicy });
+  try {
+    await assert.rejects(scope.verifyAndOpen({ workspaceRoot: f.env.workspaceRoot,
+      completionRef: f.nested.completionRef, parentRunId: f.main.manifest.runId,
+      parentSupervisor: f.nested.manifest.owner.supervisor, expectedIdentity: f.workspace.commonIdentity,
+      probeIdentity: async () => { probes += 1; if (stop === "deadline") clock = end;
+        else controller.abort(new Error("original parent abort")); return "same-live"; } },
+    { io: f.io, budget }, () => { budget.assertLive("original parent admission"); controller.signal.throwIfAborted(); }));
+    assert.equal(probes, 1);
+    assert.equal(allowsPreflightPeriodic(scope.reader, f.main.manifest.runId), false);
+    await artifactStoreLifetime(f.env.store).whenSettled();
+  } finally { scope.close(); budget.dispose(); }
+});

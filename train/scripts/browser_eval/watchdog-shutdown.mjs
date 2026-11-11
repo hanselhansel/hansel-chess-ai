@@ -54,8 +54,8 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
           prerequisites: config.prerequisites,
           expectedSelfTest: expected,
         },
-        // The ORIGINAL absolute cleanup end — the adapter awaits its
-        // actual capture/seal against this bound, never a fresh window.
+        // Original C bounds A's live proof only. Await actual closure, then
+        // V3's fixed receipt-only B (nested-clamped), without a C race.
         { deadlineMonoMs: state.cleanupEnd },
       ))
       .catch(async (e) => {
@@ -284,8 +284,9 @@ export function createWatchdogShutdown({ config, capabilities, state, timing, co
     // Canonical finalization is selected ONLY by the durable genuine
     // running-receipt flag — a copied monitor supervisor tuple, a pending
     // or failed running write never reaches finalize. The real adapter
-    // seal/containment is awaited UNABANDONED under the ORIGINAL end —
-    // no bounded race discards it — and the external outcome is only the
+    // seal/containment is awaited UNABANDONED: original C bounds A proof,
+    // fixed V3 B bounds receipt admission/seal, owned IO may settle later.
+    // No bounded race discards it, and the external outcome is only the
     // trusted res.final triple; a genuine contained failure still lands
     // on the coherent nonzero fallback.
     if (state.records !== null && state.runningWritten === true) {

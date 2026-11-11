@@ -12809,7 +12809,8 @@ createBudgetHandle object whose original own data-method identities remain
 unchanged. assertBudgetHandle uses a private WeakMap without invoking getters.
 Forged/spread/proxy/noop/modified-original handles reject. Legacy handle shape,
 mutability, clocks, min-only narrow and dispose behavior remain unchanged.
-The same original cutoff survives producer A/B, prepared verification,
+Historical Task20 source contract, superseded only for producer timing by the
+approved Task22 amendment below: the same original cutoff survived producer A/B, prepared verification,
 publication and fresh canonical readback. The private prepared association
 carries verificationContext for V3 only. publishCompletionFile accepts that
 private optional third argument and guards pre-rename/publication stages;
@@ -13210,3 +13211,137 @@ GO, timing cure or Elo claim. This status does not record a commit/publication.
 Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
 E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
 comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.
+
+
+## Task22 approved receipt-sealing correction (2026-11-11)
+
+Hansel approved proposal SHA256
+`3fc18bacefe9fbe59ba36ace283c64a2c091d2a1ac778d01fd229d292f819f29`
+and the binding import clarification in E21/sealing-review-summary.md.
+This dated acceptance supersedes only V3's producer C-across-A/B clock rule
+and its corresponding API/map wording. All other V3 requirements remain.
+Task20 is complete and published at `ccd839011b9deb831ffe9c79325879f00041857f`.
+Task21's fresh CHECK passed and its diagnostic control qualified, but parity
+failed receipt finalization. Its unsealed13/13 numerical checks, resource
+and cleanup facts do not constitute an authoritative parity graph. No
+preflight or comparison launched. Failed evidence remains immutable.
+
+Stage A contracts and causal TEST/support preceded production edits. Root
+accepted actual RED2:60 tests,50 passed,10 intended failures,0 skip/cancel,
+natural exit1 in40.792294208s with649 exact pins and actual command/BOTH raw/
+journal closure, without intervention. Both actual preparation controls passed.
+All required local gates now passed on the frozen14 SOURCE/TEST paths.
+Root full96 passed1162/1162, natural exit0 in223.116871292s,0 skip/cancel,
+660 exact execution pins and actual process/BOTH raw/journal closure without
+intervention. Causal60 and focused fixture4 are subsets, not added counts.
+Python58/19/8, scripts191/core184 and typecheck0 passed with649 exact pins and
+actual closure. Two deliberate null/undefined BookkeepingObserverWarnings
+remain expected and unsuppressed. Worker imports/tests are UNRUN. Final scope23
+is7 SOURCE,7 TEST/support and9 DOC paths, including the separately declared
+existing fixture-transform TEST ownership repair. Runtime135/TEST96, weights,
+baseline/statistics and original limits stay unchanged. Fresh Sol Max review,
+Root acceptance/commit/publication and scientific successors remain pending.
+
+A's science, identity, Native and cleanup proofs retain original P/C. Late
+facts remain unproven. Real fence, other-body drain and writer/FD closes must
+settle before a usable private closed bundle admits B. Then sealClosedEvidence()
+captures one trusted nonnegative safe-integer B_start and one genuine frozen
+`{budget}` context. Top-level B_end=B_start+90000ms; nested watchdog-selftest
+uses min(B_start+90000ms,receiptCeilingMonoMs), the exact original parent end.
+Throwing/invalid/overflowed construction fails closed. No retry refreshes B.
+The same owner/IO registrar and every existing proof/read/replay guard remain.
+
+B gates each whole existing Store transaction immediately before enqueue,
+after pure argument encoding, without an intervening await. Its queue wait
+and existing context-free preparation/creation/write/accounting may settle
+after B_end under actual ownership and unchanged caps. No new proof or
+transaction starts after expiry. Adopt the genuine returned prepared capability
+before the next fallible guard inside its containment try/catch. Same-capability
+containment preserves the first arbitrary error and real FD/body settlement.
+
+The last fallible eligibility check is inside artifact-completion, after
+publication/accounting/fresh canonical verification and immediately before the
+synchronous claims-clear/seal/immutable/mark-sealed/resolve-safe batch. The
+unchanged artifact-files checkVerification body is exported as
+assertVerificationContext through the existing ArtifactCompletion to
+ArtifactFiles edge. No fallible post-result finalizer deadline guard can
+replace the genuine immutable Store result. Receipt reporting adds the direct
+record-finalizer to watchdog-lifetime edge among existing135 modules.
+
+Private bindRuntime retains lifetime/clock/optional observer and adds
+receiptCeilingMonoMs (null top-level; required exact original parent end nested).
+closeEvidenceBeforeCutoff(request,{deadlineMonoMs:C}) retains only A's bound.
+sealClosedEvidence() accepts no replacement context. Raw Store/preparation/
+accounting signatures and read-only/parent admission contexts remain unchanged.
+Parent post-return deadline/abort/probe/ACK/scope checks remain hard.
+
+reportReceiptBookkeeping(owner,scope,classification,atMonoMs,deadlineMonoMs,cause)
+in existing watchdog-lifetime emits bounded records.receipt entered/fulfilled/
+rejected markers. B_start/end are authoritative; final settlement sampling and
+reporting are best effort. The shared emitMarker passively observes native
+Promise sink rejections with Promise.prototype.then.call and fulfilling handlers.
+Throwing, rejecting or pending diagnostics add no required debt or status
+control. Keep the existing optional five-field bookkeeping observer unchanged.
+Report A/C, actual B boundaries and total outer elapsed separately; missing
+samples stay unknown. No extra resource coverage or scientific proof is created.
+
+Original receipt-correction scope was7 SOURCE,6 TEST/support and9 DOC paths.
+Root's routine fixture-transform before-use ruling adds one existing TEST path:
+final23 paths are7 SOURCE,7 TEST/support and9 DOC. No new runtime/helper path,
+queue, timer owner or four-split/runtime139 alternative is adopted.
+The six TEST/support owners cover distinct A/readback bounds, C-crossing B,
+late-A negatives, fixed-B expiry, preseal/postseal races, held real preparation,
+same-capability containment/FD closure, nested parent ceiling and passive sinks.
+Preserve all existing ownership/context assertions and readable source/TEST<400.
+
+After Root causal GREEN, covering/full96, Python58/19/8, app scripts/core and
+typecheck, fresh scoped Sol Max review and final code-to-document acceptance,
+Root separately releases green commit/publication, fresh CHECK, ONE replacement
+control, strict parity, preflight and ONE40-game comparison. Bind the replacement
+control only to the new published candidate's successful CLOSED CHECK. Model
+weights, baseline/statistics,64 visits/20pairs/40games and original experiment,
+Native, cleanup, output and memory limits remain unchanged. No old run is rescued.
+Evidence: E22/implementation-approval.json and task22-report.md, where E22 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/00cb72f4-cff2-412d-9c9c-e6f3ce8e4b59`.
+
+Stage B evidence: E22/root-task22-causal-red-acceptance.json,
+E22/task22-source-ready-report.md and task22-source-ready-pins.json. The actual
+source now retains C only for A, captures B once after the real closed bundle,
+and gates final write/prepare/publish admission without changing raw APIs.
+Prepared capability adoption precedes the guarded verification/containment
+region. Store's final association guard precedes the no-await immutable seal;
+no finalizer post-publish guard reclassifies its result. Receipt settlement
+markers follow actual lifecycle continuation settlement and are best effort.
+Shared diagnostic native Promise rejection is passively observed without debt.
+The Stage B source-ready comparison is historical; the measured final code-to-
+doc comparison is in task22-implementation-review-ready-report.md. Local GREEN
+does not establish review acceptance, publication or scientific passage.
+
+Current evidence: E22/root-task22-all-required-checks-summary.json,
+root-task22-causal-green-acceptance.json, root-task22-fixture-focused-acceptance.json
+and task22-implementation-review-ready-report.md. The earlier full96
+1161pass/1 teardown failure and RED1's two loader setup failures remain dated
+immutable history; neither was reclassified as passing. No Task22 scientific
+CHECK/control/parity/preflight/comparison, commit/publication or Elo result is
+claimed. Root owns fresh review and every subsequent release gate.
+
+### Validated TEST-only Vite completion boundary
+
+Existing fixture-transform.test.mjs is the sole additional TEST path, declared
+before use in E22/root-task22-fixture-transform-before-use-go.json. Its197-line
+owner preserves the four original test names/bodies/assertions byte-exact.
+Local drainOptimizer retains genuine discovered/optimized processing promises
+before metadata replacement, joins issued scan and actual waitForRequestsIdle
+while Vite is open, and drains newly issued actual batches to a stable set.
+Only then does teardown close every server and join all original Git child
+exit/BOTH pipe receipts despite any other drain/close rejection. Original or
+aggregate failures propagate and preserve the root. One original fs.rm runs
+only after successful joins, with unchanged options and no sleep/retry/error mask.
+Vite8.2.2/Rolldown1.2.5 public batch receipts cover actual admitted bundle write/
+close/commit settlement. They do not prove arbitrary global IO or Vite's separate
+detached old-cache fsp.rm completed. No plugin/package/noDiscovery/include/entries,
+operational production binding or scientific/Native limit changed.
+Root's focused owner passed4/4, then the fresh full96 passed1162/1162 on exact
+frozen14 code/TEST bytes. The original failed temp and source-ready/raw evidence
+remain unchanged. Docs-only final status follows these measured gates; no new
+runtime execution or scientific result follows from this documentation update.

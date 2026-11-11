@@ -1547,3 +1547,61 @@ GO, timing cure or Elo claim. This status does not record a commit/publication.
 Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
 E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
 comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.
+
+
+## Task22 approved receipt-sealing correction (2026-11-11)
+
+Hansel approved the [receipt-sealing amendment](../superpowers/specs/2026-11-11-tinyaz-preflight-v3-software-design.md#task22-approved-receipt-sealing-correction-2026-11-11)
+(proposal SHA256 `3fc18bacefe9fbe59ba36ace283c64a2c091d2a1ac778d01fd229d292f819f29`).
+It explicitly supersedes only V3's producer C-across-A/B coupling and matching
+API/map wording. A retains original P/C and real writer/body/FD closure.
+After actual A settlement, one fixed receipt-only B90 gates whole Store
+transaction admission, existing proof/read/replay and the in-Store semantic
+seal. Nested B is clamped to the original parent end. Already-admitted IO
+settles under actual ownership after expiry. An immutable Store result survives
+later continuation/diagnostic failure. The canonical contract records exact
+APIs, whole-transaction limits, import edges and passive sink observation.
+
+Task20 is complete/published at `ccd839011b9deb831ffe9c79325879f00041857f`.
+Task21 CHECK/control qualified; parity failed finalization without an authoritative
+completion. Its unsealed numerical/resource/cleanup facts cannot admit preflight.
+No preflight or comparison launched. Failed evidence remains immutable.
+Root accepted actual RED2:60 tests,50 passed,10 intended failures,0 skip/cancel,
+natural exit1 in40.792294208s,649 exact pins and complete command/BOTH raw/journal
+closure, without intervention. The two corrected preparation controls passed.
+All required local gates now passed on the frozen14 SOURCE/TEST paths.
+Root full96 passed1162/1162, natural exit0 in223.116871292s,0 skip/cancel,
+660 exact execution pins and actual process/BOTH raw/journal closure without
+intervention. Causal60 and focused fixture4 are subsets, not added counts.
+Python58/19/8, scripts191/core184 and typecheck0 passed with649 exact pins and
+actual closure. Two deliberate null/undefined BookkeepingObserverWarnings
+remain expected and unsuppressed. Worker imports/tests are UNRUN.
+Final scope23 is7 SOURCE,7 TEST/support and9 DOC paths. The additional existing
+fixture-transform TEST drains actual Vite optimization batches before close;
+its public receipts do not claim arbitrary global IO/detached-cache-rm closure.
+Runtime135/TEST96, model weights, baseline/statistics and original experiment/
+Native/cleanup/resource limits remain unchanged. Fresh Sol Max review and Root
+acceptance/commit/publication/scientific successors remain pending.
+
+After required tests, Sol Max review, code-to-doc acceptance and green publication,
+Root separately releases fresh CHECK, ONE replacement diagnostic control, parity,
+preflight and ONE40-game comparison. No prior run/control is reused. The replacement
+control requires the new published candidate's successful CLOSED CHECK.
+Evidence and exact pins: E22/implementation-approval.json and task22-report.md in
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/00cb72f4-cff2-412d-9c9c-e6f3ce8e4b59`.
+
+Stage B evidence: E22/root-task22-causal-red-acceptance.json,
+E22/task22-source-ready-report.md and task22-source-ready-pins.json. The linked
+canonical amendment and harness README describe the implemented API/clock/
+containment/diagnostic boundaries. The source-ready report records the final
+code-to-doc comparison. The final measured comparison and23-path status are in
+task22-implementation-review-ready-report.md. Local GREEN does not establish
+review acceptance, publication or scientific passage.
+
+Current evidence: E22/root-task22-all-required-checks-summary.json,
+root-task22-causal-green-acceptance.json, root-task22-fixture-focused-acceptance.json
+and task22-implementation-review-ready-report.md. The earlier full96
+1161pass/1 teardown failure and RED1's two loader setup failures remain dated
+immutable history; neither was reclassified as passing. No Task22 scientific
+CHECK/control/parity/preflight/comparison, commit/publication or Elo result is
+claimed. Root owns fresh review and every subsequent release gate.

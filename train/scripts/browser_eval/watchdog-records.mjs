@@ -291,7 +291,9 @@ export function createWatchdogRecordAdapter({
   // The timed finalize pair on the real recorder: deadlineMonoMs is the
   // trusted ORIGINAL absolute bound, validated before any effect. The entire
   // first request is copied (parents and nested) before the first await; A
-  // admits it before the cutoff, then B seals with no arguments and the
+  // freezes live proofs under original C and actually closes before B starts.
+  // V3 B captures one receipt-only90s end, nested-clamped to the parent end;
+  // its real settlement is awaited without a C race. B takes no arguments and the
   // genuine immutableStore publication result already carries verified.final.
   // Nothing is validated, copied or reclassified after the immutable seal.
   const finalizeAndRead = async (

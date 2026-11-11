@@ -91,6 +91,7 @@ export function createWatchdogFacade({ config, capabilities }, runLifecycle = ru
   capabilities.recorder.bindRuntime({
     lifetime: capabilities.lifetime,
     nowMonoMs: now,
+    receiptCeilingMonoMs: config.selftestPhase ? config.ctxDeadlineMs : null,
     onBookkeepingSettlement: capabilities.onBookkeepingSettlement ?? undefined,
   });
 

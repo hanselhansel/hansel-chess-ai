@@ -25,6 +25,7 @@ const checkVerification = (context) => {
     budget.assertLive("V3 artifact read");
   }
 };
+export { checkVerification as assertVerificationContext };
 
 // Verifier-only captured effect fence. Actual descriptor closes are exempt.
 export const assertReadEffect = (io) => {

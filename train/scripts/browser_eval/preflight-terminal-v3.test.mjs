@@ -217,3 +217,137 @@ try{
   assert.equal(evidence.reports.length, 2);
   for (const report of evidence.reports) assert.equal(report.actualOwnerSettled, true);
 });
+
+
+// Missing independent B rejects timely A at C; missing in-Store preseal guard
+// seals expired proof; the old post-publish guard retracts a genuine seal.
+for (const mode of ["cross-C", "late-A", "preseal-expiry", "postseal-delay",
+  "invalid-start", "throwing-start", "overflow-start", "throwing-settlement"]) {
+  test(`receipt clock: ${mode} preserves actual Store authority`, async () => {
+    const root = path.resolve(import.meta.dirname);
+    const code = `
+import assert from "node:assert/strict";
+import {registerHooks} from "node:module";
+import {pathToFileURL} from "node:url";
+import {promises as fs} from "node:fs";
+const root=${JSON.stringify(root)}, mode=${JSON.stringify(mode)}, closes=[];
+const state={armed:false,clock:0,start:null,end:null,context:null,seals:0,prepared:0,
+ preseal:0,postseal:0,storeResult:null,recorderResult:null,closed:false,settled:false};
+globalThis.__receiptClock=state;
+state.markers=[];state.marker=line=>{if(state.armed)state.markers.push(JSON.parse(line.slice("TINYAZ_AWAIT ".length)));};
+const gate=()=>{let resolve;const promise=new Promise(yes=>{resolve=yes});return {promise,resolve}};
+const held=gate(),entered=gate();
+state.seal=(context)=>{
+ if(!state.armed)return;
+ state.seals+=1;state.context=context;state.start=state.clock;
+ state.end=context.budget.deadlineMonoMs();
+};
+state.afterGraph=async value=>{
+ if(state.armed&&mode==="preseal-expiry"){
+  state.preseal+=1;entered.resolve();await held.promise;
+ }
+ return value;
+};
+state.afterSeal=async value=>{
+ if(state.armed){state.storeResult=value;state.postseal+=1;
+  if(mode==="postseal-delay"||mode==="throwing-settlement"){
+   entered.resolve();await held.promise;
+  }
+ }
+ return value;
+};
+const edits={
+ "watchdog-lifetime.mjs":[["reportAwaitStage = null", "reportAwaitStage = globalThis.__receiptClock.marker"]],
+ "record-finalizer.mjs":[["const sealBody = async (sealed) => {",
+  "const sealBody = async (sealed) => {\\n globalThis.__receiptClock.seal(verificationContext);"],
+ ["state.sealedResult = result;", "state.sealedResult = result;\\n globalThis.__receiptClock.recorderResult=result;"]],
+ "artifact-completion.mjs":[
+  ["            association.verificationContext,\\n          ),",
+   "            association.verificationContext,\\n          ).then(globalThis.__receiptClock.afterGraph),"],
+  ["return Object.freeze({ completionRef, verified });",
+   "return globalThis.__receiptClock.afterSeal(Object.freeze({ completionRef, verified }));"]],
+ "receipt-verification.mjs":[["export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedIdentity }, verificationContext) {",
+  "export async function verifyPreparedReceiptGraph({ preparedCompletion, expectedIdentity }, verificationContext) {\\n if(globalThis.__receiptClock.armed)globalThis.__receiptClock.prepared+=1;"]]
+};
+const hook=registerHooks({load(url,context,next){
+ const result=next(url,context);
+ for(const [name,pairs]of Object.entries(edits)){
+  if(url!==pathToFileURL(root+"/"+name).href)continue;
+  let source=typeof result.source==="string"?result.source:Buffer.from(result.source).toString();
+  for(const [needle,replacement]of pairs){assert(source.includes(needle),name+" hook drift");source=source.replace(needle,replacement);}
+  return {...result,source};
+ }
+ return result;
+}});
+const load=name=>import(pathToFileURL(root+"/"+name+".mjs").href);
+let env,recorder,pending,result,error,throwClock=false;
+try{
+ const {createV3GraphFixture,now}=await load("preflight-v3-test-fixtures");
+ const {artifactStoreLifetime}=await load("artifact-store");
+ state.clock=now();const captureEnd=state.clock+(mode==="late-A"?-1:90000);
+ pending=createV3GraphFixture({after:fn=>closes.push(fn)},{gap:false,
+  recorderNow:()=>{if(throwClock)throw new Error("settlement clock");return state.clock;},
+  preflightCaptureDeadlineMonoMs:captureEnd,
+  beforePreflightSeal:async actual=>{
+   env=actual.env;recorder=actual.recorder;state.closed=true;state.armed=true;
+   assert.equal(actual.captureDeadlineMonoMs,captureEnd);
+   assert(actual.readbackDeadlineMonoMs>0);
+   if(mode==="cross-C")state.clock=captureEnd+1;
+   if(mode==="invalid-start")state.clock=NaN;
+   if(mode==="overflow-start")state.clock=Number.MAX_SAFE_INTEGER-100;
+   if(mode==="throwing-start")throwClock=true;
+  }}).then(value=>{result=value;},cause=>{error=cause;}).finally(()=>{state.settled=true});
+ if(["preseal-expiry","postseal-delay","throwing-settlement"].includes(mode)){
+  const first=await Promise.race([entered.promise.then(()=>"held"),pending.then(()=>"settled")]);
+  assert.equal(first,"held","real publication boundary must be reached");
+  assert.equal(state.settled,false,"held actual Store transaction has not returned");
+  if(mode==="throwing-settlement")throwClock=true;else state.clock=state.end;
+  held.resolve();
+ }
+ await pending;
+ assert.equal(state.closed,true,"A really returned before B admission");
+ await artifactStoreLifetime(env.store).whenSettled();
+ const canonical=env.workspaceRoot+"/preflight/completion.json";
+ let published=true;try{await fs.stat(canonical)}catch(cause){assert.equal(cause.code,"ENOENT");published=false;}
+ const negative=["preseal-expiry","invalid-start","throwing-start","overflow-start"].includes(mode);
+ if(negative){
+  assert(error,"expired/invalid receipt authority must reject before immutable seal");
+  assert.equal(published,false,"failed receipt leaves no canonical seal");
+  assert.equal(state.storeResult,null,"no immutable Store result was granted");
+ }else{
+  assert.equal(error,undefined,"timely A or an immutable seal survives receipt continuation");
+  assert.equal(published,true);assert(Object.isFrozen(state.storeResult));
+  assert.equal(state.recorderResult,state.storeResult,"recorder caches the exact immutable Store result");
+  const final=result.preflight.final;
+  assert.equal(final.cleanup.verified,mode!=="late-A");
+  assert.equal(final.scientificReadinessVerdict.status,mode==="late-A"?"unready":"ready");
+  assert.equal(final.exitCode,mode==="late-A"?2:0);
+  assert.equal(state.seals,1);assert(Object.isFrozen(state.context));
+  assert.deepEqual(Object.keys(state.context),["budget"]);
+  assert.equal(state.end,state.start+90000,"one B90 is fixed before first seal effect");
+  assert.equal(state.context.budget.deadlineMonoMs(),state.end,"no receipt retry refreshes B");
+  const receipt=state.markers.filter(row=>row.stage==="records.receipt");
+  assert.equal(receipt[0]?.state,"entered","actual B admission is reported");
+  assert.equal(receipt[0].at,state.start);assert.equal(receipt[0].end,state.end);
+  if(mode!=="throwing-settlement"){
+   assert.equal(receipt.at(-1).state,"fulfilled");assert.equal(receipt.at(-1).end,state.end);
+  }
+  await assert.rejects(recorder.sealClosedEvidence(),/seal once/);
+ }
+ console.log(JSON.stringify({mode,actualAClosed:true,actualStoreSettled:true,published,
+  preseal:state.preseal,postseal:state.postseal,firstError:error?.code??null}));
+}finally{
+ held.resolve();if(pending)await pending;
+ state.armed=false;
+ for(const close of closes)await close();
+ hook.deregister();delete globalThis.__receiptClock;
+}
+`;
+    const result = await child(process.execPath, ["--input-type=module", "-e", code]);
+    assert.equal(result.exit, 0, result.stderr);
+    const report = JSON.parse(result.stdout.trim());
+    assert.equal(report.mode, mode);
+    assert.equal(report.actualAClosed, true);
+    assert.equal(report.actualStoreSettled, true);
+  });
+}

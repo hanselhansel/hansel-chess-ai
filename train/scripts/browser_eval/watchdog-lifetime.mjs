@@ -24,7 +24,7 @@ const AWAIT_LABELS = new Set([
   "cleanup.listeners", "cleanup.workload", "cleanup.monitor",
   "shutdown.ordinary", "shutdown.admission", "shutdown.resource",
   "shutdown.driver-reap", "shutdown.driver-scope", "shutdown.lifetime",
-  "records.finalize", "records.containment", "run-supervisor.lifetime",
+  "records.finalize", "records.receipt", "records.containment", "run-supervisor.lifetime",
   "shutdown.stop-send", "records.stop-ordinary", "records.game-stop", "ordinary.fault", "records.cleanup", "driver.fault", "driver.requestfailed",
 ]);
 
@@ -132,7 +132,8 @@ function emitMarker(state, scope, label, call, phase, cause, atMonoMs, deadlineM
       return;
     }
     state.markerCount += 1;
-    state.reportAwaitStage(line);
+    const diagnostic = state.reportAwaitStage(line);
+    try { Promise.prototype.then.call(diagnostic, () => undefined, () => undefined); } catch {}
     return true;
   } catch {} finally {
     state.reporting = false;
@@ -209,6 +210,15 @@ export function reportCleanupVerification(owner, scope, classification, cause, a
     return;
   }
   emitMarker(state, scope, "records.cleanup", state.observationCount++, classification,
+    cause, atMonoMs, deadlineMonoMs);
+}
+
+// Receipt boundaries are descriptive; the caller supplies trusted clock samples.
+export function reportReceiptBookkeeping(owner, scope, classification, atMonoMs, deadlineMonoMs, cause) {
+  const state = OWNERS.get(owner);
+  if (!state || state.reporting || !state.reportAwaitStage || state.markerCount >= 64 ||
+    !["entered", "fulfilled", "rejected"].includes(classification)) return;
+  emitMarker(state, scope, "records.receipt", state.observationCount++, classification,
     cause, atMonoMs, deadlineMonoMs);
 }
 

@@ -34,7 +34,7 @@
 // Parent/ArtifactFiles; never helper -> Store/Recorder/Prerequisites/
 // Watchdog/Native and no back-cycle.
 
-import { normRel, storeFail as fail } from "./artifact-files.mjs";
+import { assertVerificationContext, normRel, storeFail as fail } from "./artifact-files.mjs";
 import {
   markPublicationSealed,
   prepareCompletionFile,
@@ -348,6 +348,7 @@ export function createStoreCompletionMethods(completionContext) {
             association.verificationContext,
           ),
         );
+        assertVerificationContext(association.verificationContext);
         for (const claim of entry.claims) activePaths.delete(claim);
         entry.claims.clear();
         sealPhaseCore(entry.phase);

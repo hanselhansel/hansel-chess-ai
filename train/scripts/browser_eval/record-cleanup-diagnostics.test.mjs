@@ -30,7 +30,7 @@ async function fixture(t, { times = [1, 2, 3, 4], cleanup, reporter } = {}) {
   let owner;
   owner = lifetimeAPI.createWatchdogLifetime({ reportAwaitStage: (line) => {
     lines.push(line);
-    if (reporter) reporter(owner, line);
+    if (reporter) return reporter(owner, line);
   } });
   let env;
   let recorder;
@@ -68,7 +68,7 @@ async function fixture(t, { times = [1, 2, 3, 4], cleanup, reporter } = {}) {
   } });
   await recorder.writeManifest();
   await recorder.writeRunning(fixtureRunning({ manifest }));
-  return { owner, lines, releases, observed, calls: () => calls, reads: () => reads,
+  return { owner, store: env.store, lines, releases, observed, calls: () => calls, reads: () => reads,
     capture: () => {
       body = recorder.closeEvidenceBeforeCutoff(request(), { deadlineMonoMs: 100 });
       return body;
@@ -210,3 +210,51 @@ test("cleanup descriptions share the existing full UTF8 marker and count cap", (
   assert.equal(row.at, 1917200965487);
   assert.equal(row.end, 1917200965587);
 });
+
+
+// Diagnostic transport must never become required Store work. The rejecting
+// native-Promise case is causally RED on the old shared emitMarker call site.
+for (const sink of ["throwing", "rejecting", "pending", "hostile-then"]) {
+  for (const outcome of ["success", "primary-failure"]) {
+    test(`shared sink ${sink} preserves genuine Store ${outcome}`, async (t) => {
+      const unhandled = [], diagnostic = Object.freeze(new Error("diagnostic only"));
+      const onUnhandled = (cause) => unhandled.push(cause);
+      process.on("unhandledRejection", onUnhandled);
+      let thenReads = 0, deliveries = 0;
+      t.after(() => process.off("unhandledRejection", onUnhandled));
+      const f = await fixture(t, { reporter: () => {
+        deliveries += 1;
+        if (sink === "throwing") throw diagnostic;
+        if (sink === "rejecting") return Promise.reject(diagnostic);
+        if (sink === "pending") return new Promise(() => {});
+        return { get then() { thenReads += 1; throw diagnostic; } };
+      } });
+      let actual;
+      const returned = lifetimeAPI.observeAwaitStage(f.owner, "phase", "records.finalize", () => {
+        actual = outcome === "success" ? f.capture().then(() => f.seal()) :
+          f.store.writeOnce("check/manifest.json", Buffer.from("duplicate"), "final");
+        return actual;
+      });
+      assert.equal(returned, actual, "diagnostics preserve the genuine issued Promise");
+      if (outcome === "success") {
+        const sealed = await returned;
+        assert.equal(sealed.verified.final.exitCode, 0);
+        assert(Object.isFrozen(sealed));
+      } else {
+        const primary = await actual.then(() => assert.fail("duplicate accepted"), cause => cause);
+        await assert.rejects(returned, cause => cause === primary);
+        assert.notEqual(primary, diagnostic, "diagnostic rejection never replaces primary");
+        await f.capture();
+        assert.equal((await f.seal()).verified.final.exitCode, 0);
+      }
+      await f.owner.whenSettled();
+      // A complete event-loop turn observes native unhandled-rejection delivery.
+      // No elapsed-time threshold or sleep decides Store/lifetime settlement.
+      await turn();
+      assert.equal(thenReads, 0, "native brand dispatch never invokes an arbitrary then getter");
+      assert(deliveries > 0);
+      assert.deepEqual(unhandled, [], "sink rejection must be passively observed");
+      assert(f.lines.every(line => Buffer.byteLength(line) <= 256));
+    });
+  }
+}

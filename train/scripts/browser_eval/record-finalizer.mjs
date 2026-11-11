@@ -16,6 +16,7 @@ import {
   captureFinalizationRequest,
   validateFinalizationIntent,
 } from "./record-inputs.mjs";
+import { reportReceiptBookkeeping } from "./watchdog-lifetime.mjs";
 import { createBookkeepingObserver } from "./record-bookkeeping.mjs";
 import { readVerdictEventsV2 } from "./receipt-verification-v2.mjs";
 import { verifyPreparedReceiptGraph, verifyReceiptGraph } from "./receipt-verification.mjs";
@@ -55,6 +56,16 @@ export function createRecorderFinalizer({
   // recorder-private — never caller facts or wire state.
   const isV3 = mf.evaluationPolicy?.policyId === "tinyaz-separate-verdicts-v3";
   let verificationContext;
+  let receiptEnd = null;
+  const describeReceipt = (classification, cause, at) => {
+    if (!isV3 || receiptEnd === null) return;
+    try {
+      at ??= bound.nowMonoMs();
+      if (Number.isSafeInteger(at) && at >= 0)
+        reportReceiptBookkeeping(owner, mf.phase === "watchdog-selftest" ? "selftest" : "phase",
+          classification, at, receiptEnd, cause);
+    } catch {} // A settlement sample or sink cannot replace the Store result/primary.
+  };
   const guard = () => {
     if (isV3) {
       const budget = originalContextBudget(verificationContext);
@@ -202,7 +213,9 @@ export function createRecorderFinalizer({
       artifactRefs,
       eventsRef: sealed.eventsRef,
     });
-    await store.writeOnce(`${phaseDir}/final.json`, canonicalBytes(final), "final");
+    const finalPath = `${phaseDir}/final.json`, finalBytes = canonicalBytes(final);
+    guard();
+    await store.writeOnce(finalPath, finalBytes, "final");
     guard();
     const artifacts = await phaseArtifactRefs(
       { workspaceRoot: store.root, phaseDirectory: phaseDir },
@@ -218,17 +231,18 @@ export function createRecorderFinalizer({
       expectedSelfTest: sealed.nested,
       final,
     });
+    const preparation = { phaseDirectory: phaseDir, bytes: canonicalBytes(completion) };
     guard();
-    const prepared = await store.prepareCompletion({
-      phaseDirectory: phaseDir,
-      bytes: canonicalBytes(completion),
-    });
+    // Adopt the genuine capability before a B guard can fail after late creation.
+    const prepared = await store.prepareCompletion(preparation);
     let verification;
     try {
+      guard();
       verification = await verifyPreparedReceiptGraph({
         preparedCompletion: prepared,
         expectedIdentity: ws.commonIdentity,
       }, verificationContext);
+      guard();
     } catch (error) {
       // Only the SAME genuine prepared capability is contained and the
       // original primary is preserved after its truthful safe
@@ -237,17 +251,27 @@ export function createRecorderFinalizer({
       await store.containPreparedCompletion(prepared, error);
       throw error;
     }
-    guard();
     const result = await store.publishPreparedCompletion(prepared, verification);
-    guard();
     state.finalized = true;
     state.sealedResult = result;
     return result;
   };
 
+  // The consumed ticket/cache makes B construction failure permanent too.
   const sealEvidenceB = (sealed) =>
     lifecycle.continueFinalEvidence(sealed.ticket, async () => {
       try {
+        if (isV3) {
+          const start = bound.nowMonoMs();
+          if (!Number.isSafeInteger(start) || start < 0 || !Number.isSafeInteger(start + 90000))
+            fail("RECORDER_INPUT", "receipt clock");
+          const end = Math.min(start + 90000, bound.receiptCeilingMonoMs ?? Infinity);
+          if (!Number.isSafeInteger(end) || end <= start) fail("RECORDER_INPUT", "receipt end spent");
+          receiptEnd = end;
+          verificationContext = Object.freeze({ budget: createBudgetHandle({ deadlineMonoMs: end,
+            clock: { setTimeout, clearTimeout }, nowMonoMs: bound.nowMonoMs }) });
+          describeReceipt("entered", undefined, start);
+        }
         return await sealBody(sealed);
       } catch (error) {
         // Only a known failed B reports, and only with the exact
@@ -266,7 +290,7 @@ export function createRecorderFinalizer({
     // optional observer construction only — no clock read, IO or
     // rebind; an invalid, late or repeated call is caller-correctable
     // and never replaces a prior valid binding.
-    bindRuntime({ lifetime, nowMonoMs, onBookkeepingSettlement }) {
+    bindRuntime({ lifetime, nowMonoMs, onBookkeepingSettlement, receiptCeilingMonoMs = null }) {
       if (bound !== null) fail("RECORDER_STATE", "runtime already bound");
       if (state.used) fail("RECORDER_STATE", "recorder already used");
       if (lifetime !== owner) fail("RECORDER_CONFIG", "lifetime");
@@ -277,7 +301,10 @@ export function createRecorderFinalizer({
       ) {
         fail("RECORDER_CONFIG", "onBookkeepingSettlement");
       }
-      bound = Object.freeze({ nowMonoMs });
+      if (isV3 && (mf.phase === "watchdog-selftest"
+        ? !Number.isSafeInteger(receiptCeilingMonoMs) || receiptCeilingMonoMs <= 0
+        : receiptCeilingMonoMs !== null)) fail("RECORDER_CONFIG", "receiptCeilingMonoMs");
+      bound = Object.freeze({ nowMonoMs, receiptCeilingMonoMs });
       if (onBookkeepingSettlement !== undefined) {
         observer = createBookkeepingObserver({
           runId: mf.runId,
@@ -306,13 +333,7 @@ export function createRecorderFinalizer({
         prerequisites,
         expectedSelfTest,
       });
-      if (isV3) {
-        need(verificationContext === undefined, "V3 original cutoff already captured");
-        verificationContext = Object.freeze({ budget: createBudgetHandle({
-          deadlineMonoMs, clock: { setTimeout, clearTimeout }, nowMonoMs: bound.nowMonoMs }) });
-      }
-      try { await captureEvidenceA(bundle, deadlineMonoMs); }
-      catch (error) { verificationContext?.budget.dispose(); throw error; }
+      await captureEvidenceA(bundle, deadlineMonoMs);
     },
 
     // Settlement half of the timed pair: no arguments, no replacement
@@ -332,8 +353,13 @@ export function createRecorderFinalizer({
       const sealed = pending;
       sealPromise = sealEvidenceB(sealed);
       let result;
-      try { result = await sealPromise; }
-      finally { verificationContext?.budget.dispose(); }
+      try {
+        result = await sealPromise;
+        describeReceipt("fulfilled");
+      } catch (error) {
+        describeReceipt("rejected", error);
+        throw error;
+      } finally { verificationContext?.budget.dispose(); }
       if (observer !== null) {
         observer.notifySettled({ hasPrimary: false, primary: null });
       }

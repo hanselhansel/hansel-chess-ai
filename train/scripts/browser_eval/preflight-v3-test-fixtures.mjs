@@ -61,7 +61,7 @@ export function factsV3(overrides = {}) {
   return { ...facts, ...overrides };
 }
 export async function createV3GraphFixture(t, { gap = true, archived = false, parentRunId = "run-preflight", parentSupervisor = identity(), candidate = null, runtimeIdentity = null, semanticThroughputFailure = false,
-  recorderNow = now, beforePreflightSeal = null, preflightResourceEvidence = null, preflightCheckpoint = null } = {}) {
+  recorderNow = now, beforePreflightSeal = null, preflightCaptureDeadlineMonoMs = null, preflightResourceEvidence = null, preflightCheckpoint = null } = {}) {
   const workspace = v3Workspace();
   if (candidate !== null) workspace.commonIdentity.candidate.commit = candidate;
   if (runtimeIdentity !== null) {
@@ -79,6 +79,7 @@ export async function createV3GraphFixture(t, { gap = true, archived = false, pa
     path.join(env.workspaceRoot, "inputs/harness/node_modules"));
   const owner = artifactStoreLifetime(env.store);
   const budget = budgetForTest(t);
+  const receiptCeilingMonoMs = budget.deadlineMonoMs();
   const context = Object.freeze({ budget });
   const io = Object.freeze({ retainActual: owner.retainActual, assertEffectLive: () => budget.assertLive("fixture graph") });
   const start = async (phase, parents = [], options = {}) => {
@@ -91,7 +92,8 @@ export async function createV3GraphFixture(t, { gap = true, archived = false, pa
       verifyIdentity: async () => workspace.commonIdentity,
       verifyCleanup: async ({ claimedProof }) => proof(claimedProof.scope, claimedProof.expectedFinalizer) });
     env.recorders.push(recorder);
-    recorder.bindRuntime({ lifetime: phaseRecorderLifetime(recorder), nowMonoMs: recorderNow });
+    recorder.bindRuntime({ lifetime: phaseRecorderLifetime(recorder), nowMonoMs: recorderNow,
+      receiptCeilingMonoMs: phase === "watchdog-selftest" ? receiptCeilingMonoMs : null });
     await recorder.writeManifest();
     const running = { ...fixtureRunning({ manifest, supervisor: parentSupervisor }), schemaVersion: 2 };
     await recorder.writeRunning(running);
@@ -109,11 +111,14 @@ export async function createV3GraphFixture(t, { gap = true, archived = false, pa
     const finish = async (nested = null) => {
       if (phase === "preflight" && preflightCheckpoint !== null)
         await recorder.appendEvent({ kind: "resource", payload: preflightCheckpoint });
+      const captureDeadlineMonoMs = phase === "preflight" && preflightCaptureDeadlineMonoMs !== null
+        ? preflightCaptureDeadlineMonoMs : budget.deadlineMonoMs();
       await recorder.closeEvidenceBeforeCutoff({ intent, checks, prerequisites: manifest.prerequisites,
         expectedSelfTest: nested === null ? null : { completion: nested.completionRef,
-          expectedStopReason: "HEARTBEAT_TIMEOUT" } }, { deadlineMonoMs: budget.deadlineMonoMs() });
+          expectedStopReason: "HEARTBEAT_TIMEOUT" } }, { deadlineMonoMs: captureDeadlineMonoMs });
       if (phase === "preflight" && beforePreflightSeal !== null)
-        await beforePreflightSeal({ env, recorder, manifest, deadlineMonoMs: budget.deadlineMonoMs() });
+        await beforePreflightSeal({ env, recorder, manifest, captureDeadlineMonoMs,
+          readbackDeadlineMonoMs: budget.deadlineMonoMs() });
       const result = await recorder.sealClosedEvidence();
       return verifyReceipt({ workspaceRoot: env.workspaceRoot, completionRef: result.completionRef,
         expectedIdentity: workspace.commonIdentity }, io, context);

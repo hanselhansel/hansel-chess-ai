@@ -312,3 +312,74 @@ test("the full physical inventory gates prepared verification: phase extras and 
   assert.equal(failedMut.failedTemporaryPath, readMut.temporaryRef.path);
   await mutated.owner.whenSettled();
 });
+
+
+import { child } from "./separate-verdicts-compat-fixtures.mjs";
+for (const firstFailure of [false, true]) test(`receipt B owns late creation and same-cap containment, primary=${firstFailure}`, async () => {
+  const root = path.resolve(import.meta.dirname);
+  const code = `
+import assert from "node:assert/strict";
+import {registerHooks} from "node:module";
+import {pathToFileURL} from "node:url";
+import {fstatSync,promises as fs} from "node:fs";
+const root=${JSON.stringify(root)}, firstFailure=${JSON.stringify(firstFailure)}, closes=[];
+const state={armed:false,creating:false,prepared:null,budget:null};globalThis.__creation=state;
+const hook=registerHooks({load(url,ctx,next){
+ const result=next(url,ctx);let pairs=[];
+ if(url===pathToFileURL(root+"/record-finalizer.mjs").href)pairs=[
+  ["const sealBody = async (sealed) => {","const sealBody = async (sealed) => {\\n if(globalThis.__creation.armed)globalThis.__creation.budget=verificationContext.budget;"]];
+ if(url===pathToFileURL(root+"/completion-publication.mjs").href)pairs=[
+  ["  PREPARED.set(prepared, entry);","  PREPARED.set(prepared, entry);\\n if(globalThis.__creation.armed){globalThis.__creation.creating=true;globalThis.__creation.prepared=prepared;}"]];
+ if(!pairs.length||result.source===null||result.source===undefined)return result;
+ let source=typeof result.source==="string"?result.source:Buffer.from(result.source).toString();
+ for(const [needle,replacement]of pairs){assert(source.includes(needle),"creation hook drift");source=source.replace(needle,replacement);}
+ return {...result,source};
+}});
+let release,entered;const held=new Promise(yes=>{release=yes}),seen=new Promise(yes=>{entered=yes});
+let privateFs,lstat,open,pending,env,clock,heldCount=0,rawOpens=0,settled=false,drained=false;
+const descriptors=new Set(),primary=Object.freeze({controlled:"first raw sync failure"});
+try{
+ const load=name=>import(pathToFileURL(root+"/"+name+".mjs").href);
+ const {createV3GraphFixture,now}=await load("preflight-v3-test-fixtures");
+ const {artifactStoreLifetime}=await load("artifact-store");
+ ({privateFs}=await load("private-fs"));lstat=privateFs.lstat;open=privateFs.open;clock=now();
+ privateFs.lstat=async(...args)=>{
+  const value=await lstat(...args);
+  if(state.creating&&!heldCount){heldCount+=1;entered();await held;}
+  return value;
+ };
+ privateFs.open=async(...args)=>{
+  const file=await open(...args);if(!state.creating)return file;
+  const fd=file.fd,close=file.close.bind(file),sync=file.sync.bind(file);descriptors.add(fd);
+  if(clock>=state.budget.deadlineMonoMs())rawOpens+=1;
+  file.close=async()=>{await close();descriptors.delete(fd);assert.throws(()=>fstatSync(fd),{code:"EBADF"});};
+  if(firstFailure&&args[1]==="wx")file.sync=async()=>{await sync();throw primary;};
+  return file;
+ };
+ pending=createV3GraphFixture({after:fn=>closes.push(fn)},{recorderNow:()=>clock,
+  beforePreflightSeal:async actual=>{env=actual.env;state.armed=true;}})
+  .then(value=>({value}),error=>({error})).finally(()=>{settled=true});
+ const first=await Promise.race([seen.then(()=>"held"),pending.then(()=>"returned")]);
+ assert.equal(first,"held","genuine admitted preparation metadata reached");
+ const owner=artifactStoreLifetime(env.store);owner.whenSettled().then(()=>{drained=true;});
+ clock=state.budget.deadlineMonoMs();assert.equal(settled,false);assert.equal(drained,false);
+ release();const outcome=await pending;assert(Object.hasOwn(outcome,"error"));
+ if(firstFailure)assert.equal(outcome.error,primary,"first arbitrary raw failure survives containment");
+ else assert.equal(outcome.error.code,"ACCOUNTING_UNAVAILABLE");
+ await owner.whenSettled();assert.equal(descriptors.size,0);assert(rawOpens>0,"admitted creation really settles after B");
+ const failed=await env.store.containPreparedCompletion(state.prepared,new Error("inspect same capability"));
+ assert.equal(failed.failedTemporaryPath,failed.failedTemporaryRef.path);
+ const retained=await fs.readFile(env.workspaceRoot+"/"+failed.failedTemporaryPath);
+ assert(retained.length>0,"actual failed bytes remain in the genuine prepared temp");
+ await assert.rejects(fs.stat(env.workspaceRoot+"/preflight/completion.json"),{code:"ENOENT"});
+ console.log(JSON.stringify({heldCount,rawOpens,actualSettled:true,sameCapabilityContained:true}));
+}finally{
+ release();if(pending)await pending;
+ if(privateFs){privateFs.lstat=lstat;privateFs.open=open;}
+ for(const close of closes)await close();hook.deregister();delete globalThis.__creation;
+}
+`;
+  const result = await child(process.execPath, ["--input-type=module", "-e", code]);
+  assert.equal(result.exit, 0, result.stderr);
+  assert.equal(JSON.parse(result.stdout.trim()).sameCapabilityContained, true);
+});

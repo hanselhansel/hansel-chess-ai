@@ -155,12 +155,12 @@ V3 comparison strength eligibility requires the unchanged full40/20-pair science
 
 ### Mandatory verification budget propagation
 
-`VerificationContextV3` is the closed private `{budget}` carrying the genuine existing `createBudgetHandle` handle for the caller's already captured absolute end. It is mandatory for V3 before graph/replay work; legacy V1/V2 APIs retain their current optional/untimed behavior. A supplied V3 context cannot be missing, noop, unbounded, replaced after an await or refreshed per ancestor/game. The same original graph IO retainer and any existing `assertEffectLive` guard are forwarded unchanged. The collector checks budget before/after each awaited read/replay and the replay helper checks it at every existing internal boundary. No new experimental or cleanup window is created.
+`VerificationContextV3` is the closed private `{budget}` carrying the genuine existing `createBudgetHandle` handle for the caller's fixed absolute end (producer B uses the approved Task22 receipt-only end below). It is mandatory for V3 before graph/replay work; legacy V1/V2 APIs retain their current optional/untimed behavior. A supplied V3 context cannot be missing, noop, unbounded, replaced after an await or refreshed per ancestor/game. The same original graph IO retainer and any existing `assertEffectLive` guard are forwarded unchanged. The collector checks budget before/after each awaited read/replay and the replay helper checks it at every existing internal boundary. No new experimental or cleanup window is created.
 
 | Caller path | Required context and awaited propagation |
 | --- | --- |
-|Producer finalization|`record-finalizer` captures/borrows one handle ending at the original absolute cleanup cutoff already passed to `closeEvidenceBeforeCutoff`. It survives the existing A/B boundary. Before calling pure compileFinalV3, await collector with `{io,budget}` using that handle and the recorder/store's same actual owner. V3 cannot use the untimed legacy finalize path to omit this context.|
-|Prepared verification and post-publication readback|Pass that exact context to `verifyPreparedReceiptGraph(options,verificationContext)`. Guard before/after its branded prepared read and await the matching compiler's fresh collector inside the full graph. The existing private VERIFIED association and consumePreparedVerification result carry the exact additional private field `verificationContext` for V3 only. Store publication forwards it to the mandatory fresh canonical verifyReceiptGraph call after publication, guarding before/after prepare/publish/verification effects under the same cutoff. It is never serialized, caller-replaced or widened; V1/V2 associations retain their old shape. Preserve opaque token identity, one-use consumption, actual prepared IO and containment/first-error rules; expiry cannot return a verified published result.|
+|Producer finalization|`closeEvidenceBeforeCutoff` keeps original C for A only. After actual A closure, `sealClosedEvidence()` captures one B_start/B_end and genuine frozen `{budget}` context under the approved Task22 amendment below, nested-clamped to the original parent end. Before calling pure compileFinalV3, await collector with `{io,budget}` using that handle and the recorder/store's same actual owner. V3 cannot use the untimed legacy finalize path to omit this context.|
+|Prepared verification and post-publication readback|Pass that exact context to `verifyPreparedReceiptGraph(options,verificationContext)`. Guard before/after its branded prepared read and await the matching compiler's fresh collector inside the full graph. The existing private VERIFIED association and consumePreparedVerification result carry the exact additional private field `verificationContext` for V3 only. Store publication forwards it to the mandatory fresh canonical verifyReceiptGraph call after publication, preserving every existing proof/read/replay guard under fixed B, gating whole Store transaction admission immediately before enqueue and checking association context inside Store immediately before immutable seal. Already-admitted context-free preparation/accounting settlement may finish after B. No fallible finalizer guard follows the immutable result. It is never serialized, caller-replaced or widened; V1/V2 associations retain their old shape. Preserve opaque token identity, one-use consumption, actual prepared IO and containment/first-error rules; expiry cannot return a verified published result.|
 |Runtime parent/selftest admission|Thread the current original setup/work/admission/operation context through `verifyReceipt(options,io,verificationContext)`, `admitPhase(options,io,verificationContext)`, `verifyInternalSelfTest(options,io,verificationContext)` and recursive `verifyReceiptGraph(options,memo,io,verificationContext)`. `executeSupervisor`'s initial parent reads use their already captured setup budget; watchdog admission uses its original work/operation end; selftest and cleanup re-verification use the original arm/cleanup end. If an existing caller has only that captured absolute end, create a min-only handle for that same end, never now+another duration. Await every graph/collector/replay before parent admission and the unchanged real finalizer probe.|
 |Ordinary readback and pre-spawn prior recheck|Use the named `V3ReadOnlyGraphContext` in section9, with one captured90000ms read-only command end for the entire command/recheck. It bounds metadata/graph/replay work and owns its actual read handles/tasks. It is a separate read-only command context after or before the experimental process; it cannot extend, reset, rescue or alter any experiment, operation or cleanup clock or grade.|
 
@@ -187,7 +187,7 @@ Current inspected owner sizes include `resource-quality.mjs`399, `watchdog-confi
 |`prerequisites-evidence.test.mjs`|Existing test owner, not a production `prerequisites-evidence.mjs` module. Add new genuine graph cases in new TEST leaves rather than inventing that absent source owner.|
 |`record-inputs.mjs`, `driver-bridge.mjs`|Reserve/reject `scientificReadinessVerdict` and new supervisor evidence namespaces for V3. A driver cannot provide verdict authority. Exact V1/V2 request behavior stays unchanged.|
 |`driver-protocol.mjs`, `driver-bridge-wire.mjs`, `driver-bridge-methods.mjs`, `supervisor-protocol.mjs`|Use exact selected policy/path mapping instead of schema2=>v2 path. V3 hello/start still add only recordSchemaVersion2/evaluationPolicy. Closed wire rejects readiness as a top-level finish field. Existing hard Native wire/registry/ACK bounds stay unchanged.|
-|`record-evidence.mjs`, `records.mjs`, `record-finalizer.mjs`|Same canonical capture, final event, real close/fence/ticket/prepare/publish owner. Before pure final compilation, await graph-bound preflight collection/replay with the original absolute-cutoff context, confined IO and registrar. Keep that context across A/B/prepared verification. No new writer, second ledger or changed publication order.|
+|`record-evidence.mjs`, `records.mjs`, `record-finalizer.mjs`|Same canonical capture, final event, real close/fence/ticket/prepare/publish owner. Before pure final compilation, await graph-bound preflight collection/replay with the one fixed receipt-only B context, confined IO and registrar. A retains original C; B begins only after real A closure and carries through prepared verification. No new writer, second ledger or changed publication order.|
 |`record-finalization.mjs`, `record-finalization-v2.mjs`|Dispatch exact V3 closed facts to the new compiler, keep V2 compiler semantics. V3 completion copies readiness only from actual derived final. Never rescope or rewrite failed parent resource verdicts.|
 |`verdicts-v2.mjs`|Unchanged. New V3 reducer owns its own closed variant, literal failed timing grade and admitted-parent distinction.|
 |`receipt-verification.mjs`|Keep complete inventory/ref/identity/nested/ancestor verification and prepared-token rules. Thread mandatory V3 budget context through recursion/prepared verification and private prepared association. For capacity, move the whole unchanged pure selftestOutcome group into existing receipt-verification-v2.mjs and preserve its current named re-export. This adds no runtime path or proof authority.|
@@ -296,7 +296,7 @@ Use exactly this feasible sequence. **The OLD RED proves policy recognition only
 |Hard monitor/Native/ownership/transport/backend/lsof/listener whole owners|Negative/reversed clocks, unsafe sums, missing member/full-union exhaustion, identity reappearance, permission/EOF/backend/transport errors, original-handle expiry, missing response, after-fence data used as proof and unknown physical debt all remain hard after an earlier soft loss. A live-handle settled negative fenced diagnostic alone preserves its existing non-proof behavior; test no clock/counter/terminal admission and successful independent cleanup/closure separately. Its expired-handle, positive-cap and unsettled-debt twins reject. Measured exact4GiB versus4GiB+1, including slow/late positive cap, preserves sticky observed cap and no eligibility.|
 |Watchdog and current resource/cleanup/integrity/selftest/boundary/finish-order/evidence/drain owners|Soft periodic projection continues scientific work and retains diagnostics. Hard/cap checks still stop before finish. Strict current cleanup can succeed after historical gap; stale current proof, cleanup failure, missing listener/both-pipe/task/FD/join, scope confusion, expected-selftest fault mismatch and exhausted P/C reject. Original90/30/5/600s/24h/1000ms and256MiB edges remain hard.|
 |Readiness and actual `phase-runners`, page-arm/match/PGN/check owners|Ten complete requests pass only five per role with exact identities/visits and completed operation refs. Missing eighth request, duplicate/misbound observations/session/path, nondeterministic result, illegal move, substituted delivery, fewer than five samples, forged latency statistics, missing/failed timing estimate and missing/invalid A/A color/draw/PGN/checkpoint each reject. Source-bound final integrity and SDK closure stay required.|
-|Real recorder/prepared graph/publication and current prerequisites/evidence/records/finalization/receipt/terminal owners|Generate real temporary V3 store/recorder graph with timing-failed ready preflight and strict CHECK/parity; genuine admitPhase(compare) plus real gone probes succeeds. Same construction under V2 rejects. Recompute readiness independently; mutate any field/ref/byte/check/parent/status/cleanup/prefix/final snapshot and fail before publication/admission. In preflight-graph-v3.test.mjs, cover genuine awaited replay, bound-byte/ref mismatch, malformed/illegal PGN, missing/expired budget, expiry between metadata read and replay, unchanged original cutoff across producer/prepared/post-publication/recursive/ordinary paths, and failure with real replay/read/FD debt still retained. Pure validator tests receive only detached replay results and verify ref/FEN/result binding. Existing pgn-evidence.test.mjs covers real replay expiry across its16-move yield using a genuine handle/fake clock; A/A schedule itself remains unchanged. Missing completion, inventory, Native/store/cleanup or pending-monitor proof never qualifies.|
+|Real recorder/prepared graph/publication and current prerequisites/evidence/records/finalization/receipt/terminal owners|Generate real temporary V3 store/recorder graph with timing-failed ready preflight and strict CHECK/parity; genuine admitPhase(compare) plus real gone probes succeeds. Same construction under V2 rejects. Recompute readiness independently; mutate any field/ref/byte/check/parent/status/cleanup/prefix/final snapshot and fail before publication/admission. In preflight-graph-v3.test.mjs, cover genuine awaited replay, bound-byte/ref mismatch, malformed/illegal PGN, missing/expired budget, expiry between metadata read and replay, one fixed original B across producer/prepared/post-publication/recursive paths, distinct unchanged original command contexts for ordinary readback/admission, and failure with real replay/read/FD debt still retained. Pure validator tests receive only detached replay results and verify ref/FEN/result binding. Existing pgn-evidence.test.mjs covers real replay expiry across its16-move yield using a genuine handle/fake clock; A/A schedule itself remains unchanged. Missing completion, inventory, Native/store/cleanup or pending-monitor proof never qualifies.|
 |Strength reducer/finalizer/PGN stats and terminal/operator whole owners|Real strict plus ready timing-failed preflight yields eligible full40 with closure resource failed and aggregate2; own timing loss also stays eligible with failed resources. Incomplete39-game/19-pair, failed scientific parent, cap or hard fault stays ineligible. Actual compiler `scienceReady` and paired-analysis paths must pass, not only hand-made reducer facts. Preserve exact formulas, no Elo.|
 |V3 terminal/W operator controls and immutable V2 controls|Ready preflight0 passes strict; ready resource-failed preflight2 is admitted only for V3 compare; arbitrary2/nonzero/missing graph/unready/wrong policy/intervened owner/inexact pins reject. preflight-terminal-v3.test.mjs and W/separate-verdicts-owner-controls-v3.mjs cover the section9 absent-root cold CHECK launch tripwire, both existing-root rejections and missing-archive initial-readback rejection, without claiming a scientific CHECK. Successor tests retain actual fresh assertPrior success, tampered prior rejection, awaited CHECK/parity/preflight order before claim/spawn, zero launches/absent claim on rejection, no verification.json overwrite, shared90s parent context and actual success/failure cleanup. Readback0/experiment2 stay separate; V2 still rejects timing-failed preflight/operational3. Old W hashes remain exact.|
 |Actual Native V3 group plus all existing Native groups|One serial genuine macOS Native delayed-delivery stimulus during opened preflight scientific scope proves typed quality retention and later real current cleanup/full monitor/child/both-pipe/task closure. The same stimulus in strict V3 CHECK, bootstrap/selftest/control/cleanup scopes proves hard rejection. Include original bound/positive-cap negatives and genuine graph/publication coverage. Unsupported platform is explicit failure, never skip. These are controlled test receipts, not a browser preflight or scientific result.|
@@ -506,3 +506,137 @@ GO, timing cure or Elo claim. This status does not record a commit/publication.
 Evidence: E20/task20-handoff-fix-rereview.md, Root gate10 audits/receipts and
 E20/root-task20-handoff-all-required-checks-summary.json. Final docs-only
 comparison/pins/delta: E20/task20-final-commit-docs-ready-report.md.
+
+
+## Task22 approved receipt-sealing correction (2026-11-11)
+
+Hansel approved proposal SHA256
+`3fc18bacefe9fbe59ba36ace283c64a2c091d2a1ac778d01fd229d292f819f29`
+and the binding import clarification in E21/sealing-review-summary.md.
+This dated acceptance supersedes only V3's producer C-across-A/B clock rule
+and its corresponding API/map wording. All other V3 requirements remain.
+Task20 is complete and published at `ccd839011b9deb831ffe9c79325879f00041857f`.
+Task21's fresh CHECK passed and its diagnostic control qualified, but parity
+failed receipt finalization. Its unsealed13/13 numerical checks, resource
+and cleanup facts do not constitute an authoritative parity graph. No
+preflight or comparison launched. Failed evidence remains immutable.
+
+Stage A contracts and causal TEST/support preceded production edits. Root
+accepted actual RED2:60 tests,50 passed,10 intended failures,0 skip/cancel,
+natural exit1 in40.792294208s with649 exact pins and actual command/BOTH raw/
+journal closure, without intervention. Both actual preparation controls passed.
+All required local gates now passed on the frozen14 SOURCE/TEST paths.
+Root full96 passed1162/1162, natural exit0 in223.116871292s,0 skip/cancel,
+660 exact execution pins and actual process/BOTH raw/journal closure without
+intervention. Causal60 and focused fixture4 are subsets, not added counts.
+Python58/19/8, scripts191/core184 and typecheck0 passed with649 exact pins and
+actual closure. Two deliberate null/undefined BookkeepingObserverWarnings
+remain expected and unsuppressed. Worker imports/tests are UNRUN. Final scope23
+is7 SOURCE,7 TEST/support and9 DOC paths, including the separately declared
+existing fixture-transform TEST ownership repair. Runtime135/TEST96, weights,
+baseline/statistics and original limits stay unchanged. Fresh Sol Max review,
+Root acceptance/commit/publication and scientific successors remain pending.
+
+A's science, identity, Native and cleanup proofs retain original P/C. Late
+facts remain unproven. Real fence, other-body drain and writer/FD closes must
+settle before a usable private closed bundle admits B. Then sealClosedEvidence()
+captures one trusted nonnegative safe-integer B_start and one genuine frozen
+`{budget}` context. Top-level B_end=B_start+90000ms; nested watchdog-selftest
+uses min(B_start+90000ms,receiptCeilingMonoMs), the exact original parent end.
+Throwing/invalid/overflowed construction fails closed. No retry refreshes B.
+The same owner/IO registrar and every existing proof/read/replay guard remain.
+
+B gates each whole existing Store transaction immediately before enqueue,
+after pure argument encoding, without an intervening await. Its queue wait
+and existing context-free preparation/creation/write/accounting may settle
+after B_end under actual ownership and unchanged caps. No new proof or
+transaction starts after expiry. Adopt the genuine returned prepared capability
+before the next fallible guard inside its containment try/catch. Same-capability
+containment preserves the first arbitrary error and real FD/body settlement.
+
+The last fallible eligibility check is inside artifact-completion, after
+publication/accounting/fresh canonical verification and immediately before the
+synchronous claims-clear/seal/immutable/mark-sealed/resolve-safe batch. The
+unchanged artifact-files checkVerification body is exported as
+assertVerificationContext through the existing ArtifactCompletion to
+ArtifactFiles edge. No fallible post-result finalizer deadline guard can
+replace the genuine immutable Store result. Receipt reporting adds the direct
+record-finalizer to watchdog-lifetime edge among existing135 modules.
+
+Private bindRuntime retains lifetime/clock/optional observer and adds
+receiptCeilingMonoMs (null top-level; required exact original parent end nested).
+closeEvidenceBeforeCutoff(request,{deadlineMonoMs:C}) retains only A's bound.
+sealClosedEvidence() accepts no replacement context. Raw Store/preparation/
+accounting signatures and read-only/parent admission contexts remain unchanged.
+Parent post-return deadline/abort/probe/ACK/scope checks remain hard.
+
+reportReceiptBookkeeping(owner,scope,classification,atMonoMs,deadlineMonoMs,cause)
+in existing watchdog-lifetime emits bounded records.receipt entered/fulfilled/
+rejected markers. B_start/end are authoritative; final settlement sampling and
+reporting are best effort. The shared emitMarker passively observes native
+Promise sink rejections with Promise.prototype.then.call and fulfilling handlers.
+Throwing, rejecting or pending diagnostics add no required debt or status
+control. Keep the existing optional five-field bookkeeping observer unchanged.
+Report A/C, actual B boundaries and total outer elapsed separately; missing
+samples stay unknown. No extra resource coverage or scientific proof is created.
+
+Original receipt-correction scope was7 SOURCE,6 TEST/support and9 DOC paths.
+Root's routine fixture-transform before-use ruling adds one existing TEST path:
+final23 paths are7 SOURCE,7 TEST/support and9 DOC. No new runtime/helper path,
+queue, timer owner or four-split/runtime139 alternative is adopted.
+The six TEST/support owners cover distinct A/readback bounds, C-crossing B,
+late-A negatives, fixed-B expiry, preseal/postseal races, held real preparation,
+same-capability containment/FD closure, nested parent ceiling and passive sinks.
+Preserve all existing ownership/context assertions and readable source/TEST<400.
+
+After Root causal GREEN, covering/full96, Python58/19/8, app scripts/core and
+typecheck, fresh scoped Sol Max review and final code-to-document acceptance,
+Root separately releases green commit/publication, fresh CHECK, ONE replacement
+control, strict parity, preflight and ONE40-game comparison. Bind the replacement
+control only to the new published candidate's successful CLOSED CHECK. Model
+weights, baseline/statistics,64 visits/20pairs/40games and original experiment,
+Native, cleanup, output and memory limits remain unchanged. No old run is rescued.
+Evidence: E22/implementation-approval.json and task22-report.md, where E22 is
+`.superpowers/sdd/2026-11-06-tinyaz-fault-repair-and-full-comparison/separate-verdicts-implementation-evidence/00cb72f4-cff2-412d-9c9c-e6f3ce8e4b59`.
+
+Stage B evidence: E22/root-task22-causal-red-acceptance.json,
+E22/task22-source-ready-report.md and task22-source-ready-pins.json. The actual
+source now retains C only for A, captures B once after the real closed bundle,
+and gates final write/prepare/publish admission without changing raw APIs.
+Prepared capability adoption precedes the guarded verification/containment
+region. Store's final association guard precedes the no-await immutable seal;
+no finalizer post-publish guard reclassifies its result. Receipt settlement
+markers follow actual lifecycle continuation settlement and are best effort.
+Shared diagnostic native Promise rejection is passively observed without debt.
+The Stage B source-ready comparison is historical; the measured final code-to-
+doc comparison is in task22-implementation-review-ready-report.md. Local GREEN
+does not establish review acceptance, publication or scientific passage.
+
+Current evidence: E22/root-task22-all-required-checks-summary.json,
+root-task22-causal-green-acceptance.json, root-task22-fixture-focused-acceptance.json
+and task22-implementation-review-ready-report.md. The earlier full96
+1161pass/1 teardown failure and RED1's two loader setup failures remain dated
+immutable history; neither was reclassified as passing. No Task22 scientific
+CHECK/control/parity/preflight/comparison, commit/publication or Elo result is
+claimed. Root owns fresh review and every subsequent release gate.
+
+### Validated TEST-only Vite completion boundary
+
+Existing fixture-transform.test.mjs is the sole additional TEST path, declared
+before use in E22/root-task22-fixture-transform-before-use-go.json. Its197-line
+owner preserves the four original test names/bodies/assertions byte-exact.
+Local drainOptimizer retains genuine discovered/optimized processing promises
+before metadata replacement, joins issued scan and actual waitForRequestsIdle
+while Vite is open, and drains newly issued actual batches to a stable set.
+Only then does teardown close every server and join all original Git child
+exit/BOTH pipe receipts despite any other drain/close rejection. Original or
+aggregate failures propagate and preserve the root. One original fs.rm runs
+only after successful joins, with unchanged options and no sleep/retry/error mask.
+Vite8.2.2/Rolldown1.2.5 public batch receipts cover actual admitted bundle write/
+close/commit settlement. They do not prove arbitrary global IO or Vite's separate
+detached old-cache fsp.rm completed. No plugin/package/noDiscovery/include/entries,
+operational production binding or scientific/Native limit changed.
+Root's focused owner passed4/4, then the fresh full96 passed1162/1162 on exact
+frozen14 code/TEST bytes. The original failed temp and source-ready/raw evidence
+remain unchanged. Docs-only final status follows these measured gates; no new
+runtime execution or scientific result follows from this documentation update.

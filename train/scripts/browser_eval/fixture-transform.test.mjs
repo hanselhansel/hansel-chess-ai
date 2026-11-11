@@ -17,23 +17,57 @@ const fixtureDir = fileURLToPath(new URL("./", import.meta.url));
 const dependencies = await fs.realpath(path.join(repo, "node_modules"));
 const numericFiles = ["position.ts", "encode.ts", "policy.ts", "weights.ts", "net.ts"];
 
+// Public per-dependency receipts include the actual bundle write/close/commit.
+// They do not claim arbitrary global IO or Vite's detached old-cache rm settled.
+function rejectFailedJoins(results) {
+  const failures = results.filter((result) => result.status === "rejected");
+  if (failures.length === 1) throw failures[0].reason;
+  if (failures.length > 1) throw new AggregateError(failures.map((result) => result.reason));
+}
+
+async function drainOptimizer(environment) {
+  const optimizer = environment.depsOptimizer;
+  if (!optimizer) return;
+  const receipts = new Set();
+  const capture = () => {
+    for (const group of [optimizer.metadata.discovered, optimizer.metadata.optimized]) {
+      for (const dependency of Object.values(group)) {
+        if (dependency.processing !== undefined) receipts.add(dependency.processing);
+      }
+    }
+  };
+  capture(); // Retain issued promises before scan/crawl can replace metadata.
+  const joins = await Promise.allSettled([optimizer.scanProcessing]);
+  capture();
+  joins.push(...await Promise.allSettled([
+    Promise.resolve().then(() => environment.waitForRequestsIdle()),
+  ]));
+  capture();
+  let joined = 0;
+  while (joined < receipts.size) {
+    const batch = [...receipts].slice(joined);
+    joined = receipts.size;
+    joins.push(...await Promise.allSettled(batch));
+    capture(); // A newly issued batch must settle too; no timed polling/retry.
+  }
+  rejectFailedJoins(joins);
+}
+
 async function sources(t, candidateRuntime = false) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "tinyaz-fixture-transform-"));
   const children = [];
   const servers = [];
   t.after(async () => {
-    await Promise.all(servers.map(async (server) => {
-      // Pinned Vite close snapshots optimizationResult before awaiting its
-      // scan. Join that issued scan first so close owns the resulting optimizer.
-      const scans = await Promise.allSettled(Object.values(server.environments)
-        .map((env) => env.depsOptimizer?.scanProcessing));
-      const close = await Promise.allSettled([server.close()]);
-      const failures = [...scans, ...close].filter((result) => result.status === "rejected");
-      if (failures.length === 1) throw failures[0].reason;
-      if (failures.length > 1) throw new AggregateError(failures.map((result) => result.reason));
+    // Keep Vite open until all issued scan/crawl/optimizer batches really settle.
+    const drains = await Promise.allSettled(servers.flatMap((server) =>
+      Object.values(server.environments).map((environment) => drainOptimizer(environment))));
+    const closes = await Promise.allSettled(servers.map((server) =>
+      Promise.resolve().then(() => server.close())));
+    const childCloses = await Promise.allSettled(children.map(async (entry) => {
+      await entry.closed;
+      assert.deepEqual(entry.facts, [true, true, true]);
     }));
-    await Promise.all(children.map((entry) => entry.closed));
-    for (const entry of children) assert.deepEqual(entry.facts, [true, true, true]);
+    rejectFailedJoins([...drains, ...closes, ...childCloses]);
     await fs.rm(root, { recursive: true, force: true });
   });
   const git = (args) => {
